@@ -1,0 +1,243 @@
+# Контракт API «Свой Сомелье» v0.1 — ЗАМОРОЖЕН, правки только через оркестратора.
+# Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
+# Auth: Bearer JWT. Все ответы UTF-8 JSON, кроме /chat (SSE).
+openapi: 3.1.0
+info:
+  title: Svoy Somelye API
+  version: 0.1.0
+servers:
+  - url: /v1
+paths:
+  /healthz:
+    get:
+      summary: Живость сервиса и версия индекса
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok] }
+                  index_version: { type: string }
+
+  /auth/register:
+    post:
+      summary: Регистрация. Гейт 18+ по birth_date — иначе 403 age_restricted
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, birth_date, consent_version, consent_scopes]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                birth_date: { type: string, format: date }
+                consent_version: { type: string }
+                consent_scopes:
+                  type: array
+                  items: { type: string, enum: [base, profiling, geo, marketing] }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+        "403": { description: age_restricted }
+
+  /auth/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
+
+  /consents:
+    get:
+      summary: Актуальные согласия пользователя (версии, скоупы, отметки времени)
+      responses: { "200": { description: ok } }
+    post:
+      summary: Выдать/отозвать скоупы. Отзыв base = запрос на удаление аккаунта
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consent_version, grant, scopes]
+              properties:
+                consent_version: { type: string }
+                grant: { type: boolean }
+                scopes: { type: array, items: { type: string } }
+      responses: { "204": { description: записано в consent-ledger } }
+
+  /scan/resolve:
+    post:
+      summary: Текст с этикетки (OCR на устройстве) -> кандидаты из каталога
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string, maxLength: 2000, description: сырой распознанный текст }
+                hints:
+                  type: object
+                  properties:
+                    color: { type: string }
+                    winery: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [matches]
+                properties:
+                  matches:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required: [wine_id, name, winery_name, confidence]
+                      properties:
+                        wine_id: { type: string, description: slug из каталога vines }
+                        name: { type: string }
+                        winery_name: { type: string }
+                        confidence: { type: number, minimum: 0, maximum: 1 }
+                  low_confidence:
+                    type: boolean
+                    description: true => клиент показывает выбор из matches, не автопереход
+
+  /scan/ocr:
+    post:
+      summary: Веб-фолбэк — фото на сервер, только по явному согласию в этом запросе
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image, explicit_consent]
+              properties:
+                image: { type: string, format: binary, description: до 8 МБ }
+                explicit_consent: { type: boolean }
+      responses:
+        "200": { description: тот же ответ, что /scan/resolve }
+        "422": { description: consent_required, если explicit_consent != true }
+
+  /wines/{wine_id}:
+    get:
+      summary: Карточка вина — source-поля + derived + ссылка на первоисточник
+      parameters:
+        - { name: wine_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wine_id, source, derived, source_url]
+                properties:
+                  wine_id: { type: string }
+                  source: { type: object, description: как в catalog/wines/<slug>.json }
+                  derived: { type: object }
+                  source_url: { type: string, format: uri }
+                  similar: { type: array, items: { type: string } }
+
+  /chat:
+    post:
+      summary: Вопрос сомелье. Ответ — SSE-стрим
+      description: >
+        События: {"type":"token","text":"..."} | {"type":"citation","wine_id"|"chunk_id","url","quote"}
+        | {"type":"done","answer_id"} | {"type":"refusal","reason"}. Каждый фактический ответ
+        обязан нести >=1 citation; пустая выдача ретривера => refusal с честным текстом.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string, maxLength: 1000 }
+                filters:
+                  type: object
+                  properties:
+                    color: { type: string }
+                    sugar: { type: string }
+                    region: { type: string }
+                    budget_rub_max: { type: integer }
+      responses:
+        "200": { description: text/event-stream }
+
+  /taste/swipes:
+    post:
+      summary: Свайп-дегустация. Требует scope profiling
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wine_id, verdict]
+              properties:
+                wine_id: { type: string }
+                verdict: { type: string, enum: [like, dislike, skip] }
+      responses: { "204": { description: ok } }
+
+  /taste/profile:
+    get:
+      summary: Вкусовой паспорт — вектор в 7 осях + топ эталонных стилей
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vector:
+                    type: object
+                    description: sweetness/acidity/tannin/body/oak/aromatic_intensity/bubbles, 0..1
+                  top_styles: { type: array, items: { type: string } }
+                  swipes_count: { type: integer }
+
+  /waitlist:
+    post:
+      summary: Лендинг. Без auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, consent_version]
+              properties:
+                email: { type: string, format: email }
+                consent_version: { type: string }
+      responses: { "204": { description: ok } }
+
+  /profile/data-export:
+    get:
+      summary: Выгрузка всех данных пользователя (право субъекта ПД)
+      responses: { "200": { description: application/json, полный дамп } }
+
+  /profile:
+    delete:
+      summary: Удаление аккаунта и данных; consent-ledger хранит факт отзыва
+      responses: { "204": { description: удалено } }
+
+components:
+  schemas:
+    TokenPair:
+      type: object
+      required: [access_token]
+      properties:
+        access_token: { type: string }
+        expires_in: { type: integer }
