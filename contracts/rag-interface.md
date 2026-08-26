@@ -47,6 +47,11 @@ class Retriever:
         Добавлено v0.2.1 (предложение агента B)."""
     def list_reference_styles(self, top_n: int = 5) -> list[dict]:
         """Популярные стили ({"slug","name","country"}) — подсказка в 404 /analogs. v0.2.1."""
+    def candidates_for_taste(self, exclude_ids: list[str], limit: int = 20) -> list[Candidate]:
+        """Колода для свайп-дегустации: разнообразие по цвету/региону/стилю, исключая
+        exclude_ids. Детерминированной случайности достаточно (seed по дате).
+        Добавлено v0.2.3 (предложение агента B: метод жил только в моке —
+        без контракта интеграция реального RAG сломала бы /taste/candidates)."""
 
 def get_retriever() -> Retriever: ...
 # Фабрика по env, симметрично packages/llm.get_llm: RAG_MODE=qdrant|embedded (+QDRANT_URL). v0.2.1
