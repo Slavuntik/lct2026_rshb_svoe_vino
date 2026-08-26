@@ -34,8 +34,15 @@ def make_engine(settings: Settings) -> Engine:
     engine = create_engine(settings.database_url, **kwargs)
 
     if settings.database_url.startswith("sqlite"):
+        # Без этого SQLite молча ИГНОРИРУЕТ FK (в т.ч. ON DELETE CASCADE/SET
+        # NULL) — расхождение с Postgres обнаружилось бы не на dev-машине, а
+        # прямо на демо, при первом реальном FK-нарушении на настоящей БД.
+        # v0.2.1: это же и есть та проверка, которая гарантирует, что
+        # scans/chat_messages/events/feedback реально ссылаются на
+        # существующую строку users (в т.ч. гостя) — см.
+        # tests/test_guest_attribution.py.
         @event.listens_for(engine, "connect")
-        def _enable_sqlite_fk(dbapi_connection, connection_record):  # pragma: no cover
+        def _enable_sqlite_fk(dbapi_connection, connection_record):
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.close()

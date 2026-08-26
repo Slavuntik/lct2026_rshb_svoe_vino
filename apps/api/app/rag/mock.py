@@ -68,6 +68,7 @@ def _wine_to_candidate(wine: dict, score: float) -> Candidate:
         "grapes": wine["grapes"],
         "stillness": wine["derived"]["stillness"],
         "reference_style_matches": wine["derived"]["reference_style_matches"],
+        "image_url": wine.get("image_url"),
     }
     return Candidate(
         id=wine["slug"], kind="wine", score=score,
@@ -79,6 +80,17 @@ def _chunk_to_candidate(chunk: dict, score: float) -> Candidate:
     return Candidate(
         id=chunk["id"], kind="chunk", score=score, text=chunk["text"],
         url=chunk["url"], meta={},
+    )
+
+
+def _wine_to_full_candidate(wine: dict) -> Candidate:
+    """Для get_by_id(): meta несёт source+derived целиком (как GET /wines/{id}
+    хочет их отдать), в отличие от _wine_to_candidate() выше, где meta —
+    лёгкая выжимка для цитат чата/списков совпадений."""
+    source = {k: v for k, v in wine.items() if k not in ("slug", "derived", "source_url")}
+    return Candidate(
+        id=wine["slug"], kind="wine", score=1.0, text=_wine_text_for_prompt(wine),
+        url=wine["source_url"], meta={"source": source, "derived": wine["derived"]},
     )
 
 
@@ -169,13 +181,47 @@ class MockRetriever:
         style = REFERENCE_STYLES_BY_SLUG[slug]
         return {"slug": style["slug"], "name": style["name"], "country": style["country"]}
 
-    # --- расширение сверх контракта (см. interface.py докстринг) -------
-    def get_by_id(self, wine_id: str) -> dict | None:
-        return WINES_BY_SLUG.get(wine_id)
+    # --- v0.2.1 (по предложению агента B, теперь часть контракта) ------
+    def get_by_id(self, id: str) -> Candidate | None:
+        wine = WINES_BY_SLUG.get(id)
+        if wine is not None:
+            return _wine_to_full_candidate(wine)
+        for chunk in KNOWLEDGE_CHUNKS:
+            if chunk["id"] == id:
+                return _chunk_to_candidate(chunk, 1.0)
+        return None  # winery:<slug> — фикстур на отдельные винодельни нет
 
-    def list_reference_styles(self, limit: int | None = None) -> list[dict]:
+    def list_reference_styles(self, top_n: int = 5) -> list[dict]:
         styles = [
             {"slug": s["slug"], "name": s["name"], "country": s["country"]}
             for s in REFERENCE_STYLES
         ]
-        return styles[:limit] if limit else styles
+        return styles[:top_n]
+
+    # --- v0.2.2 (пробел нашёл агент C, GET /taste/candidates) -----------
+    # НЕ часть contracts/rag-interface.md — там правки не было, только
+    # openapi.yaml. Как get_by_id/list_reference_styles до v0.2.1, это
+    # MockRetriever-расширение; предложение к контракту в reports/b-report.md
+    # (кандидат на следующую версию, если понадобится настоящему packages/rag).
+    def candidates_for_taste(self, *, exclude_ids: set[str] | None = None, limit: int = 20) -> list[Candidate]:
+        """Колода для свайп-дегустации: вымышленные вина за вычетом уже
+        просмотренных (любой verdict — см. routers/taste.py), с простым
+        детерминированным round-robin по цвету для разнообразия ("вина для
+        экрана «паспорт вкуса»: разнообразие по цвету/региону/стилю" —
+        contracts/openapi.yaml v0.2.2). На 6 фикстурах разнообразие почти
+        тривиально, но алгоритм честно масштабируется на больший каталог.
+        """
+        exclude_ids = exclude_ids or set()
+        by_color: dict[str, list[dict]] = {}
+        for wine in WINES:
+            if wine["slug"] in exclude_ids:
+                continue
+            by_color.setdefault(wine["color"], []).append(wine)
+
+        ordered: list[dict] = []
+        while any(by_color.values()):
+            for bucket in by_color.values():
+                if bucket:
+                    ordered.append(bucket.pop(0))
+
+        return [_wine_to_candidate(w, 1.0) for w in ordered[:limit]]

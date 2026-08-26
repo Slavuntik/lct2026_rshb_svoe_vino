@@ -1,5 +1,6 @@
 """POST /analogs — детерминированный путь «аналог импортного» (v0.2):
-resolve_style -> analog_for_style, без обращения к LLM.
+resolve_style -> analog_for_style, без обращения к LLM. list_reference_styles
+— часть contracts/rag-interface.md с v0.2.1 (было предложением агента B).
 """
 from __future__ import annotations
 
@@ -22,11 +23,7 @@ def analogs(
 ) -> AnalogsResponse:
     style = retriever.resolve_style(body.query)
     if style is None:
-        # list_reference_styles — как и get_by_id в wines.py, расширение
-        # MockRetriever сверх contracts/rag-interface.md (см. предложения к
-        # контракту в reports/b-report.md); без него просто не подсказываем топ-5.
-        lister = getattr(retriever, "list_reference_styles", None)
-        top_styles = lister(limit=5) if lister else []
+        top_styles = retriever.list_reference_styles(top_n=5)
         hint = ", ".join(s["name"] for s in top_styles)
         message = "Не удалось распознать стиль по описанию"
         if hint:

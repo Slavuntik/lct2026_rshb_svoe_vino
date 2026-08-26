@@ -1,14 +1,21 @@
 """Пароли (argon2id), JWT, и зависимости аутентификации.
 
-Модель принципала после v0.2 (появление /auth/guest):
-  - "user"  — есть строка в users, id — её первичный ключ.
-  - "guest" — анонимный uuid без строки в users; согласие base лежит в
-    consent_ledger (там больше нет FK на users, так что это легально).
+Модель принципала после v0.2.1 (schema.sql: users с NULL-identity для
+гостя): И гость, И зарегистрированный пользователь — полноценная строка в
+users; разница только в users.is_guest (email/password_hash/birth_date NULL
+у гостя, 18+ подтверждён age_confirmed_at, а не birth_date). JWT несёт только
+"sub" — kind каждый раз ВЫЧИСЛЯЕТСЯ из текущего состояния строки в БД, а не
+хранится в токене: так апгрейд гость->регистрация (routers/auth.py::register)
+мгновенно меняет права уже выданных токенов той же строки, без переиздания.
+
+Поэтому же FK у scans/chat_messages/events/feedback теперь работают и для
+гостя (строка в users есть) — раньше (v0.2) их приходилось обнулять
+(fk_user_id), это поведение убрано, см. git-историю этого файла.
 
 Гость допущен к scan/chat/wines/analogs (плюс /consents — это его же ledger),
 но НЕ к /taste/* (нужен scope profiling, которого у гостя в принципе быть не
 может — 403 consent_required) и не к /profile/data-export и DELETE /profile
-(нечего экспортировать/удалять — нет учётной записи, 401 unauthorized).
+(это решение агента B не менялось в v0.2.1 — см. reports/b-report.md).
 
 Почему это вообще проверяется на бэкенде, а не только в клиенте: иначе 18+
 гейт был бы фиктивным — его легко обойти прямым вызовом API мимо экрана
@@ -54,10 +61,16 @@ class Principal:
     kind: Literal["user", "guest"]
 
 
-def make_access_token(principal_id: str, kind: str, settings: Settings) -> tuple[str, int]:
+def _kind_of(user: User) -> Literal["user", "guest"]:
+    return "guest" if user.is_guest else "user"
+
+
+def make_access_token(principal_id: str, settings: Settings) -> tuple[str, int]:
+    """Токен несёт только sub — см. докстринг модуля про то, почему "kind" в
+    payload больше нет."""
     now = int(time.time())
     expires_in = settings.jwt_expires_seconds
-    payload = {"sub": principal_id, "kind": kind, "iat": now, "exp": now + expires_in}
+    payload = {"sub": principal_id, "iat": now, "exp": now + expires_in}
     token = jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
     return token, expires_in
 
@@ -88,14 +101,12 @@ def get_current_principal(
         raise ApiError(401, "unauthorized", "Требуется Bearer-токен")
     payload = decode_access_token(token, settings)
     sub = payload.get("sub")
-    kind = payload.get("kind", "user")
     if not sub:
         raise ApiError(401, "unauthorized", "Токен без субъекта")
-    if kind == "user":
-        user = db.get(User, sub)
-        if user is None or user.deleted_at is not None:
-            raise ApiError(401, "unauthorized", "Учётная запись недоступна")
-    return Principal(id=sub, kind=kind)
+    user = db.get(User, sub)
+    if user is None or user.deleted_at is not None:
+        raise ApiError(401, "unauthorized", "Учётная запись недоступна")
+    return Principal(id=sub, kind=_kind_of(user))
 
 
 def get_current_principal_optional(
@@ -111,25 +122,36 @@ def get_current_principal_optional(
     except ApiError:
         return None
     sub = payload.get("sub")
-    kind = payload.get("kind", "user")
     if not sub:
         return None
-    if kind == "user":
-        user = db.get(User, sub)
-        if user is None or user.deleted_at is not None:
-            return None
-    return Principal(id=sub, kind=kind)
+    user = db.get(User, sub)
+    if user is None or user.deleted_at is not None:
+        return None
+    return Principal(id=sub, kind=_kind_of(user))
 
 
-def fk_user_id(principal: Principal) -> str | None:
-    """Значение для колонок вида scans.user_id/chat_messages.user_id/events.user_id
-    (FK на users, ON DELETE SET NULL/CASCADE) — гостя туда класть нельзя, для
-    гостя в users никогда не было и не будет строки, а PRAGMA foreign_keys=ON
-    в SQLite (см. app/db.py) реально проверяет существование строки при
-    вставке. Consent_ledger — единственная таблица без такой FK (v0.2), туда
-    guest-id пишется как есть (см. routers/auth.py, routers/consents.py).
+def try_resolve_guest_user(authorization: str | None, db: Session, settings: Settings) -> User | None:
+    """Для апгрейда в POST /auth/register (contracts/openapi.yaml v0.2.1):
+    если в запросе есть валидный Bearer гостевого токена — вернуть ЕГО же
+    строку users на дозаполнение. Любая иная ситуация (нет заголовка, битый
+    токен, просроченный, токен уже полноценного юзера, гость помечен
+    deleted_at) молча даёт None — регистрация должна работать без токена
+    вообще, а не падать на мусорном заголовке.
     """
-    return principal.id if principal.kind == "user" else None
+    token = _extract_bearer(authorization)
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token, settings)
+    except ApiError:
+        return None
+    sub = payload.get("sub")
+    if not sub:
+        return None
+    user = db.get(User, sub)
+    if user is None or user.deleted_at is not None or not user.is_guest:
+        return None
+    return user
 
 
 def require_registered_user(

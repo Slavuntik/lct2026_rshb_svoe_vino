@@ -1,7 +1,8 @@
 """POST /events — единственная точка записи продуктовой аналитики. Доступна
-без токена (до-аутентификационные события вроде age_gate_failed) и с
-токеном гостя/пользователя (тогда user_id проставляется, если это
-зарегистрированный пользователь — см. security.fk_user_id).
+без токена (до-аутентификационные события вроде age_gate_failed, тогда
+user_id=NULL) и с токеном гостя/пользователя (тогда user_id — id принципала;
+с v0.2.1 у гостя тоже полноценная строка users, поэтому FK events.user_id
+не мешает и ему).
 
 Сервер НЕ пишет события сам за другие эндпоинты (осознанное решение, см.
 reports/b-report.md, «Предложения к контрактам» — единый источник записи
@@ -17,7 +18,7 @@ from ..errors import ApiError
 from ..events_dict import EVENT_NAMES, FORBIDDEN_PROP_KEYS, MAX_PROP_STRING_LENGTH
 from ..models import Event
 from ..schemas import EventRequest
-from ..security import Principal, fk_user_id, get_current_principal_optional
+from ..security import Principal, get_current_principal_optional
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -41,6 +42,6 @@ def post_event(
     props = dict(body.props)
     props.setdefault("_v", "0.1")
 
-    db.add(Event(user_id=fk_user_id(principal) if principal else None, name=body.name, props=props))
+    db.add(Event(user_id=principal.id if principal else None, name=body.name, props=props))
     db.commit()
     return None

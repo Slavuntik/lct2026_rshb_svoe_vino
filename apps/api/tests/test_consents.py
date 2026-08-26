@@ -55,7 +55,10 @@ def test_revoking_base_via_consents_soft_deletes_registered_user(client: TestCli
     assert r.status_code == 401
 
 
-def test_guest_can_use_consents_without_a_users_row(client: TestClient):
+def test_guest_can_use_consents(client: TestClient):
+    """v0.2.1: гость — полноценная строка users, но /consents работал для
+    него и раньше (v0.2, когда строки не было вовсе) — ledger никогда не
+    зависел от FK на users. Имя теста подправлено, поведение то же."""
     from tests.conftest import make_guest
     tokens = make_guest(client)
     r = client.get("/v1/consents", headers=auth_header(tokens))

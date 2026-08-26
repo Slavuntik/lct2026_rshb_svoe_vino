@@ -1,6 +1,13 @@
-"""POST /taste/swipes, GET /taste/profile — требуют scope profiling
-(require_profiling_consent уже отсекает гостей и пользователей без согласия,
-403 consent_required).
+"""POST /taste/swipes, GET /taste/profile, GET /taste/candidates — все три
+требуют scope profiling (require_profiling_consent уже отсекает гостей и
+пользователей без согласия, 403 consent_required).
+
+/taste/candidates (v0.2.2): колода для свайп-дегустации — пробел нашёл
+агент C (экран паспорта вкуса сидел на захардкоженном списке вин). Источник
+— retriever.candidates_for_taste(...), MockRetriever-расширение сверх
+contracts/rag-interface.md (см. app/rag/interface.py докстринг и
+reports/b-report.md); при отсутствии метода у ретривера — пустая колода,
+а не 500.
 
 Истина — таблица swipes (комментарий в contracts/schema.sql); taste_profiles
 — кэш, который эта пересчитывается на каждый /taste/swipes и никогда не
@@ -14,14 +21,14 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..deps import get_retriever_dep
 from ..models import Swipe, TasteProfile
 from ..rag.interface import Retriever
-from ..schemas import SwipeRequest, TasteProfileResponse
+from ..schemas import SwipeRequest, TasteCandidateItem, TasteCandidatesResponse, TasteProfileResponse
 from ..security import Principal, require_profiling_consent
 
 router = APIRouter(prefix="/taste", tags=["taste"])
@@ -34,21 +41,23 @@ def _compute_profile(db: Session, retriever: Retriever, user_id: str) -> tuple[d
     swipes = db.query(Swipe).filter(Swipe.user_id == user_id).all()
     likes = [s for s in swipes if s.verdict == "like"]
 
-    getter = getattr(retriever, "get_by_id", None)
     sums = {a: 0.0 for a in _AXES}
     style_counts: dict[str, int] = {}
     counted = 0
     for like in likes:
-        wine = getter(like.wine_id) if getter else None
-        if not wine:
+        # get_by_id — часть contracts/rag-interface.md с v0.2.1, отдаёт
+        # Candidate (meta={"source":..., "derived":...} для вина), не dict.
+        candidate = retriever.get_by_id(like.wine_id)
+        if candidate is None or candidate.kind != "wine":
             continue
-        sensory = wine["derived"].get("sensory", {})
+        derived = candidate.meta["derived"]
+        sensory = derived.get("sensory", {})
         for axis in _AXES:
             value = sensory.get(axis)
             if value is not None:
                 sums[axis] += value
         counted += 1
-        for style in wine["derived"].get("reference_style_matches", []):
+        for style in derived.get("reference_style_matches", []):
             style_counts[style] = style_counts.get(style, 0) + 1
 
     if counted == 0:
@@ -98,3 +107,28 @@ def get_taste_profile(
     return TasteProfileResponse(
         vector=profile.vector, top_styles=profile.top_styles, swipes_count=profile.swipes_count
     )
+
+
+@router.get("/candidates", response_model=TasteCandidatesResponse)
+def get_taste_candidates(
+    limit: int = Query(default=20, ge=1, le=50),
+    principal: Principal = Depends(require_profiling_consent),
+    retriever: Retriever = Depends(get_retriever_dep),
+    db: Session = Depends(get_db),
+) -> TasteCandidatesResponse:
+    already_swiped = {
+        row[0] for row in db.query(Swipe.wine_id).filter(Swipe.user_id == principal.id).distinct()
+    }
+
+    provider = getattr(retriever, "candidates_for_taste", None)
+    candidates = provider(exclude_ids=already_swiped, limit=limit) if provider else []
+
+    wines = [
+        TasteCandidateItem(
+            wine_id=c.id, name=c.meta.get("name", c.id), winery_name=c.meta.get("winery_name", ""),
+            region_name=c.meta.get("region_name"), color=c.meta.get("color"),
+            image_url=c.meta.get("image_url"),
+        )
+        for c in candidates
+    ]
+    return TasteCandidatesResponse(wines=wines)

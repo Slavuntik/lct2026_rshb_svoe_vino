@@ -116,7 +116,11 @@ def test_guest_confirmed_gets_token_and_base_consent_ledger_row(client: TestClie
 
     import jwt as pyjwt
     payload = pyjwt.decode(tokens["access_token"], options={"verify_signature": False})
-    assert payload["kind"] == "guest"
+    # v0.2.1: JWT больше не несёт "kind" — оно вычисляется из users.is_guest
+    # на каждый запрос (см. app/security.py::_kind_of), а не фиксируется в
+    # токене на момент выдачи (важно для апгрейда: старый токен той же
+    # строки должен "поумнеть" сразу после регистрации, без переиздания).
+    assert "kind" not in payload
     guest_id = payload["sub"]
 
     with app.state.session_factory() as db:
@@ -124,8 +128,16 @@ def test_guest_confirmed_gets_token_and_base_consent_ledger_row(client: TestClie
         assert len(rows) == 1
         assert rows[0].scope == "base"
         assert rows[0].granted is True
-        # У гостя НЕТ строки в users — таблица consent_ledger без FK (v0.2) это допускает.
-        assert db.get(User, guest_id) is None
+        # v0.2.1: у гостя ЕСТЬ полноценная строка в users (is_guest=True,
+        # email/password_hash/birth_date NULL) — именно это чинит FK у
+        # scans/chat_messages/events/feedback (см. test_guest_attribution.py).
+        guest_row = db.get(User, guest_id)
+        assert guest_row is not None
+        assert guest_row.is_guest is True
+        assert guest_row.email is None
+        assert guest_row.password_hash is None
+        assert guest_row.birth_date is None
+        assert guest_row.age_confirmed_at is not None
 
 
 def test_guest_can_reach_scan_but_not_swipes(client: TestClient):

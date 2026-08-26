@@ -18,7 +18,7 @@ from ..models import Scan
 from ..rag.interface import Retriever
 from ..deps import get_retriever_dep
 from ..schemas import ScanMatch, ScanResolveRequest, ScanResolveResponse
-from ..security import Principal, fk_user_id, get_current_principal
+from ..security import Principal, get_current_principal
 
 router = APIRouter(prefix="/scan", tags=["scan"])
 
@@ -44,7 +44,8 @@ def scan_resolve(
     low_confidence = (not matches) or matches[0].confidence < settings.low_confidence_threshold
 
     db.add(Scan(
-        user_id=fk_user_id(principal), query_text=body.text,
+        # v0.2.1: гость — полноценная строка users, FK работает и на него.
+        user_id=principal.id, query_text=body.text,
         matched=matches[0].wine_id if matches else None,
         confidence=matches[0].confidence if matches else None,
     ))

@@ -58,21 +58,39 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
+    """v0.2.1: гость — полноценная строка users с NULL-identity (is_guest=True,
+    email/password_hash/birth_date NULL, 18+ подтверждён age_confirmed_at, а не
+    birth_date). Так FK у scans/chat_messages/events/feedback работают и для
+    гостя, а апгрейд гость->регистрация (routers/auth.py::register) просто
+    дозаполняет ТУ ЖЕ строку — история сканов/чата переживает регистрацию.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
-    email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
-    password_hash: Mapped[str] = mapped_column(String, nullable=False)
-    birth_date: Mapped[date] = mapped_column(Date, nullable=False)
+    email: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    is_guest: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    age_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_utcnow)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "is_guest OR (email IS NOT NULL AND password_hash IS NOT NULL AND birth_date IS NOT NULL)",
+            name="ck_users_identity_or_guest",
+        ),
+    )
 
 
 class ConsentLedger(Base):
     """v0.2 (ревью 01, блокер 1): НАМЕРЕННО без FK на users. Журнал согласий
     обязан пережить удаление аккаунта — доказуемость отзыва нужна ровно после
-    того, как пользователь удалился. user_id — просто text/uuid-строка, может
-    указывать на гостевой id, у которого никогда не было строки в users.
+    того, как пользователь удалился (в т.ч. после фоновой очистки самой строки
+    users, которая когда-нибудь случится). С v0.2.1 у гостя тоже есть строка в
+    users (см. User), но ledger всё равно без FK — не из-за гостя, а из-за
+    того же требования пережить delete.
     """
 
     __tablename__ = "consent_ledger"

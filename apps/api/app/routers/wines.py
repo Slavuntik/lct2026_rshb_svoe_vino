@@ -17,19 +17,15 @@ def get_wine(
     principal: Principal = Depends(get_current_principal),
     retriever: Retriever = Depends(get_retriever_dep),
 ) -> WineResponse:
-    # Retriever (contracts/rag-interface.md) не объявляет метод точечного
-    # получения карточки по id — только search/resolve_label/similar/
-    # analog_for_style/resolve_style. get_by_id — расширение MockRetriever
-    # сверх контракта (см. app/rag/interface.py докстринг и предложения к
-    # контракту в reports/b-report.md). Деградация без него — честный 404.
-    getter = getattr(retriever, "get_by_id", None)
-    wine = getter(wine_id) if getter else None
-    if wine is None:
+    # get_by_id — часть contracts/rag-interface.md с v0.2.1 (было предложением
+    # агента B); возвращает Candidate с meta={"source":..., "derived":...}
+    # для вина, а не сырой dict — см. app/rag/mock.py::_wine_to_full_candidate.
+    candidate = retriever.get_by_id(wine_id)
+    if candidate is None or candidate.kind != "wine":
         raise ApiError(404, "not_found", "Вино не найдено")
 
-    source = {k: v for k, v in wine.items() if k not in ("slug", "derived", "source_url")}
     similar = [c.id for c in retriever.similar(wine_id, top_k=6)]
     return WineResponse(
-        wine_id=wine_id, source=source, derived=wine["derived"],
-        source_url=wine["source_url"], similar=similar,
+        wine_id=wine_id, source=candidate.meta["source"], derived=candidate.meta["derived"],
+        source_url=candidate.url, similar=similar,
     )

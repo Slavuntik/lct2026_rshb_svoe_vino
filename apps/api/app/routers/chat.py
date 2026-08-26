@@ -24,7 +24,7 @@ from ..errors import ApiError
 from ..models import ChatMessage, Feedback, TasteProfile
 from ..rag.interface import Filters, Retriever
 from ..schemas import ChatFeedbackRequest, ChatRequest
-from ..security import Principal, fk_user_id, get_current_principal
+from ..security import Principal, get_current_principal
 
 router = APIRouter(tags=["chat"])
 
@@ -68,14 +68,14 @@ def chat(
             yield {"data": json.dumps({"type": "token", "text": chunk}, ensure_ascii=False)}
 
         db.add(ChatMessage(
-            user_id=fk_user_id(principal), role="user", content=body.message,
+            user_id=principal.id, role="user", content=body.message,
             citations=[], trace=None,
         ))
         # Persisted citations используют ту же форму, что и SSE citation-событие
         # (citation_to_event) — единый источник истины для формы {n, wine_id|
         # chunk_id, url, quote}, как в комментарии contracts/schema.sql.
         assistant_msg = ChatMessage(
-            user_id=fk_user_id(principal), role="assistant", content=outcome.full_text,
+            user_id=principal.id, role="assistant", content=outcome.full_text,
             citations=[
                 {k: v for k, v in citation_to_event(c).items() if k != "type"}
                 for c in outcome.citations
@@ -113,6 +113,6 @@ def chat_feedback(
     if message is None or message.role != "assistant":
         raise ApiError(404, "not_found", "Ответ с таким answer_id не найден")
 
-    db.add(Feedback(user_id=fk_user_id(principal), message_id=message_id, verdict=body.verdict))
+    db.add(Feedback(user_id=principal.id, message_id=message_id, verdict=body.verdict))
     db.commit()
     return None

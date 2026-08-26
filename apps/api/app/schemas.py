@@ -130,6 +130,19 @@ class SwipeRequest(BaseModel):
     verdict: Literal["like", "dislike", "skip"]
 
 
+class TasteCandidateItem(BaseModel):
+    wine_id: str
+    name: str
+    winery_name: str
+    region_name: str | None = None
+    color: str | None = None
+    image_url: str | None = None
+
+
+class TasteCandidatesResponse(BaseModel):
+    wines: list[TasteCandidateItem]
+
+
 class TasteProfileResponse(BaseModel):
     vector: dict[str, float]
     top_styles: list[str]

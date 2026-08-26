@@ -1,13 +1,15 @@
 """Фабрика ретривера по env RAG_PROVIDER (симметрично packages/llm.get_llm()).
 
 RAG_PROVIDER не задан или "mock" => MockRetriever (фикстуры, без сети/моделей).
-RAG_PROVIDER=real => попытка подключить настоящий packages/rag агента A.
-packages/rag на момент написания кода ещё не реализован (агент A работает
-параллельно) — предложение к контракту (см. reports/b-report.md): пакету rag
-стоит завести симметричный get_retriever() фабричный метод в rag/base.py, как
-уже сделано в packages/llm/llm/base.py. Пока такого метода нет, здесь есть
-запасной путь через прямое имя класса Retriever, с понятной ошибкой, если
-ничего не подошло.
+RAG_PROVIDER=real => подключить настоящий packages/rag агента A через
+rag.get_retriever() — эта функция сама стала частью contracts/rag-interface.md
+в v0.2.1 (было предложением агента B, символично packages/llm.get_llm()).
+На момент написания этого файла packages/rag ещё не реализует ни
+get_retriever(), ни (раньше) get_by_id/list_reference_styles — агент A
+подхватит v0.2.1 в следующей волне. Пока get_retriever() в пакете нет, здесь
+остаётся запасной путь через прямое имя класса Retriever() без аргументов
+(текущая реализация A это уже поддерживает), с понятной ошибкой, если и это
+не подошло.
 """
 from __future__ import annotations
 
