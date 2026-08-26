@@ -11,9 +11,11 @@ CREATE TABLE users (
 );
 
 -- Append-only журнал согласий: доказуемость 152-ФЗ/GDPR. Отзыв — новая строка с granted=false.
+-- НАМЕРЕННО без FK на users: журнал обязан пережить удаление аккаунта — доказуемость
+-- отзыва нужна ровно после того, как пользователь удалился (ревью 01, блокер 1).
 CREATE TABLE consent_ledger (
     id              bigserial PRIMARY KEY,
-    user_id         uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id         uuid NOT NULL,
     consent_version text NOT NULL,             -- версия текста согласия, напр. "2026-09-01.1"
     scope           text NOT NULL,             -- base | profiling | geo | marketing
     granted         boolean NOT NULL,

@@ -36,8 +36,12 @@ class Retriever:
         """Для /scan/resolve: fuzzy по name+winery_name (rapidfuzz), НЕ векторный поиск."""
     def similar(self, wine_id: str, top_k: int = 6) -> list[Candidate]: ...
     def analog_for_style(self, style_slug: str, *, filters: Filters | None = None,
-                         top_k: int = 6) -> list[Candidate]:
+                         top_k: int = 12) -> list[Candidate]:
         """«Аналог импортного»: reference_style -> вина с этим стилем в derived."""
+    def resolve_style(self, query: str) -> dict | None:
+        """«люблю Просекко» -> {"slug": "prosecco", "name": "Просекко", "country": "Италия"}.
+        Fuzzy по name/slug/синонимам из ref/reference_styles.yaml; None, если не распознан.
+        Добавлено v0.2 (ревью 01, блокер 3)."""
 ```
 
 ## Пайплайн поиска (по канонам)
@@ -45,8 +49,11 @@ class Retriever:
 фильтры (жёсткие, до векторов) → sparse BM25 + dense (bge-m3, локально, кэш эмбеддингов)
 → RRF-слияние → реранкер bge-reranker-v2-m3 top-50 → top-8.
 Векторное хранилище: Qdrant, коллекции `wines`, `knowledge`, `wineries`;
-payload повторяет `filters`-блок vines. Если Qdrant недоступен в среде разработки —
-fallback-хранилище на файлах допустимо, но интерфейс тот же, а Qdrant-режим включается env.
+payload вина = `filters`-блок из index.jsonl **плюс** `stillness` и
+`reference_style_matches` из derived (в filters-блоке их нет — уточнение v0.2 по ревью 01,
+блокер 6; без них не работают Filters.stillness и analog_for_style).
+Embedded-режим qdrant-client (path=...) — основной для разработки, Docker не нужен;
+файловый fallback НЕ писать превентивно — только если embedded реально не заведётся.
 
 ## Индексация и версии
 

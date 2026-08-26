@@ -1,10 +1,17 @@
-# Контракт API «Свой Сомелье» v0.1 — ЗАМОРОЖЕН, правки только через оркестратора.
+# Контракт API «Свой Сомелье» v0.2 — ЗАМОРОЖЕН, правки только через оркестратора.
+# Изменения v0.2 (по ревью 01): +/auth/guest, +/events, +/chat/feedback, +/analogs,
+# citation получил порядковый номер n, убран budget_rub_max (цен в каталоге нет),
+# введён словарь кодов ошибок.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
+# Словарь code (единственный источник, придумывать новые нельзя):
+#   validation_error | invalid_credentials | unauthorized | age_restricted
+#   | consent_required | not_found | rate_limited | unknown_event | llm_unavailable
+#   | not_implemented
 # Auth: Bearer JWT. Все ответы UTF-8 JSON, кроме /chat (SSE).
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.1.0
+  version: 0.2.0
 servers:
   - url: /v1
 paths:
@@ -44,6 +51,28 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/TokenPair" }
         "403": { description: age_restricted }
+
+  /auth/guest:
+    post:
+      summary: Гостевой вход после 18+ интерстициала — «Попробовать в браузере» без стены регистрации
+      description: >
+        Выдаёт анонимный JWT (subject — новый uuid без email). Гость может scan/chat/wines/analogs;
+        swipes и профиль требуют полноценной регистрации (403 consent_required со scope profiling).
+        Согласие base пишется в consent-ledger против анонимного id.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [age_confirmed, consent_version]
+              properties:
+                age_confirmed: { type: boolean, description: явное подтверждение 18+; false => 403 age_restricted }
+                consent_version: { type: string }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenPair" }
 
   /auth/login:
     post:
@@ -158,9 +187,12 @@ paths:
     post:
       summary: Вопрос сомелье. Ответ — SSE-стрим
       description: >
-        События: {"type":"token","text":"..."} | {"type":"citation","wine_id"|"chunk_id","url","quote"}
-        | {"type":"done","answer_id"} | {"type":"refusal","reason"}. Каждый фактический ответ
-        обязан нести >=1 citation; пустая выдача ретривера => refusal с честным текстом.
+        События: {"type":"token","text":"..."} |
+        {"type":"citation","n":1,"wine_id"|"chunk_id":"...","url":"...","quote":"..."} |
+        {"type":"done","answer_id":"..."} | {"type":"refusal","reason":"..."}.
+        n — порядковый номер цитаты, совпадает с маркерами [n] в тексте ответа: клиент
+        сопоставляет их однозначно. Каждый фактический ответ обязан нести >=1 citation;
+        пустая выдача ретривера => refusal с честным текстом.
       requestBody:
         content:
           application/json:
@@ -175,9 +207,86 @@ paths:
                     color: { type: string }
                     sugar: { type: string }
                     region: { type: string }
-                    budget_rub_max: { type: integer }
+                  # budget убран в v0.2: цен в каталоге нет вовсе (ревью 01, блокер 4)
       responses:
         "200": { description: text/event-stream }
+
+  /chat/feedback:
+    post:
+      summary: 👍/👎 на ответ сомелье — пополняет голд-сет
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answer_id, verdict]
+              properties:
+                answer_id: { type: string, description: из SSE-события done }
+                verdict: { type: string, enum: [up, down] }
+      responses: { "204": { description: ok } }
+
+  /analogs:
+    post:
+      summary: Сцена «аналог импортного» — детерминированный путь, не через LLM
+      description: >
+        Текст пользователя («люблю Просекко», «что-то вроде Шабли») резолвится в эталонный
+        стиль (rag.resolve_style по названиям/синонимам reference_styles), затем
+        rag.analog_for_style возвращает российские вина с этим стилем в derived.
+        Нерезолвящийся текст => 404 not_found с подсказкой популярных стилей.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string, maxLength: 200 }
+                filters:
+                  type: object
+                  properties:
+                    region: { type: string }
+                    sugar: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [style, wines]
+                properties:
+                  style:
+                    type: object
+                    properties:
+                      slug: { type: string }
+                      name: { type: string }
+                      country: { type: string }
+                  wines:
+                    type: array
+                    maxItems: 12
+                    items:
+                      type: object
+                      properties:
+                        wine_id: { type: string }
+                        name: { type: string }
+                        winery_name: { type: string }
+                        region_name: { type: string }
+        "404": { description: not_found — стиль не распознан, в message топ-5 поддерживаемых }
+
+  /events:
+    post:
+      summary: Продуктовые события клиента — только имена из contracts/events.md
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, props]
+              properties:
+                name: { type: string }
+                props: { type: object }
+      responses:
+        "204": { description: записано }
+        "400": { description: unknown_event — имени нет в словаре }
 
   /taste/swipes:
     post:
