@@ -1,0 +1,154 @@
+# infra/compose.staging.yml — STAGING-контур «Свой Сомелье», тот же хост, что и prod,
+# отдельный compose-проект (см. заметку про `-p` в compose.prod.yml — она обязательна и здесь).
+#
+# Роль staging (см. ../../docs/architecture.html):
+#   - целевая среда для `rag ingest` с Mac агента A: индекс всегда проходит
+#     staging -> eval-гейт -> и только потом переезжает в prod;
+#   - continuous deploy при каждом merge в main (.github/workflows/deploy.yml, без тега);
+#   - во время демо-окна (10.09–21.09) именно сюда едет всё новое, пока prod заморожен
+#     (заморозка — процедурная, без скрипта: см. RUNBOOK, раздел «Демо-окно: заморозка прода»).
+#
+# Состав идентичен prod (то же ядро, тот же образ api, та же схема БД) — отличаются только
+# порты на хосте (чтобы не конфликтовать с prod на одной машине) и урезанные лимиты ресурсов.
+#
+# Запуск на хосте:
+#   docker compose -p staging -f infra/compose.staging.yml pull
+#   docker compose -p staging -f infra/compose.staging.yml up -d
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: somelye-staging-nginx
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      # Cloudflare умеет проксировать на нестандартные origin-порты из фиксированного
+      # списка (443, 2053, 2083, 2087, 2096, 8443 для HTTPS) без доп. тарифных условий —
+      # 8443 в этот список входит. DNS-запись staging.<домен> проксируется (оранжевое
+      # облако) точно так же, как и прод; путь для команды: https://staging.<домен>:8443.
+      # Подробности и почему НЕ просто "серое" DNS — RUNBOOK, раздел «Cloudflare: origin-cert».
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/somelye/tls:/etc/nginx/tls:ro                          # тот же origin-cert, что и у prod
+      - /opt/somelye/staging/releases/current:/usr/share/nginx/html:ro
+      - nginx_cache:/var/cache/nginx
+    mem_limit: 128m
+    mem_reservation: 32m
+    cpus: 0.3
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }
+
+  api:
+    image: ${API_IMAGE:-ghcr.io/svoysomelye/svoy-somelye-api}:${API_IMAGE_TAG:-staging-latest}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    container_name: somelye-staging-api
+    restart: unless-stopped
+    env_file:
+      # ../.env, а не .env: путь резолвится относительно каталога ЭТОГО compose-файла
+      # (infra/), а секреты по RUNBOOK лежат в /opt/somelye/staging/.env — см. пояснение
+      # в compose.prod.yml и infra/.env.staging.example.
+      - ../.env
+    environment:
+      # См. подробный комментарий в compose.prod.yml: packages/rag сейчас поддерживает
+      # только embedded/локальный Qdrant (RAG_QDRANT_PATH) — эта переменная пока не
+      # читается ничьим кодом, задел на будущее до интеграции.
+      RAG_QDRANT_URL: http://qdrant:6333
+      # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine, см.
+      # compose.prod.yml. Драйвер psycopg[binary] пока не в apps/api/pyproject.toml.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      ENVIRONMENT: staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    expose:
+      - "8000"
+    mem_limit: 1536m
+    mem_reservation: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
+
+  qdrant:
+    image: qdrant/qdrant:v1.11.3
+    container_name: somelye-staging-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    # Другой loopback-порт, чем у prod (127.0.0.1:6333) — иначе конфликт биндинга на
+    # одном хосте. Именно этот порт агент A туннелирует с Mac при `rag ingest --target staging`.
+    ports:
+      - "127.0.0.1:16333:6333"
+    mem_limit: 768m
+    mem_reservation: 192m
+    cpus: 0.7
+    healthcheck:
+      # См. подробное примечание про отсутствие curl/wget в образе qdrant в compose.prod.yml.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: somelye-staging-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?нужен в .env}
+      POSTGRES_USER: ${POSTGRES_USER:?нужен в .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?нужен в .env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init/10-extensions.sql:/docker-entrypoint-initdb.d/10-extensions.sql:ro
+      - ../contracts/schema.sql:/docker-entrypoint-initdb.d/20-schema.sql:ro
+    ports:
+      - "127.0.0.1:15432:5432"
+    mem_limit: 384m
+    mem_reservation: 128m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-svoy_somelye} -d ${POSTGRES_DB:-svoy_somelye}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
+
+networks:
+  default:
+    name: somelye_staging_net
+
+volumes:
+  pg_data:
+    name: somelye_staging_pg_data
+  qdrant_data:
+    name: somelye_staging_qdrant_data
+  nginx_cache:
+    name: somelye_staging_nginx_cache

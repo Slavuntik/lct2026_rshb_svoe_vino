@@ -1,0 +1,133 @@
+name: Deploy
+
+# Два пути по ../../docs/architecture.html, «Как катим»:
+#   merge в main   -> staging (без тега, continuous deploy)
+#   push тега v*   -> prod    (тот же образ, что уже проверен на staging, едет по ssh)
+#
+# Заморозка демо-окна (10–21.09) — ПРОЦЕДУРНАЯ, без отдельного скрипта/флага в этом файле:
+#   1) дисциплина — во время окна не пушим теги v* (значит, job "ship" для prod просто
+#      не запускается: у него нет триггера);
+#   2) технический бэкстоп — job "ship" объявлен через `environment:`, а окружению "prod"
+#      в Settings -> Environments можно включить Required reviewers. Тогда даже случайно
+#      запущенный прод-деплой встанет на паузу и ждёт ручного approve.
+# Подробная процедура, кто и как снимает заморозку — infra/RUNBOOK.md, раздел
+# «Демо-окно: заморозка прода». staging этой заморозки никогда не касается (по архитектуре
+# именно туда едет всё новое, пока прод заморожен).
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      env: ${{ steps.pick.outputs.env }}
+      tag: ${{ steps.pick.outputs.tag }}
+    steps:
+      - id: pick
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "env=prod" >> "$GITHUB_OUTPUT"
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=staging" >> "$GITHUB_OUTPUT"
+            echo "tag=staging-${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-push:
+    needs: determine
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: |
+          repo_lower="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          echo "image=ghcr.io/${repo_lower}-api" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # infra/Dockerfile.api: контекст = корень репо (монорепо, apps/api тянет packages/llm
+      # и packages/rag как локальные path-зависимости — см. комментарий в самом Dockerfile).
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.api
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ needs.determine.outputs.tag }}
+            ${{ steps.meta.outputs.image }}:${{ needs.determine.outputs.env }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Собрать apps/web (лендинг + PWA)
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Упаковать статику для деплоя
+        run: tar -czf web-dist.tar.gz -C apps/web/dist .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web-dist.tar.gz
+          retention-days: 14
+
+  ship:
+    needs: [determine, build-and-push]
+    runs-on: ubuntu-latest
+    # ЗДЕСЬ садится заморозка демо: окружение "prod" с Required reviewers в Settings
+    # ставит этот job на паузу для env=prod. У "staging" защиты нет — деплоится сразу.
+    environment: ${{ needs.determine.outputs.env }}
+    concurrency:
+      group: deploy-${{ needs.determine.outputs.env }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+
+      - name: Ключ и known_hosts для ssh (секреты — RUNBOOK, раздел «Секреты»)
+        run: |
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Скопировать релиз статики на хост
+        run: |
+          scp -P "${{ secrets.DEPLOY_SSH_PORT }}" web-dist.tar.gz \
+            "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:/opt/somelye/${{ needs.determine.outputs.env }}/incoming/web-${{ needs.determine.outputs.tag }}.tar.gz"
+
+      - name: infra/scripts/deploy.sh на хосте
+        run: |
+          ssh -p "${{ secrets.DEPLOY_SSH_PORT }}" "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}" \
+            "/opt/somelye/${{ needs.determine.outputs.env }}/infra/scripts/deploy.sh \
+              ${{ needs.determine.outputs.env }} \
+              ${{ needs.determine.outputs.tag }} \
+              ${{ needs.build-and-push.outputs.image }}"

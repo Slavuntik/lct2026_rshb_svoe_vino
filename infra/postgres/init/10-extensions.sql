@@ -1,0 +1,14 @@
+-- infra/postgres/init/10-extensions.sql
+--
+-- Выполняется docker-entrypoint-initdb.d ТОЛЬКО при первой инициализации кластера
+-- (пустой /var/lib/postgresql/data), до 20-schema.sql (contracts/schema.sql, монтируется
+-- отдельно и не копируется — источник истины один, в contracts/).
+--
+-- contracts/schema.sql использует gen_random_uuid() в users.id. В PostgreSQL 13+ эта
+-- функция встроена в ядро (pgcrypto для этого больше не обязателен), а образ
+-- postgres:16-alpine, который используем в compose.*.yml, как раз 16-й версии — extension
+-- НЕ обязателен. Создаём его всё равно defensively: (1) страхуемся на случай отката образа
+-- на более старую мажорную версию Postgres в RUNBOOK-восстановлении на другом облаке
+-- (картридж «Облако/регион», см. architecture.html), (2) pgcrypto пригодится для
+-- ip_hash-подобных вычислений прямо в SQL, если понадобится позже.
+CREATE EXTENSION IF NOT EXISTS pgcrypto;

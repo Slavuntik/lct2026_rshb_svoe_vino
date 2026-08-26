@@ -1,0 +1,98 @@
+from __future__ import annotations
+
+import uuid
+from datetime import date
+
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
+
+from ..config import Settings, get_settings_dep
+from ..db import get_db
+from ..errors import ApiError
+from ..models import ConsentLedger, User
+from ..ratelimit import rate_limit
+from ..schemas import GuestRequest, LoginRequest, RegisterRequest, TokenPair
+from ..security import hash_password, make_access_token, verify_password
+from ..util import client_ip, hash_ip
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _age_years(birth_date: date, today: date) -> int:
+    return today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+
+@router.post("/register", response_model=TokenPair, status_code=201)
+def register(
+    body: RegisterRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+    _rl: None = Depends(rate_limit("auth")),
+) -> TokenPair:
+    if _age_years(body.birth_date, date.today()) < settings.min_age_years:
+        raise ApiError(403, "age_restricted", f"Регистрация доступна только с {settings.min_age_years} лет")
+
+    if "base" not in body.consent_scopes:
+        raise ApiError(400, "validation_error", "Необходимо согласие на базовую обработку данных (scope=base)")
+
+    existing = db.query(User).filter(User.email == body.email).first()
+    if existing is not None:
+        raise ApiError(400, "validation_error", "Пользователь с такой почтой уже зарегистрирован")
+
+    user = User(
+        email=body.email,
+        password_hash=hash_password(body.password),
+        birth_date=body.birth_date,
+    )
+    db.add(user)
+    db.flush()
+
+    ip_hash = hash_ip(client_ip(request))
+    for scope in body.consent_scopes:
+        db.add(ConsentLedger(
+            user_id=user.id, consent_version=body.consent_version,
+            scope=scope, granted=True, ip_hash=ip_hash,
+        ))
+    db.commit()
+
+    token, expires_in = make_access_token(user.id, "user", settings)
+    return TokenPair(access_token=token, expires_in=expires_in)
+
+
+@router.post("/login", response_model=TokenPair)
+def login(
+    body: LoginRequest,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+    _rl: None = Depends(rate_limit("auth")),
+) -> TokenPair:
+    user = db.query(User).filter(User.email == body.email).first()
+    if user is None or user.deleted_at is not None or not verify_password(body.password, user.password_hash):
+        raise ApiError(401, "invalid_credentials", "Неверная почта или пароль")
+
+    token, expires_in = make_access_token(user.id, "user", settings)
+    return TokenPair(access_token=token, expires_in=expires_in)
+
+
+@router.post("/guest", response_model=TokenPair, status_code=201)
+def guest(
+    body: GuestRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+    _rl: None = Depends(rate_limit("auth")),
+) -> TokenPair:
+    if not body.age_confirmed:
+        raise ApiError(403, "age_restricted", f"Гостевой доступ только с {settings.min_age_years} лет")
+
+    guest_id = str(uuid.uuid4())
+    ip_hash = hash_ip(client_ip(request))
+    db.add(ConsentLedger(
+        user_id=guest_id, consent_version=body.consent_version,
+        scope="base", granted=True, ip_hash=ip_hash,
+    ))
+    db.commit()
+
+    token, expires_in = make_access_token(guest_id, "guest", settings)
+    return TokenPair(access_token=token, expires_in=expires_in)

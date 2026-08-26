@@ -1,0 +1,176 @@
+# infra/compose.prod.yml — PROD-контур «Свой Сомелье» на Contabo VPS (EU), за Cloudflare.
+#
+# Топология (см. ../../docs/architecture.html, разделы «Схема деплоя» и «Как катим»):
+#   Cloudflare (DNS, TLS-прокси, WAF) --443--> nginx (origin-cert) --> api (uvicorn, внутренняя сеть)
+#                                                                   --> qdrant (внутренняя сеть)
+#                                                                   --> postgres (внутренняя сеть)
+#
+# Запуск на хосте (см. infra/RUNBOOK.md):
+#   docker compose -p prod -f infra/compose.prod.yml pull
+#   docker compose -p prod -f infra/compose.prod.yml up -d
+#
+# ВАЖНО: -p prod обязателен. Prod и staging живут на ОДНОМ хосте как два НЕЗАВИСИМЫХ
+# compose-проекта (infra/scripts/deploy.sh всегда передаёт -p явно) — без него Compose
+# по умолчанию берёт имя проекта из имени каталога, и оба контура схлопнутся в один
+# (общие тома/сеть/имена контейнеров), что означает общую БД prod+staging. Дважды проверено
+# в deploy.sh явным -p, но держим в уме при ручных запусках.
+#
+# Секреты — только через infra/.env (на хосте, chmod 600, НЕ в git). Шаблон значений
+# и их смысл — infra/.env.prod.example и infra/RUNBOOK.md, раздел «Секреты».
+#
+# Лимиты памяти посчитаны на «пол» VPS 8 ГБ, разделённый с compose.staging.yml на этом же
+# хосте (см. infra/RUNBOOK.md, раздел «Память: как считали»). На 16 ГБ есть запас на пики
+# (одновременный backup + ingest + чат под нагрузкой демо) — так и планировалось изначально.
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: somelye-prod-nginx
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"     # редирект на 443 (см. nginx.conf); Cloudflare тоже умеет force-HTTPS,
+                     # держим и на origin — на случай прямого обращения/мониторинга
+      - "443:443"   # Cloudflare Full (strict) -> origin-cert ниже
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/somelye/tls:/etc/nginx/tls:ro                      # origin.crt + origin.key, см. RUNBOOK
+      - /opt/somelye/prod/releases/current:/usr/share/nginx/html:ro   # апдейтится deploy.sh (симлинк)
+      - nginx_cache:/var/cache/nginx
+    mem_limit: 192m
+    mem_reservation: 64m
+    cpus: 0.5
+    healthcheck:
+      # busybox wget входит в nginx:alpine "из коробки" — не требует установки доп. пакетов.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  api:
+    image: ${API_IMAGE:-ghcr.io/svoysomelye/svoy-somelye-api}:${API_IMAGE_TAG:-latest}
+    # Локальная сборка (если образ ещё не опубликован в GHCR):
+    #   docker compose -p prod -f infra/compose.prod.yml build api
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    container_name: somelye-prod-api
+    restart: unless-stopped
+    env_file:
+      # ../.env, а не .env: путь в env_file всегда резолвится относительно каталога ЭТОГО
+      # compose-файла (infra/), а секреты по RUNBOOK лежат в /opt/somelye/prod/.env — на
+      # уровень выше infra/. См. infra/.env.prod.example — реальный файл только на хосте.
+      - ../.env
+    environment:
+      # RAG_QDRANT_URL: по образцу RAG_QDRANT_PATH в packages/rag/rag/config.py (агент A) —
+      # сейчас packages/rag умеет только embedded/локальный Qdrant по пути (RAG_QDRANT_PATH),
+      # сетевого клиента ещё нет. Переменная здесь — задел на будущее (см. reports/e-report.md,
+      # раздел «Предложения к контрактам»): пока packages/rag не научится ходить в qdrant:6333
+      # по сети, эта переменная просто не читается никаким кодом — сервис qdrant при этом
+      # уже поднят и готов, менять инфру, когда интеграция случится, не придётся.
+      RAG_QDRANT_URL: http://qdrant:6333
+      # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine в
+      # apps/api/app/db.py (СИНХРОННЫЙ engine, не asyncpg). Драйвер psycopg[binary] пока
+      # не в apps/api/pyproject.toml — см. reports/e-report.md, «Блокеры».
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
+      ENVIRONMENT: prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started   # см. заметку про healthcheck qdrant ниже — не гейтим старт api им
+    # Без публикации на хост: только nginx и внутренняя сеть видят api:8000.
+    expose:
+      - "8000"
+    mem_limit: 2g
+    mem_reservation: 768m
+    cpus: 1.5
+    healthcheck:
+      # python есть гарантированно (это рантайм самого приложения) — не нужен ни curl, ни wget.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s   # холодный старт: загрузка embedding/reranker моделей (packages/rag)
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  qdrant:
+    image: qdrant/qdrant:v1.11.3
+    container_name: somelye-prod-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    # Порт на loopback (НЕ 0.0.0.0): нужен для (1) SSH-туннеля с Mac агента A при
+    # `rag ingest`/`rag eval` против прод-индекса и (2) отладки curl'ом с самого хоста.
+    # Наружу (интернет/Cloudflare) не публикуется никогда — только 127.0.0.1.
+    ports:
+      - "127.0.0.1:6333:6333"
+    mem_limit: 1g
+    mem_reservation: 256m
+    cpus: 1.0
+    healthcheck:
+      # ПРИМЕЧАНИЕ: официальный образ qdrant/qdrant — debian-slim БЕЗ curl/wget.
+      # bash в debian-slim есть (в отличие от alpine/busybox), поэтому TCP-проверка через
+      # bash-бэктик /dev/tcp — единственный health-check без установки лишних пакетов в образ.
+      # Это проверка «порт слушает», не «API отвечает 200» — слабее полноценного HTTP-чека.
+      # На первом реальном деплое проверить: `docker compose exec qdrant sh -c 'command -v curl'`
+      # — если появится curl в будущих версиях образа, заменить на
+      #   test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: somelye-prod-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?нужен в .env}
+      POSTGRES_USER: ${POSTGRES_USER:?нужен в .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?нужен в .env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # Инициализация ТОЛЬКО при первом старте (пустой data dir). Порядок важен: расширения,
+      # затем контракт-схема как источник истины — файл не копируется, монтируется как есть.
+      - ./postgres/init/10-extensions.sql:/docker-entrypoint-initdb.d/10-extensions.sql:ro
+      - ../contracts/schema.sql:/docker-entrypoint-initdb.d/20-schema.sql:ro
+    # Loopback-порт для ad-hoc psql/бэкапов с хоста и туннеля с Mac, не для интернета.
+    ports:
+      - "127.0.0.1:5432:5432"
+    mem_limit: 768m
+    mem_reservation: 256m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-svoy_somelye} -d ${POSTGRES_DB:-svoy_somelye}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+networks:
+  default:
+    name: somelye_prod_net
+
+volumes:
+  pg_data:
+    name: somelye_prod_pg_data
+  qdrant_data:
+    name: somelye_prod_qdrant_data
+  nginx_cache:
+    name: somelye_prod_nginx_cache

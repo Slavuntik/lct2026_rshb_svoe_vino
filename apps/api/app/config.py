@@ -1,0 +1,69 @@
+"""Конфигурация из env. Дефолты выбраны так, чтобы `uvicorn app.main:app`
+поднимался одной командой без единого ключа: mock-LLM + mock-RAG + SQLite-файл
+рядом с процессом.
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+
+from fastapi import Request
+
+
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in ("0", "false", "no", "")
+
+
+@dataclass(frozen=True)
+class Settings:
+    database_url: str = field(
+        default_factory=lambda: os.environ.get("DATABASE_URL", "sqlite:///./svoy_somelye.db")
+    )
+    jwt_secret: str = field(
+        # >=32 байта, чтобы PyJWT не сыпал InsecureKeyLengthWarning на HS256
+        # в dev/тестах; для прода секрет обязателен через env JWT_SECRET.
+        default_factory=lambda: os.environ.get("JWT_SECRET", "dev-insecure-secret-change-me-please-32b")
+    )
+    jwt_expires_seconds: int = field(
+        default_factory=lambda: int(os.environ.get("JWT_EXPIRES_SECONDS", str(60 * 60 * 24)))
+    )
+    min_age_years: int = field(
+        default_factory=lambda: int(os.environ.get("MIN_AGE_YEARS", "18"))
+    )
+    rag_provider: str = field(
+        default_factory=lambda: os.environ.get("RAG_PROVIDER", "mock").strip().lower()
+    )
+    rag_index_version: str = field(
+        default_factory=lambda: os.environ.get("RAG_INDEX_VERSION", "mock-fixtures-0.1")
+    )
+    low_confidence_threshold: float = field(
+        default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
+    )
+    max_upload_bytes: int = field(
+        default_factory=lambda: int(os.environ.get("SCAN_MAX_UPLOAD_BYTES", str(8 * 1024 * 1024)))
+    )
+    rate_limit_window_seconds: int = field(
+        default_factory=lambda: int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
+    )
+    rate_limit_max_requests: int = field(
+        default_factory=lambda: int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "5"))
+    )
+    cors_origins: str = field(
+        default_factory=lambda: os.environ.get("CORS_ORIGINS", "*")
+    )
+
+
+def get_settings() -> Settings:
+    # Без кэширования: тесты меняют env через monkeypatch и создают приложение
+    # заново на каждый тест (см. tests/conftest.py) — кэш здесь дал бы утечку
+    # состояния между тестами.
+    return Settings()
+
+
+def get_settings_dep(request: Request) -> Settings:
+    """FastAPI-зависимость: настройки, зафиксированные на момент create_app(),
+    а не перечитанные заново на каждый запрос (см. app.state.settings)."""
+    return request.app.state.settings
