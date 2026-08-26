@@ -322,6 +322,36 @@ paths:
                   top_styles: { type: array, items: { type: string } }
                   swipes_count: { type: integer }
 
+  /taste/candidates:
+    get:
+      summary: Колода для свайп-дегустации
+      description: >
+        Вина для экрана «паспорт вкуса»: разнообразие по цвету/региону/стилю, исключая уже
+        свайпнутые пользователем. Гостю — 403 consent_required (scope profiling).
+        Добавлено v0.2.2: пробел нашёл агент C — колода была захардкожена, источника в API не было.
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 50 } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wines]
+                properties:
+                  wines:
+                    type: array
+                    items:
+                      type: object
+                      required: [wine_id, name, winery_name]
+                      properties:
+                        wine_id: { type: string }
+                        name: { type: string }
+                        winery_name: { type: string }
+                        region_name: { type: string }
+                        color: { type: string }
+                        image_url: { type: string }
+
   /waitlist:
     post:
       summary: Лендинг. Без auth
