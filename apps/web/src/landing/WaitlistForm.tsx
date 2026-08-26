@@ -62,6 +62,16 @@ export function WaitlistForm() {
         <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
         <span>{t("landing.waitlistConsentLabel")}</span>
       </label>
+      <p className="text-caption">
+        {t("landing.waitlistLegalHint")}{" "}
+        <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer">
+          {t("landing.legalPrivacyLink")}
+        </a>
+        {" · "}
+        <a href="/legal/consent.html" target="_blank" rel="noopener noreferrer">
+          {t("landing.legalConsentLink")}
+        </a>
+      </p>
       {validationError && <p className="field__error">{validationError}</p>}
       {status === "error" && <p className="field__error">{t("landing.waitlistError")}</p>}
       <button type="submit" className="btn btn--primary btn--block" disabled={!consent || status === "submitting"}>

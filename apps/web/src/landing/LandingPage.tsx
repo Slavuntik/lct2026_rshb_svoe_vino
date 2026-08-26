@@ -6,11 +6,13 @@ import { apiClient } from "../lib/apiClient";
 import { CONSENT_VERSION } from "../lib/consent";
 import { storage } from "../lib/storage";
 import { AgeInterstitial } from "./AgeInterstitial";
+import { useLandingSeo } from "./useLandingSeo";
 import { WaitlistForm } from "./WaitlistForm";
+import { WineRoadsTeaser } from "./WineRoadsTeaser";
 
 // Каркас лендинга (агент C, волна 1): оффер, три фичи, waitlist, 18+ интерстициал, дисклеймер.
-// Копирайт и юр-страницы доводит агент D (agents/D-landing.md) поверх этого каркаса —
-// см. ORCHESTRATION.md про секвенирование зон в apps/web/src/landing/.
+// Копирайт, тизер «Винных дорог», SEO-теги и юр-ссылки поверх каркаса — агент D
+// (agents/D-landing.md), см. ORCHESTRATION.md про секвенирование зон в apps/web/src/landing/.
 type CtaStatus = "idle" | "loading" | "error";
 
 export function LandingPage() {
@@ -19,6 +21,8 @@ export function LandingPage() {
   const [ageGateOpen, setAgeGateOpen] = useState(false);
   const [ageDenied, setAgeDenied] = useState(false);
   const [ctaStatus, setCtaStatus] = useState<CtaStatus>("idle");
+
+  useLandingSeo();
 
   async function enterAppAsGuest() {
     setCtaStatus("loading");
@@ -74,11 +78,13 @@ export function LandingPage() {
             {ctaStatus === "loading" ? t("landing.ctaTryLoading") : t("landing.ctaTry")}
           </button>
           {ctaStatus === "error" && <p className="field__error">{t("landing.ctaTryError")}</p>}
+          <p className="text-caption">{t("landing.ctaTrust")}</p>
         </div>
       </header>
 
       <main className="container">
-        <section className="landing-features" aria-label={t("nav.scan")}>
+        <h2 id="landing-features-heading">{t("landing.sectionFeaturesTitle")}</h2>
+        <section className="landing-features" aria-labelledby="landing-features-heading">
           <article className="feature-card">
             <h3>{t("landing.featureScanTitle")}</h3>
             <p>{t("landing.featureScanText")}</p>
@@ -93,10 +99,23 @@ export function LandingPage() {
           </article>
         </section>
 
+        <WineRoadsTeaser />
+
         <WaitlistForm />
       </main>
 
-      <footer className="landing-footer container">
+      <footer className="landing-footer container stack stack--tight">
+        <nav className="row" aria-label={t("landing.footerLegalTitle")}>
+          <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer">
+            {t("landing.legalPrivacyLink")}
+          </a>
+          <a href="/legal/consent.html" target="_blank" rel="noopener noreferrer">
+            {t("landing.legalConsentLink")}
+          </a>
+          <a href="/legal/terms.html" target="_blank" rel="noopener noreferrer">
+            {t("landing.legalTermsLink")}
+          </a>
+        </nav>
         <p>{t("landing.footerDisclaimer")}</p>
       </footer>
     </div>

@@ -1,0 +1,159 @@
+/* Общий стиль черновиков юридических страниц (agents/D-landing.md). Статические HTML —
+   не React, поэтому только переменные из ./tokens.css (ручная копия contracts/tokens.css),
+   без хардкода цветов. */
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) calc(var(--space-5) * 2);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  margin-top: var(--space-3);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+}
+
+h3 {
+  font-size: 20px;
+}
+
+p,
+li {
+  margin: 0 0 var(--space-3);
+}
+
+ol,
+ul {
+  padding-left: 1.3em;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin: 0 0 var(--space-4);
+}
+
+.draft-banner {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-bottom: 1px solid var(--warn);
+  padding: var(--space-2) var(--space-4);
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-small);
+}
+
+.legal-nav a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+
+.todo {
+  background: var(--warn-bg);
+  color: var(--warn);
+  padding: 0 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+}
+
+.disclaimer {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-radius: var(--radius);
+  font-size: var(--fs-small);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: var(--fs-small);
+}
+
+th,
+td {
+  border: 1px solid var(--line);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--mono-bg);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: var(--space-3) var(--space-3) calc(var(--space-5) * 2);
+  }
+}
