@@ -109,29 +109,52 @@ class HybridSearcher:
         if not ranked_ids:
             return []
 
-        docs = [payload_lookup[gid].get("text", "") for gid in ranked_ids]
         if use_reranker:
-            scores = self.reranker.rerank(query, docs)
+            final_ids, final_scores = self._rerank(query, ranked_ids, payload_lookup)
         else:
-            n = len(docs)
-            scores = [float(n - i) for i in range(n)]
+            final_ids = ranked_ids
+            n = len(final_ids)
+            final_scores = [float(n - i) for i in range(n)]
 
-        order = sorted(range(len(ranked_ids)), key=lambda i: scores[i], reverse=True)[:top_k]
         results = []
-        for i in order:
-            gid = ranked_ids[i]
+        for gid, score in zip(final_ids[:top_k], final_scores[:top_k]):
             payload = payload_lookup[gid]
             results.append(
                 Candidate(
                     id=gid,
                     kind=payload.get("kind", "wine"),
-                    score=round(float(scores[i]), 4),
+                    score=round(float(score), 4),
                     text=payload.get("text", ""),
                     url=payload.get("url", ""),
                     meta=payload,
                 )
             )
         return results
+
+    def _rerank(
+        self, query: str, ranked_ids: list[str], payload_lookup: dict[str, dict]
+    ) -> tuple[list[str], list[float]]:
+        """Реранкает только верхушку RRF-пула (RERANK_POOL, канон-контракт
+        допускает top-20 как план Б — см. отчёт про латентность кросс-энкодера
+        на длинных документах) и обрезает текст до RERANK_TRUNCATE_CHARS —
+        стоимость кросс-энкодера на CPU определяется в первую очередь длиной
+        документа. Хвост пула (не попавший в реранк) сохраняет RRF-порядок и
+        подклеивается ниже — так top_k почти всегда без него не обходится
+        только когда top_k > RERANK_POOL."""
+        rerank_n = min(config.RERANK_POOL, len(ranked_ids))
+        head_ids, tail_ids = ranked_ids[:rerank_n], ranked_ids[rerank_n:]
+
+        trunc = config.RERANK_TRUNCATE_CHARS
+        head_docs = [payload_lookup[gid].get("text", "")[:trunc] for gid in head_ids]
+        head_scores = self.reranker.rerank(query, head_docs)
+
+        head_order = sorted(range(len(head_ids)), key=lambda i: head_scores[i], reverse=True)
+        final_ids = [head_ids[i] for i in head_order] + tail_ids
+
+        min_head = min(head_scores) if head_scores else 0.0
+        tail_scores = [min_head - 1.0 - i for i in range(len(tail_ids))]
+        final_scores = [head_scores[i] for i in head_order] + tail_scores
+        return final_ids, final_scores
 
     def similar(self, wine_id: str, top_k: int = 6) -> list[Candidate]:
         vector = self.store.get_vector("wines", wine_id)

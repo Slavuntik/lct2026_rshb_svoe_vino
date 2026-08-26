@@ -46,7 +46,9 @@ class CrossEncoderReranker:
             from fastembed.rerank.cross_encoder import TextCrossEncoder
 
             config.FASTEMBED_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            self._model = TextCrossEncoder(model_name=self.name, cache_dir=str(config.FASTEMBED_CACHE_DIR))
+            self._model = TextCrossEncoder(
+                model_name=self.name, cache_dir=str(config.FASTEMBED_CACHE_DIR), threads=config.ONNX_THREADS
+            )
         return self._model
 
     def rerank(self, query: str, docs: list[str]) -> list[float]:

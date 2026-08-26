@@ -53,10 +53,27 @@ DENSE_DIM = int(os.environ.get("RAG_DENSE_DIM", "384"))
 # режим по брифу "если скачивание срывается — работай на dense-only").
 RERANKER_MODEL_NAME = os.environ.get("RAG_RERANKER_MODEL", "jinaai/jina-reranker-v2-base-multilingual")
 
+# Ограничение потоков onnxruntime. Машина без Docker используется параллельно
+# несколькими агентами — без лимита onnxruntime разбирает все ядра под себя,
+# и на общей машине это оборачивается конкуренцией/трэшингом (на прогоне eval
+# system-time вырос до кратности к user-time). None = дефолт onnxruntime
+# (все ядра) — используйте на выделенной машине/в проде.
+ONNX_THREADS = int(os.environ.get("RAG_ONNX_THREADS", "4")) or None
+
 # --- Пайплайн поиска -------------------------------------------------------
 COLLECTIONS = ("wines", "knowledge", "wineries")
-CANDIDATE_POOL = int(os.environ.get("RAG_CANDIDATE_POOL", "50"))  # top-N перед реранком/фьюжном
+CANDIDATE_POOL = int(os.environ.get("RAG_CANDIDATE_POOL", "50"))  # top-N перед RRF-фьюжном
 RRF_K = int(os.environ.get("RAG_RRF_K", "60"))  # константа RRF (канон = 60)
+
+# Реранкер — самая дорогая стадия на CPU: замер на реальном каталоге показал,
+# что стоимость определяет ДЛИНА документа, а не только их число (полный
+# текст статьи до ~4000 симв. -> ~10с на 50 кандидатов; обрезка до 500 симв.
+# даёт ~1.3с). RERANK_POOL режет и число кандидатов, идущих в кросс-энкодер
+# (top-20 из уже отранжированных RRF top-50, канон контракта допускает top-20
+# как план Б — см. риск 1 ревью 01), остальные из пула сохраняют RRF-порядок
+# и остаются "ниже" реранкнутых. Подробные цифры — в отчёте.
+RERANK_POOL = int(os.environ.get("RAG_RERANK_POOL", "20"))
+RERANK_TRUNCATE_CHARS = int(os.environ.get("RAG_RERANK_TRUNCATE_CHARS", "500"))
 
 # --- Fuzzy-пороги (resolve_label / resolve_style) --------------------------
 # Скорер: rapidfuzz.fuzz.token_set_ratio, НЕ WRatio. Замер на реальном

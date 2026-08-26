@@ -8,6 +8,8 @@
 """
 from __future__ import annotations
 
+from collections import Counter
+
 from rag import refdata
 from rag.filtering import passes_filters
 from rag.resolve import resolve_style
@@ -86,3 +88,19 @@ class StyleMatcher:
                 )
             )
         return results
+
+    def list_popular(self, wine_payloads: list[dict], top_n: int = 5) -> list[dict]:
+        """Топ-N стилей по частоте в filters.reference_style_matches каталога —
+        подсказка для 404 /analogs (v0.2.1, предложение агента B)."""
+        counts: Counter[str] = Counter()
+        for payload in wine_payloads:
+            for slug in (payload.get("filters", {}) or {}).get("reference_style_matches") or []:
+                counts[slug] += 1
+
+        out = []
+        for slug, _n in counts.most_common(top_n):
+            style = self.by_slug.get(slug)
+            if style is None:
+                continue  # защитно: slug в данных, которого нет в текущем справочнике
+            out.append({"slug": style["slug"], "name": style["name"], "country": style.get("country")})
+        return out

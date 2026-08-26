@@ -29,6 +29,7 @@ from rag import config
 from rag import refdata
 
 _NAMESPACE = uuid.UUID("2f3f6f0a-6e58-4a5e-9c1f-9a1c2b6a2b10")  # фиксированный namespace для проекта
+_UNSET = object()  # отличает «url не передан -> взять из config» от «url=None -> форсировать embedded»
 
 
 def point_id(string_id: str) -> str:
@@ -38,10 +39,15 @@ def point_id(string_id: str) -> str:
 
 
 class QdrantStore:
-    def __init__(self, path: Path | None = None, url: str | None = None, api_key: str | None = None):
+    def __init__(self, path: Path | None = None, url: str | None = _UNSET, api_key: str | None = _UNSET):
+        """`url`/`api_key` не переданы (сентинел _UNSET) -> берём из env через
+        config (обычный случай: ingest, дефолтный Retriever()). `url=None`
+        передан ЯВНО -> форсируем embedded, даже если в env есть QDRANT_URL
+        (так get_retriever(RAG_MODE="embedded") гарантированно не коннектится
+        по сети на случайно оставшийся прод QDRANT_URL)."""
         self.path = path or config.QDRANT_PATH
-        self.url = url if url is not None else config.QDRANT_URL
-        self.api_key = api_key if api_key is not None else config.QDRANT_API_KEY
+        self.url = config.QDRANT_URL if url is _UNSET else url
+        self.api_key = config.QDRANT_API_KEY if api_key is _UNSET else api_key
         if not self.url:
             self.path.mkdir(parents=True, exist_ok=True)
         self._client: QdrantClient | None = None

@@ -26,7 +26,9 @@ class DenseEmbedder:
             from fastembed import TextEmbedding
 
             self.cache_dir.mkdir(parents=True, exist_ok=True)
-            self._model = TextEmbedding(model_name=self.model_name, cache_dir=str(self.cache_dir))
+            self._model = TextEmbedding(
+                model_name=self.model_name, cache_dir=str(self.cache_dir), threads=config.ONNX_THREADS
+            )
         return self._model
 
     def embed_documents(self, texts: list[str], batch_size: int = 64) -> list[list[float]]:
