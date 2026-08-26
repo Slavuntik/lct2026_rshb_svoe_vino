@@ -6,7 +6,7 @@
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
 #   | consent_required | not_found | rate_limited | unknown_event | llm_unavailable
-#   | not_implemented
+#   | not_implemented | internal_error
 # Auth: Bearer JWT. Все ответы UTF-8 JSON, кроме /chat (SSE).
 openapi: 3.1.0
 info:
@@ -31,6 +31,10 @@ paths:
   /auth/register:
     post:
       summary: Регистрация. Гейт 18+ по birth_date — иначе 403 age_restricted
+      description: >
+        С гостевым Bearer-токеном в заголовке — апгрейд ТОЙ ЖЕ строки users
+        (email/password/birth_date заполняются, is_guest=false): история сканов и чата
+        сохраняется. Без токена — новая строка. (v0.2.1)
       requestBody:
         content:
           application/json:

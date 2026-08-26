@@ -42,6 +42,14 @@ class Retriever:
         """«люблю Просекко» -> {"slug": "prosecco", "name": "Просекко", "country": "Италия"}.
         Fuzzy по name/slug/синонимам из ref/reference_styles.yaml; None, если не распознан.
         Добавлено v0.2 (ревью 01, блокер 3)."""
+    def get_by_id(self, id: str) -> Candidate | None:
+        """Карточка по id (wine-slug | article:<slug>#<n> | winery:<slug>) — для /wines/{id}.
+        Добавлено v0.2.1 (предложение агента B)."""
+    def list_reference_styles(self, top_n: int = 5) -> list[dict]:
+        """Популярные стили ({"slug","name","country"}) — подсказка в 404 /analogs. v0.2.1."""
+
+def get_retriever() -> Retriever: ...
+# Фабрика по env, симметрично packages/llm.get_llm: RAG_MODE=qdrant|embedded (+QDRANT_URL). v0.2.1
 ```
 
 ## Пайплайн поиска (по канонам)

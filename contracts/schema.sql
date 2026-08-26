@@ -1,13 +1,19 @@
 -- Схема Postgres «Свой Сомелье» v0.1 — ЗАМОРОЖЕНА, правки через оркестратора.
 -- Принципы: consent-ledger append-only; ПД минимальны и локализуемы; события — без свободного текста.
 
+-- v0.2.1: гость — полноценная строка users с NULL-identity. Так работают все FK
+-- (scans/chat/events/feedback атрибутируются и гостю), а апгрейд гость -> регистрация
+-- заполняет ту же строку: история сканов и чата переживает регистрацию.
 CREATE TABLE users (
-    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    email         text UNIQUE NOT NULL,
-    password_hash text NOT NULL,               -- argon2id
-    birth_date    date NOT NULL,               -- гейт 18+ проверяется на регистрации и при логине
-    created_at    timestamptz NOT NULL DEFAULT now(),
-    deleted_at    timestamptz                  -- soft-delete до фоновой очистки, затем строка удаляется
+    id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    email            text UNIQUE,              -- NULL у гостя
+    password_hash    text,                     -- argon2id; NULL у гостя
+    birth_date       date,                     -- NULL у гостя (18+ подтверждён явной галкой)
+    is_guest         boolean NOT NULL DEFAULT false,
+    age_confirmed_at timestamptz,              -- момент подтверждения 18+ (гость и регистрация)
+    created_at       timestamptz NOT NULL DEFAULT now(),
+    deleted_at       timestamptz,              -- soft-delete до фоновой очистки, затем строка удаляется
+    CHECK (is_guest OR (email IS NOT NULL AND password_hash IS NOT NULL AND birth_date IS NOT NULL))
 );
 
 -- Append-only журнал согласий: доказуемость 152-ФЗ/GDPR. Отзыв — новая строка с granted=false.
