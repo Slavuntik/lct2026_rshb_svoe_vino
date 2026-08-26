@@ -1,0 +1,14 @@
+node_modules/
+
+# Swift Package Manager — локальный кэш резолвинга/индексации, не для VCS.
+# (В plugins/ocr-plugin/ фоновая индексация редактора сама создаёт .build при наличии
+# valid Package.swift — резолвит capacitor-swift-pm, но собрать Capacitor.framework без
+# полного Xcode/iOS SDK не может: "no such module 'Capacitor'" — ожидаемо, см. c-report.md.)
+.build/
+.swiftpm/
+Package.resolved
+DerivedData/
+
+# Скопированные веб-ассеты внутри ios/ и android/ уже гитигнорены их СОБСТВЕННЫМИ
+# сгенерированными .gitignore (ios/.gitignore: App/App/public; android/.gitignore:
+# app/src/main/assets/public) — здесь не дублируем.

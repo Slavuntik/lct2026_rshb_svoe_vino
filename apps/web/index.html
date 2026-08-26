@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#7D2A3C" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Свой Сомелье — сканируйте этикетку, получайте честный разбор вина и подбор по вкусу, без рекламы «купи»."
+    />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon-maskable.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Шрифты Google Fonts не должны блокировать первый рендер (Lighthouse: render-blocking
+      request на fonts.googleapis.com стоил ~10 пунктов perf). Классический loadCSS-приём:
+      грузим с media="print" (низкий приоритет, не блокирует), после загрузки переключаем
+      на "all". noscript — честный фолбэк без JS. font-display=swap в самом URL — на случай,
+      если шрифт всё же догружается после первой отрисовки текста системным фолбэком.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
+
+    <title>Свой Сомелье</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

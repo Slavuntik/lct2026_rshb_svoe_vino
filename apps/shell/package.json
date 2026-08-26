@@ -1,0 +1,23 @@
+{
+  "name": "svoy-somelye-shell",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Capacitor-оболочка «Свой Сомелье» — webDir указывает на сборку apps/web.",
+  "scripts": {
+    "build:web": "npm --prefix ../web run build",
+    "sync": "npm run build:web && npx cap sync",
+    "sync:ios": "npm run build:web && npx cap sync ios",
+    "open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
+    "svoy-somelye-ocr-plugin": "file:plugins/ocr-plugin"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
+    "typescript": "^7.0.2"
+  }
+}

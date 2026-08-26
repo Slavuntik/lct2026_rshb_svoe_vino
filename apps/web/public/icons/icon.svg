@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Иконка-плейсхолдер «Свой Сомелье»: стилизованный бокал, цвета — из contracts/tokens.css
+       (--bg / --accent). Заменить на финальный брендинг перед публикацией. -->
+  <rect width="512" height="512" rx="96" fill="#FBF9F7" />
+  <path d="M170 96h172l-56 176h-60z" fill="#7D2A3C" />
+  <rect x="246" y="272" width="20" height="118" fill="#7D2A3C" />
+  <rect x="192" y="390" width="128" height="20" rx="10" fill="#7D2A3C" />
+</svg>

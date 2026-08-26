@@ -1,0 +1,22 @@
+{
+  "name": "svoy-somelye-ocr-plugin",
+  "version": "0.1.0",
+  "description": "Capacitor-плагин «Свой Сомелье»: распознавание текста с этикетки на устройстве через Apple Vision (iOS). Полная реализация Swift-стороны (не заглушка) — см. Sources/SvoySomelyeOcrPlugin/OcrPlugin.swift. Веб-реализации нет: равноправный путь на вебе и на iOS до сборки этого плагина на publish-Mac — ручной ввод текста этикетки (apps/web/src/app/scan/ScanScreen.tsx).",
+  "main": "src/index.ts",
+  "types": "src/definitions.ts",
+  "files": [
+    "src",
+    "Sources",
+    "Package.swift"
+  ],
+  "author": "Svoy Somelye",
+  "license": "UNLICENSED",
+  "capacitor": {
+    "ios": {
+      "src": "Sources/SvoySomelyeOcrPlugin"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^8.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Свой Сомелье</string>
+    <string name="title_activity_main">Свой Сомелье</string>
+    <string name="package_name">ru.svoysomelye.app</string>
+    <string name="custom_url_scheme">ru.svoysomelye.app</string>
+</resources>
