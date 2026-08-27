@@ -72,6 +72,9 @@ services:
       RAG_MODE: qdrant
       QDRANT_URL: http://qdrant:6333
       RAG_DATA_DIR: /data/rag
+      # Кэш моделей эмбеддинга/реранкера — демо-критично, подробное обоснование и почему
+      # именно RAG_FASTEMBED_CACHE (не FASTEMBED_CACHE_PATH и не HF_HOME) — compose.prod.yml.
+      RAG_FASTEMBED_CACHE: /data/fastembed-cache
       # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine, см.
       # compose.prod.yml. Драйвер psycopg[binary] пока не в apps/api/pyproject.toml.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
@@ -79,6 +82,8 @@ services:
     volumes:
       # Публикуется infra/scripts/publish-index.sh — см. RUNBOOK «Деплой индекса».
       - /opt/somelye/staging/rag-data/current:/data/rag:ro
+      # ЧТЕНИЕ+ЗАПИСЬ, именованный том — см. подробное обоснование в compose.prod.yml.
+      - fastembed_cache:/data/fastembed-cache
     depends_on:
       postgres:
         condition: service_healthy
@@ -161,3 +166,5 @@ volumes:
     name: somelye_staging_qdrant_data
   nginx_cache:
     name: somelye_staging_nginx_cache
+  fastembed_cache:
+    name: somelye_staging_fastembed_cache

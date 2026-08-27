@@ -84,6 +84,22 @@ services:
       # старте api (get_retriever() вызывается в create_app()) — обновление требует restart
       # api, publish-index.sh делает это сам после переключения симлинка.
       RAG_DATA_DIR: /data/rag
+      # Кэш моделей эмбеддинга/реранкера (fastembed -> huggingface_hub). Демо-критично
+      # (см. reports/e-report.md, риск из ревью 02, взят в работу немедленно оркестратором):
+      # без персистентного тома контейнер после КАЖДОГО restart/пересоздания качал бы
+      # модели с HF Hub заново — по замерам агента A реранкер качается ~112с (RAG_RERANKER_MODEL
+      # = jinaai/jina-reranker-v2-base-multilingual, ~1.1GB, см. packages/rag/rag/config.py) —
+      # неприемлемо посреди демо-показа. Имя переменной проверено ПО КОДУ, а не по документации
+      # fastembed: packages/rag/rag/embeddings.py (DenseEmbedder) и rag/rerank.py
+      # (CrossEncoderReranker) явно передают cache_dir=str(config.FASTEMBED_CACHE_DIR) в
+      # fastembed.TextEmbedding/TextCrossEncoder; config.py собирает FASTEMBED_CACHE_DIR из
+      # RAG_FASTEMBED_CACHE. Раз cache_dir передан явно, fastembed НЕ смотрит ни на свой
+      # собственный FASTEMBED_CACHE_PATH, ни на HF_HOME (проверено: fastembed/common/utils.py
+      # ::define_cache_dir читает FASTEMBED_CACHE_PATH только когда cache_dir is None; сам
+      # huggingface_hub.snapshot_download вызывается из fastembed/common/model_management.py
+      # с cache_dir=cache_dir явным аргументом, который тоже перебивает HF_HOME). Правильное и
+      # единственное имя для ЭТОГО кода — RAG_FASTEMBED_CACHE.
+      RAG_FASTEMBED_CACHE: /data/fastembed-cache
       # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine в
       # apps/api/app/db.py (СИНХРОННЫЙ engine, не asyncpg). Драйвер psycopg[binary] пока
       # не в apps/api/pyproject.toml — см. reports/e-report.md, «Блокеры».
@@ -95,6 +111,10 @@ services:
       # каталог на первом запуске (до первой публикации индекса) — retriever увидит
       # пустые payloads/labels и будет честно отвечать refusal, это ожидаемо, не баг.
       - /opt/somelye/prod/rag-data/current:/data/rag:ro
+      # ЧТЕНИЕ+ЗАПИСЬ (не :ro) — сюда fastembed сам качает веса моделей при первом
+      # обращении (лениво, см. DenseEmbedder/CrossEncoderReranker._ensure_loaded). Именованный
+      # том, а не bind-mount под rag-data: живёт своей жизнью, publish-index.sh его не трогает.
+      - fastembed_cache:/data/fastembed-cache
     depends_on:
       postgres:
         condition: service_healthy
@@ -189,3 +209,5 @@ volumes:
     name: somelye_prod_qdrant_data
   nginx_cache:
     name: somelye_prod_nginx_cache
+  fastembed_cache:
+    name: somelye_prod_fastembed_cache
