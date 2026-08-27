@@ -4,6 +4,7 @@ export interface ChatCitationFixture {
   n: number;
   wine_id: string;
   quote: string;
+  url: string;
 }
 
 export interface ChatScriptFixture {
@@ -18,7 +19,8 @@ interface ChatRule {
 
 function citationFor(n: number, wineId: string): ChatCitationFixture {
   const wine = findWineBySlug(wineId);
-  return { n, wine_id: wineId, quote: wine?.source.description ?? "" };
+  // «Правило каталога №5» — ответы ведут на портал: url цитаты = source_url вина.
+  return { n, wine_id: wineId, quote: wine?.source.description ?? "", url: wine?.source_url ?? "" };
 }
 
 // Канонические мок-ответы «сомелье»: каждый факт — с [n], каждый [n] — с citation.

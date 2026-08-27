@@ -1,5 +1,6 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
 import { renderApp } from "../../test/renderApp";
 import { ChatScreen } from "./ChatScreen";
 
@@ -23,6 +24,30 @@ describe("ChatScreen — SSE-парсер и честные отказы", () =>
 
     // Фидбек появляется только после done (когда есть answer_id).
     await waitFor(() => expect(screen.getByRole("button", { name: "Да" })).toBeInTheDocument());
+  });
+
+  it("цитаты кликабельны и ведут на первоисточник — «правило каталога №5» (хвост ревью 02)", async () => {
+    const events: AnalyticsEvent[] = [];
+    const restore = setAnalyticsSink((event) => events.push(event));
+    try {
+      renderApp(<ChatScreen />, "/app/chat");
+      sendMessage("что взять к стейку");
+
+      const answerText = await screen.findByText(/Красностоп Крепкий/);
+      const bubble = answerText.closest(".chat-bubble--assistant") as HTMLElement;
+      await waitFor(() => expect(within(bubble).getAllByRole("link").length).toBeGreaterThanOrEqual(2));
+
+      const links = within(bubble).getAllByRole("link");
+      expect(links[0]).toHaveAttribute("href", "https://example.com/wines/severny-sklon-krasnostop-2021");
+      expect(links[0]).toHaveAttribute("target", "_blank");
+      expect(links[0].getAttribute("rel")).toMatch(/noopener/);
+
+      fireEvent.click(links[0]);
+      const clicked = events.find((e) => e.name === "source_link_clicked");
+      expect(clicked?.props).toMatchObject({ wine_id: "severny-sklon-krasnostop-2021" });
+    } finally {
+      restore();
+    }
   });
 
   it("пустая выдача ретривера — честный refusal, а не выдумка", async () => {

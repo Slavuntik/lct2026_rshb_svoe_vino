@@ -72,4 +72,27 @@ describe("TastePassportScreen — свайпы шлют события по сл
     expect(await screen.findByTestId("taste-gate")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /открыть профиль/i })).toBeInTheDocument();
   });
+
+  it("колода приходит с GET /taste/candidates, а не из захардкоженного списка на клиенте", async () => {
+    // Регрессия на блокер ревью 02: раньше клиент сам знал id вин (SEED_WINE_IDS).
+    // Резолвим 403 у аккаунта БЕЗ profiling — экран обязан честно уйти в needs-profiling
+    // именно из ответа /taste/candidates, а не только из /taste/swipes.
+    const token = await apiClient.registerGuest({ age_confirmed: true, consent_version: CONSENT_VERSION });
+    storage.setAccessToken(token.access_token);
+    storage.setAccountKind("registered"); // локально не гость — но сервер про profiling не знает
+
+    renderApp(<TastePassportScreen />, "/app/taste");
+
+    expect(await screen.findByTestId("taste-gate")).toBeInTheDocument();
+    expect(screen.getByText(/нужно согласие/i)).toBeInTheDocument();
+  });
+
+  it("сервер исключает уже свайпнутые вина из следующей выдачи /taste/candidates", async () => {
+    const first = await apiClient.getTasteCandidates();
+    const firstId = first.wines[0].wine_id;
+    await apiClient.postSwipe({ wine_id: firstId, verdict: "dislike" });
+
+    const second = await apiClient.getTasteCandidates();
+    expect(second.wines.some((wine) => wine.wine_id === firstId)).toBe(false);
+  });
 });

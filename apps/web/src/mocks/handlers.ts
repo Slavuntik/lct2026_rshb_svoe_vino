@@ -194,26 +194,16 @@ export const handlers: HttpHandler[] = [
     return HttpResponse.json(resolveFromText(body.text, body.hints));
   }),
 
-  http.post(`${API}/scan/ocr`, async ({ request }) => {
-    const form = await request.formData();
-    const explicitConsent = form.get("explicit_consent");
-    if (explicitConsent !== "true") {
-      return errorJson(422, "consent_required", "Нужно явное согласие на отправку фото.");
-    }
-    // Настоящего OCR в моке нет — детерминированно резолвим в первое вино демо-набора,
-    // чтобы сцена «скан по фото» была воспроизводима в тестах и на демо.
-    const demoWine = wines[0];
-    return HttpResponse.json({
-      matches: [
-        {
-          wine_id: demoWine.wine_id,
-          name: demoWine.source.name,
-          winery_name: demoWine.source.winery_name,
-          confidence: 0.93,
-        },
-      ],
-      low_confidence: false,
-    } satisfies ScanResolveResponse);
+  http.post(`${API}/scan/ocr`, async () => {
+    // v0.3: серверный OCR сознательно отложен за MVP — эндпоинт всегда 501, клиент
+    // (ScanScreen) обязан деградировать честно (предложить текстовый ввод), не показывать
+    // generic-ошибку. Мок здесь намеренно НЕ эмулирует старое поведение 200 — иначе клиент
+    // не заметил бы, что реальный контракт больше не отдаёт совпадения по фото на вебе.
+    return errorJson(
+      501,
+      "not_implemented",
+      "Распознавание фото на сервере пока не реализовано — введите текст с этикетки.",
+    );
   }),
 
   // --- wines ---
@@ -245,7 +235,7 @@ export const handlers: HttpHandler[] = [
         }
 
         for (const citation of script.citations) {
-          send({ type: "citation", n: citation.n, wine_id: citation.wine_id, quote: citation.quote });
+          send({ type: "citation", n: citation.n, wine_id: citation.wine_id, quote: citation.quote, url: citation.url });
           await Promise.resolve();
         }
         for (const chunk of chunkAnswer(script.answer)) {
@@ -318,6 +308,35 @@ export const handlers: HttpHandler[] = [
     const body = (await request.json()) as SwipePayload;
     applySwipe(account, body.wine_id, body.verdict);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // v0.2.2: колода для свайпов — сервер сам исключает уже свайпнутые вина пользователя.
+  http.get(`${API}/taste/candidates`, ({ request }) => {
+    const account = accountFromRequest(request);
+    if (!account) return unauthorized();
+    if (!account.consents.profiling) {
+      return errorJson(
+        403,
+        "consent_required",
+        "Нужен полный аккаунт с согласием «Вкусовой профиль» — заведите его в профиле.",
+      );
+    }
+    const url = new URL(request.url);
+    const limitParam = Number(url.searchParams.get("limit") ?? "20");
+    const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 20;
+    const swipedIds = new Set(account.swipes.map((swipe) => swipe.wine_id));
+    const candidates = wines
+      .filter((wine) => !swipedIds.has(wine.wine_id))
+      .slice(0, limit)
+      .map((wine) => ({
+        wine_id: wine.wine_id,
+        name: wine.source.name,
+        winery_name: wine.source.winery_name,
+        region_name: wine.source.region_name,
+        color: wine.source.color,
+        image_url: wine.source.image_url,
+      }));
+    return HttpResponse.json({ wines: candidates });
   }),
 
   http.get(`${API}/taste/profile`, ({ request }) => {

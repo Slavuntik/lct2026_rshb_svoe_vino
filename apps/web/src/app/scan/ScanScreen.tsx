@@ -4,13 +4,16 @@ import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
 import type { ScanMatch } from "../../lib/apiTypes";
+import { isNativeOcrAvailable, recognizeLabelText } from "../../lib/nativeOcr";
 
 type ResolveOutcome = { matches: ScanMatch[]; lowConfidence: boolean } | null;
 
 /**
- * Экран 2/6 — скан этикетки. Фото и текст — РАВНОПРАВНЫЕ пути (contracts/openapi.yaml:
- * /scan/ocr требует explicit_consent; /scan/resolve — обычный текстовый путь, он же путь
- * iOS до полного включения нативного OCR-плагина, см. apps/shell/plugins/ocr-plugin).
+ * Экран 2/6 — скан этикетки. Текстовый ввод — РАВНОПРАВНЫЙ путь, а не запасной:
+ *  - iOS (Capacitor): фото -> нативный OCR-плагин (Vision, на устройстве, без сети) ->
+ *    распознанный текст -> тот же POST /scan/resolve, что и ручной ввод;
+ *  - веб: /scan/ocr контрактно всегда 501 not_implemented (v0.3 — серверный OCR отложен
+ *    за MVP) — при попытке отправить фото честно предлагаем ввести текст, без generic-ошибки.
  */
 export function ScanScreen() {
   const { t } = useI18n();
@@ -72,30 +75,56 @@ export function ScanScreen() {
     setFileError(null);
   }
 
+  async function handleNativeFileSubmit(nativeFile: File) {
+    setStatus("resolving");
+    track("scan_started", { mode: "native" });
+    try {
+      const text = await recognizeLabelText(nativeFile);
+      const result = await apiClient.scanResolve({ text });
+      setStatus("idle");
+      handleResolveResult(result);
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  async function handleWebFileSubmit(webFile: File) {
+    if (!fileConsent) {
+      setFileError(t("scan.uploadConsentRequired"));
+      return;
+    }
+    setStatus("resolving");
+    track("scan_started", { mode: "web_upload" });
+    try {
+      const result = await apiClient.scanOcr(webFile, true);
+      setStatus("idle");
+      handleResolveResult(result);
+    } catch (error) {
+      setStatus("idle");
+      if (error instanceof ApiRequestError && error.code === "not_implemented") {
+        // v0.3: /scan/ocr всегда 501 на вебе — честная деградация, не generic-ошибка.
+        setFileError(t("scan.ocrNotImplemented"));
+        return;
+      }
+      if (error instanceof ApiRequestError && error.code === "consent_required") {
+        setFileError(t("scan.uploadConsentRequired"));
+        return;
+      }
+      setStatus("error");
+    }
+  }
+
   async function handleFileSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
       return;
     }
-    if (!fileConsent) {
-      setFileError(t("scan.uploadConsentRequired"));
-      return;
-    }
     setFileError(null);
     setOutcome(null);
-    setStatus("resolving");
-    track("scan_started", { mode: "web_upload" });
-    try {
-      const result = await apiClient.scanOcr(file, true);
-      setStatus("idle");
-      handleResolveResult(result);
-    } catch (error) {
-      if (error instanceof ApiRequestError && error.code === "consent_required") {
-        setFileError(t("scan.uploadConsentRequired"));
-        setStatus("idle");
-        return;
-      }
-      setStatus("error");
+    if (isNativeOcrAvailable()) {
+      await handleNativeFileSubmit(file);
+    } else {
+      await handleWebFileSubmit(file);
     }
   }
 
@@ -113,10 +142,12 @@ export function ScanScreen() {
           <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
         </label>
         {file && <p className="text-caption">{t("scan.uploadChosen", { name: file.name })}</p>}
-        <label className="checkbox-row">
-          <input type="checkbox" checked={fileConsent} onChange={(event) => setFileConsent(event.target.checked)} />
-          <span>{t("scan.uploadConsent")}</span>
-        </label>
+        {!isNativeOcrAvailable() && (
+          <label className="checkbox-row">
+            <input type="checkbox" checked={fileConsent} onChange={(event) => setFileConsent(event.target.checked)} />
+            <span>{t("scan.uploadConsent")}</span>
+          </label>
+        )}
         {fileError && <p className="field__error">{fileError}</p>}
         <button type="submit" className="btn btn--secondary" disabled={!file || status === "resolving"}>
           {t("scan.uploadSubmit")}

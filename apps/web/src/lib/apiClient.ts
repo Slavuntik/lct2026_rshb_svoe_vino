@@ -20,6 +20,7 @@ import {
   type ScanResolvePayload,
   type ScanResolveResponse,
   type SwipePayload,
+  type TasteCandidatesResponse,
   type TasteProfileResponse,
   type TokenPair,
   type WaitlistPayload,
@@ -183,6 +184,11 @@ export const apiClient = {
 
   getTasteProfile(): Promise<TasteProfileResponse> {
     return request("/taste/profile");
+  },
+
+  /** v0.2.2: GET /taste/candidates — колода для свайпов; сервер сам исключает свайпнутые. */
+  getTasteCandidates(limit = 20): Promise<TasteCandidatesResponse> {
+    return request(`/taste/candidates?limit=${encodeURIComponent(String(limit))}`);
   },
 
   postWaitlist(payload: WaitlistPayload): Promise<void> {

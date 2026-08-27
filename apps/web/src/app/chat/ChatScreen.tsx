@@ -261,11 +261,28 @@ export function ChatScreen() {
               <div>{entry.text}</div>
               {entry.citations.length > 0 && (
                 <div className="chat-citations">
-                  {entry.citations.map((citation) => (
-                    <span key={citation.n} className="badge text-mono">
-                      [{citation.n}] {citation.quote ? citation.quote.slice(0, 40) : citation.wineId}
-                    </span>
-                  ))}
+                  {entry.citations.map((citation) =>
+                    // «Правило каталога №5» — ответ обязан вести на первоисточник: [n] с url
+                    // становится ссылкой, а не просто пометкой.
+                    citation.url ? (
+                      <a
+                        key={citation.n}
+                        className="badge text-mono"
+                        href={citation.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          if (citation.wineId) track("source_link_clicked", { wine_id: citation.wineId });
+                        }}
+                      >
+                        [{citation.n}] {citation.quote ? citation.quote.slice(0, 40) : citation.wineId}
+                      </a>
+                    ) : (
+                      <span key={citation.n} className="badge text-mono">
+                        [{citation.n}] {citation.quote ? citation.quote.slice(0, 40) : citation.wineId}
+                      </span>
+                    ),
+                  )}
                 </div>
               )}
               {entry.answerId && (

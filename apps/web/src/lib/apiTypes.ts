@@ -203,6 +203,20 @@ export interface TasteProfileResponse {
   swipes_count: number;
 }
 
+/** v0.2.2: GET /taste/candidates — колода для свайпов (пробел нашёл сам, см. c-report.md). */
+export interface TasteCandidateWine {
+  wine_id: string;
+  name: string;
+  winery_name: string;
+  region_name?: string;
+  color?: string;
+  image_url?: string;
+}
+
+export interface TasteCandidatesResponse {
+  wines: TasteCandidateWine[];
+}
+
 export interface WaitlistPayload {
   email: string;
   consent_version: string;

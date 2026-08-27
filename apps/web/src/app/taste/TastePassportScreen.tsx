@@ -4,20 +4,23 @@ import { SensoryVectorView } from "../../components/SensoryVectorView";
 import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
-import type { SwipeVerdict, TasteProfileResponse, WineCardResponse } from "../../lib/apiTypes";
+import type { SwipeVerdict, TasteCandidateWine, TasteProfileResponse } from "../../lib/apiTypes";
 import { storage } from "../../lib/storage";
-import { SEED_WINE_IDS } from "./seedWineIds";
 
 type Gate = "checking" | "guest" | "needs-profiling" | "ready";
 
-/** Экран 5/6 — паспорт вкуса: свайпы + текущий вектор в 7 осях (contracts: /taste/*). */
+/**
+ * Экран 5/6 — паспорт вкуса: свайпы + текущий вектор в 7 осях.
+ * Колода — GET /taste/candidates (v0.2.2): сервер сам исключает уже свайпнутые вина,
+ * клиент больше не хранит захардкоженный список id (был контрактный пробел — см. c-report.md).
+ */
 export function TastePassportScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
 
   const [gate, setGate] = useState<Gate>("checking");
+  const [deck, setDeck] = useState<TasteCandidateWine[] | null>(null);
   const [index, setIndex] = useState(0);
-  const [currentWine, setCurrentWine] = useState<WineCardResponse | null>(null);
   const [profile, setProfile] = useState<TasteProfileResponse | null>(null);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -39,19 +42,31 @@ export function TastePassportScreen() {
   }, [gate]);
 
   useEffect(() => {
-    if (gate !== "ready" || index >= SEED_WINE_IDS.length) return;
+    if (gate !== "ready") return;
     let cancelled = false;
-    setCurrentWine(null);
     apiClient
-      .getWine(SEED_WINE_IDS[index])
-      .then((wine) => {
-        if (!cancelled) setCurrentWine(wine);
+      .getTasteCandidates()
+      .then((response) => {
+        if (!cancelled) {
+          setDeck(response.wines);
+          setIndex(0);
+        }
       })
-      .catch(() => undefined);
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        if (error instanceof ApiRequestError && error.code === "consent_required") {
+          setGate("needs-profiling");
+        } else {
+          // Честная пустая колода лучше зависшего "Загружаем..." навечно.
+          setDeck([]);
+        }
+      });
     return () => {
       cancelled = true;
     };
-  }, [gate, index]);
+  }, [gate]);
+
+  const currentWine = deck && index < deck.length ? deck[index] : null;
 
   async function handleSwipe(verdict: SwipeVerdict) {
     if (!currentWine) return;
@@ -109,7 +124,9 @@ export function TastePassportScreen() {
         <p className="screen__subtitle">{t("taste.subtitle")}</p>
       </header>
 
-      {index < SEED_WINE_IDS.length ? (
+      {deck === null ? (
+        <p>{t("common.loading")}</p>
+      ) : currentWine ? (
         <div
           className="card swipe-card"
           style={{ transform: `translateX(${dragX}px) rotate(${dragX / 20}deg)` }}
@@ -118,16 +135,15 @@ export function TastePassportScreen() {
           onPointerUp={handlePointerUp}
           onPointerLeave={() => dragging && handlePointerUp()}
         >
-          {currentWine ? (
-            <div className="stack">
-              <img src={currentWine.source.image_url} alt={currentWine.source.name} width={80} />
-              <h2>{currentWine.source.name}</h2>
-              <p className="text-small">{currentWine.source.winery_name}</p>
-              <p>{currentWine.source.description}</p>
+          <div className="stack">
+            {currentWine.image_url && <img src={currentWine.image_url} alt={currentWine.name} width={80} />}
+            <h2>{currentWine.name}</h2>
+            <p className="text-small">{currentWine.winery_name}</p>
+            <div className="row">
+              {currentWine.color && <span className="badge">{currentWine.color}</span>}
+              {currentWine.region_name && <span className="badge">{currentWine.region_name}</span>}
             </div>
-          ) : (
-            <p>{t("common.loading")}</p>
-          )}
+          </div>
           <div className="row row--between">
             <button type="button" className="btn btn--ghost" onClick={() => void handleSwipe("dislike")}>
               {t("taste.dislike")}
