@@ -2,19 +2,35 @@
 from __future__ import annotations
 
 import re
+from functools import lru_cache
 
 _TOKEN_RE = re.compile(r"[0-9a-zA-Zа-яёА-ЯЁ]+", re.UNICODE)
 
 
-def tokenize(text: str | None) -> list[str]:
-    """Простой lower-case токенайзер под кириллицу/латиницу для BM25.
+@lru_cache(maxsize=1)
+def _stemmer():
+    # NLTK Snowball — чистый Python, без скачивания моделей/словарей.
+    # Зачем вообще стемминг: русский язык сильно флективен — «вино ИЗ
+    # Дагестана»/«крымское вино» не пересекаются токенами с card-текстом
+    # «... Дагестан ...»/«... Крым ...» без сведения к общей основе. Замер
+    # на голд-сете подтвердил провал retrieval именно на region-специфичных
+    # запросах (см. отчёт, раздел «pick») — стемминг ощутимо помогает.
+    from nltk.stem.snowball import SnowballStemmer
 
-    Не делает стемминг/лемматизацию — сознательно просто, чтобы не тащить
-    дополнительные NLP-зависимости; при необходимости заменить в одном месте.
-    """
+    return SnowballStemmer("russian")
+
+
+def tokenize(text: str | None, *, stem: bool = True) -> list[str]:
+    """Lower-case токенайзер под кириллицу/латиницу для BM25, со стеммингом
+    русских токенов (SnowballStemmer). `stem=False` — сырые токены (для
+    отладки/тестов, где важна точность до буквы)."""
     if not text:
         return []
-    return _TOKEN_RE.findall(text.lower())
+    tokens = _TOKEN_RE.findall(text.lower())
+    if not stem:
+        return tokens
+    stemmer = _stemmer()
+    return [stemmer.stem(t) for t in tokens]
 
 
 def normalize_ws(text: str | None) -> str:

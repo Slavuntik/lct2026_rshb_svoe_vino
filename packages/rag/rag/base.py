@@ -1,12 +1,13 @@
 # packages/rag/rag/base.py
-"""Контракт RAG-сервиса (contracts/rag-interface.md, v0.2.1) — реализация.
+"""Контракт RAG-сервиса (contracts/rag-interface.md, v0.2.3) — реализация.
 
 Filters/Candidate реэкспортированы из rag.types (см. комментарий там про
 циклические импорты). Retriever — тонкий фасад, вся логика — в отдельных
 модулях: rag.hybrid (search/similar), rag.resolve (resolve_label/resolve_style
 — fuzzy, НЕ векторный поиск), rag.styles (analog_for_style/list_reference_styles
-— метаданные, без эмбеддингов). Здесь только сборка и загрузка артефактов
-ingest'а плюс фабрика get_retriever().
+— метаданные, без эмбеддингов), rag.taste (candidates_for_taste — колода
+для свайпов, тоже без эмбеддингов). Здесь только сборка и загрузка
+артефактов ingest'а плюс фабрика get_retriever().
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from rag.hybrid import HybridSearcher
 from rag.rerank import build_reranker
 from rag.store import QdrantStore
 from rag.styles import StyleMatcher
+from rag.taste import build_taste_deck
 from rag.types import Candidate, Filters
 
 __all__ = ["Filters", "Candidate", "Retriever", "get_retriever"]
@@ -150,6 +152,11 @@ class Retriever:
         """Популярные стили ({"slug","name","country"}) по частоте в
         filters.reference_style_matches каталога — подсказка в 404 /analogs. v0.2.1."""
         return self.style_matcher.list_popular(self.payload_list.get("wines", []), top_n=top_n)
+
+    def candidates_for_taste(self, exclude_ids: list[str], limit: int = 20) -> list[Candidate]:
+        """Колода для свайп-дегустации: разнообразие по цвету/региону/стилю,
+        исключая exclude_ids. Детерминированная случайность (seed по дате). v0.2.3."""
+        return build_taste_deck(self.payload_list.get("wines", []), exclude_ids, limit=limit)
 
 
 def get_retriever(data_dir: Path | None = None) -> Retriever:

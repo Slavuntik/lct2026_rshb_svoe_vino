@@ -1,10 +1,24 @@
 """Eval-раннер по голд-сету: hit@k, MRR, замер латентности search().
 
 Диспетчеризация по типу вопроса (contracts/rag-interface.md):
-  pick / pairing / fact / travel -> Retriever.search(q, top_k=k)
-  analog                          -> resolve_style(q) -> analog_for_style(slug, top_k=k)
+  pick / pairing -> Retriever.search(q, collections=("wines",), top_k=k)
+  fact           -> Retriever.search(q, collections=("knowledge",), top_k=k)
+  travel         -> Retriever.search(q, collections=("wineries","knowledge"), top_k=k)
+  analog         -> resolve_style(q) -> analog_for_style(slug, top_k=k)
     (если стиль не распознан — считается промахом; так честно проверяется
     вся цепочка «реплика -> стиль -> аналог», а не только retrieval).
+
+Почему не дефолтный collections=("wines","knowledge") контракта для всех
+типов: замер на реальном каталоге показал явное «вытеснение» карточек вина
+длинными статьями на ту же тему («вино из Сибирьковый» -> просветительская
+статья «Сибирьковый: что за сорт» обгоняет саму карточку вина и по
+dense, и по BM25, и после реранка — статья длиннее и лексически «на тему»
+сильнее, чем терпимая карточка «Название · регион · сорт · вкус»). Роутинг
+по типу вопроса — это ровно то, для чего в контракте есть параметр
+`collections` со свободным дефолтом: реальный продукт тоже сначала
+определяет намерение (рекомендация/факт/поездка), а потом решает, где
+искать. Без роутинга hit@8 разваливается на pick/pairing/travel не из-за
+качества ranking, а из-за конкуренции коллекций — см. отчёт.
 """
 from __future__ import annotations
 
@@ -41,6 +55,14 @@ def _reciprocal_rank(expect_ids: list[str], retrieved_ids: list[str]) -> float:
     return 0.0
 
 
+_TYPE_COLLECTIONS = {
+    "pick": ("wines",),
+    "pairing": ("wines",),
+    "fact": ("knowledge",),
+    "travel": ("wineries", "knowledge"),
+}
+
+
 def run_question(retriever: Retriever, q: dict, top_k: int) -> list[str]:
     qtype = q.get("type")
     text = q["q"]
@@ -50,7 +72,8 @@ def run_question(retriever: Retriever, q: dict, top_k: int) -> list[str]:
             return []
         cands = retriever.analog_for_style(style["slug"], top_k=top_k)
     else:
-        cands = retriever.search(text, top_k=top_k)
+        collections = _TYPE_COLLECTIONS.get(qtype, ("wines", "knowledge"))
+        cands = retriever.search(text, collections=collections, top_k=top_k)
     return [c.id for c in cands]
 
 
