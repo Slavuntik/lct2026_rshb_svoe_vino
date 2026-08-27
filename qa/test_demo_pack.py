@@ -80,8 +80,12 @@ def test_abrau_pack_has_three_grounded_scenes(real_catalog_dir, real_ref_dir):
 
     scene3 = pack.scenario["scene_3_analog"]
     assert scene3["available"] is True
-    matched_bottle = next(b for b in pack.bottles if b.wine_id == scene3["expected_wine_id"])
-    assert scene3["style_slug"] in matched_bottle.reference_style_matches
+    illustrative_bottle = next(b for b in pack.bottles if b.wine_id == scene3["illustrative_wine_id"])
+    assert scene3["style_slug"] in illustrative_bottle.reference_style_matches
+    # Достижимый инвариант (не байт-в-байт бутылка, см. build_scene_analog): у винодельни
+    # ЕСТЬ хотя бы одно вино этого стиля по всему каталогу, не только среди топ-8 пака.
+    assert scene3["winery_style_wine_count"] >= 1
+    assert illustrative_bottle.wine_id in scene3["winery_style_wine_ids"]
 
 
 def test_pack_reproducible_across_three_runs(real_catalog_dir, real_ref_dir):
@@ -225,6 +229,11 @@ def test_scene_grounding_on_synthetic_pack(mini_catalog_dir, mini_ref_dir):
     assert scene3["style_slug"] == "test-bordeaux-like"  # первая по рангу бутылка со стилем
     assert scene3["style_name"] == "Тестовый Бордо-стиль"
     assert scene3["user_line"] == "Люблю тестовый Бордо-стиль"
+    assert scene3["winery_slug"] == "test-winery"
+    # Только test-winery-wine-01 несёт "test-bordeaux-like" среди всех 9 синтетических карточек
+    # (включая сломанную) — достижимый инвариант считается по ВСЕЙ винодельне, не только топ-8.
+    assert scene3["winery_style_wine_count"] == 1
+    assert scene3["winery_style_wine_ids"] == ["test-winery-wine-01"]
 
 
 def test_pack_is_deterministic_on_synthetic_catalog(mini_catalog_dir, mini_ref_dir):
@@ -328,6 +337,29 @@ def test_score_wine_doc_full_rating_and_full_optional_signals_is_composite_one()
     score, missing = dp.score_wine_doc(doc)
     assert missing == []
     assert score.composite == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    "n,expected",
+    [
+        (0, "0 вин"),
+        (1, "1 вино"),
+        (2, "2 вина"),
+        (3, "3 вина"),
+        (4, "4 вина"),
+        (5, "5 вин"),
+        (11, "11 вин"),
+        (12, "12 вин"),
+        (14, "14 вин"),
+        (21, "21 вино"),
+        (22, "22 вина"),
+        (25, "25 вин"),
+        (101, "101 вино"),
+        (114, "114 вин"),
+    ],
+)
+def test_ru_wine_count_agreement(n, expected):
+    assert dp._ru_wine_count(n) == expected
 
 
 # ----------------------------------------------------------------------------------

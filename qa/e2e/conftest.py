@@ -121,6 +121,15 @@ def api_server():
         # rate-limiter'а (оно — забота тестов B, apps/api/tests/test_auth.py) — ослабляем
         # лимит через легальный env этого же приложения, не трогая код apps/api.
         "RATE_LIMIT_MAX_REQUESTS": "1000",
+        # Реальный /scan/resolve считает low_confidence по АБСОЛЮТНОМУ порогу лучшего
+        # совпадения (app/config.py::low_confidence_threshold, дефолт 0.6), не по разрыву
+        # топ-2, как мок — на настоящих данных retriever почти всегда либо уверенно (>=0.6)
+        # находит вино, либо не находит вовсе; сценарий "несколько кандидатов, никто явно не
+        # лучше" (needed для e2e/test_scan_and_card.py::test_scan_text_ambiguous_...) без
+        # искусственного повышения порога почти не воспроизводим. Поднимаем порог до 0.85
+        # ТОЛЬКО для этого тестового сервера — легальный env самого приложения, не правка
+        # apps/api; продовый дефолт 0.6 этим не затрагивается. См. helpers.py::_SCAN_FIXTURES.
+        "SCAN_LOW_CONFIDENCE_THRESHOLD": "0.85",
     }
     log_path = LOG_DIR / ".api-server.log"
     log_file = log_path.open("w", encoding="utf-8")

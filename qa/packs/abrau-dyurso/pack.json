@@ -370,12 +370,31 @@
       "style_slug": "champagne-brut-nv",
       "style_name": "Шампанское брют без года",
       "style_country": "Франция",
-      "expected_wine_id": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
-      "expected_wine_name": "Abrau-Durso Brut Rose Reserve",
-      "success_criteria": "Ответ предлагает российское вино в стиле «Шампанское брют без года» (Франция) — как минимум Abrau-Durso Brut Rose Reserve (abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12) из пака."
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "illustrative_wine_id": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+      "illustrative_wine_name": "Abrau-Durso Brut Rose Reserve",
+      "winery_style_wine_ids": [
+        "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+        "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+        "abrau-dyurso-aleksandr-ii-magnum-shardone-beloe-bryut-125",
+        "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-12",
+        "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125",
+        "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-115",
+        "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125",
+        "abrau-dyurso-fizz-beloe-bryut",
+        "abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12",
+        "abrau-dyurso-imperial-brut-lart-nouveau-shardone-beloe-bryut-105",
+        "abrau-dyurso-imperial-brut-vintage-shardone-beloe-bryut-12",
+        "abrau-dyurso-russkoe-igristoe-koshernoe-bryut-shardone-beloe-13",
+        "abrau-dyurso-victor-dravigny-bryut",
+        "abrau-dyurso-victor-dravigny-extra-brut-shardone-beloe-bryut-125"
+      ],
+      "winery_style_wine_count": 14,
+      "success_criteria": "Ответ предлагает российское вино винодельни Абрау-Дюрсо в стиле «Шампанское брют без года» (Франция) — в каталоге винодельни 14 вин этого стиля (например, Abrau-Durso Brut Rose Reserve из пака). Живая RAG-выдача вправе назвать любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка)."
     }
   },
-  "generated_at": "2026-08-27T15:26:48+00:00",
+  "generated_at": "2026-08-27T16:03:07+00:00",
   "generator": {
     "name": "svoy-somelye-demo-pack",
     "version": "1.0.0"

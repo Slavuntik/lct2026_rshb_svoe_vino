@@ -359,12 +359,21 @@
       "style_slug": "burgundy-pinot",
       "style_name": "Бургундское Пино Нуар",
       "style_country": "Франция",
-      "expected_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
-      "expected_wine_name": "Пино Нуар",
-      "success_criteria": "Ответ предлагает российское вино в стиле «Бургундское Пино Нуар» (Франция) — как минимум Пино Нуар (alma-valley-pino-nuar-krasnoe-suhoe-13) из пака."
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "illustrative_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "illustrative_wine_name": "Пино Нуар",
+      "winery_style_wine_ids": [
+        "alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14",
+        "alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15",
+        "alma-valley-pino-nuar-krasnoe-suhoe-13",
+        "alma-valley-pino-nuar-rezerv-krasnoe-suhoe-14"
+      ],
+      "winery_style_wine_count": 4,
+      "success_criteria": "Ответ предлагает российское вино винодельни Alma Valley в стиле «Бургундское Пино Нуар» (Франция) — в каталоге винодельни 4 вина этого стиля (например, Пино Нуар из пака). Живая RAG-выдача вправе назвать любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка)."
     }
   },
-  "generated_at": "2026-08-27T15:26:58+00:00",
+  "generated_at": "2026-08-27T16:03:19+00:00",
   "generator": {
     "name": "svoy-somelye-demo-pack",
     "version": "1.0.0"

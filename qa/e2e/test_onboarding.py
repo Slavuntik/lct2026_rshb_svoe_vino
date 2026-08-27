@@ -12,7 +12,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from .helpers import ADULT_BIRTH_DATE, MINOR_BIRTH_DATE, complete_guest_onboarding
+from .helpers import ADULT_BIRTH_DATE, MINOR_BIRTH_DATE, assert_looks_like_access_token, complete_guest_onboarding
 
 ONBOARDING_URL = re.compile(r".*/app/onboarding$")
 SCAN_URL = re.compile(r".*/app/scan$")
@@ -50,7 +50,10 @@ def test_onboarding_adult_creates_guest_and_redirects_to_scan(page: Page):
     account_kind = page.evaluate("() => window.localStorage.getItem('svoy-somelye:account_kind')")
     token = page.evaluate("() => window.localStorage.getItem('svoy-somelye:access_token')")
     assert account_kind == "guest"
-    assert token and token.startswith("mock-guest-")
+    # Форма токена — деталь реализации auth (мок: "mock-guest-N-xxx", реальный бэкенд: JWT),
+    # не контракт (contracts/openapi.yaml её не специфицирует) — проверяем инвариант "похоже
+    # на настоящий токен", конкретный формат для текущего QA_STACK — внутри хелпера.
+    assert_looks_like_access_token(token)
 
     # Онбординг разово: повторный заход на /app сразу ведёт на скан, не назад на онбординг.
     page.goto("/app")

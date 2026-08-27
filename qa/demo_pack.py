@@ -371,6 +371,20 @@ def select_top_bottles(
 # --------------------------------------------------------------------------------
 
 
+def _ru_wine_count(n: int) -> str:
+    """Число + правильная форма «вино» (1 вино / 2 вина / 5 вин / 14 вин / 21 вино...)."""
+    n_abs = abs(n)
+    if n_abs % 100 in (11, 12, 13, 14):
+        word = "вин"
+    elif n_abs % 10 == 1:
+        word = "вино"
+    elif n_abs % 10 in (2, 3, 4):
+        word = "вина"
+    else:
+        word = "вин"
+    return f"{n} {word}"
+
+
 def phrase_question(pairing: str) -> str:
     return PAIRING_QUESTIONS.get(pairing, f"Что порекомендуете к сочетанию «{pairing}»?")
 
@@ -449,8 +463,23 @@ def build_scene_sommelier(bottles: list[Bottle]) -> dict[str, Any]:
 
 
 def build_scene_analog(
-    bottles: list[Bottle], styles_by_slug: dict[str, dict[str, Any]]
+    bottles: list[Bottle],
+    styles_by_slug: dict[str, dict[str, Any]],
+    winery_docs: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    """Сцена 3 — «аналог импортного».
+
+    Достижимый инвариант (по итогам приёмочного прогона волны 3, см. reports/f-report.md):
+    живой `analog_for_style` фильтрует по цвету/игристости СТРОЖЕ, чем статический per-вина
+    `derived.reference_style_matches`, на котором держится этот генератор (у него нет
+    доступа к живому RAG) — конкретная бутылка пака иногда не совпадает с тем, что реально
+    вернёт `/analogs`, хотя стиль и винодельня — те же. Поэтому здесь фиксируется не «эта
+    ТОЧНО бутылка», а «эта винодельня ТОЧНО имеет вино(-а) этого стиля» — посчитано по ВСЕЙ
+    винодельне (`winery_docs`), не только по топ-8 пака: чем больше вин винодельни этого
+    стиля существует в каталоге, тем увереннее, что живая выдача найдёт хотя бы одно из них.
+    Одна конкретная бутылка (`illustrative_wine_id`) остаётся для реплики и текста показа,
+    но не как строгое условие успеха сцены.
+    """
     candidates = [(b, slug) for b in bottles for slug in b.reference_style_matches]
     if not candidates:
         return {
@@ -474,6 +503,14 @@ def build_scene_analog(
     # "Шабли"/"Кьянти" как имена собственные всё равно нормально смотрятся со строчной.
     casual_style_name = style_name[:1].lower() + style_name[1:] if style_name else style_name
 
+    winery_slug = chosen_bottle.winery_slug
+    winery_name = chosen_bottle.winery_name
+    winery_style_wine_ids = [
+        doc["slug"]
+        for doc in winery_docs
+        if chosen_slug in ((doc.get("derived") or {}).get("reference_style_matches") or [])
+    ]
+
     return {
         "scene": 3,
         "available": True,
@@ -482,11 +519,18 @@ def build_scene_analog(
         "style_slug": chosen_slug,
         "style_name": style_name,
         "style_country": style_country,
-        "expected_wine_id": chosen_bottle.wine_id,
-        "expected_wine_name": chosen_bottle.name,
+        "winery_slug": winery_slug,
+        "winery_name": winery_name,
+        "illustrative_wine_id": chosen_bottle.wine_id,
+        "illustrative_wine_name": chosen_bottle.name,
+        "winery_style_wine_ids": winery_style_wine_ids,
+        "winery_style_wine_count": len(winery_style_wine_ids),
         "success_criteria": (
-            f"Ответ предлагает российское вино в стиле «{style_name}» ({style_country}) — "
-            f"как минимум {chosen_bottle.name} ({chosen_bottle.wine_id}) из пака."
+            f"Ответ предлагает российское вино винодельни {winery_name} в стиле «{style_name}» "
+            f"({style_country}) — в каталоге винодельни {_ru_wine_count(len(winery_style_wine_ids))} "
+            f"этого стиля (например, {chosen_bottle.name} из пака). Живая RAG-выдача вправе назвать "
+            f"любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной "
+            f"бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка)."
         ),
     }
 
@@ -541,7 +585,7 @@ def build_pack(
     scenario = {
         "scene_1_scan": build_scene_scan(bottles),
         "scene_2_sommelier": build_scene_sommelier(bottles),
-        "scene_3_analog": build_scene_analog(bottles, styles_by_slug),
+        "scene_3_analog": build_scene_analog(bottles, styles_by_slug, docs),
     }
 
     winery_source = winery_meta.get("source", {}) or {}
@@ -716,17 +760,33 @@ def validate_pack(
 
     scene3 = pack.scenario.get("scene_3_analog", {})
     if scene3.get("available"):
-        wine_id = scene3["expected_wine_id"]
+        illustrative_id = scene3["illustrative_wine_id"]
         style_slug = scene3["style_slug"]
-        bottle = next((b for b in pack.bottles if b.wine_id == wine_id), None)
+        # (1) Иллюстративная бутылка (топ-8 пака, для реплики/текста показа) — быстрый
+        # повторный чек по уже загруженному Bottle, как и раньше.
+        bottle = next((b for b in pack.bottles if b.wine_id == illustrative_id), None)
         if bottle is None or style_slug not in bottle.reference_style_matches:
             issues.append(
                 Issue(
                     "error",
-                    "scene3_analog_not_grounded",
+                    "scene3_illustrative_wine_not_grounded",
                     f"Стиль «{style_slug}» не найден в derived.reference_style_matches "
-                    f"вина {wine_id} (сцена 3).",
-                    wine_id,
+                    f"иллюстративного вина {illustrative_id} (сцена 3).",
+                    illustrative_id,
+                )
+            )
+        # (2) Достижимый инвариант сцены (не «эта точная бутылка», а «у винодельни ЕСТЬ вино
+        # этого стиля» — см. докстринг build_scene_analog): у живого RAG фильтр по стилю
+        # строже статического списка per-вина, поэтому именно это, а не конкретный wine_id,
+        # разумно требовать от генератора, который не видит живой RAG.
+        if scene3.get("winery_style_wine_count", 0) < 1:
+            issues.append(
+                Issue(
+                    "error",
+                    "scene3_style_not_grounded_in_winery",
+                    f"Ни одно вино винодельни {scene3.get('winery_slug')} не несёт стиль "
+                    f"«{style_slug}» в derived.reference_style_matches (сцена 3) — "
+                    f"достижимый инвариант («стиль есть у винодельни») не выполняется.",
                 )
             )
 
@@ -838,7 +898,12 @@ def render_pack_md(pack: Pack, report: ValidationReport) -> str:
     if s3.get("available"):
         lines.append(f"- Реплика пользователя: «{s3['user_line']}»")
         lines.append(f"- Эталонный стиль: {s3['style_name']} ({s3['style_country']}), slug `{s3['style_slug']}`")
-        lines.append(f"- Ожидаемое вино пака: **{s3['expected_wine_name']}** (`{s3['expected_wine_id']}`)")
+        lines.append(
+            f"- Достижимый инвариант: у винодельни «{s3['winery_name']}» "
+            f"{_ru_wine_count(s3['winery_style_wine_count'])} этого стиля в каталоге — "
+            f"живая выдача вправе назвать любое из них"
+        )
+        lines.append(f"- Иллюстративный пример из пака: **{s3['illustrative_wine_name']}** (`{s3['illustrative_wine_id']}`)")
         lines.append(f"- Критерий успеха: {s3['success_criteria']}")
     else:
         lines.append(f"- Недоступна: {s3['reason']}")
@@ -849,7 +914,8 @@ def render_pack_md(pack: Pack, report: ValidationReport) -> str:
     lines.append(f"- Обязательные поля непусты у всех {len(pack.bottles)} бутылок: {'OK' if not any(i.code == 'empty_required_field' for i in report.errors) else 'ОШИБКА'}")
     lines.append(f"- source_url отвечает 200 на вежливый HEAD: проверено {report.checked_urls} уникальных ссылок, предупреждений: {sum(1 for i in report.warnings if i.code in ('source_url_bad_status', 'source_url_unreachable'))}")
     lines.append(f"- Сцена 2 опирается на реальную гастропару пака: {'OK' if not any(i.code == 'scene2_pairing_not_grounded' for i in report.errors) else 'ОШИБКА'}")
-    lines.append(f"- Сцена 3 — аналог подтверждён в derived.reference_style_matches: {'OK' if not any(i.code == 'scene3_analog_not_grounded' for i in report.errors) else 'ОШИБКА'}")
+    _scene3_error_codes = {"scene3_illustrative_wine_not_grounded", "scene3_style_not_grounded_in_winery"}
+    lines.append(f"- Сцена 3 — стиль подтверждён в derived.reference_style_matches винодельни: {'OK' if not any(i.code in _scene3_error_codes for i in report.errors) else 'ОШИБКА'}")
     lines.append("")
     if report.errors:
         lines.append(f"**Вердикт: ЕСТЬ ОШИБКИ ({len(report.errors)}) — пак НЕ готов к показу.**")

@@ -105,15 +105,25 @@ def test_after_upgrade_swipes_persist_and_vector_updates(page: Page):
     expect(page.get_by_text("Свайпов: 2")).to_be_visible(timeout=10000)
 
 
-def test_profile_export_triggers_json_download(page: Page):
+def test_profile_export_behaves_per_backend_rules(page: Page):
+    """Мок разрешает выгрузку данных гостю — он вообще не проверяет accountKind в этой
+    ручке (упрощение для тестового удобства). Настоящий бэкенд (apps/api) корректно требует
+    полную регистрацию — 401 unauthorized «Требуется полноценная регистрация»
+    (reports/b-report.md: «/profile/data-export... — только зарегистрированный») — это
+    ПРАВИЛЬНОЕ поведение, не баг; подтверждено прямым curl на приёмочном прогоне волны 3,
+    qa/ACCEPTANCE-RUN-01.md. Оба исхода — реальные, ожидаемые для своего QA_STACK."""
     complete_guest_onboarding(page)
     go_via_nav(page, "Профиль")
 
-    with page.expect_download(timeout=5000) as download_info:
+    if QA_STACK == "real":
         page.get_by_role("button", name="Скачать мои данные").click()
-    download = download_info.value
-    assert download.suggested_filename == "svoy-somelye-data.json"
-    expect(page.get_by_text("Файл сформирован и скачан.")).to_be_visible()
+        expect(page.get_by_text("Не удалось выгрузить данные.")).to_be_visible(timeout=5000)
+    else:
+        with page.expect_download(timeout=5000) as download_info:
+            page.get_by_role("button", name="Скачать мои данные").click()
+        download = download_info.value
+        assert download.suggested_filename == "svoy-somelye-data.json"
+        expect(page.get_by_text("Файл сформирован и скачан.")).to_be_visible()
 
 
 def test_profile_delete_requires_confirmation(page: Page):
@@ -130,15 +140,25 @@ def test_profile_delete_requires_confirmation(page: Page):
     expect(page).to_have_url(PROFILE_URL)
 
 
-def test_profile_delete_confirmed_clears_session_and_returns_to_landing(page: Page):
+def test_profile_delete_behaves_per_backend_rules(page: Page):
+    """См. test_profile_export_behaves_per_backend_rules — то же правило B для
+    `DELETE /profile`: гость получает честный 401 «Требуется полноценная регистрация» на
+    настоящем бэкенде (аккаунт и локальная сессия остаются нетронутыми), мок это не
+    проверяет и удаляет гостя как обычно."""
     complete_guest_onboarding(page)
     go_via_nav(page, "Профиль")
 
     page.get_by_role("button", name="Удалить аккаунт и все данные").click()
     page.get_by_role("button", name="Да, удалить всё").click()
 
-    expect(page).to_have_url(LANDING_URL, timeout=5000)
-    remaining_keys = page.evaluate("() => Object.keys(window.localStorage)")
-    assert "svoy-somelye:access_token" not in remaining_keys
-    assert "svoy-somelye:account_kind" not in remaining_keys
-    assert "svoy-somelye:onboarding_complete" not in remaining_keys
+    if QA_STACK == "real":
+        expect(page.get_by_text("Не удалось удалить аккаунт.")).to_be_visible(timeout=5000)
+        expect(page).to_have_url(PROFILE_URL)
+        token = page.evaluate("() => window.localStorage.getItem('svoy-somelye:access_token')")
+        assert token is not None  # отказ бэкенда -> сессия гостя цела, ничего не стёрлось
+    else:
+        expect(page).to_have_url(LANDING_URL, timeout=5000)
+        remaining_keys = page.evaluate("() => Object.keys(window.localStorage)")
+        assert "svoy-somelye:access_token" not in remaining_keys
+        assert "svoy-somelye:account_kind" not in remaining_keys
+        assert "svoy-somelye:onboarding_complete" not in remaining_keys
