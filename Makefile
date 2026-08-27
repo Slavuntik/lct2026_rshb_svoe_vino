@@ -12,7 +12,7 @@ WINERY ?= abrau-dyurso
 PYTHON := qa/.venv/bin/python
 
 .PHONY: qa-venv demo-pack demo-pack-abrau demo-pack-second demo-pack-all \
-        qa-test qa-test-network e2e-install qa-e2e qa-test-all qa-clean
+        qa-test qa-test-network e2e-install qa-e2e qa-e2e-real qa-test-all qa-clean
 
 ## Однократная установка окружения qa/ (Python 3.12 через uv, см. qa/requirements.txt).
 ## Идемпотентна: повторный запуск не ломает уже готовое окружение.
@@ -57,6 +57,14 @@ e2e-install: qa-venv
 ## заранее (чужая зона, не трогаем).
 qa-e2e: e2e-install
 	$(PYTHON) -m pytest -q qa/e2e
+
+## То же самое, но против настоящего API (RAG_PROVIDER=real, mock-LLM) через vite-proxy —
+## приёмочный прогон волны 3 (qa/ACCEPTANCE-RUN-01.md). Требует apps/api/.venv с extra
+## "integration" (cd apps/api && uv sync --extra dev --extra integration, зона B) и собранный
+## индекс packages/rag/data/manifest.json (зона A). Часть из 26 mock-сценариев ожидаемо не
+## пройдёт на реальных данных — см. qa/acceptance.md, раздел 2b, это не регрессия.
+qa-e2e-real: e2e-install
+	QA_STACK=real $(PYTHON) -m pytest -q qa/e2e
 
 ## Все тесты agents/F-qa-demo.md разом (demo_pack + e2e, включая сетевой кейс).
 qa-test-all: qa-test-network qa-e2e

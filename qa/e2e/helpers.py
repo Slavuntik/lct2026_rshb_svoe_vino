@@ -69,20 +69,31 @@ def go_via_nav(page: Page, label: str) -> None:
     page.click(f'nav a:has-text("{label}")')
 
 
-def upgrade_guest_to_registered(page: Page, *, email: str, password: str) -> None:
+def upgrade_guest_to_registered(page: Page, *, email: str, password: str, grant_profiling: bool = False) -> None:
     """Единственный путь до accountKind=registered в этом клиенте — апгрейд в профиле
     (POST /auth/register с гостевым Bearer, contracts/openapi.yaml v0.2.1). Наблюдаемый
-    успех — смена бейджа на "Полный аккаунт" И исчезновение формы апгрейда.
+    успех — смена бейджа на "Полный аккаунт" и появление сообщения об успехе.
 
-    Найденная нестыковка клиента (см. reports/f-report.md): ProfileScreen.tsx одним и тем
-    же рендером выставляет accountKind="registered" И upgradeStatus="done", а параграф с
-    текстом profile.guestSuccess ("Аккаунт создан...") лежит ВНУТРИ {accountKind !==
-    "registered" && (<form>...)} — то есть форма (и это сообщение внутри неё) размонтируется
-    в тот же момент, когда должна была бы показать сообщение об успехе. Пользователь никогда
-    не видит явного "Аккаунт создан" — только исчезновение формы и смену бейджа. Поэтому
-    здесь мы ждём именно бейдж, а не текст сообщения (которое недостижимо).
+    Ранее найденная нестыковка клиента (см. reports/f-report.md, отчёт волны 2) — сообщение
+    об успехе апгрейда было недостижимо (форма с ним размонтировалась в тот же рендер, где
+    accountKind менялся на "registered") — ПОЧИНЕНА агентом C, коммит e7c9cb9 ("фикс
+    мёртвого сообщения об успешном апгрейде гостя в ProfileScreen, находка F, e2e"):
+    сообщение вынесено из-под условия гостя, переживает смену бейджа. Оставляем ожидание и
+    бейджа, и текста — оба теперь достижимы и оба стоит проверять.
+
+    grant_profiling=True (нужно для приёмочного прогона волны 3, QA_STACK=real,
+    qa/ACCEPTANCE-RUN-01.md): апгрейд САМ ПО СЕБЕ не выдаёт scope profiling на настоящем
+    бэкенде — контракт этого и не требует буквально (POST /auth/register молча принимает
+    только явно перечисленные consent_scopes), в отличие от мока (apps/web/src/mocks/
+    state.ts::upgradeAccountToken жёстко добавляет profiling:true при апгрейде — упрощение
+    мока для тестового удобства, не по контракту). Без этого шага реальный `/taste/*`
+    честно отвечает 403 consent_required, и TastePassportScreen показывает гейт
+    "needsProfilingTitle" вместо колоды даже для только что апгрейженного аккаунта.
     """
     page.fill('input[type="email"]', email)
     page.fill('input[type="password"]', password)
     page.get_by_role("button", name="Создать аккаунт").click()
     page.wait_for_selector("text=Полный аккаунт", timeout=5000)
+    page.wait_for_selector("text=Аккаунт создан", timeout=5000)
+    if grant_profiling:
+        page.get_by_role("checkbox", name="Вкусовой профиль").check()

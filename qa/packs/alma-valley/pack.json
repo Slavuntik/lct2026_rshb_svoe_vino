@@ -364,7 +364,7 @@
       "success_criteria": "Ответ предлагает российское вино в стиле «Бургундское Пино Нуар» (Франция) — как минимум Пино Нуар (alma-valley-pino-nuar-krasnoe-suhoe-13) из пака."
     }
   },
-  "generated_at": "2026-08-27T08:57:24+00:00",
+  "generated_at": "2026-08-27T15:26:58+00:00",
   "generator": {
     "name": "svoy-somelye-demo-pack",
     "version": "1.0.0"

@@ -1,6 +1,6 @@
 # Демо-пак: Alma Valley
 
-Сгенерировано: 2026-08-27T08:57:24+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `alma-valley`
+Сгенерировано: 2026-08-27T15:26:58+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `alma-valley`
 
 ## Винодельня
 

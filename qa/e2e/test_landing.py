@@ -53,7 +53,7 @@ def test_landing_waitlist_requires_consent_then_succeeds(page: Page):
     раз критерий явно из раздела 0 плана."""
     page.goto("/")
     form = page.get_by_role("form", name="Лист ожидания")
-    form.locator('input[type="email"]').fill("waitlist-demo@example.invalid")
+    form.locator('input[type="email"]').fill("waitlist-demo@example.com")
 
     submit = form.get_by_role("button", name="Записаться")
     expect(submit).to_be_disabled()  # без согласия кнопка неактивна — контракт c-report.md

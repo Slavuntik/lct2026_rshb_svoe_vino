@@ -2,5 +2,7 @@
 # .venv/, __pycache__/, *.pyc уже покрыты корневым .gitignore; здесь — то, что специфично qa/.
 .pytest_cache/
 e2e/.dev-server.log
+e2e/.api-server.log
+e2e/.qa-real-run.db
 test-results/
 playwright-report/

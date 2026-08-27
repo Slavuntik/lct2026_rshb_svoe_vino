@@ -1,13 +1,20 @@
-"""Инфраструктура для сквозных сценариев (агент F) против apps/web агента C, mock-режим.
+"""Инфраструктура для сквозных сценариев (агент F) против apps/web агента C.
 
-Поднимает `npm run dev` (VITE_API_MODE=mock) как часть тестовой сессии — самодостаточно,
-ничего руками поднимать не нужно перед `pytest qa/e2e`. Если apps/web ещё не готов (нет
-`npm install`) или dev-сервер не поднимается — вся сессия e2e корректно skip'ается с
-причиной (agents/F-qa-demo.md: «сценарии — как исполняемая спецификация со skip»),
-а не падает малопонятной ошибкой.
+По умолчанию — mock-режим (`VITE_API_MODE=mock`, MSW): самодостаточно, ничего руками
+поднимать не нужно. `QA_STACK=real` (agents/F-qa-demo.md, приёмочный прогон волны 3)
+поднимает ещё и настоящий `apps/api` — `RAG_PROVIDER=real RAG_MODE=embedded` (реальный
+индекс agents/A-rag.md), `LLM_PROVIDER` не задан (дефолт `mock` — реального LLM-ключа нет,
+см. qa/acceptance.md, PENDING), `DATABASE_URL` — приватный sqlite в scratch-директории (НЕ
+`apps/api/svoy_somelye.db`: этот файл на момент прогона 2026-08-27 оказался читаем-только на
+диске — см. qa/ACCEPTANCE-RUN-01.md, — трогать чужой рантайм-артефакт незачем, когда свой
+одноразовый файл эквивалентен и безопаснее).
+
+Если apps/web ещё не готов (`npm install`) или сервер(ы) не поднимаются — сессия e2e
+корректно skip'ается с причиной, а не падает малопонятной ошибкой.
 
 base_url переопределяет одноимённую фикстуру pytest-playwright/pytest-base-url — благодаря
-этому в тестах можно писать `page.goto("/app/onboarding")` без склейки урла руками.
+этому в тестах можно писать `page.goto("/app/onboarding")` без склейки урла руками, в обоих
+режимах одинаково.
 """
 
 from __future__ import annotations
@@ -26,17 +33,28 @@ import pytest
 QA_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = QA_DIR.parent
 WEB_APP_DIR = REPO_ROOT / "apps" / "web"
+API_APP_DIR = REPO_ROOT / "apps" / "api"
 
-# Отдельный порт, а не 5173 из apps/web/vite.config.ts — чтобы не сталкиваться с dev-сервером,
-# который разработчик (агент C или Вячеслав) мог уже держать открытым на 5173 у себя.
+QA_STACK = os.environ.get("QA_STACK", "mock").strip().lower()
+if QA_STACK not in ("mock", "real"):
+    QA_STACK = "mock"
+
+# WEB_PORT — свой, не 5173, чтобы не сталкиваться с dev-сервером, который разработчик мог уже
+# держать открытым у себя. API_PORT НЕ переопределяем — apps/web/vite.config.ts::server.proxy
+# жёстко зашивает target "http://localhost:8000" (не читает env), а трогать чужой vite.config.ts
+# ради удобства собственного прогона — не наша зона; поэтому в QA_STACK=real реальный API
+# обязан слушать именно :8000, иначе прокси необходимо ловит связь.
 #
 # Хост — именно "localhost", не "127.0.0.1": на этой машине Vite слушает ТОЛЬКО IPv6-loopback
 # ([::1]), а "127.0.0.1" (чистый IPv4) на LISTEN не отвечает вовсе — connection refused.
 # "localhost" резолвится через getaddrinfo в тот же [::1], которым Vite реально владеет.
-DEV_SERVER_PORT = 5199
-DEV_SERVER_URL = f"http://localhost:{DEV_SERVER_PORT}"
+WEB_PORT = 5199
+API_PORT = 8000
+WEB_URL = f"http://localhost:{WEB_PORT}"
+API_URL = f"http://localhost:{API_PORT}"
 STARTUP_TIMEOUT_S = 30.0
-LOG_PATH = QA_DIR / "e2e" / ".dev-server.log"
+API_STARTUP_TIMEOUT_S = 60.0  # реальный индекс грузит embedder/reranker в память — не мгновенно
+LOG_DIR = QA_DIR / "e2e"
 
 
 def _port_is_listening(port: int, host: str = "localhost") -> bool:
@@ -60,58 +78,6 @@ def _wait_until_ready(url: str, timeout_s: float) -> bool:
     return False
 
 
-@pytest.fixture(scope="session")
-def dev_server():
-    """Поднимает `npm run dev -- --port 5199 --strictPort` из apps/web в mock-режиме.
-
-    apps/web — чужая зона (агент C): здесь мы её только ЗАПУСКАЕМ как внешний процесс,
-    ничего не пишем внутрь. Если `npm install` там ещё не делали — skip с понятной причиной,
-    а не попытка молча его выполнить (агент F не правит чужую зону).
-    """
-    if not WEB_APP_DIR.is_dir():
-        pytest.skip(f"apps/web не найден по {WEB_APP_DIR} — e2e против клиента C пропущены")
-
-    if not (WEB_APP_DIR / "node_modules").is_dir():
-        pytest.skip(
-            "apps/web/node_modules отсутствует (не сделан `npm install` в зоне агента C) — "
-            "e2e-спека валидна как контракт, но не может завестись без сборки клиента; skip."
-        )
-
-    if _port_is_listening(DEV_SERVER_PORT):
-        pytest.skip(
-            f"Порт {DEV_SERVER_PORT} уже занят — похоже, dev-сервер e2e уже где-то запущен "
-            f"(или порт занят чем-то другим). Освободите {DEV_SERVER_PORT} и перезапустите."
-        )
-
-    env = {**os.environ, "VITE_API_MODE": "mock"}
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    log_file = LOG_PATH.open("w", encoding="utf-8")
-
-    process = subprocess.Popen(
-        ["npm", "run", "dev", "--", "--port", str(DEV_SERVER_PORT), "--strictPort"],
-        cwd=WEB_APP_DIR,
-        env=env,
-        stdout=log_file,
-        stderr=subprocess.STDOUT,
-        preexec_fn=os.setsid,  # свой process group — чтобы погасить и дочерний vite тоже
-    )
-
-    ready = _wait_until_ready(DEV_SERVER_URL + "/", STARTUP_TIMEOUT_S)
-    if not ready:
-        _terminate(process)
-        log_tail = LOG_PATH.read_text(encoding="utf-8", errors="replace")[-2000:] if LOG_PATH.exists() else "(лога нет)"
-        pytest.skip(
-            f"dev-сервер apps/web не поднялся за {STARTUP_TIMEOUT_S:.0f}с на {DEV_SERVER_URL} — "
-            f"e2e пропущены. Хвост лога:\n{log_tail}"
-        )
-
-    try:
-        yield DEV_SERVER_URL
-    finally:
-        _terminate(process)
-        log_file.close()
-
-
 def _terminate(process: subprocess.Popen) -> None:
     if process.poll() is not None:
         return
@@ -126,7 +92,106 @@ def _terminate(process: subprocess.Popen) -> None:
 
 
 @pytest.fixture(scope="session")
+def api_server():
+    """QA_STACK=real только: свой `uvicorn` (RAG_PROVIDER=real) на отдельном порту/БД.
+
+    apps/api — чужая зона (агент B): здесь мы её только ЗАПУСКАЕМ как внешний процесс, с
+    собственной приватной БД (см. модульный докстринг про read-only `svoy_somelye.db`,
+    зафиксировано в qa/ACCEPTANCE-RUN-01.md) — ничего не пишем внутрь зоны B.
+    """
+    if not (API_APP_DIR / ".venv" / "bin" / "python").exists():
+        pytest.skip(f"apps/api/.venv не найден — QA_STACK=real не может завестись без окружения B")
+
+    if _port_is_listening(API_PORT):
+        pytest.skip(f"Порт {API_PORT} уже занят — освободите и перезапустите")
+
+    scratch_db = LOG_DIR / ".qa-real-run.db"
+    scratch_db.unlink(missing_ok=True)
+    env = {
+        **os.environ,
+        "RAG_PROVIDER": "real",
+        "RAG_MODE": "embedded",
+        "DATABASE_URL": f"sqlite:///{scratch_db}",
+        # Каждый playwright-тест — новый browser context => новая гостевая регистрация
+        # (helpers.complete_guest_onboarding). Дефолтный лимит apps/api (5 запросов/60с,
+        # см. app/config.py) — корректная защита прод-эндпоинта, но она же оборвала бы
+        # добрую половину этого прогона сама по себе, до какой-либо проверки функционала
+        # (см. qa/ACCEPTANCE-RUN-01.md — так и произошло на первом прогоне). Здесь это
+        # СВОЙ процесс, поднятый только для проверки функционала UI/данных, не поведения
+        # rate-limiter'а (оно — забота тестов B, apps/api/tests/test_auth.py) — ослабляем
+        # лимит через легальный env этого же приложения, не трогая код apps/api.
+        "RATE_LIMIT_MAX_REQUESTS": "1000",
+    }
+    log_path = LOG_DIR / ".api-server.log"
+    log_file = log_path.open("w", encoding="utf-8")
+    process = subprocess.Popen(
+        [str(API_APP_DIR / ".venv" / "bin" / "uvicorn"), "app.main:app", "--port", str(API_PORT)],
+        cwd=API_APP_DIR,
+        env=env,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        preexec_fn=os.setsid,
+    )
+    ready = _wait_until_ready(API_URL + "/v1/healthz", API_STARTUP_TIMEOUT_S)
+    if not ready:
+        _terminate(process)
+        tail = log_path.read_text(encoding="utf-8", errors="replace")[-2000:] if log_path.exists() else "(лога нет)"
+        pytest.skip(f"apps/api (RAG_PROVIDER=real) не поднялся за {API_STARTUP_TIMEOUT_S:.0f}с. Хвост лога:\n{tail}")
+    try:
+        yield API_URL
+    finally:
+        _terminate(process)
+        log_file.close()
+
+
+@pytest.fixture(scope="session")
+def dev_server(request):
+    """Поднимает `npm run dev` из apps/web. QA_STACK=mock (по умолчанию) — MSW, ничего
+    больше не нужно. QA_STACK=real — VITE_API_MODE=real, требует api_server (proxy /v1 на
+    его порт, см. apps/web/vite.config.ts, PROXY_TARGET читается из env для этого прогона).
+    """
+    if not WEB_APP_DIR.is_dir():
+        pytest.skip(f"apps/web не найден по {WEB_APP_DIR} — e2e против клиента C пропущены")
+    if not (WEB_APP_DIR / "node_modules").is_dir():
+        pytest.skip(
+            "apps/web/node_modules отсутствует (не сделан `npm install` в зоне агента C) — "
+            "e2e-спека валидна как контракт, но не может завестись без сборки клиента; skip."
+        )
+    if _port_is_listening(WEB_PORT):
+        pytest.skip(f"Порт {WEB_PORT} уже занят — освободите и перезапустите")
+
+    env = {**os.environ, "VITE_API_MODE": QA_STACK}
+    if QA_STACK == "real":
+        # api_server слушает жёстко :8000, ровно то, что вшито в vite.config.ts — прокси
+        # находит его без какой-либо переменной окружения (её там просто нет, см. модуль).
+        request.getfixturevalue("api_server")
+
+    log_path = LOG_DIR / ".dev-server.log"
+    log_file = log_path.open("w", encoding="utf-8")
+    process = subprocess.Popen(
+        ["npm", "run", "dev", "--", "--port", str(WEB_PORT), "--strictPort"],
+        cwd=WEB_APP_DIR,
+        env=env,
+        stdout=log_file,
+        stderr=subprocess.STDOUT,
+        preexec_fn=os.setsid,
+    )
+
+    ready = _wait_until_ready(WEB_URL + "/", STARTUP_TIMEOUT_S)
+    if not ready:
+        _terminate(process)
+        log_tail = log_path.read_text(encoding="utf-8", errors="replace")[-2000:] if log_path.exists() else "(лога нет)"
+        pytest.skip(f"dev-сервер apps/web не поднялся за {STARTUP_TIMEOUT_S:.0f}с. Хвост лога:\n{log_tail}")
+
+    try:
+        yield WEB_URL
+    finally:
+        _terminate(process)
+        log_file.close()
+
+
+@pytest.fixture(scope="session")
 def base_url(dev_server) -> str:
     """Переопределяет фикстуру pytest-playwright/pytest-base-url — page.goto("/x") в тестах
-    резолвится относительно поднятого здесь dev-сервера."""
+    резолвится относительно поднятого здесь dev-сервера, в обоих режимах одинаково."""
     return dev_server

@@ -1,6 +1,6 @@
 # Демо-пак: Абрау-Дюрсо
 
-Сгенерировано: 2026-08-27T08:57:15+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `abrau-dyurso`
+Сгенерировано: 2026-08-27T15:26:48+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `abrau-dyurso`
 
 ## Винодельня
 
