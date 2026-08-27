@@ -110,8 +110,14 @@ paths:
               properties:
                 consent_version: { type: string }
                 grant: { type: boolean }
-                scopes: { type: array, items: { type: string } }
-      responses: { "204": { description: записано в consent-ledger } }
+                scopes:
+                  type: array
+                  items: { type: string, enum: [base, profiling, geo, marketing] }
+                  # v0.3: enum обязателен к валидации — неизвестный скоуп => 400
+                  # validation_error, в ledger попадают только словарные значения
+      responses:
+        "204": { description: записано в consent-ledger }
+        "400": { description: validation_error — скоуп вне словаря }
 
   /scan/resolve:
     post:
@@ -165,8 +171,11 @@ paths:
                 image: { type: string, format: binary, description: до 8 МБ }
                 explicit_consent: { type: boolean }
       responses:
-        "200": { description: тот же ответ, что /scan/resolve }
-        "422": { description: consent_required, если explicit_consent != true }
+        "501":
+          description: >
+            not_implemented — серверный OCR сознательно отложен за MVP (решение ревью 01).
+            Клиент обязан обработать 501 честной деградацией: предложить ввод текста с
+            этикетки. v0.3: контракт приведён к реальности — раньше здесь обещался 200.
 
   /wines/{wine_id}:
     get:
@@ -197,6 +206,9 @@ paths:
         n — порядковый номер цитаты, совпадает с маркерами [n] в тексте ответа: клиент
         сопоставляет их однозначно. Каждый фактический ответ обязан нести >=1 citation;
         пустая выдача ретривера => refusal с честным текстом.
+        v0.3: стриминг НАСТОЯЩИЙ — token-события уходят по мере генерации LLM
+        (chat_stream драйвера), буферизация полного ответа запрещена: молчание 5-10 с
+        на сцене демо — это провал сцены.
       requestBody:
         content:
           application/json:
