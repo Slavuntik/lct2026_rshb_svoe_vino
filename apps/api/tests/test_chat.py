@@ -84,6 +84,61 @@ def test_chat_citations_carry_ordinal_n_matching_answer_markers(client: TestClie
         assert c["quote"]
 
 
+def test_chat_falls_back_to_prompt_citations_when_llm_omits_markers(client: TestClient, app):
+    """v0.3.2 (флаг B, следствие настоящего стриминга): если генерация
+    закончилась БЕЗ единого [n] в тексте, сервер обязан перед done отправить
+    citation-события по ВСЕМ выдержкам, реально попавшим в промпт —
+    непривязанные к тексту, но восстанавливающие гарантию "каждый ответ
+    несёт источники" по построению (контекст промпта и есть источник)."""
+
+    class _NoMarkersLLM:
+        def chat(self, messages, **kw):
+            return "Ответ без единой ссылки на источник в тексте."
+
+        def chat_stream(self, messages, **kw):
+            yield "Ответ "
+            yield "без "
+            yield "единой "
+            yield "ссылки "
+            yield "на источник в тексте."
+
+    app.state.llm = _NoMarkersLLM()
+
+    tokens = register_user(client, email="nomarkers1@example.com")
+    r = client.post("/v1/chat", json={"message": "Что подать к стейку?"}, headers=auth_header(tokens))
+    assert r.status_code == 200
+
+    events = parse_sse(r.text)
+    types = [e["type"] for e in events]
+    full_text = "".join(e["text"] for e in events if e["type"] == "token")
+    assert "[" not in full_text, "тест именно про случай без маркеров в тексте"
+
+    citations = [e for e in events if e["type"] == "citation"]
+    assert citations, "v0.3.2: цитаты обязаны прийти, даже если модель не расставила [n]"
+    assert [c["n"] for c in citations] == list(range(1, len(citations) + 1)), (
+        "нумерация n продолжается 1..N по выдержкам промпта, без дыр"
+    )
+    for c in citations:
+        assert ("wine_id" in c) ^ ("chunk_id" in c)
+        assert c["quote"]
+
+    assert types.index("citation") < types.index("done"), "citation обязана прийти до done"
+    assert types[-1] == "done"
+
+    # Кросс-проверка через персистентность: цитат ровно столько же, сколько
+    # выдержек реально ушло в промпт (trace.candidate_ids) — не часть, не с потолка.
+    with app.state.session_factory() as db:
+        from app.models import ChatMessage
+        assistant_msg = (
+            db.query(ChatMessage)
+            .filter(ChatMessage.role == "assistant")
+            .order_by(ChatMessage.at.desc())
+            .first()
+        )
+        assert len(assistant_msg.citations) == len(assistant_msg.trace["candidate_ids"])
+        assert len(assistant_msg.citations) == len(citations)
+
+
 def test_chat_requires_auth(client: TestClient):
     r = client.post("/v1/chat", json={"message": "Привет"})
     assert r.status_code == 401
