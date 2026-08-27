@@ -61,6 +61,23 @@ describe("ProfileScreen — мои данные", () => {
     }
   });
 
+  it("апгрейд гостя реально показывает сообщение об успехе, а не только меняет бейдж (регрессия из e2e агента F)", async () => {
+    // Онбординг всегда пишет дату рождения перед тем, как выдать гостевой токен —
+    // без неё мок /auth/register честно отдаёт 403 age_restricted (birth_date="").
+    storage.setBirthDate("1990-01-01");
+    renderProfile();
+
+    fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: "guest@example.com" } });
+    fireEvent.change(screen.getByLabelText(/пароль/i), { target: { value: "supersecret1" } });
+    fireEvent.click(screen.getByRole("button", { name: /создать аккаунт/i }));
+
+    // Раньше setAccountKind("registered") и setUpgradeStatus("done") прилетали одним
+    // рендером — форма (и сообщение внутри неё) размонтировались раньше, чем
+    // пользователь успевал их увидеть; единственным сигналом оставалась смена бейджа.
+    await waitFor(() => expect(screen.getByText(/полный аккаунт/i)).toBeInTheDocument());
+    expect(screen.getByText(/аккаунт создан/i)).toBeInTheDocument();
+  });
+
   it("удаление аккаунта требует подтверждения, затем чистит хранилище и уходит на лендинг", async () => {
     const events: AnalyticsEvent[] = [];
     const restore = setAnalyticsSink((event) => events.push(event));

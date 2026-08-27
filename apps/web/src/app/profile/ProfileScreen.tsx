@@ -124,6 +124,12 @@ export function ProfileScreen() {
         <span className="badge">
           {accountKind === "registered" ? t("profile.accountKindRegistered") : t("profile.accountKindGuest")}
         </span>
+        {/* Вне гейта accountKind !== "registered": апгрейд одним и тем же рендером
+            переключает и accountKind, и upgradeStatus — если держать сообщение внутри
+            формы гостя, оно размонтируется в тот же кадр, где должно появиться, и
+            пользователь его никогда не увидит (находка F, e2e). Здесь оно переживает
+            переключение бейджа и держится до размонтирования экрана (следующей навигации). */}
+        {upgradeStatus === "done" && <p className="badge badge--ok">{t("profile.guestSuccess")}</p>}
 
         <h2>{t("profile.consentsTitle")}</h2>
         <div className="checkbox-row">
@@ -170,7 +176,7 @@ export function ProfileScreen() {
             />
             <span className="field__hint">{t("profile.guestPasswordHint")}</span>
           </label>
-          {upgradeStatus === "done" && <p className="badge badge--ok">{t("profile.guestSuccess")}</p>}
+          {/* "done" сюда не долетает — форма скрыта раньше, см. комментарий у бейджа выше. */}
           {upgradeStatus === "error" && <p className="field__error">{t("profile.guestError")}</p>}
           <button type="submit" className="btn btn--primary" disabled={upgradeStatus === "submitting"}>
             {t("profile.guestSubmit")}
