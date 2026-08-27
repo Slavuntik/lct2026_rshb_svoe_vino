@@ -26,6 +26,35 @@ function nextId(): string {
 }
 
 /**
+ * Один бейдж-цитата: [n] + короткая выдержка, ссылка на первоисточник если есть url
+ * («правило каталога №5»). Общий для обеих групп — привязанных к [n] в тексте и
+ * «непривязанных» источников v0.3.2 (см. блок «Источники» ниже).
+ */
+function CitationBadge({ citation }: { citation: CitationView }) {
+  const label = citation.quote ? citation.quote.slice(0, 40) : citation.wineId;
+  if (citation.url) {
+    return (
+      <a
+        className="badge text-mono"
+        href={citation.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          if (citation.wineId) track("source_link_clicked", { wine_id: citation.wineId });
+        }}
+      >
+        [{citation.n}] {label}
+      </a>
+    );
+  }
+  return (
+    <span className="badge text-mono">
+      [{citation.n}] {label}
+    </span>
+  );
+}
+
+/**
  * Экран 4/6 — чат с сомелье. /chat отдаёт SSE (lib/sse.ts парсит token/citation/done/refusal);
  * тот же экран несёт сцену «аналог импортного» (v0.2: POST /analogs, чип-переключатель режима).
  */
@@ -256,33 +285,31 @@ export function ChatScreen() {
               </div>
             );
           }
+          // v0.3.2: при настоящем стриминге показанные токены не отозвать — если модель
+          // закончила ответ без единого маркера [n], сервер досылает citation-события перед
+          // done (контекст промпта и есть источник). Такие "непривязанные" цитаты рендерим
+          // отдельным блоком «Источники», а не молча мешаем с привязанными к [n] в тексте.
+          const linkedCitations = entry.citations.filter((citation) => entry.text.includes(`[${citation.n}]`));
+          const unlinkedCitations = entry.citations.filter((citation) => !entry.text.includes(`[${citation.n}]`));
+
           return (
             <div key={entry.id} className="chat-bubble chat-bubble--assistant">
               <div>{entry.text}</div>
-              {entry.citations.length > 0 && (
+              {linkedCitations.length > 0 && (
                 <div className="chat-citations">
-                  {entry.citations.map((citation) =>
-                    // «Правило каталога №5» — ответ обязан вести на первоисточник: [n] с url
-                    // становится ссылкой, а не просто пометкой.
-                    citation.url ? (
-                      <a
-                        key={citation.n}
-                        className="badge text-mono"
-                        href={citation.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => {
-                          if (citation.wineId) track("source_link_clicked", { wine_id: citation.wineId });
-                        }}
-                      >
-                        [{citation.n}] {citation.quote ? citation.quote.slice(0, 40) : citation.wineId}
-                      </a>
-                    ) : (
-                      <span key={citation.n} className="badge text-mono">
-                        [{citation.n}] {citation.quote ? citation.quote.slice(0, 40) : citation.wineId}
-                      </span>
-                    ),
-                  )}
+                  {linkedCitations.map((citation) => (
+                    <CitationBadge key={citation.n} citation={citation} />
+                  ))}
+                </div>
+              )}
+              {unlinkedCitations.length > 0 && (
+                <div className="chat-citations stack--tight" data-testid="chat-sources-block">
+                  <p className="text-caption field__label">{t("chat.citationsTitle")}</p>
+                  <div className="row">
+                    {unlinkedCitations.map((citation) => (
+                      <CitationBadge key={citation.n} citation={citation} />
+                    ))}
+                  </div>
                 </div>
               )}
               {entry.answerId && (

@@ -1,6 +1,8 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
+import { apiClient } from "../../lib/apiClient";
+import type { ChatStreamEvent } from "../../lib/apiTypes";
 import { renderApp } from "../../test/renderApp";
 import { ChatScreen } from "./ChatScreen";
 
@@ -47,6 +49,44 @@ describe("ChatScreen — SSE-парсер и честные отказы", () =>
       expect(clicked?.props).toMatchObject({ wine_id: "severny-sklon-krasnostop-2021" });
     } finally {
       restore();
+    }
+  });
+
+  it("v0.3.2: цитата без маркера [n] в тексте уходит в отдельный блок «Источники», ссылка кликабельна", async () => {
+    // Настоящий стриминг: показанные токены не отозвать, поэтому если модель закончила
+    // ответ без единого [n], сервер досылает citation перед done (контекст промпта —
+    // и есть источник). Эмулируем эту последовательность напрямую через apiClient.chat,
+    // не завязываясь на конкретный мок-сценарий в mocks/handlers.ts.
+    const chatSpy = vi.spyOn(apiClient, "chat").mockImplementation(async (_payload, onEvent) => {
+      const events: ChatStreamEvent[] = [
+        { type: "token", text: "Ответ без единой цитатной пометки в тексте вообще." },
+        {
+          type: "citation",
+          n: 1,
+          wine_id: "severny-sklon-krasnostop-2021",
+          url: "https://example.com/wines/severny-sklon-krasnostop-2021",
+          quote: "Тёмная вишня и специи",
+        },
+        { type: "done", answer_id: "mock-answer-orphan" },
+      ];
+      for (const event of events) onEvent(event);
+    });
+
+    try {
+      renderApp(<ChatScreen />, "/app/chat");
+      sendMessage("что-нибудь посоветуй");
+
+      await screen.findByText(/без единой цитатной пометки/);
+
+      const sourcesBlock = await screen.findByTestId("chat-sources-block");
+      expect(within(sourcesBlock).getByText(/источники/i)).toBeInTheDocument();
+
+      const link = within(sourcesBlock).getByRole("link");
+      expect(link).toHaveAttribute("href", "https://example.com/wines/severny-sklon-krasnostop-2021");
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link.getAttribute("rel")).toMatch(/noopener/);
+    } finally {
+      chatSpy.mockRestore();
     }
   });
 
