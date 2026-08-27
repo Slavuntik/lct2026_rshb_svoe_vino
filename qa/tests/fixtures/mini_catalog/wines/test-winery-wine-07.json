@@ -1,0 +1,56 @@
+{
+  "slug": "test-winery-wine-07",
+  "source": {
+    "name": "Тест Каберне Классик",
+    "winery": "test-winery",
+    "winery_name": "Тестовая Винодельня",
+    "region": "test-region",
+    "region_name": "Тестовый регион",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "тестовый оттенок",
+    "vintage": 2022,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Сыры"
+    ],
+    "description": "Смородина и табак, средние танины — синтетическое описание для теста.",
+    "public_rating": 4.0,
+    "public_rating_count": 10,
+    "roskachestvo_rating": null,
+    "image_url": "https://example.invalid/img/wine-07.webp",
+    "similar_wine_slugs": []
+  },
+  "provenance": {
+    "source_url": "https://example.invalid/wines/test-winery-wine-07",
+    "fetched_at": "2026-01-01T00:00:00+0300",
+    "content_hash": "test",
+    "parser_version": "test"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.2,
+      "acidity": 0.5,
+      "tannin": 0.3,
+      "body": 0.5,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.8,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

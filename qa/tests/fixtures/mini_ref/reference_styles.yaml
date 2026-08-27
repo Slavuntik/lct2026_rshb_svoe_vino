@@ -1,0 +1,25 @@
+# Мини-версия ref/reference_styles.yaml только для qa/test_demo_pack.py — вымышленные
+# стили, не пересекаются с настоящим 146-стильным словарём vines.
+version: 0.0-test
+target_count: 3
+styles:
+  - slug: test-bordeaux-like
+    name: Тестовый Бордо-стиль
+    country: Тестовая Франция
+    color: красное
+    stillness: тихое
+    sensory: {acidity: 0.5, body: 0.6, tannin: 0.6, sweetness: 0.1}
+
+  - slug: test-chablis-like
+    name: Тестовый Шабли-стиль
+    country: Тестовая Франция
+    color: белое
+    stillness: тихое
+    sensory: {acidity: 0.7, body: 0.4, sweetness: 0.05}
+
+  - slug: test-cava-like
+    name: Тестовый игристый стиль
+    country: Тестовая Испания
+    color: белое
+    stillness: игристое
+    sensory: {acidity: 0.65, body: 0.45, sweetness: 0.15, bubbles: 0.8}

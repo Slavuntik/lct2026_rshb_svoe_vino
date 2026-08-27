@@ -1,0 +1,378 @@
+{
+  "winery": {
+    "slug": "alma-valley",
+    "name": "Alma Valley",
+    "region_name": "Крым",
+    "founded_year": null,
+    "source_url": "https://vino-svoe.ru/wineries/alma-valley",
+    "wine_count_in_catalog": 39
+  },
+  "selection": {
+    "requested_top_n": 8,
+    "selected_count": 8,
+    "scorable_count": 39,
+    "excluded_incomplete": [],
+    "note": null,
+    "methodology": "composite = 0.65×(рейтинг/5, 0 если рейтинга нет) + 0.35×(доля заполненных необязательных полей из ['vintage', 'public_rating', 'color_in_glass', 'abv_percent', 'similar_wine_slugs', 'derived.reference_style_matches']). Карточки без обязательных полей ('name', 'color', 'sugar_category', 'grapes', 'food_pairings', 'description', 'image_url') исключаются целиком (см. excluded_incomplete), не понижаются в ранге. Равенство composite решается по рейтингу, затем по имени (детерминированность между прогонами)."
+  },
+  "bottles": [
+    {
+      "rank": 1,
+      "wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "name": "Пино Нуар",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Пино Нуар"
+      ],
+      "food_pairings": [
+        "Сыры"
+      ],
+      "description": "В аромате ежевика, фиалки, спелая вишни, малиновый джем, бальзамические травы, сафьяновая кожа и подлесок. Вкус плодово-пряный, с мягкими и бархатными танинами. долгое пряное послевкусие.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_pino_nuar_krasnoe_suhoe_13_a898042e38.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "reference_style_matches": [
+        "burgundy-pinot",
+        "cru-beaujolais",
+        "valpolicella"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 2,
+      "wine_id": "alma-valley-risling-beloe-polusuhoe-125",
+      "name": "Рислинг",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "белое",
+      "sugar_category": "полусухое",
+      "grapes": [
+        "Рислинг"
+      ],
+      "food_pairings": [
+        "Легкие закуски",
+        "Морепродукты",
+        "Салаты",
+        "Устрицы"
+      ],
+      "description": "В аромате цитрусовые тона и оттенки тропических плодов. Вкус лёгкий, плодовый, с умеренной кислотностью, приятной природной сладостью и минеральной нотой в послевкусии.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_risling_beloe_polusuhoe_125_88fc981d53.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-risling-beloe-polusuhoe-125",
+      "reference_style_matches": [
+        "riesling-kabinett",
+        "vinho-verde"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 3,
+      "wine_id": "locantita-sauvignon-blanc-chardonnay",
+      "name": "Locantita Sauvignon Blanc-Chardonnay",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "белое",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Мцване",
+        "Пино Нуар",
+        "Рислинг",
+        "Совиньон Блан",
+        "Шардоне"
+      ],
+      "food_pairings": [
+        "Блюда из птицы",
+        "Блюда из рыбы",
+        "Сыры"
+      ],
+      "description": "Аромат с тонами тропических фруктов, спелой груши, цветочными и пряными нотами. Мягкий, объёмный вкус с освежающим финишем.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/ru_pim_263023001001_01_d63898ec2e.webp",
+      "vintage": null,
+      "public_rating": 4.8,
+      "source_url": "https://vino-svoe.ru/wines/locantita-sauvignon-blanc-chardonnay",
+      "reference_style_matches": [
+        "sancerre",
+        "riesling-trocken",
+        "mtsvane-dry"
+      ],
+      "score": {
+        "rating": 4.8,
+        "rating_component": 0.96,
+        "completeness_component": 0.8333,
+        "composite": 0.9157
+      }
+    },
+    {
+      "rank": 4,
+      "wine_id": "alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75",
+      "name": "ТБА Совиньон",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "белое",
+      "sugar_category": "сладкое",
+      "grapes": [
+        "Совиньон Блан"
+      ],
+      "food_pairings": [
+        "Десерты",
+        "Сыры"
+      ],
+      "description": "В аромате тона мёда и айвового варенья. Вкус яркий, с прекрасным балансом, долгим минеральным и сладким послевкусием.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_tba_sovinon_sovinon_blan_beloe_sladkoe_75_571c20333f.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75",
+      "reference_style_matches": [],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.6667,
+        "composite": 0.8833
+      }
+    },
+    {
+      "rank": 5,
+      "wine_id": "alma-valley-locantita-merlot-cabernet-franc",
+      "name": "Alma Valley Locantita Merlot-Cabernet Franc",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Каберне Совиньон",
+        "Каберне Фран",
+        "Красностоп Анапский",
+        "Мерло",
+        "Пино Нуар",
+        "Саперави",
+        "Шираз"
+      ],
+      "food_pairings": [
+        "BBQ",
+        "Блюда из птицы",
+        "Мясное ассорти",
+        "Мясо и стейки",
+        "Пицца"
+      ],
+      "description": "Бленд с ярко выраженным ягодным профилем, с оттенками специй и пряностей в аромате. Сочный вкус со зрелыми танинами и сочной кислотностью на финише.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Alma_Velli_Lokantino_7ad51d416c.webp",
+      "vintage": null,
+      "public_rating": null,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-locantita-merlot-cabernet-franc",
+      "reference_style_matches": [
+        "cabernet-franc-loire",
+        "saperavi-georgia",
+        "merlot-chile"
+      ],
+      "score": {
+        "rating": null,
+        "rating_component": 0.0,
+        "completeness_component": 0.6667,
+        "composite": 0.2333
+      }
+    },
+    {
+      "rank": 6,
+      "wine_id": "alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14",
+      "name": "Альма Гравити. Пино Нуар - Мерло - Каберне Совиньон",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Пино Нуар"
+      ],
+      "food_pairings": [
+        "Легкие закуски",
+        "Мясо и стейки",
+        "Несладкая выпечка"
+      ],
+      "description": "Аромат мягкий, ягодный: спелая вишня, чёрная смородина и ежевика переплетаются с нюансами инжира, черешни, фиалки и лёгким тоном кофейных зёрен. Вкус сбалансированный, бархатистый, фруктовый, с изящными танинами в послевкусии.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_alma_graviti_pino_nuar_merlo_kaberne_sovinon_krasnoe_suhoe_14_aed5a84143.webp",
+      "vintage": null,
+      "public_rating": null,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14",
+      "reference_style_matches": [
+        "burgundy-pinot",
+        "cru-beaujolais",
+        "valpolicella"
+      ],
+      "score": {
+        "rating": null,
+        "rating_component": 0.0,
+        "completeness_component": 0.6667,
+        "composite": 0.2333
+      }
+    },
+    {
+      "rank": 7,
+      "wine_id": "alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15",
+      "name": "Гравити",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Каберне Совиньон",
+        "Мерло",
+        "Пино Нуар"
+      ],
+      "food_pairings": [
+        "BBQ",
+        "Блюда из птицы",
+        "Паста",
+        "Пицца"
+      ],
+      "description": "В аромате тона черешни и чёрных ягод, сафьяна, специй. Вкус сбалансированный, с шелковистой текстурой и приятным послевкусием.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_graviti_kaberne_sovinon_krasnoe_suhoe_15_018520df79.webp",
+      "vintage": null,
+      "public_rating": null,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15",
+      "reference_style_matches": [
+        "merlot-chile",
+        "tempranillo-joven",
+        "burgundy-pinot"
+      ],
+      "score": {
+        "rating": null,
+        "rating_component": 0.0,
+        "completeness_component": 0.6667,
+        "composite": 0.2333
+      }
+    },
+    {
+      "rank": 8,
+      "wine_id": "alma-valley-graviti-pino-blan-beloe-suhoe-135",
+      "name": "Гравити",
+      "winery_slug": "alma-valley",
+      "winery_name": "Alma Valley",
+      "region_name": "Крым",
+      "color": "белое",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Пино Блан",
+        "Пино Гри",
+        "Рислинг"
+      ],
+      "food_pairings": [
+        "Морепродукты"
+      ],
+      "description": "Аромат яблочный. Вкус фруктовый, с медовыми нотками.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_graviti_pino_blan_beloe_suhoe_135_78180c873a.webp",
+      "vintage": null,
+      "public_rating": null,
+      "source_url": "https://vino-svoe.ru/wines/alma-valley-graviti-pino-blan-beloe-suhoe-135",
+      "reference_style_matches": [
+        "pinot-grigio",
+        "pinot-blanc-alsace",
+        "gruner-veltliner"
+      ],
+      "score": {
+        "rating": null,
+        "rating_component": 0.0,
+        "completeness_component": 0.6667,
+        "composite": 0.2333
+      }
+    }
+  ],
+  "scenario": {
+    "scene_1_scan": {
+      "scene": 1,
+      "title": "Скан этикетки",
+      "input_bottle_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "input_description": "Живая бутылка «Пино Нуар» (Alma Valley) из демо-набора, куплена под этот пак — см. qa/demo-script.md.",
+      "sample_scan_text": "Пино Нуар, Alma Valley",
+      "expected_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "expected_card": {
+        "name": "Пино Нуар",
+        "winery_name": "Alma Valley",
+        "region_name": "Крым",
+        "color": "красное",
+        "sugar_category": "сухое",
+        "public_rating": 5.0,
+        "food_pairings": [
+          "Сыры"
+        ],
+        "source_url": "https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13"
+      },
+      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник."
+    },
+    "scene_2_sommelier": {
+      "scene": 2,
+      "available": true,
+      "title": "Вопрос сомелье",
+      "question": "Что взять к блюдам из птицы?",
+      "based_on_real_pairing": "Блюда из птицы",
+      "pairing_support_count": 3,
+      "expected_wine_ids": [
+        "locantita-sauvignon-blanc-chardonnay",
+        "alma-valley-locantita-merlot-cabernet-franc",
+        "alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15"
+      ],
+      "expected_citations": [
+        {
+          "wine_id": "locantita-sauvignon-blanc-chardonnay",
+          "name": "Locantita Sauvignon Blanc-Chardonnay",
+          "quote_hint": "Аромат с тонами тропических фруктов, спелой груши, цветочными и пряными нотами. Мягкий, объёмный вкус с освежающим финишем."
+        },
+        {
+          "wine_id": "alma-valley-locantita-merlot-cabernet-franc",
+          "name": "Alma Valley Locantita Merlot-Cabernet Franc",
+          "quote_hint": "Бленд с ярко выраженным ягодным профилем, с оттенками специй и пряностей в аромате. Сочный вкус со зрелыми танинами и сочной кислотностью на финише."
+        },
+        {
+          "wine_id": "alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15",
+          "name": "Гравити",
+          "quote_hint": "В аромате тона черешни и чёрных ягод, сафьяна, специй. Вкус сбалансированный, с шелковистой текстурой и приятным послевкусием."
+        }
+      ],
+      "success_criteria": "Ответ несёт >=2 цитаты из базы (mvp-plan.html, раздел 0) и явно называет хотя бы одно из перечисленных вин пака — без выдумки на пустой выдаче.",
+      "note": "Точный текст ответа формирует LLM/RAG во время показа (не в этом генераторе) — здесь зафиксированы факты, обязанные попасть в ответ: сами вина и их реальные гастропары из каталога, а не дословная цитата."
+    },
+    "scene_3_analog": {
+      "scene": 3,
+      "available": true,
+      "title": "Аналог импортного",
+      "user_line": "Люблю бургундское Пино Нуар",
+      "style_slug": "burgundy-pinot",
+      "style_name": "Бургундское Пино Нуар",
+      "style_country": "Франция",
+      "expected_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "expected_wine_name": "Пино Нуар",
+      "success_criteria": "Ответ предлагает российское вино в стиле «Бургундское Пино Нуар» (Франция) — как минимум Пино Нуар (alma-valley-pino-nuar-krasnoe-suhoe-13) из пака."
+    }
+  },
+  "generated_at": "2026-08-27T08:57:24+00:00",
+  "generator": {
+    "name": "svoy-somelye-demo-pack",
+    "version": "1.0.0"
+  },
+  "validation": {
+    "ok": true,
+    "checked_urls": 9,
+    "errors": [],
+    "warnings": []
+  }
+}

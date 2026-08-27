@@ -1,0 +1,389 @@
+{
+  "winery": {
+    "slug": "abrau-dyurso",
+    "name": "Абрау-Дюрсо",
+    "region_name": "Кубань",
+    "founded_year": 1870,
+    "source_url": "https://vino-svoe.ru/wineries/abrau-dyurso",
+    "wine_count_in_catalog": 51
+  },
+  "selection": {
+    "requested_top_n": 8,
+    "selected_count": 8,
+    "scorable_count": 51,
+    "excluded_incomplete": [],
+    "note": null,
+    "methodology": "composite = 0.65×(рейтинг/5, 0 если рейтинга нет) + 0.35×(доля заполненных необязательных полей из ['vintage', 'public_rating', 'color_in_glass', 'abv_percent', 'similar_wine_slugs', 'derived.reference_style_matches']). Карточки без обязательных полей ('name', 'color', 'sugar_category', 'grapes', 'food_pairings', 'description', 'image_url') исключаются целиком (см. excluded_incomplete), не понижаются в ранге. Равенство composite решается по рейтингу, затем по имени (детерминированность между прогонами)."
+  },
+  "bottles": [
+    {
+      "rank": 1,
+      "wine_id": "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+      "name": "Abrau Estates Амурский Потапенко",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Амурский Потапенко"
+      ],
+      "food_pairings": [
+        "Мясное ассорти",
+        "Сыры"
+      ],
+      "description": "В аромате цветочные ноты пионов и фиалок, тона черных ягод и фруктов – шелковицы, черной смородины и ежевики с нюансами пряностей. Во вкусе ноты синей сливы, черешни, черной смородины. Послевкусие с яркими танинами и тонкой пряностью.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_estates_amurskiy_potapenko_krasnoe_suhoe_105_a70c9cabe2.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+      "reference_style_matches": [
+        "tempranillo-joven",
+        "dolcetto",
+        "cabernet-franc-loire"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 2,
+      "wine_id": "abrau-dyurso-abrau-estates-krasnoe-kaberne-sovinon-suhoe-13",
+      "name": "Abrau Estates красное",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "красное",
+      "sugar_category": "сухое",
+      "grapes": [
+        "Каберне Совиньон",
+        "Мерло"
+      ],
+      "food_pairings": [
+        "Мясное ассорти",
+        "Сыры"
+      ],
+      "description": "В аромате фрукты, табак, чернослив, шоколад и мускатный орех. Вкус кислотный, свежий, с мягкими танинами, легкими животными и табачными нюансами в послевкусии.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_estates_krasnoe_kaberne_sovinon_suhoe_13_1770f5150f.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-krasnoe-kaberne-sovinon-suhoe-13",
+      "reference_style_matches": [
+        "merlot-chile",
+        "montepulciano-dabruzzo",
+        "cotes-du-rhone"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 3,
+      "wine_id": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+      "name": "Abrau-Durso Brut Rose Reserve",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "белое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Каберне Совиньон",
+        "Каберне Фран",
+        "Мерло",
+        "Пино Нуар",
+        "Пино фран"
+      ],
+      "food_pairings": [
+        "Легкие закуски",
+        "Морепродукты",
+        "Сыры"
+      ],
+      "description": "В аромате красные лесные ягоды — малина, вишня и земляника, оттенки пенки малинового варенья и клубники со сливками. Вкус округлый и мягкий, свежая кислотность, пряные травы в послевкусии.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_durso_brut_rose_reserve_pino_nuar_beloe_bryut_12_bb364de705.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+      "reference_style_matches": [
+        "champagne-brut-nv",
+        "pet-nat",
+        "sekt-trocken"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 4,
+      "wine_id": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+      "name": "Abrau-Durso Reserve Brut",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "белое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Пино Блан",
+        "Рислинг",
+        "Шардоне"
+      ],
+      "food_pairings": [
+        "Легкие закуски",
+        "Морепродукты"
+      ],
+      "description": "В аромате тона зеленого яблока, груши вильямс и цветов акации, оттенки пряных трав и меда. Вкус структурный, кислотный. Ноты зеленого яблока, цедры лайма и лимона.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_durso_reserve_brut_shardone_beloe_bryut_115_c2d789063b.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+      "reference_style_matches": [
+        "prosecco",
+        "champagne-blanc-de-blancs",
+        "champagne-brut-nv"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 5,
+      "wine_id": "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125",
+      "name": "Brut d'Or Blanc de Noirs",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "белое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Пино Нуар"
+      ],
+      "food_pairings": [
+        "Мясное ассорти",
+        "Сыры",
+        "Фрукты"
+      ],
+      "description": "В аромате тона смородины, земляники и вишни, ноты пастилы и зефира. Вкус яркий, полный и округлый с кремовой текстурой.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_brut_dor_blanc_de_noirs_pino_nuar_beloe_bryut_125_2d16522a48.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125",
+      "reference_style_matches": [
+        "pet-nat",
+        "champagne-brut-nv",
+        "sekt-trocken"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 6,
+      "wine_id": "abrau-dyurso-brut-dor-rose-pino-nuar-rozovoe-bryut-12",
+      "name": "Brut d'Or Rose",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "розовое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Пино Нуар"
+      ],
+      "food_pairings": [
+        "Сыры"
+      ],
+      "description": "В аромате красная смородина, малина и клюква, цветочные ноты и тонкие ароматы специй. Вкус яркий, с насыщенной текстурой, с выраженной кислотностью. Ноты зефира, домашней пастилы, клюквы в сахаре, кизилового джема.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_brut_dor_rose_pino_nuar_rozovoe_bryut_12_8b5bd155e6.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-brut-dor-rose-pino-nuar-rozovoe-bryut-12",
+      "reference_style_matches": [
+        "prosecco-rose",
+        "champagne-rose"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 7,
+      "wine_id": "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125",
+      "name": "Brut d'Or. Blanc de Blancs",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "белое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Шардоне"
+      ],
+      "food_pairings": [
+        "Легкие закуски",
+        "Морепродукты",
+        "Салаты"
+      ],
+      "description": "В аромате ноты бриоши, сливочного масла, тона белых цветов и фруктов. Вкус мягкий, свежий, с нотами минеральности в послевкусии.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_brut_dor_blanc_de_blancs_shardone_beloe_bryut_125_cf97076f41.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125",
+      "reference_style_matches": [
+        "prosecco",
+        "champagne-brut-nv",
+        "champagne-blanc-de-blancs"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    },
+    {
+      "rank": 8,
+      "wine_id": "abrau-dyurso-brut-dor-riesling-risling-beloe-bryut-12",
+      "name": "Brut d'Or. Riesling",
+      "winery_slug": "abrau-dyurso",
+      "winery_name": "Абрау-Дюрсо",
+      "region_name": "Кубань",
+      "color": "белое",
+      "sugar_category": "брют",
+      "grapes": [
+        "Рислинг"
+      ],
+      "food_pairings": [
+        "Морепродукты",
+        "Сыры"
+      ],
+      "description": "В аромате цитрусовые, белые цветы, груши и зеленые яблоки. минеральность. Во вкусе баланс кислотности, ноты яблока, дюшеса и желтой сливы. Послевкусие яркое и продолжительное.",
+      "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_brut_dor_riesling_risling_beloe_bryut_12_45b9c81ea5.webp",
+      "vintage": null,
+      "public_rating": 5.0,
+      "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-brut-dor-riesling-risling-beloe-bryut-12",
+      "reference_style_matches": [
+        "pet-nat",
+        "sekt-trocken",
+        "cremant"
+      ],
+      "score": {
+        "rating": 5.0,
+        "rating_component": 1.0,
+        "completeness_component": 0.8333,
+        "composite": 0.9417
+      }
+    }
+  ],
+  "scenario": {
+    "scene_1_scan": {
+      "scene": 1,
+      "title": "Скан этикетки",
+      "input_bottle_wine_id": "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+      "input_description": "Живая бутылка «Abrau Estates Амурский Потапенко» (Абрау-Дюрсо) из демо-набора, куплена под этот пак — см. qa/demo-script.md.",
+      "sample_scan_text": "Abrau Estates Амурский Потапенко, Абрау-Дюрсо",
+      "expected_wine_id": "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+      "expected_card": {
+        "name": "Abrau Estates Амурский Потапенко",
+        "winery_name": "Абрау-Дюрсо",
+        "region_name": "Кубань",
+        "color": "красное",
+        "sugar_category": "сухое",
+        "public_rating": 5.0,
+        "food_pairings": [
+          "Мясное ассорти",
+          "Сыры"
+        ],
+        "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105"
+      },
+      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник."
+    },
+    "scene_2_sommelier": {
+      "scene": 2,
+      "available": true,
+      "title": "Вопрос сомелье",
+      "question": "Что взять к сырам?",
+      "based_on_real_pairing": "Сыры",
+      "pairing_support_count": 6,
+      "expected_wine_ids": [
+        "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+        "abrau-dyurso-abrau-estates-krasnoe-kaberne-sovinon-suhoe-13",
+        "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+        "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125",
+        "abrau-dyurso-brut-dor-rose-pino-nuar-rozovoe-bryut-12",
+        "abrau-dyurso-brut-dor-riesling-risling-beloe-bryut-12"
+      ],
+      "expected_citations": [
+        {
+          "wine_id": "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+          "name": "Abrau Estates Амурский Потапенко",
+          "quote_hint": "В аромате цветочные ноты пионов и фиалок, тона черных ягод и фруктов – шелковицы, черной смородины и ежевики с нюансами пряностей. Во вкусе ноты синей сливы,…"
+        },
+        {
+          "wine_id": "abrau-dyurso-abrau-estates-krasnoe-kaberne-sovinon-suhoe-13",
+          "name": "Abrau Estates красное",
+          "quote_hint": "В аромате фрукты, табак, чернослив, шоколад и мускатный орех. Вкус кислотный, свежий, с мягкими танинами, легкими животными и табачными нюансами в послевкусии."
+        },
+        {
+          "wine_id": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+          "name": "Abrau-Durso Brut Rose Reserve",
+          "quote_hint": "В аромате красные лесные ягоды — малина, вишня и земляника, оттенки пенки малинового варенья и клубники со сливками. Вкус округлый и мягкий, свежая кислотнос…"
+        },
+        {
+          "wine_id": "abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125",
+          "name": "Brut d'Or Blanc de Noirs",
+          "quote_hint": "В аромате тона смородины, земляники и вишни, ноты пастилы и зефира. Вкус яркий, полный и округлый с кремовой текстурой."
+        },
+        {
+          "wine_id": "abrau-dyurso-brut-dor-rose-pino-nuar-rozovoe-bryut-12",
+          "name": "Brut d'Or Rose",
+          "quote_hint": "В аромате красная смородина, малина и клюква, цветочные ноты и тонкие ароматы специй. Вкус яркий, с насыщенной текстурой, с выраженной кислотностью. Ноты зеф…"
+        },
+        {
+          "wine_id": "abrau-dyurso-brut-dor-riesling-risling-beloe-bryut-12",
+          "name": "Brut d'Or. Riesling",
+          "quote_hint": "В аромате цитрусовые, белые цветы, груши и зеленые яблоки. минеральность. Во вкусе баланс кислотности, ноты яблока, дюшеса и желтой сливы. Послевкусие яркое…"
+        }
+      ],
+      "success_criteria": "Ответ несёт >=2 цитаты из базы (mvp-plan.html, раздел 0) и явно называет хотя бы одно из перечисленных вин пака — без выдумки на пустой выдаче.",
+      "note": "Точный текст ответа формирует LLM/RAG во время показа (не в этом генераторе) — здесь зафиксированы факты, обязанные попасть в ответ: сами вина и их реальные гастропары из каталога, а не дословная цитата."
+    },
+    "scene_3_analog": {
+      "scene": 3,
+      "available": true,
+      "title": "Аналог импортного",
+      "user_line": "Люблю шампанское брют без года",
+      "style_slug": "champagne-brut-nv",
+      "style_name": "Шампанское брют без года",
+      "style_country": "Франция",
+      "expected_wine_id": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+      "expected_wine_name": "Abrau-Durso Brut Rose Reserve",
+      "success_criteria": "Ответ предлагает российское вино в стиле «Шампанское брют без года» (Франция) — как минимум Abrau-Durso Brut Rose Reserve (abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12) из пака."
+    }
+  },
+  "generated_at": "2026-08-27T08:57:15+00:00",
+  "generator": {
+    "name": "svoy-somelye-demo-pack",
+    "version": "1.0.0"
+  },
+  "validation": {
+    "ok": true,
+    "checked_urls": 9,
+    "errors": [],
+    "warnings": []
+  }
+}

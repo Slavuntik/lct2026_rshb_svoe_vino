@@ -1,0 +1,20 @@
+{
+  "slug": "test-winery",
+  "source": {
+    "name": "Тестовая Винодельня",
+    "region": "test-region",
+    "region_name": "Тестовый регион",
+    "founded_year": 2000,
+    "description": "Синтетическая винодельня для юнит-тестов qa/test_demo_pack.py — не существует в реальном каталоге vines.",
+    "wine_slugs": []
+  },
+  "provenance": {
+    "source_url": "https://example.invalid/wineries/test-winery",
+    "fetched_at": "2026-01-01T00:00:00+0300",
+    "content_hash": "test",
+    "parser_version": "test"
+  },
+  "derived": {
+    "wine_count": 9
+  }
+}

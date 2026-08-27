@@ -1,0 +1,7 @@
+# qa/ — окружение агента F (QA, демо-паки, сквозные сценарии).
+# Установка: ~/.local/bin/uv venv --python 3.12 .venv && ~/.local/bin/uv pip install -r requirements.txt
+# (см. Makefile в корне репо — цель qa-venv делает это одной командой).
+pytest>=9.1,<10
+pyyaml>=6.0,<7
+playwright>=1.62,<2
+pytest-playwright>=0.9,<1

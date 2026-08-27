@@ -1,0 +1,6 @@
+# Рантайм-артефакты qa/ — не деликты, генерируются заново при каждом прогоне.
+# .venv/, __pycache__/, *.pyc уже покрыты корневым .gitignore; здесь — то, что специфично qa/.
+.pytest_cache/
+e2e/.dev-server.log
+test-results/
+playwright-report/
