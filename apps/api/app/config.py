@@ -52,7 +52,15 @@ class Settings:
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "5"))
     )
     cors_origins: str = field(
-        default_factory=lambda: os.environ.get("CORS_ORIGINS", "*")
+        # v0.3 (ревью 02, п.6): дефолт — localhost dev-порты Vite (apps/web,
+        # server.port=5173 в vite.config.ts; 4173 — `vite preview`), а не "*"
+        # — так CORS реально что-то ограничивает, а не документирует намерение.
+        # Прод-домен задаётся через env CORS_ORIGINS при деплое (см. infra/).
+        default_factory=lambda: os.environ.get(
+            "CORS_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173,"
+            "http://localhost:4173,http://127.0.0.1:4173",
+        )
     )
 
 

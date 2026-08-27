@@ -1,8 +1,9 @@
 """POST /scan/resolve (мок resolve_label) и POST /scan/ocr.
 
-/scan/ocr: v0.2 сокращение до 10.09 (заметка оркестратора) — веб-скан фото
-отложен, эндпоинт всегда отвечает 501 not_implemented. Форма запроса
-(multipart image + explicit_consent) объявлена по контракту, чтобы
+/scan/ocr: контракт v0.3 формализовал решение ревью 01 — веб-скан фото
+отложен за MVP, эндпоинт ВСЕГДА отвечает 501 not_implemented (раньше
+openapi.yaml ещё обещал 200/422, это было приведено к реальности). Форма
+запроса (multipart image + explicit_consent) в контракте осталась — чтобы
 сгенерированная OpenAPI-схема совпадала по путям/методам/форме — но тело не
 разбирается, ответ 501 отдаётся немедленно.
 """
@@ -35,9 +36,10 @@ def scan_resolve(
     candidates = retriever.resolve_label(body.text, hints)
     top = candidates[:5]
     matches = [
+        # meta для kind=wine — {"source": {...}, "derived": {...}} (v0.3).
         ScanMatch(
-            wine_id=c.id, name=c.meta.get("name", c.id),
-            winery_name=c.meta.get("winery_name", ""), confidence=round(c.score, 4),
+            wine_id=c.id, name=c.meta["source"].get("name", c.id),
+            winery_name=c.meta["source"].get("winery_name", ""), confidence=round(c.score, 4),
         )
         for c in top
     ]

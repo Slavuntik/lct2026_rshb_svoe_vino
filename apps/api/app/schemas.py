@@ -2,11 +2,16 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal
+from typing import Literal, get_args
 
 from pydantic import BaseModel, EmailStr, Field
 
 ConsentScope = Literal["base", "profiling", "geo", "marketing"]
+# v0.3: /consents POST валидирует scopes вручную в роутере (не через pydantic
+# Literal) — контракт требует именно 400 validation_error на неизвестном
+# скоупе, а автоматический pydantic-422 даёт другой код ответа. Список тот
+# же словарь, что и ConsentScope выше — единственный источник.
+CONSENT_SCOPES: frozenset[str] = frozenset(get_args(ConsentScope))
 
 
 class TokenPair(BaseModel):

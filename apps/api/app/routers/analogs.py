@@ -36,9 +36,11 @@ def analogs(
     )
     candidates = retriever.analog_for_style(style["slug"], filters=filters, top_k=12)
     wines = [
+        # meta для kind=wine — {"source": {...}, "derived": {...}} (v0.3).
         AnalogsWineItem(
-            wine_id=c.id, name=c.meta.get("name", c.id),
-            winery_name=c.meta.get("winery_name", ""), region_name=c.meta.get("region_name", ""),
+            wine_id=c.id, name=c.meta["source"].get("name", c.id),
+            winery_name=c.meta["source"].get("winery_name", ""),
+            region_name=c.meta["source"].get("region_name", ""),
         )
         for c in candidates
     ]

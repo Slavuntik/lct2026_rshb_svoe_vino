@@ -1,24 +1,27 @@
-"""Зеркало contracts/rag-interface.md v0.2.1 (ЗАМОРОЖЁН, правки — через
-оркестратора). Пакет packages/rag — зона агента A; на момент написания этого
-кода он не содержит ещё get_by_id/list_reference_styles/get_retriever (только
-что появились в контракте v0.2.1 по предложению агента B — см.
-reports/b-report.md), а мы не имеем права ждать (agents/B-api.md: "не жди
-его").
+"""Зеркало contracts/rag-interface.md v0.3 (ЗАМОРОЖЁН, правки — через
+оркестратора). Пакет packages/rag — зона агента A; реализован независимо по
+тому же контракту (см. packages/rag/rag/base.py, packages/rag/rag/meta.py).
 
-Поэтому Filters/Candidate/Retriever продублированы здесь дословно как
-структурный (duck-typed) контракт: MockRetriever в mock.py реализует именно
-этот Protocol, а app/rag/factory.py умеет переключиться на настоящий
-packages/rag через RAG_PROVIDER=real, если/когда пакет A появится и будет
-установлен в это окружение (см. factory.py) — предпочтительно через
-rag.get_retriever(), теперь тоже часть контракта.
+Filters/Candidate/Retriever продублированы здесь дословно как структурный
+(duck-typed) контракт: MockRetriever в mock.py реализует именно этот
+Protocol, а app/rag/factory.py умеет переключиться на настоящий packages/rag
+через RAG_PROVIDER=real (rag.get_retriever(), тоже часть контракта — v0.2.1).
 
-v0.2.2 (GET /taste/candidates, пробел нашёл агент C): MockRetriever.
-candidates_for_taste(exclude_ids, limit) — NB, это НЕ в Protocol ниже и НЕ в
-contracts/rag-interface.md — та правка v0.2.2 коснулась только openapi.yaml.
-routers/taste.py обращается к нему через getattr(..., None) с деградацией в
-пустую колоду, если у ретривера такого метода нет (тот же паттерн, что был
-у get_by_id/list_reference_styles до их включения в контракт в v0.2.1) —
-кандидат на следующую версию contracts/rag-interface.md, см. reports/b-report.md.
+v0.3 (ревью 02, блокер 1) зафиксировала форму Candidate.meta — она ЗАКОН,
+хотя в Protocol ниже не типизирована структурно (meta: dict у Candidate
+остаётся широким для гибкости; форма — дисциплина реализации, не типов):
+  kind=wine:   {"source": {...}, "derived": {...}}   — блоки карточки vines целиком
+  kind=chunk:  {"article_id", "title", "heading", "rubric"}
+  kind=winery: {"source": {...}}
+MockRetriever.get_by_id/search/resolve_label/similar/analog_for_style/
+candidates_for_taste — все используют один построитель Candidate на kind,
+поэтому meta одинаковая форма везде (см. mock.py::_wine_to_candidate/
+_chunk_to_candidate).
+
+candidates_for_taste — сигнатура нормативна с v0.3: позиционный
+`exclude_ids: list[str]`, `limit: int = 20`, БЕЗ keyword-only `*` (было
+расхождение с v0.2.2, где B держал её keyword-only с Optional/set — приведено
+к контракту и к тому, что уже реализовал агент A в packages/rag/rag/base.py).
 """
 from __future__ import annotations
 
@@ -42,7 +45,7 @@ class Candidate:
     score: float
     text: str  # текст для промпта
     url: str  # первоисточник для цитаты
-    meta: dict
+    meta: dict  # форма по kind — см. докстринг модуля (v0.3)
 
 
 class Retriever(Protocol):
@@ -76,6 +79,11 @@ class Retriever(Protocol):
     def list_reference_styles(self, top_n: int = 5) -> list[dict]:
         """Популярные стили ({"slug","name","country"}) — подсказка в 404
         /analogs. v0.2.1 (предложение агента B)."""
+
+    def candidates_for_taste(self, exclude_ids: list[str], limit: int = 20) -> list[Candidate]:
+        """Колода для GET /taste/candidates: разнообразие по цвету/региону/
+        стилю, исключая exclude_ids. Позиционный exclude_ids — нормативно
+        (v0.3), не keyword-only."""
 
 
 def get_retriever() -> Retriever:  # pragma: no cover - см. app/rag/factory.py

@@ -2,6 +2,13 @@
 фикстур из 6 вымышленных вин. Никакой векторки: rapidfuzz + жёсткие фильтры,
 детерминированно, без сети и без тяжёлых моделей — специально для разработки
 и тестов API/чата без агента A (agents/B-api.md: "не жди его").
+
+Форма Candidate.meta зафиксирована contracts/rag-interface.md v0.3 (ревью 02,
+блокер 1) — идентична packages/rag/rag/meta.py::public_meta (независимая
+реализация одного контракта, не общий код):
+  kind=wine:   {"source": {...}, "derived": {...}}
+  kind=chunk:  {"article_id", "title", "heading", "rubric"}
+  kind=winery: {"source": {...}}  (фикстур на отдельные винодельни нет)
 """
 from __future__ import annotations
 
@@ -26,8 +33,8 @@ _LABEL_MATCH_MIN_SCORE = 0.15  # ниже этого даже не возвра�
 # ~0.15-0.27 даже на не самый релевантный чанк (короткие тексты, общие
 # предлоги — сама rapidfuzz это охотно "видит"), а бессвязная латиница/цифры
 # — ниже 0.05. Порог 0.08 разделяет эти случаи и делает "пустая выдача
-# ретривера => refusal" (contracts/openapi.yaml v0.2) достижимой не только
-# юнит-тестом на стабе, но и через реальный HTTP-путь /chat.
+# ретривера => refusal" (contracts/openapi.yaml, отсечка-refusal v0.3)
+# достижимой не только юнит-тестом на стабе, но и через реальный HTTP-путь /chat.
 _SEARCH_MIN_SCORE = 0.08
 
 
@@ -58,39 +65,28 @@ def _wine_matches_filters(wine: dict, filters: Filters | None) -> bool:
 
 
 def _wine_to_candidate(wine: dict, score: float) -> Candidate:
-    meta = {
-        "name": wine["name"],
-        "winery_name": wine["winery_name"],
-        "region": wine["region"],
-        "region_name": wine["region_name"],
-        "color": wine["color"],
-        "sugar_category": wine["sugar_category"],
-        "grapes": wine["grapes"],
-        "stillness": wine["derived"]["stillness"],
-        "reference_style_matches": wine["derived"]["reference_style_matches"],
-        "image_url": wine.get("image_url"),
-    }
+    """Единственный конструктор Candidate для kind=wine — используется
+    ВЕЗДЕ (search/resolve_label/similar/analog_for_style/get_by_id/
+    candidates_for_taste), meta всегда {"source": {...}, "derived": {...}}
+    целиком (v0.3, было расхождение: get_by_id раньше отдавал полную форму,
+    остальные методы — усечённую; теперь везде одна форма, как того и
+    требует контракт)."""
+    source = {k: v for k, v in wine.items() if k not in ("slug", "derived", "source_url")}
     return Candidate(
-        id=wine["slug"], kind="wine", score=score,
-        text=_wine_text_for_prompt(wine), url=wine["source_url"], meta=meta,
+        id=wine["slug"], kind="wine", score=score, text=_wine_text_for_prompt(wine),
+        url=wine["source_url"], meta={"source": source, "derived": wine["derived"]},
     )
 
 
 def _chunk_to_candidate(chunk: dict, score: float) -> Candidate:
     return Candidate(
-        id=chunk["id"], kind="chunk", score=score, text=chunk["text"],
-        url=chunk["url"], meta={},
-    )
-
-
-def _wine_to_full_candidate(wine: dict) -> Candidate:
-    """Для get_by_id(): meta несёт source+derived целиком (как GET /wines/{id}
-    хочет их отдать), в отличие от _wine_to_candidate() выше, где meta —
-    лёгкая выжимка для цитат чата/списков совпадений."""
-    source = {k: v for k, v in wine.items() if k not in ("slug", "derived", "source_url")}
-    return Candidate(
-        id=wine["slug"], kind="wine", score=1.0, text=_wine_text_for_prompt(wine),
-        url=wine["source_url"], meta={"source": source, "derived": wine["derived"]},
+        id=chunk["id"], kind="chunk", score=score, text=chunk["text"], url=chunk["url"],
+        meta={
+            "article_id": chunk.get("article_id"),
+            "title": chunk.get("title"),
+            "heading": chunk.get("heading"),
+            "rubric": chunk.get("rubric"),
+        },
     )
 
 
@@ -185,7 +181,7 @@ class MockRetriever:
     def get_by_id(self, id: str) -> Candidate | None:
         wine = WINES_BY_SLUG.get(id)
         if wine is not None:
-            return _wine_to_full_candidate(wine)
+            return _wine_to_candidate(wine, 1.0)
         for chunk in KNOWLEDGE_CHUNKS:
             if chunk["id"] == id:
                 return _chunk_to_candidate(chunk, 1.0)
@@ -198,23 +194,21 @@ class MockRetriever:
         ]
         return styles[:top_n]
 
-    # --- v0.2.2 (пробел нашёл агент C, GET /taste/candidates) -----------
-    # НЕ часть contracts/rag-interface.md — там правки не было, только
-    # openapi.yaml. Как get_by_id/list_reference_styles до v0.2.1, это
-    # MockRetriever-расширение; предложение к контракту в reports/b-report.md
-    # (кандидат на следующую версию, если понадобится настоящему packages/rag).
-    def candidates_for_taste(self, *, exclude_ids: set[str] | None = None, limit: int = 20) -> list[Candidate]:
+    # --- v0.2.3: сигнатура нормативна (contracts/rag-interface.md v0.3) —
+    # позиционный exclude_ids: list[str], limit: int = 20. Зеркалит
+    # packages/rag/rag/base.py::candidates_for_taste агента A буквально.
+    def candidates_for_taste(self, exclude_ids: list[str], limit: int = 20) -> list[Candidate]:
         """Колода для свайп-дегустации: вымышленные вина за вычетом уже
         просмотренных (любой verdict — см. routers/taste.py), с простым
         детерминированным round-robin по цвету для разнообразия ("вина для
         экрана «паспорт вкуса»: разнообразие по цвету/региону/стилю" —
-        contracts/openapi.yaml v0.2.2). На 6 фикстурах разнообразие почти
+        contracts/openapi.yaml). На 6 фикстурах разнообразие почти
         тривиально, но алгоритм честно масштабируется на больший каталог.
         """
-        exclude_ids = exclude_ids or set()
+        exclude = set(exclude_ids)
         by_color: dict[str, list[dict]] = {}
         for wine in WINES:
-            if wine["slug"] in exclude_ids:
+            if wine["slug"] in exclude:
                 continue
             by_color.setdefault(wine["color"], []).append(wine)
 

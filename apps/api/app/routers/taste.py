@@ -2,12 +2,10 @@
 требуют scope profiling (require_profiling_consent уже отсекает гостей и
 пользователей без согласия, 403 consent_required).
 
-/taste/candidates (v0.2.2): колода для свайп-дегустации — пробел нашёл
-агент C (экран паспорта вкуса сидел на захардкоженном списке вин). Источник
-— retriever.candidates_for_taste(...), MockRetriever-расширение сверх
-contracts/rag-interface.md (см. app/rag/interface.py докстринг и
-reports/b-report.md); при отсутствии метода у ретривера — пустая колода,
-а не 500.
+/taste/candidates (v0.2.2, сигнатура retriever.candidates_for_taste
+нормативна с v0.3): колода для свайп-дегустации — пробел нашёл агент C
+(экран паспорта вкуса сидел на захардкоженном списке вин). Теперь часть
+contracts/rag-interface.md — вызывается напрямую, без getattr-деградации.
 
 Истина — таблица swipes (комментарий в contracts/schema.sql); taste_profiles
 — кэш, который эта пересчитывается на каждый /taste/swipes и никогда не
@@ -116,18 +114,20 @@ def get_taste_candidates(
     retriever: Retriever = Depends(get_retriever_dep),
     db: Session = Depends(get_db),
 ) -> TasteCandidatesResponse:
-    already_swiped = {
+    already_swiped = [
         row[0] for row in db.query(Swipe.wine_id).filter(Swipe.user_id == principal.id).distinct()
-    }
+    ]
 
-    provider = getattr(retriever, "candidates_for_taste", None)
-    candidates = provider(exclude_ids=already_swiped, limit=limit) if provider else []
+    # Позиционный exclude_ids: list[str] — нормативно с v0.3, без keyword/getattr.
+    candidates = retriever.candidates_for_taste(already_swiped, limit)
 
     wines = [
+        # meta для kind=wine — {"source": {...}, "derived": {...}} (v0.3).
         TasteCandidateItem(
-            wine_id=c.id, name=c.meta.get("name", c.id), winery_name=c.meta.get("winery_name", ""),
-            region_name=c.meta.get("region_name"), color=c.meta.get("color"),
-            image_url=c.meta.get("image_url"),
+            wine_id=c.id, name=c.meta["source"].get("name", c.id),
+            winery_name=c.meta["source"].get("winery_name", ""),
+            region_name=c.meta["source"].get("region_name"), color=c.meta["source"].get("color"),
+            image_url=c.meta["source"].get("image_url"),
         )
         for c in candidates
     ]

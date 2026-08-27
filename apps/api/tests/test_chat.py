@@ -4,8 +4,7 @@ import json
 
 from starlette.testclient import TestClient
 
-from app.chat.service import run_chat
-from app.rag.interface import Candidate
+from app.chat.service import stream_chat_events
 from tests.conftest import auth_header, make_guest, register_user
 
 
@@ -23,8 +22,8 @@ def parse_sse(text: str) -> list[dict]:
 
 class _EmptyRetriever:
     """Стаб: пустая выдача независимо от запроса — для юнит-теста refusal
-    напрямую на app.chat.service.run_chat, без завязки на подбор порогов
-    fuzzy-скоринга в MockRetriever."""
+    напрямую на app.chat.service.stream_chat_events, без завязки на подбор
+    порогов fuzzy-скоринга в MockRetriever."""
 
     index_version = "stub-empty"
 
@@ -109,15 +108,93 @@ def test_chat_persists_user_and_assistant_messages(client: TestClient, app):
         assert rows[1].trace["index_version"]
 
 
+# --- v0.3: настоящий стриминг, не буферизация -------------------------------
+#
+# TestClient.stream() в этой среде НЕ отражает реальную потоковую доставку по
+# сети даже для тривиального StreamingResponse с time.sleep() между yield —
+# проверено отдельным диагностическим скриптом на голом FastAPI-эндпоинте:
+# все server-side yield успевают отработать ДО того, как клиент получает
+# первую строку, независимо от того, насколько ленив код сервера. Значит,
+# HTTP-уровневый тест "первый token раньше последнего чанка LLM по времени"
+# бьётся о транспорт теста, а не о реальное поведение. Вместо этого — прямое,
+# детерминированное, независимое от транспорта доказательство на уровне
+# генератора: stream_chat_events() не должен вытягивать llm.chat_stream()
+# целиком (list(...)) до первого token-события.
+
+def test_stream_chat_events_pulls_llm_chunks_one_at_a_time_not_eagerly():
+    """contracts/openapi.yaml v0.3: "буферизация полного ответа запрещена".
+    Если бы stream_chat_events() делал `list(llm.chat_stream(...))` (как до
+    этой правки), то уже после ПЕРВОГО next() генератора у LLM оказались бы
+    вытянуты ВСЕ чанки. Здесь после первого next() у LLM должен быть
+    запрошен ровно один."""
+    from app.rag.mock import MockRetriever
+
+    chunks = ["[1] ", "раз ", "два ", "три ", "четыре."]
+    pulled: list[str] = []
+
+    class _CountingLLM:
+        def chat(self, messages, **kw):
+            return "".join(chunks)
+
+        def chat_stream(self, messages, **kw):
+            for chunk in chunks:
+                pulled.append(chunk)
+                yield chunk
+
+    gen = stream_chat_events(
+        message="Что подать к стейку?", retriever=MockRetriever(), llm=_CountingLLM(),
+    )
+
+    first_event = next(gen)
+    assert first_event == {"type": "token", "text": chunks[0]}
+    assert pulled == [chunks[0]], (
+        f"после первого next() LLM должен был отдать ровно 1 чанк, а отдал "
+        f"{len(pulled)} — похоже на eager-материализацию (list(...)), "
+        f"запрещённую v0.3"
+    )
+
+    second_event = next(gen)
+    assert second_event == {"type": "token", "text": chunks[1]}
+    assert pulled == chunks[:2], "второй next() должен вытянуть ровно ещё один чанк"
+
+    # Дочитываем до конца, чтобы не оставлять генератор недопотреблённым.
+    remaining = list(gen)
+    assert pulled == chunks  # к концу — все чанки, но не раньше своей очереди
+    assert remaining[-1]["type"] == "_ready"
+
+
+def test_chat_sse_over_http_delivers_tokens_in_llm_yield_order(client: TestClient, app):
+    """HTTP-уровневый регресс на КОРРЕКТНОСТЬ порядка после сборки (не на
+    тайминг доставки, см. коммент выше): дошедшие до клиента token-события
+    идут в том же порядке, что и у LLM, без потерь и перестановок."""
+    chunks = ["Раз ", "два ", "три ", "[1] ", "готово."]
+
+    class _OrderedLLM:
+        def chat(self, messages, **kw):
+            return "".join(chunks)
+
+        def chat_stream(self, messages, **kw):
+            yield from chunks
+
+    app.state.llm = _OrderedLLM()
+
+    tokens = register_user(client, email="stream2@example.com")
+    r = client.post("/v1/chat", json={"message": "Что подать к стейку?"}, headers=auth_header(tokens))
+    events = parse_sse(r.text)
+    received = [e["text"] for e in events if e["type"] == "token"]
+
+    assert received == chunks
+
+
 # --- refusal on empty retrieval ---------------------------------------------
 
-def test_run_chat_refuses_on_empty_retrieval(monkeypatch):
+def test_stream_chat_events_refuses_on_empty_retrieval_without_calling_llm():
     from llm.drivers.mock import MockLLM
 
-    outcome = run_chat(message="что угодно", retriever=_EmptyRetriever(), llm=MockLLM())
-    assert outcome.kind == "refusal"
-    assert outcome.reason
-    assert outcome.citations == []
+    llm = MockLLM()
+    events = list(stream_chat_events(message="что угодно", retriever=_EmptyRetriever(), llm=llm))
+    assert events == [{"type": "refusal", "reason": events[0]["reason"]}]
+    assert events[0]["reason"]
 
 
 def test_chat_endpoint_refuses_end_to_end_on_gibberish(client: TestClient):

@@ -212,6 +212,9 @@ WINES_BY_SLUG: dict[str, dict] = {w["slug"]: w for w in WINES}
 
 
 # "Знания" — чанки для /chat кроме самих вин (советы по подаче/сочетаниям).
+# article_id/title/heading/rubric — форма Candidate.meta для kind=chunk,
+# зафиксированная contracts/rag-interface.md v0.3 (см. packages/rag/rag/meta.py
+# у агента A — то же самое public_meta, независимо реализованное по одному контракту).
 KNOWLEDGE_CHUNKS: list[dict] = [
     {
         "id": "article:steak-pairing#1",
@@ -220,6 +223,10 @@ KNOWLEDGE_CHUNKS: list[dict] = [
             "танины уравновешивают жирность мяса, а кислотность освежает нёбо."
         ),
         "url": "https://example.com/mock-catalog/articles/steak-pairing",
+        "article_id": "steak-pairing",
+        "title": "Что подать к стейку",
+        "heading": "Красное мясо и танины",
+        "rubric": "Сочетания",
     },
     {
         "id": "article:sparkling-serving#1",
@@ -228,6 +235,10 @@ KNOWLEDGE_CHUNKS: list[dict] = [
             "так дольше сохраняется перляж."
         ),
         "url": "https://example.com/mock-catalog/articles/sparkling-serving",
+        "article_id": "sparkling-serving",
+        "title": "Как подавать игристое",
+        "heading": "Температура и бокалы",
+        "rubric": "Подача",
     },
     {
         "id": "article:dessert-wine-pairing#1",
@@ -236,6 +247,10 @@ KNOWLEDGE_CHUNKS: list[dict] = [
             "избыточная сладость десерта иначе перебивает вино."
         ),
         "url": "https://example.com/mock-catalog/articles/dessert-wine-pairing",
+        "article_id": "dessert-wine-pairing",
+        "title": "Сладкие вина и десерты",
+        "heading": "Мускат и фрукты",
+        "rubric": "Сочетания",
     },
 ]
 

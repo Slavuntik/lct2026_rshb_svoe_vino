@@ -1,6 +1,12 @@
 """GET/POST /consents. Доступно и гостю, и зарегистрированному пользователю
 — см. app/security.py. С v0.2.1 у гостя тоже есть строка users, поэтому
 отзыв base мягко удаляет и гостевую строку тоже (см. post_consents ниже).
+
+v0.3: scopes валидируется по словарю CONSENT_SCOPES вручную (не через
+pydantic Literal) — контракт требует ровно 400 validation_error на
+неизвестном скоупе, а generic-обработчик RequestValidationError отдаёт 422;
+ledger не пишется вовсе, если хоть один скоуп вне словаря (не частичная
+запись валидных скоупов).
 """
 from __future__ import annotations
 
@@ -10,8 +16,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..db import get_db
+from ..errors import ApiError
 from ..models import ConsentLedger, User
-from ..schemas import ConsentPostRequest, ConsentStateItem
+from ..schemas import CONSENT_SCOPES, ConsentPostRequest, ConsentStateItem
 from ..security import Principal, get_current_principal
 
 router = APIRouter(prefix="/consents", tags=["consents"])
@@ -43,6 +50,13 @@ def post_consents(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> None:
+    unknown = [s for s in body.scopes if s not in CONSENT_SCOPES]
+    if unknown:
+        raise ApiError(
+            400, "validation_error",
+            f"Неизвестный scope вне словаря {sorted(CONSENT_SCOPES)}: {unknown}",
+        )
+
     for scope in body.scopes:
         db.add(ConsentLedger(
             user_id=principal.id, consent_version=body.consent_version,

@@ -55,6 +55,34 @@ def test_revoking_base_via_consents_soft_deletes_registered_user(client: TestCli
     assert r.status_code == 401
 
 
+def test_post_consents_unknown_scope_is_400_validation_error(client: TestClient, app):
+    """v0.3: enum обязателен к валидации — неизвестный скоуп => 400
+    validation_error, в ledger попадают только словарные значения."""
+    tokens = register_user(client, email="c5@example.com", scopes=["base"])
+    r = client.post("/v1/consents", json={
+        "consent_version": "v1", "grant": True, "scopes": ["base", "not_a_real_scope"],
+    }, headers=auth_header(tokens))
+    assert r.status_code == 400
+    assert r.json()["error"]["code"] == "validation_error"
+
+    from app.models import ConsentLedger, User
+    with app.state.session_factory() as db:
+        user = db.query(User).filter(User.email == "c5@example.com").one()
+        rows = db.query(ConsentLedger).filter(ConsentLedger.user_id == user.id).all()
+        scopes_written = {r.scope for r in rows}
+        assert "not_a_real_scope" not in scopes_written
+        # запрос отклонён целиком — второй "base" из этого же вызова тоже не попал в ledger
+        assert len([r for r in rows if r.scope == "base"]) == 1  # только из регистрации
+
+
+def test_post_consents_all_dictionary_scopes_are_accepted(client: TestClient):
+    tokens = register_user(client, email="c6@example.com", scopes=["base"])
+    r = client.post("/v1/consents", json={
+        "consent_version": "v1", "grant": True, "scopes": ["base", "profiling", "geo", "marketing"],
+    }, headers=auth_header(tokens))
+    assert r.status_code == 204
+
+
 def test_guest_can_use_consents(client: TestClient):
     """v0.2.1: гость — полноценная строка users, но /consents работал для
     него и раньше (v0.2, когда строки не было вовсе) — ledger никогда не

@@ -5,6 +5,7 @@ DATABASE_URL по умолчанию файловый SQLite рядом с пр�
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from llm.base import get_llm
 
 from .config import get_settings
@@ -42,6 +43,18 @@ def create_app() -> FastAPI:
 
     app.state.retriever = get_retriever(settings)
     app.state.llm = get_llm()
+
+    # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
+    # существовало, но никто его не читал. Bearer-токены в Authorization,
+    # не куки => allow_credentials не нужен (и опаснее сочетать с "*").
+    origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     register_error_handlers(app)
 
