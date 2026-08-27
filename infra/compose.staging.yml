@@ -62,14 +62,23 @@ services:
       # в compose.prod.yml и infra/.env.staging.example.
       - ../.env
     environment:
-      # См. подробный комментарий в compose.prod.yml: packages/rag сейчас поддерживает
-      # только embedded/локальный Qdrant (RAG_QDRANT_PATH) — эта переменная пока не
-      # читается ничьим кодом, задел на будущее до интеграции.
-      RAG_QDRANT_URL: http://qdrant:6333
+      # ИСПРАВЛЕНО по ревью 02 — см. подробное объяснение в compose.prod.yml (было
+      # RAG_QDRANT_URL, никем не читается; реальные имена — RAG_PROVIDER/RAG_MODE/QDRANT_URL,
+      # проверено по apps/api/app/rag/factory.py и packages/rag/rag/base.py::get_retriever).
+      # staging — обязательно real+qdrant, а не mock: это целевая среда для eval-гейта
+      # (../../docs/architecture.html — «Mac → staging → eval-гейт → prod»), тестировать
+      # реальный retrieval на моке бессмысленно.
+      RAG_PROVIDER: real
+      RAG_MODE: qdrant
+      QDRANT_URL: http://qdrant:6333
+      RAG_DATA_DIR: /data/rag
       # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine, см.
       # compose.prod.yml. Драйвер psycopg[binary] пока не в apps/api/pyproject.toml.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       ENVIRONMENT: staging
+    volumes:
+      # Публикуется infra/scripts/publish-index.sh — см. RUNBOOK «Деплой индекса».
+      - /opt/somelye/staging/rag-data/current:/data/rag:ro
     depends_on:
       postgres:
         condition: service_healthy

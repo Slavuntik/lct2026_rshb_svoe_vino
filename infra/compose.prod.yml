@@ -68,18 +68,33 @@ services:
       # уровень выше infra/. См. infra/.env.prod.example — реальный файл только на хосте.
       - ../.env
     environment:
-      # RAG_QDRANT_URL: по образцу RAG_QDRANT_PATH в packages/rag/rag/config.py (агент A) —
-      # сейчас packages/rag умеет только embedded/локальный Qdrant по пути (RAG_QDRANT_PATH),
-      # сетевого клиента ещё нет. Переменная здесь — задел на будущее (см. reports/e-report.md,
-      # раздел «Предложения к контрактам»): пока packages/rag не научится ходить в qdrant:6333
-      # по сети, эта переменная просто не читается никаким кодом — сервис qdrant при этом
-      # уже поднят и готов, менять инфру, когда интеграция случится, не придётся.
-      RAG_QDRANT_URL: http://qdrant:6333
+      # ИСПРАВЛЕНО по ревью 02 (было RAG_QDRANT_URL — переменная, которую никто не читает).
+      # Реальные имена — проверено по коду: apps/api/app/rag/factory.py читает RAG_PROVIDER
+      # (mock|real, дефолт mock — здесь явно real, иначе всё нижеперечисленное не используется
+      # вообще); packages/rag/rag/base.py::get_retriever() читает RAG_MODE (embedded|qdrant,
+      # дефолт embedded) и, при RAG_MODE=qdrant, бросает исключение без QDRANT_URL
+      # (packages/rag/rag/config.py — переменная БЕЗ префикса RAG_, в отличие от RAG_QDRANT_PATH
+      # для embedded-режима — так называет её сам пакет, не переименовывать на своей стороне).
+      RAG_PROVIDER: real
+      RAG_MODE: qdrant
+      QDRANT_URL: http://qdrant:6333
+      # Сайдкар-артефакты ingest'а (payloads/bm25/labels/manifest — Qdrant они не хранит,
+      # см. packages/rag/rag/config.py: PAYLOADS_DIR/BM25_DIR/LABELS_PATH/MANIFEST_PATH).
+      # Публикуются infra/scripts/publish-index.sh в volume ниже, читаются один раз при
+      # старте api (get_retriever() вызывается в create_app()) — обновление требует restart
+      # api, publish-index.sh делает это сам после переключения симлинка.
+      RAG_DATA_DIR: /data/rag
       # postgresql+psycopg (psycopg3, синхронный) — под sqlalchemy.create_engine в
       # apps/api/app/db.py (СИНХРОННЫЙ engine, не asyncpg). Драйвер psycopg[binary] пока
       # не в apps/api/pyproject.toml — см. reports/e-report.md, «Блокеры».
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       ENVIRONMENT: prod
+    volumes:
+      # Только для чтения: api никогда не пишет индекс сам, только читает то, что положил
+      # publish-index.sh (rsync + симлинк current, см. RUNBOOK «Деплой индекса»). Пустой
+      # каталог на первом запуске (до первой публикации индекса) — retriever увидит
+      # пустые payloads/labels и будет честно отвечать refusal, это ожидаемо, не баг.
+      - /opt/somelye/prod/rag-data/current:/data/rag:ro
     depends_on:
       postgres:
         condition: service_healthy

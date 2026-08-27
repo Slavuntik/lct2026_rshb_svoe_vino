@@ -202,10 +202,18 @@ git clone <URL-репозитория> /opt/somelye/staging
 
 for env in prod staging; do
   mkdir -p /opt/somelye/$env/releases /opt/somelye/$env/incoming /opt/somelye/$env/logs
+  mkdir -p /opt/somelye/$env/rag-data   # индекс RAG — публикуется отдельно, см. §5
 done
 sudo mkdir -p /opt/somelye/tls
 sudo chown deploy:deploy /opt/somelye/tls
 ```
+
+`rag-data/` до первой публикации индекса (`infra/scripts/publish-index.sh`, §5) — пустой
+каталог. `compose.*.yml` монтирует `rag-data/current` (симлинка там ещё нет) в контейнер
+`api` — Docker создаст `current` как пустую ДИРЕКТОРИЮ на хосте автоматически при первом
+`up -d`, если её нет вообще (обычное поведение bind-mount на несуществующий путь). Это
+неважно: `publish-index.sh` при первой публикации всё равно сначала создаёт настоящую
+версионную папку и только потом атомарно подменяет `current` на симлинк — see §5.
 
 ### 2.7 Секреты на хосте
 
@@ -369,37 +377,68 @@ ssh deploy@<host>
 
 ---
 
-## 5. Индексы: Mac → staging → eval-гейт → prod
+## 5. Деплой индекса: Mac → staging → eval-гейт → prod
 
-Ниже — ПЛАН на момент, когда `packages/rag` научится ходить в сетевой Qdrant (см.
-`reports/e-report.md`, «Предложения к контрактам»: сейчас там только embedded/локальный
-режим по пути `RAG_QDRANT_PATH`, без сети). Когда появится сетевой клиент (по образцу
-`RAG_QDRANT_URL`, см. `compose.*.yml`) — с Mac Вячеслава индекс катится через ssh-туннель,
-Qdrant порт нигде не публикуется в интернет:
+Обновлено по ревью 02 — ниже РЕАЛЬНЫЙ путь, сверенный по коду (`packages/rag/rag/base.py`,
+`rag/store.py`, `rag/ingest.py`, `rag/cli.py`), не план на будущее. Два независимых шага:
+
+**А. Векторы — сетевой Qdrant напрямую, по ssh-туннелю, БЕЗ CLI-флага** (`rag ingest`/
+`rag eval` не знают флага вида `--qdrant-url` — таргет управляется ИСКЛЮЧИТЕЛЬНО через
+env `QDRANT_URL`, который читает `packages/rag/rag/config.py` и передаёт в `QdrantStore`
+что при `rag ingest`, что при голом `Retriever()` внутри `rag eval`):
 
 ```bash
-# туннель на staging-Qdrant:
+cd packages/rag && source .venv/bin/activate
+
+# Туннель на staging-Qdrant (порт хоста — из таблицы §0, staging = 16333, prod = 6333):
 ssh -N -L 6333:127.0.0.1:16333 deploy@<host> &
-# теперь на Mac Qdrant staging виден как http://localhost:6333
-RAG_QDRANT_URL=http://localhost:6333 uv run rag ingest --source /Users/.../vines/build --version 20260910.1
-RAG_QDRANT_URL=http://localhost:6333 uv run rag eval --goldset eval/goldset.jsonl
+TUNNEL_PID=$!
+
+# Пишет векторы НАПРЯМУЮ в сетевой Qdrant по туннелю; локально (packages/rag/data/) при
+# этом ВСЁ РАВНО остаются payloads/bm25/labels/manifest — их Qdrant не хранит (см. Б).
+QDRANT_URL=http://localhost:6333 rag ingest --version 20260910.1
+
+# Голд-сет — тоже через QDRANT_URL (rag eval строит голый Retriever(), который так же
+# читает QDRANT_URL из env, см. rag/base.py::Retriever.__init__ -> QdrantStore(path=...)):
+QDRANT_URL=http://localhost:6333 rag eval --bench-n 100
+
+kill "$TUNNEL_PID"
 ```
 
-(Точные имена CLI-флагов/env — сверить с `reports/a-report.md`, когда `packages/rag/rag/cli.py`
-появится: на момент написания этого RUNBOOK в `pyproject.toml` пакета уже объявлен entry point
-`rag = "rag.cli:main"`, но самого `cli.py` в дереве ещё нет.)
+Гейт: hit@8 ≥ 0.85 (`contracts/rag-interface.md`), смотреть `eval/report.json` (путь
+печатается в конце `rag eval`). Не зелёно — не переходим к Б, тем более к prod.
 
-После зелёного `rag eval` (hit@8 ≥ 0.85, `contracts/rag-interface.md`) — переиндексировать
-тем же способом на prod-туннеле (`-L 6333:127.0.0.1:6333`, порт prod без "1" спереди).
-Версия индекса видна в `GET /v1/healthz` (`{"status": "ok", "index_version": "..."}`,
-проверено по факту в `apps/api/app/routers/health.py`) — свериться, что после
-переиндексации `index_version` обновился на ожидаемый.
+**Б. Сайдкар-файлы (payloads/bm25/labels/manifest) — `publish-index.sh`, отдельно от
+шага А.** Qdrant их не хранит, а Retriever'у они нужны с диска (`packages/rag/rag/base.py`:
+`Retriever.__init__` читает `data_dir` при СТАРТЕ ПРОЦЕССА) — без этого шага `api` после
+шага А будет находить вектора в Qdrant, но payloads/BM25/labels — пустыми:
 
-До тех пор, пока сетевого режима нет: индекс, собранный `rag ingest` в embedded-режиме,
-живёт как файлы на диске ТАМ, где запущен процесс, использующий `packages/rag` (сейчас —
-только локальная машина/тесты, т.к. `RAG_PROVIDER=real` в `apps/api` тоже пока не подключён
-по факту, см. `apps/api/app/rag/factory.py`) — переносить такой каталог на VPS вручную не
-описываем здесь: это временное состояние интеграции, а не целевая архитектура.
+```bash
+DEPLOY_SSH_HOST=<ip-хоста> infra/scripts/publish-index.sh staging
+```
+
+Скрипт (см. подробные комментарии в самом файле): читает версию из
+`packages/rag/data/manifest.json`, `rsync` на хост в НОВЫЙ каталог `rag-data/<version>/`,
+проверяет полноту НА ХОСТЕ, только потом атомарно переключает симлинк
+`rag-data/current` (`ln -sfn`), рестартует контейнер `api` (`RAG_DATA_DIR` читается один
+раз при старте — простого обновления файлов под уже смонтированным путём недостаточно),
+ждёт healthcheck и откатывает симлинк + рестарт автоматически, если `api` не поднялся
+healthy. Держит последние 5 версий на хосте.
+
+После зелёного eval на staging — оба шага (А потом Б) повторяются на prod-туннеле
+(`-L 6333:127.0.0.1:6333`, без завершающей «1» в порту — см. таблицу портов §0, и
+`infra/scripts/publish-index.sh prod` вторым шагом). Версия индекса видна в
+`GET /v1/healthz` → `{"status": "ok", "index_version": "..."}` (проверено по коду —
+`apps/api/app/routers/health.py`) — свериться, что после публикации `index_version`
+обновился на ожидаемый.
+
+Откат индекса (если новая версия оказалась хуже уже ПОСЛЕ того, как прошла healthcheck) —
+руками на хосте, тот же приём, что использует сам скрипт при провале healthcheck:
+```bash
+ssh deploy@<host> "ln -sfn <предыдущая-версия> /opt/somelye/<env>/rag-data/current && \
+  cd /opt/somelye/<env> && docker compose -p <env> -f infra/compose.<env>.yml --env-file .env restart api"
+```
+Список версий на хосте: `ssh deploy@<host> ls -1 /opt/somelye/<env>/rag-data/`.
 
 ---
 
@@ -528,10 +567,10 @@ docker compose -p prod -f /opt/somelye/prod/infra/compose.prod.yml exec -T api \
 ## 10. Известные допущения этого RUNBOOK
 
 Инфраструктура писалась параллельно с кодом (`ORCHESTRATION.md`). Часть предположений уже
-удалось сверить с реальным кодом B/A по ходу работы (`app.main:app` как ASGI-путь,
-`/v1/healthz` -> `{status, index_version}` — оба подтвердились без правок). Главный
-ОТКРЫТЫЙ вопрос — сетевой Qdrant: `packages/rag` сейчас умеет только embedded/локальный
-режим (`RAG_QDRANT_PATH`), сервис `qdrant` в compose-файлах (обязателен по этому брифу и
-по архитектуре) им пока не используется — см. `reports/e-report.md`, раздел «Предложения к
-контрактам», это решает оркестратор, не переписывать `packages/rag` в одностороннем
-порядке. Полный список допущений, рисков и блокеров — `reports/e-report.md`.
+удалось сверить с реальным кодом A/B по ходу работы (`app.main:app` как ASGI-путь,
+`/v1/healthz` -> `{status, index_version}`, а по ревью 02 — и полная цепочка сетевого
+Qdrant: `RAG_PROVIDER=real` + `RAG_MODE=qdrant` + `QDRANT_URL` + `RAG_DATA_DIR`, все имена
+сверены напрямую по `apps/api/app/rag/factory.py` и `packages/rag/rag/base.py`/`config.py`).
+Остаётся открытым только то, что перечислено в `reports/e-report.md` («Блокеры»): нет
+`apps/api/uv.lock`, нет Postgres-драйвера (`psycopg[binary]`) в `apps/api/pyproject.toml`.
+Полный список допущений, рисков и блокеров — там же.

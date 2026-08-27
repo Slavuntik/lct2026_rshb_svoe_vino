@@ -112,7 +112,7 @@ while IFS= read -r f; do
 done < <(find infra/scripts -type f -name '*.sh' 2>/dev/null | sort)
 
 if [[ "${#SH_FILES[@]}" -eq 0 ]]; then
-    bad "infra/scripts/ пуст — ожидались backup.sh/restore.sh/deploy.sh/validate.sh"
+    bad "infra/scripts/ пуст — ожидались backup.sh/restore.sh/deploy.sh/publish-index.sh/validate.sh"
 else
     for f in "${SH_FILES[@]}"; do
         if bash -n "$f" 2>/tmp/validate_sh_err.$$; then
@@ -143,6 +143,7 @@ REQUIRED_FILES=(
     "infra/scripts/backup.sh"
     "infra/scripts/restore.sh"
     "infra/scripts/deploy.sh"
+    "infra/scripts/publish-index.sh"
     "infra/scripts/validate.sh"
     ".github/workflows/ci.yml"
     ".github/workflows/deploy.yml"
