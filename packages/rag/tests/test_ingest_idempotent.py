@@ -18,8 +18,11 @@ def _line_count(path) -> int:
 def test_repeated_ingest_does_not_duplicate(tiny_source, tmp_path):
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path / "data"
+    no_goldset = tmp_path / "no-such-goldset.jsonl"  # см. conftest.tiny_index — калибровка не в тему мини-фикстуры
 
-    manifest1 = run_ingest(version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir)
+    manifest1 = run_ingest(
+        version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+    )
     store = QdrantStore(path=data_dir / "qdrant")
     counts_after_first = {name: store.count(name) for name in ("wines", "wineries", "knowledge")}
     payload_lines_first = {
@@ -33,7 +36,9 @@ def test_repeated_ingest_does_not_duplicate(tiny_source, tmp_path):
 
     # Повторный прогон — тот же источник, тот же data_dir, ДРУГАЯ версия
     # (как если бы оператор перегнал ingest ещё раз тем же source).
-    manifest2 = run_ingest(version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir)
+    manifest2 = run_ingest(
+        version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+    )
     store = QdrantStore(path=data_dir / "qdrant")
     counts_after_second = {name: store.count(name) for name in ("wines", "wineries", "knowledge")}
     payload_lines_second = {
@@ -55,13 +60,18 @@ def test_ingest_point_ids_are_stable_across_runs(tiny_source, tmp_path):
 
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path / "data"
-    run_ingest(version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir)
+    no_goldset = tmp_path / "no-such-goldset.jsonl"
+    run_ingest(
+        version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+    )
 
     store = QdrantStore(path=data_dir / "qdrant")
     vec_before = store.get_vector("wines", "red-dry-kuban-1")
     store.close()
 
-    run_ingest(version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir)
+    run_ingest(
+        version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+    )
     store = QdrantStore(path=data_dir / "qdrant")
     vec_after = store.get_vector("wines", "red-dry-kuban-1")
     store.close()

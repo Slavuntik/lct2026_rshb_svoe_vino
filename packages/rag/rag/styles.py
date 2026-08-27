@@ -12,6 +12,7 @@ from collections import Counter
 
 from rag import refdata
 from rag.filtering import passes_filters
+from rag.meta import public_meta
 from rag.resolve import resolve_style
 from rag.types import Candidate, Filters
 
@@ -84,7 +85,7 @@ class StyleMatcher:
                     score=score,
                     text=payload.get("text", ""),
                     url=payload.get("url", ""),
-                    meta=payload,
+                    meta=public_meta(payload),
                 )
             )
         return results

@@ -248,8 +248,19 @@ def tiny_source(tmp_path_factory) -> tuple[Path, Path]:
 def tiny_index(tmp_path_factory, tiny_source) -> Retriever:
     """Полный ingest мини-каталога в изолированный data_dir + Retriever без
     реранкера (NoOpReranker) — тесты на фильтры/идемпотентность/eval не должны
-    зависеть от кросс-энкодера и его кэша на конкретной машине."""
+    зависеть от кросс-энкодера и его кэша на конкретной машине.
+
+    goldset_path указывает на заведомо отсутствующий файл: калибровка
+    refusal-порога (rag/ingest.py) иначе по умолчанию взяла бы РЕАЛЬНЫЙ
+    eval/goldset.jsonl (75 вопросов) и прогнала бы его через реальный
+    кросс-энкодер поверх мини-каталога — бессмысленно (вопросы про реальные
+    вина, которых в фикстуре нет) и на порядок медленнее. refusal_threshold
+    для этой фикстуры остаётся None (выключен) — он отдельно юнит-тестируется
+    в test_refusal.py на фиктивном реранкере, без потребности в калибровке."""
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path_factory.mktemp("rag_data")
-    run_ingest(version="test", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir)
+    no_goldset = data_dir / "no-such-goldset.jsonl"
+    run_ingest(
+        version="test", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+    )
     return Retriever(data_dir=data_dir, reranker=NoOpReranker())

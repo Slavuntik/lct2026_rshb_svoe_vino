@@ -13,6 +13,7 @@ from __future__ import annotations
 import random
 from datetime import datetime, timezone
 
+from rag.meta import public_meta
 from rag.types import Candidate
 
 
@@ -72,7 +73,7 @@ def build_taste_deck(
             score=1.0,
             text=w.get("text", ""),
             url=w.get("url", ""),
-            meta=w,
+            meta=public_meta(w),
         )
         for w in deck
     ]

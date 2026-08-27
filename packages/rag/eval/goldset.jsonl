@@ -65,3 +65,11 @@
 {"q": "Какие винодельни можно посетить в Ставропольском крае?", "type": "travel", "expect_ids": ["winery:ferrum-winery", "winery:levokumskoe", "winery:vinodelnya-batrak", "winery:vinodelnya-marko"], "expect_any": true}
 {"q": "Куда поехать за вином в Дагестане — какие там есть винодельни?", "type": "travel", "expect_ids": ["winery:agrolayn", "winery:derbent-vino"], "expect_any": true}
 {"q": "Какие винодельни работают в Долине Дона?", "type": "travel", "expect_ids": ["winery:blagolyubov", "winery:dacha-serdyuka", "winery:donskoe-vinodelcheskoe-hozyaystvo-elbuzd", "winery:tsimlyanskie-vina", "winery:usadba-sarkel", "winery:vina-arpachina", "winery:vinabani", "winery:vinodelnya-molchanova", "winery:vinodelnya-vedernikov"], "expect_any": true}
+{"q": "Как починить карбюратор на старой машине?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Какая столица Франции?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Напиши код на Python для сортировки списка пузырьком.", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Сколько будет дважды два умножить на десять?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Как приготовить борщ по классическому рецепту?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Когда следующий чемпионат мира по футболу?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Посоветуй хороший фильм ужасов на вечер.", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Как настроить wifi роутер дома?", "type": "refusal", "expect_ids": [], "expect_any": true}

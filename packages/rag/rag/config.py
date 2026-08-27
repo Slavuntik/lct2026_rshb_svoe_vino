@@ -8,6 +8,9 @@ import os
 from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent  # packages/rag
+DEFAULT_GOLDSET_PATH = Path(
+    os.environ.get("RAG_GOLDSET", str(PACKAGE_ROOT / "eval" / "goldset.jsonl"))
+)
 
 # --- Источник данных (vines, read-only) ---------------------------------
 VINES_ROOT = Path(os.environ.get("RAG_VINES_ROOT", "/Users/vyacheslavfokin/ClaudeWorkspace/vines"))

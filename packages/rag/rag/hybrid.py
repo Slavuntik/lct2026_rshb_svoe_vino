@@ -10,6 +10,7 @@ from __future__ import annotations
 from rag import config
 from rag.embeddings import BM25Index, DenseEmbedder
 from rag.filtering import passes_filters
+from rag.meta import public_meta
 from rag.rerank import Reranker
 from rag.store import QdrantStore, build_filter
 from rag.types import Candidate, Filters
@@ -27,12 +28,20 @@ class HybridSearcher:
         bm25_indexes: dict[str, BM25Index],
         payload_by_id: dict[str, dict[str, dict]],
         reranker: Reranker,
+        refusal_threshold: float | None = None,
     ):
         self.store = store
         self.embedder = embedder
         self.bm25_indexes = bm25_indexes
         self.payload_by_id = payload_by_id
         self.reranker = reranker
+        # Порог отсечки-refusal (контракт v0.3, ревью 02, блокер-риск 2):
+        # top-скор ПОСЛЕ реранка ниже порога -> search() отдаёт [] вместо
+        # формально «каких-то», но нерелевантных результатов. Калиброван на
+        # голд-сете (rag/calibrate.py), хранится в manifest.json. None —
+        # калибровка не проводилась (например, синтетическая тестовая
+        # фикстура без голд-сета) -> refusal выключен.
+        self.refusal_threshold = refusal_threshold
 
     # ------------------------------------------------------------------ #
     def _dense_hits(self, query: str, filters: Filters | None, collections: tuple[str, ...], pool: int):
@@ -94,6 +103,7 @@ class HybridSearcher:
         collections: tuple[str, ...] = ("wines", "knowledge"),
         top_k: int = 8,
         use_reranker: bool = True,
+        apply_refusal: bool = True,
     ) -> list[Candidate]:
         pool = config.CANDIDATE_POOL
         dense_hits = self._dense_hits(query, filters, collections, pool)
@@ -116,6 +126,19 @@ class HybridSearcher:
             n = len(final_ids)
             final_scores = [float(n - i) for i in range(n)]
 
+        # Отсечка-refusal: только на реранкнутом скоре (порог откалиброван
+        # именно под шкалу кросс-энкодера — у RRF-скора без реранка другая
+        # шкала, там порог не откалиброван и всегда бы резал). apply_refusal
+        # выключается калибровкой (rag/calibrate.py), которой нужен сырой скор.
+        if (
+            use_reranker
+            and apply_refusal
+            and self.refusal_threshold is not None
+            and final_scores
+            and final_scores[0] < self.refusal_threshold
+        ):
+            return []
+
         results = []
         for gid, score in zip(final_ids[:top_k], final_scores[:top_k]):
             payload = payload_lookup[gid]
@@ -126,7 +149,7 @@ class HybridSearcher:
                     score=round(float(score), 4),
                     text=payload.get("text", ""),
                     url=payload.get("url", ""),
-                    meta=payload,
+                    meta=public_meta(payload),
                 )
             )
         return results
@@ -172,7 +195,7 @@ class HybridSearcher:
                     score=round(float(score), 4),
                     text=payload.get("text", ""),
                     url=payload.get("url", ""),
-                    meta=payload,
+                    meta=public_meta(payload),
                 )
             )
             if len(results) >= top_k:

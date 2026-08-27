@@ -19,6 +19,8 @@ from rag import config
 from rag import resolve as resolve_mod
 from rag.embeddings import BM25Index, DenseEmbedder
 from rag.hybrid import HybridSearcher
+from rag.intent import infer_collections
+from rag.meta import public_meta
 from rag.rerank import build_reranker
 from rag.store import QdrantStore
 from rag.styles import StyleMatcher
@@ -78,6 +80,7 @@ class Retriever:
             bm25_indexes=self.bm25_indexes,
             payload_by_id=self.payload_by_id,
             reranker=self.reranker,
+            refusal_threshold=(self._manifest or {}).get("refusal_threshold"),
         )
 
     def _load_manifest(self) -> dict | None:
@@ -100,15 +103,32 @@ class Retriever:
         query: str,
         *,
         filters: Filters | None = None,
-        collections: tuple[str, ...] = ("wines", "knowledge"),
+        collections: tuple[str, ...] | None = None,
         top_k: int = 8,
     ) -> list[Candidate]:
+        """`collections=None` (не передан явно) -> лёгкая эвристика по тексту
+        вопроса (rag/intent.py, контракт v0.3 п.3): травел/факт/подбор вина
+        роутятся в разные коллекции, чтобы длинные статьи не вытесняли
+        терпимые карточки вина из top-k (см. отчёт A). Явно переданный
+        collections — например ("wines","knowledge") как раньше — эвристику
+        отключает целиком, побеждает воля вызывающего."""
+        if collections is None:
+            collections = infer_collections(query)
         return self.hybrid.search(query, filters=filters, collections=collections, top_k=top_k)
 
     def resolve_label(self, text: str, hints: dict | None = None) -> list[Candidate]:
         """Для /scan/resolve: fuzzy по name+winery_name(+синонимы сортов),
-        rapidfuzz, НЕ векторный поиск."""
-        return resolve_mod.resolve_label(text, self.labels, hints=hints)
+        rapidfuzz, НЕ векторный поиск. Форма meta (kind=wine всегда несёт
+        source/derived — контракт v0.3) достраивается из payload-кэша по id;
+        match_score/low_confidence добавляются поверх — это специфика
+        резолва этикетки, не часть фиксированной формы, но и не в ущерб ей."""
+        matches = resolve_mod.resolve_label(text, self.labels, hints=hints)
+        results = []
+        for c in matches:
+            wine_payload = self.payload_by_id.get("wines", {}).get(c.id, {})
+            meta = {**public_meta(wine_payload), **c.meta}
+            results.append(Candidate(id=c.id, kind=c.kind, score=c.score, text=c.text, url=c.url, meta=meta))
+        return results
 
     def similar(self, wine_id: str, top_k: int = 6) -> list[Candidate]:
         return self.hybrid.similar(wine_id, top_k=top_k)
@@ -145,7 +165,7 @@ class Retriever:
             score=1.0,
             text=payload.get("text", ""),
             url=payload.get("url", ""),
-            meta=payload,
+            meta=public_meta(payload),
         )
 
     def list_reference_styles(self, top_n: int = 5) -> list[dict]:

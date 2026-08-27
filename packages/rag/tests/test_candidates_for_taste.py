@@ -6,7 +6,17 @@ from __future__ import annotations
 from rag.taste import build_taste_deck
 
 _WINES = [
-    {"id": f"w{i}", "kind": "wine", "text": f"вино {i}", "url": f"https://x/{i}", "filters": {"color": c, "region": r, "reference_style_matches": [s] if s else []}}
+    {
+        "id": f"w{i}",
+        "kind": "wine",
+        "text": f"вино {i}",
+        "url": f"https://x/{i}",
+        "filters": {"color": c, "region": r, "reference_style_matches": [s] if s else []},
+        # meta наружу строится из source/derived (контракт v0.3, блокер 1) —
+        # "filters" выше остаётся внутренним (используется diversity-логикой).
+        "source": {"color": c, "region_name": r},
+        "derived": {"reference_style_matches": [s] if s else []},
+    }
     for i, (c, r, s) in enumerate(
         [
             ("красное", "kuban", "bordeaux-right-bank"),
@@ -33,7 +43,7 @@ def test_deck_respects_limit_and_excludes_ids():
 
 def test_deck_is_diverse_in_color():
     deck = build_taste_deck(_WINES, exclude_ids=[], limit=6, seed=1)
-    colors = {c.meta["filters"]["color"] for c in deck}
+    colors = {c.meta["source"]["color"] for c in deck}
     # в пуле 4 разных цвета — колода из 6 карт должна показать разнообразие,
     # а не 6 одинаковых цветов
     assert len(colors) >= 3

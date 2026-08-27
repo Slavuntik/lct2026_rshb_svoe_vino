@@ -37,8 +37,13 @@ def _payload(pid, color, stillness, sugar, styles, sensory):
         "kind": "wine",
         "text": f"{pid} текст",
         "url": f"https://example.invalid/{pid}",
+        # "filters"/"sensory" — внутреннее представление (фильтрация/ранжирование).
         "filters": {"color": color, "stillness": stillness, "sugar": sugar, "reference_style_matches": styles},
         "sensory": sensory,
+        # "source"/"derived" — то, что реально уходит в Candidate.meta (контракт
+        # v0.3, ревью 02, блокер 1): kind=wine -> {"source":{...},"derived":{...}}.
+        "source": {"color": color, "sugar_category": sugar},
+        "derived": {"stillness": stillness, "reference_style_matches": styles},
     }
 
 
@@ -67,8 +72,8 @@ def test_analog_for_style_only_sparkling():
 
     for c in results:
         assert c.kind == "wine"
-        assert c.meta["filters"]["stillness"] == "игристое"
-        assert c.meta["filters"]["color"] == "белое"
+        assert c.meta["derived"]["stillness"] == "игристое"
+        assert c.meta["source"]["color"] == "белое"
 
 
 def test_analog_for_style_unknown_slug_returns_empty():
@@ -103,4 +108,4 @@ def test_analog_for_style_end_to_end_on_tiny_index(tiny_index):
     assert "sparkling-white-prosecco-1" in ids
     assert "sparkling-red-decoy-1" not in ids  # другой style-тег, не должен утечь
     for c in results:
-        assert c.meta["filters"]["stillness"] == "игристое"
+        assert c.meta["derived"]["stillness"] == "игристое"

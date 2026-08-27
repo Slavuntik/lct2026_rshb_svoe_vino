@@ -1,24 +1,19 @@
 """Eval-раннер по голд-сету: hit@k, MRR, замер латентности search().
 
-Диспетчеризация по типу вопроса (contracts/rag-interface.md):
-  pick / pairing -> Retriever.search(q, collections=("wines",), top_k=k)
-  fact           -> Retriever.search(q, collections=("knowledge",), top_k=k)
-  travel         -> Retriever.search(q, collections=("wineries","knowledge"), top_k=k)
-  analog         -> resolve_style(q) -> analog_for_style(slug, top_k=k)
-    (если стиль не распознан — считается промахом; так честно проверяется
-    вся цепочка «реплика -> стиль -> аналог», а не только retrieval).
+Два режима роутинга коллекций (`routing=`), контракт v0.3 п.3:
+  "oracle"    — коллекции берутся из ИЗВЕСТНОГО типа вопроса голд-сета
+                (_TYPE_COLLECTIONS) — потолок качества retrieval-ядра,
+                недостижимый в проде (прод не знает разметку голд-сета).
+  "heuristic" — Retriever.search(q, top_k=k) БЕЗ явных collections: решает
+                эвристика rag/intent.py внутри search() по умолчанию — ровно
+                то, что вызовет прод (/chat), не зная типа вопроса заранее.
+`analog` в обоих режимах не идёт через search(): resolve_style(q) ->
+analog_for_style(slug, top_k=k) — если стиль не распознан, считается
+промахом (честно проверяется вся цепочка «реплика -> стиль -> аналог»).
 
-Почему не дефолтный collections=("wines","knowledge") контракта для всех
-типов: замер на реальном каталоге показал явное «вытеснение» карточек вина
-длинными статьями на ту же тему («вино из Сибирьковый» -> просветительская
-статья «Сибирьковый: что за сорт» обгоняет саму карточку вина и по
-dense, и по BM25, и после реранка — статья длиннее и лексически «на тему»
-сильнее, чем терпимая карточка «Название · регион · сорт · вкус»). Роутинг
-по типу вопроса — это ровно то, для чего в контракте есть параметр
-`collections` со свободным дефолтом: реальный продукт тоже сначала
-определяет намерение (рекомендация/факт/поездка), а потом решает, где
-искать. Без роутинга hit@8 разваливается на pick/pairing/travel не из-за
-качества ranking, а из-за конкуренции коллекций — см. отчёт.
+type="refusal" (посторонние вопросы, контракт v0.3 п.2): expect_ids=[],
+успех = ПУСТАЯ выдача (см. _hit) — search() должен отказаться отвечать
+на «как починить карбюратор», а не подсунуть LLM левый контекст для цитаты.
 """
 from __future__ import annotations
 
@@ -40,6 +35,11 @@ def load_goldset(path: Path) -> list[dict]:
 
 
 def _hit(expect_ids: list[str], expect_any: bool, retrieved_ids: list[str]) -> int:
+    if not expect_ids:
+        # type="refusal": ничего не ожидается -> успех = ПУСТАЯ выдача.
+        # (иначе expect & got был бы пуст ВСЕГДА, и такой вопрос был бы
+        # промахом по построению — что противоположно намерению теста).
+        return 1 if not retrieved_ids else 0
     expect = set(expect_ids)
     got = set(retrieved_ids)
     if expect_any:
@@ -48,6 +48,8 @@ def _hit(expect_ids: list[str], expect_any: bool, retrieved_ids: list[str]) -> i
 
 
 def _reciprocal_rank(expect_ids: list[str], retrieved_ids: list[str]) -> float:
+    if not expect_ids:
+        return 1.0 if not retrieved_ids else 0.0
     expect = set(expect_ids)
     for i, rid in enumerate(retrieved_ids, start=1):
         if rid in expect:
@@ -63,7 +65,7 @@ _TYPE_COLLECTIONS = {
 }
 
 
-def run_question(retriever: Retriever, q: dict, top_k: int) -> list[str]:
+def run_question(retriever: Retriever, q: dict, top_k: int, *, routing: str = "oracle") -> list[str]:
     qtype = q.get("type")
     text = q["q"]
     if qtype == "analog":
@@ -71,20 +73,29 @@ def run_question(retriever: Retriever, q: dict, top_k: int) -> list[str]:
         if style is None:
             return []
         cands = retriever.analog_for_style(style["slug"], top_k=top_k)
-    else:
+        return [c.id for c in cands]
+
+    if routing == "oracle":
         collections = _TYPE_COLLECTIONS.get(qtype, ("wines", "knowledge"))
         cands = retriever.search(text, collections=collections, top_k=top_k)
+    elif routing == "heuristic":
+        # Как реально позовёт прод: без явных collections — решает
+        # rag.intent.infer_collections() внутри Retriever.search() (дефолт
+        # контракта v0.3 п.3), не зная типа вопроса из разметки голд-сета.
+        cands = retriever.search(text, top_k=top_k)
+    else:
+        raise ValueError(f"routing должен быть 'oracle' или 'heuristic', получено {routing!r}")
     return [c.id for c in cands]
 
 
-def evaluate(retriever: Retriever, goldset: list[dict], *, top_k: int = 8) -> dict:
+def evaluate(retriever: Retriever, goldset: list[dict], *, top_k: int = 8, routing: str = "oracle") -> dict:
     per_type: dict[str, dict[str, list]] = {}
     hits: list[int] = []
     rr: list[float] = []
     details = []
 
     for q in goldset:
-        retrieved = run_question(retriever, q, top_k)
+        retrieved = run_question(retriever, q, top_k, routing=routing)
         h = _hit(q["expect_ids"], q.get("expect_any", True), retrieved)
         r = _reciprocal_rank(q["expect_ids"], retrieved)
         hits.append(h)
@@ -113,6 +124,7 @@ def evaluate(retriever: Retriever, goldset: list[dict], *, top_k: int = 8) -> di
     report = {
         "n": len(goldset),
         "top_k": top_k,
+        "routing": routing,
         **_agg(hits, rr),
         "by_type": {t: _agg(v["hits"], v["rr"]) for t, v in sorted(per_type.items())},
         "details": details,

@@ -22,7 +22,10 @@ from pathlib import Path
 from typing import Any
 
 from rag import config, refdata
+from rag.calibrate import calibrate_refusal_threshold, load_goldset_safe
 from rag.embeddings import BM25Index, DenseEmbedder
+from rag.hybrid import HybridSearcher
+from rag.rerank import build_reranker
 from rag.store import QdrantStore
 
 
@@ -70,20 +73,16 @@ def build_wine_records(build_dir: Path, catalog_dir: Path) -> list[SourceRecord]
         filt["reference_style_matches"] = derived.get("reference_style_matches") or row.get("styles") or []
 
         payload = {
+            # "filters"/"sensory" — ВНУТРЕННЕЕ представление (жёсткая фильтрация до
+            # векторов, ранжирование analog_for_style/candidates_for_taste). В
+            # Candidate.meta наружу не идут как есть — см. rag/meta.py::public_meta.
             "filters": filt,
             "sensory": row.get("sensory", {}),
-            "name": source.get("name"),
-            "winery": filt.get("winery"),
-            "winery_name": source.get("winery_name"),
-            "region_name": source.get("region_name"),
-            "vintage": source.get("vintage"),
-            "abv_percent": source.get("abv_percent"),
-            "serving_temp_c": source.get("serving_temp_c"),
-            "color_in_glass": source.get("color_in_glass"),
-            "image_url": source.get("image_url"),
-            "public_rating": source.get("public_rating"),
-            "roskachestvo_rating": source.get("roskachestvo_rating"),
-            "similar_wine_slugs": source.get("similar_wine_slugs", []),
+            # "source"/"derived" — блоки карточки vines ЦЕЛИКОМ, форма
+            # Candidate.meta для kind=wine зафиксирована контрактом v0.3
+            # (ревью 02, блокер 1): {"source": {...}, "derived": {...}}.
+            "source": source,
+            "derived": derived,
         }
         out.append(SourceRecord(id=slug, kind="wine", text=row["text"], url=row["url"], payload=payload))
     return out
@@ -103,13 +102,11 @@ def build_winery_records(build_dir: Path, catalog_dir: Path) -> list[SourceRecor
         filt["region"] = refdata.normalize_region(region_name)
 
         payload = {
-            "filters": filt,
-            "name": source.get("name") or slug,
-            "locality": source.get("locality"),
-            "climate": source.get("climate"),
-            "founded_year": filt.get("founded_year"),
-            "image_url": source.get("image_url"),
+            "filters": filt,  # внутреннее — региональная фильтрация до векторов
             "wine_slugs": row.get("wine_slugs", []),
+            # kind=winery: Candidate.meta = {"source": {...}} (контракт v0.3).
+            # У winery-карточек vines нет derived-блока (в отличие от вин).
+            "source": {**source, "name": source.get("name") or slug},
         }
         out.append(
             SourceRecord(id=f"winery:{slug}", kind="winery", text=row["text"], url=row["url"], payload=payload)
@@ -145,8 +142,9 @@ def build_labels(wine_records: list[SourceRecord]) -> list[dict]:
         synonyms: list[str] = []
         for slug in grape_slugs:
             synonyms.extend(syn_map.get(slug, []))
-        name = p.get("name") or ""
-        winery_name = p.get("winery_name") or ""
+        source = p.get("source") or {}
+        name = source.get("name") or ""
+        winery_name = source.get("winery_name") or ""
         search_text = " ".join([name, winery_name, *synonyms]).strip()
         labels.append(
             {
@@ -167,6 +165,7 @@ def run_ingest(
     catalog_dir: Path | None = None,
     data_dir: Path | None = None,
     embedder: DenseEmbedder | None = None,
+    goldset_path: Path | None = None,
 ) -> dict:
     t_start = time.perf_counter()
     build_dir = source_dir or config.BUILD_DIR
@@ -197,6 +196,8 @@ def run_ingest(
     counts = {}
     t_embed_total = 0.0
     t_upsert_total = 0.0
+    bm25_indexes: dict[str, BM25Index] = {}
+    payload_by_id: dict[str, dict[str, dict]] = {}
     for name, records in collections.items():
         ids = [r.id for r in records]
         texts = [r.text for r in records]
@@ -218,12 +219,15 @@ def run_ingest(
 
         # sidecar payloads (единый источник для BM25-фильтрации/resolve/analog —
         # не требует повторного похода в Qdrant или в catalog/ на чтении).
+        id_payload_pairs = [{"id": sid, **pd} for sid, pd in zip(ids, payload_dicts)]
         with open(payloads_dir / f"{name}.jsonl", "w", encoding="utf-8") as f:
-            for sid, pd in zip(ids, payload_dicts):
-                f.write(json.dumps({"id": sid, **pd}, ensure_ascii=False) + "\n")
+            for row in id_payload_pairs:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        payload_by_id[name] = {row["id"]: row for row in id_payload_pairs}
 
         bm25 = BM25Index.build(ids, texts)
         bm25.save(bm25_dir / f"{name}.pkl")
+        bm25_indexes[name] = bm25
 
         counts[name] = len(records)
 
@@ -235,6 +239,30 @@ def run_ingest(
         for lab in labels:
             f.write(json.dumps(lab, ensure_ascii=False) + "\n")
 
+    # Калибровка порога refusal (контракт v0.3, ревью 02, блокер-риск 2):
+    # нужен РАБОЧИЙ HybridSearcher поверх только что построенного индекса
+    # (Qdrant-точки/BM25/payload уже на месте — манифест ещё не записан, но
+    # он calibrate'у и не нужен). Голд-сет опционален: на синтетических
+    # тестовых фикстурах (без eval/goldset.jsonl) калибровка тихо
+    # пропускается, refusal остаётся выключенным (threshold=None) — ingest
+    # не должен падать без голд-сета.
+    t0 = time.perf_counter()
+    gpath = goldset_path or config.DEFAULT_GOLDSET_PATH
+    goldset = load_goldset_safe(gpath)
+    refusal_calibration: dict = {"threshold": None, "reason": "no_goldset", "goldset_path": str(gpath)}
+    if goldset:
+        calib_reranker = build_reranker()
+        calib_hybrid = HybridSearcher(
+            store=store,
+            embedder=embedder,
+            bm25_indexes=bm25_indexes,
+            payload_by_id=payload_by_id,
+            reranker=calib_reranker,
+        )
+        refusal_calibration = calibrate_refusal_threshold(calib_hybrid, goldset, top_k=8)
+        refusal_calibration["goldset_path"] = str(gpath)
+    timings["calibrate_refusal_s"] = time.perf_counter() - t0
+
     timings["total_s"] = time.perf_counter() - t_start
 
     manifest = {
@@ -245,6 +273,8 @@ def run_ingest(
         "reranker": config.RERANKER_MODEL_NAME or None,
         "counts": counts,
         "timings": timings,
+        "refusal_threshold": refusal_calibration.get("threshold"),
+        "refusal_calibration": refusal_calibration,
     }
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)

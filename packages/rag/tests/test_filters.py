@@ -26,7 +26,7 @@ def test_search_white_filter_excludes_red(tiny_index):
     assert results, "по мини-фикстуре должны найтись белые вина"
     for c in results:
         assert c.kind == "wine"
-        assert c.meta["filters"]["color"] == "белое", f"красное просочилось: {c.id}"
+        assert c.meta["source"]["color"] == "белое", f"красное просочилось: {c.id}"
 
 
 def test_search_red_filter_excludes_white(tiny_index):
@@ -35,14 +35,14 @@ def test_search_red_filter_excludes_white(tiny_index):
     )
     assert results, "по мини-фикстуре должны найтись красные вина (фильтр не должен всё обнулять)"
     for c in results:
-        assert c.meta["filters"]["color"] == "красное"
+        assert c.meta["source"]["color"] == "красное"
 
 
 def test_search_without_filter_can_mix_colors(tiny_index):
     # Без фильтра оба цвета — валидные кандидаты (проверяем, что фильтр
     # реально что-то ОТСЕКАЕТ, а не просто всегда совпадает с одним цветом).
     results = tiny_index.search("вино", collections=("wines",), top_k=8)
-    colors = {c.meta["filters"]["color"] for c in results}
+    colors = {c.meta["source"]["color"] for c in results}
     assert len(colors) > 1, "без фильтра ожидаем смесь цветов на мини-фикстуре"
 
 

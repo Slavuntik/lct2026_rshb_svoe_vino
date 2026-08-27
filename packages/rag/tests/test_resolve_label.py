@@ -14,6 +14,10 @@ def test_exact_name_and_winery_matches_top(tiny_index):
     assert results[0].kind == "wine"
     assert results[0].meta["match_score"] >= 95
     assert results[0].meta["low_confidence"] is False
+    # контракт v0.3 (ревью 02, блокер 1): kind=wine несёт source/derived ВСЕГДА,
+    # в т.ч. из resolve_label — не только из search/similar/analog_for_style.
+    assert results[0].meta["source"]["color"] == "белое"
+    assert "derived" in results[0].meta
 
 
 def test_typo_still_resolves(tiny_index):

@@ -12,7 +12,7 @@ from rag.eval import benchmark_latency, evaluate, load_goldset
 from rag.ingest import run_ingest
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_GOLDSET = PACKAGE_ROOT / "eval" / "goldset.jsonl"
+DEFAULT_GOLDSET = config.DEFAULT_GOLDSET_PATH
 DEFAULT_REPORT = PACKAGE_ROOT / "eval" / "report.json"
 
 
@@ -21,6 +21,7 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         version=args.version,
         source_dir=Path(args.source) if args.source else None,
         catalog_dir=Path(args.catalog) if args.catalog else None,
+        goldset_path=Path(args.goldset) if args.goldset else None,
     )
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
     return 0
@@ -34,7 +35,14 @@ def cmd_eval(args: argparse.Namespace) -> int:
         return 1
 
     retriever = Retriever()
-    report = evaluate(retriever, goldset, top_k=args.top_k)
+    # Хедлайн — routing="heuristic": как реально позовёт прод (/chat вызывает
+    # search(q) без явных collections, эвристика rag/intent.py решает сама,
+    # контракт v0.3 п.3). routing="oracle" — потолок retrieval-ядра при
+    # коллекциях, известных из разметки голд-сета (недостижимо в проде,
+    # но полезно для диагностики: разрыв heuristic/oracle = цена эвристики).
+    report = evaluate(retriever, goldset, top_k=args.top_k, routing="heuristic")
+    oracle_report = evaluate(retriever, goldset, top_k=args.top_k, routing="oracle")
+    report["oracle_comparison"] = {k: v for k, v in oracle_report.items() if k != "details"}
 
     queries = [q["q"] for q in goldset]
     report["latency_ms"] = {
@@ -66,6 +74,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_ingest.add_argument("--source", default=None, help=f"build_dir vines (default: {config.BUILD_DIR})")
     p_ingest.add_argument("--catalog", default=None, help=f"catalog_dir vines (default: {config.CATALOG_DIR})")
     p_ingest.add_argument("--version", default=None, help="YYYYMMDD.N (default: сегодняшняя дата)")
+    p_ingest.add_argument(
+        "--goldset",
+        default=None,
+        help=f"голд-сет для калибровки refusal-порога (default: {config.DEFAULT_GOLDSET_PATH}; "
+        "пусто/нет файла -> калибровка пропускается, refusal выключен)",
+    )
     p_ingest.set_defaults(func=cmd_ingest)
 
     p_eval = sub.add_parser("eval", help="Прогон голд-сета: hit@k, MRR, латентность p95")
