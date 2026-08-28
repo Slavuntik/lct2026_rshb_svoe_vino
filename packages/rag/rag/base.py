@@ -19,7 +19,7 @@ from rag import config
 from rag import resolve as resolve_mod
 from rag.embeddings import BM25Index, DenseEmbedder
 from rag.hybrid import HybridSearcher
-from rag.intent import infer_collections
+from rag.intent import PAIRING_FALLBACK, PAIRING_PRIMARY, classify, infer_collections
 from rag.meta import public_meta
 from rag.rerank import build_reranker
 from rag.store import QdrantStore
@@ -111,10 +111,44 @@ class Retriever:
         роутятся в разные коллекции, чтобы длинные статьи не вытесняли
         терпимые карточки вина из top-k (см. отчёт A). Явно переданный
         collections — например ("wines","knowledge") как раньше — эвристику
-        отключает целиком, побеждает воля вызывающего."""
-        if collections is None:
-            collections = infer_collections(query)
-        return self.hybrid.search(query, filters=filters, collections=collections, top_k=top_k)
+        отключает целиком, побеждает воля вызывающего.
+
+        Для pairing-подобных запросов («что взять к сырам», «к устрицам»,
+        «под стейк» — приёмка F, лог демо-сцены 2) эвристика отдаёт не
+        готовый кортеж, а приоритет: сначала ЧИСТО wines; knowledge
+        подмешивается ВТОРЫМ проходом, только если карточек вин не хватило
+        на top_k — «wines приоритетно, knowledge добивкой», не наоборот.
+        В типичном случае (topics про вино почти всегда находят >= top_k
+        карточек без фильтра) второй проход не нужен — статьи не примешиваются
+        вовсе, что и решает жалобу F (8 цитат из статей вместо карточек вин)."""
+        if collections is not None:
+            return self.hybrid.search(query, filters=filters, collections=collections, top_k=top_k)
+
+        if classify(query) == "pairing":
+            return self._search_pairing(query, filters, top_k)
+
+        return self.hybrid.search(query, filters=filters, collections=infer_collections(query), top_k=top_k)
+
+    def _search_pairing(self, query: str, filters: Filters | None, top_k: int) -> list[Candidate]:
+        """Приоритет «wines сначала, knowledge — добивкой» + осторожность с
+        refusal-порогом (найдено на реальном демо-вопросе после первой версии
+        этой правки): порог откалиброван на СМЕШАННОМ пуле wines+knowledge,
+        где статьи систематически скорят выше терпимых карточек вина (та же
+        причина, по которой вообще понадобился этот роутинг). На чистом
+        wines top-скор легитимного гастро-вопроса («Что взять к сырам?» —
+        приёмка F) может оказаться НИЖЕ этого порога не потому, что вопрос
+        нерелевантен, а потому что порог мерил другую шкалу. Поэтому здесь
+        порог не переносится на wines-only пас 1:1: если карточек вин хватило
+        на top_k — они и есть ответ, без обращения к глобальному refusal
+        (сам факт классификации "pairing" — уже достаточный сигнал «в теме»).
+        Настоящий refusal остаётся в силе на «default»-ветке (см. search()) и
+        на этом же fallback-проходе ниже, если вин объективно не хватило."""
+        wines_only = self.hybrid.search(
+            query, filters=filters, collections=PAIRING_PRIMARY, top_k=top_k, apply_refusal=False
+        )
+        if len(wines_only) >= top_k:
+            return wines_only
+        return self.hybrid.search(query, filters=filters, collections=PAIRING_FALLBACK, top_k=top_k)
 
     def resolve_label(self, text: str, hints: dict | None = None) -> list[Candidate]:
         """Для /scan/resolve: fuzzy по name+winery_name(+синонимы сортов),

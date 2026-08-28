@@ -73,3 +73,6 @@
 {"q": "Когда следующий чемпионат мира по футболу?", "type": "refusal", "expect_ids": [], "expect_any": true}
 {"q": "Посоветуй хороший фильм ужасов на вечер.", "type": "refusal", "expect_ids": [], "expect_any": true}
 {"q": "Как настроить wifi роутер дома?", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Посоветуй хорошую книгу для отпуска.", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Порекомендуй интересный сериал на выходные.", "type": "refusal", "expect_ids": [], "expect_any": true}
+{"q": "Посоветуй, где купить кроссовки для бега.", "type": "refusal", "expect_ids": [], "expect_any": true}

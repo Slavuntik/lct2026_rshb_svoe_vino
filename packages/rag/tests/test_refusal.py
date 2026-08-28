@@ -69,6 +69,27 @@ def test_refusal_not_applied_without_reranker(tiny_index):
     assert results != []
 
 
+def test_pairing_route_ignores_global_refusal_threshold_on_sufficient_wines(tiny_index, monkeypatch):
+    """Регресс, найденный на реальном демо-вопросе («Что взять к сырам?»,
+    приёмка F): порог refusal калиброван на смешанном пуле wines+knowledge,
+    где статьи систематически скорят выше терпимых карточек вина — тот же
+    эффект, из-за которого вообще понадобился pairing-роутинг. Из-за этого
+    top-скор ЧИСТО wines для честного гастро-вопроса может провалиться ниже
+    порога, хотя вопрос совершенно легитимен. Retriever._search_pairing не
+    должен в этом случае откатываться на knowledge (что вернуло бы статьи —
+    ровно то, чего просила избежать приёмка F) — если карточек вин хватило
+    на top_k, порог для них не проверяется вовсе (сама классификация
+    "pairing" — достаточный сигнал "в теме")."""
+    low_score_reranker = _FixedScoreReranker(score=-5.0)  # заведомо ниже любого разумного порога
+    monkeypatch.setattr(tiny_index.hybrid, "reranker", low_score_reranker)
+    monkeypatch.setattr(tiny_index.hybrid, "refusal_threshold", 0.0)
+
+    results = tiny_index.search("Что взять к сырам?", top_k=5)  # top_k=5: в фикстуре 7 вин, гарантированно "достаточно"
+    assert results, "wines-приоритет не должен схлопнуться в пустоту из-за глобального порога"
+    for c in results:
+        assert c.kind == "wine", "не должно откатываться на knowledge, если вин хватило"
+
+
 def test_refusal_empty_candidate_pool_still_returns_empty(tiny_index):
     hybrid = _hybrid_with(tiny_index, score=5.0, threshold=1.0)
     # запрос, для которого пул кандидатов и так пуст (жёсткий фильтр всё отсекает)
