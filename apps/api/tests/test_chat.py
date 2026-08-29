@@ -27,7 +27,7 @@ class _EmptyRetriever:
 
     index_version = "stub-empty"
 
-    def search(self, query, *, filters=None, collections=("wines", "knowledge"), top_k=8):
+    def search(self, query, *, filters=None, collections=None, top_k=8):
         return []
 
 
@@ -241,6 +241,35 @@ def test_chat_sse_over_http_delivers_tokens_in_llm_yield_order(client: TestClien
     assert received == chunks
 
 
+# --- v0.3.3: collections не форсируется — intent-роутинг ретривера жив -------
+
+def test_stream_chat_events_calls_search_without_forcing_collections():
+    """contracts/rag-interface.md v0.3.3 (ревью 03, блокер заморозки):
+    collections=None у Retriever.search() — дефолт и норма, включает
+    intent-роутинг настоящего ретривера (pairing-запросы приоритезируют
+    wines над knowledge). Явный tuple форсирует набор коллекций и молча
+    обходит этот роутинг — живым зондом ревьюера доказано, что именно так
+    сцена 2 демо через реальный API начинала цитировать статьи знаний
+    вместо вин на wine-pick вопросы. Шпион на аргументах: chat/service.py
+    не имеет права передавать collections вовсе."""
+    from app.rag.mock import MockRetriever
+    from llm.drivers.mock import MockLLM
+
+    calls: list[tuple[tuple, dict]] = []
+    retriever = MockRetriever()
+    original_search = retriever.search
+    retriever.search = lambda *a, **kw: (calls.append((a, kw)), original_search(*a, **kw))[1]
+
+    list(stream_chat_events(message="Что подать к стейку?", retriever=retriever, llm=MockLLM()))
+
+    assert calls, "search должен был быть вызван ровно один раз"
+    _args, kwargs = calls[0]
+    assert "collections" not in kwargs, (
+        "collections не должен передаваться явно — это форсирует набор "
+        "коллекций и обходит intent-роутинг ретривера (v0.3.3)"
+    )
+
+
 # --- refusal on empty retrieval ---------------------------------------------
 
 def test_stream_chat_events_refuses_on_empty_retrieval_without_calling_llm():
@@ -295,6 +324,17 @@ def test_email_never_reaches_llm_prompt(client: TestClient, app):
             assert distinctive_email not in content, "email утёк в промпт LLM"
             assert user_id not in content, "id пользователя утёк в промпт LLM"
             assert "@example.com" not in content, "похоже, в промпт утекла почта"
+
+
+def test_system_prompt_refuses_off_topic_questions_not_just_insufficient_excerpts():
+    """Ревью 03 (митигация refusal-риска): второй барьер к отсечке
+    ретривера — если вопрос вообще не о вине/еде, промпт обязан требовать
+    вежливый отказ, а не попытку ответить из нерелевантных выдержек, которые
+    всё же прошли порог ретривера."""
+    from app.chat.prompt import SYSTEM_PROMPT
+
+    assert "не о вине" in SYSTEM_PROMPT or "не про вино" in SYSTEM_PROMPT
+    assert "откажись" in SYSTEM_PROMPT
 
 
 def test_format_taste_vector_has_no_identity_fields():

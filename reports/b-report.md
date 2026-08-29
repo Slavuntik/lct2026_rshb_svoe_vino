@@ -72,7 +72,7 @@ RAG_PROVIDER=real RAG_MODE=embedded ./.venv/bin/uvicorn app.main:app
 
 ```bash
 cd packages/llm && ./.venv/bin/python -m pytest -q     # 21 passed
-cd apps/api     && ./.venv/bin/python -m pytest -q     # 111 passed, 3 skipped (integration)
+cd apps/api     && ./.venv/bin/python -m pytest -q     # 114 passed, 3 skipped (integration)
 
 # Интеграционный smoke-тест на реальном индексе агента A (не по умолчанию):
 cd apps/api && ~/.local/bin/uv sync --extra dev --extra integration
@@ -90,7 +90,7 @@ RUN_RAG_INTEGRATION=1 ./.venv/bin/python -m pytest -q tests/test_integration_rea
 | Пункт DoD | Статус | Где |
 |---|---|---|
 | `uvicorn` одной командой, mock-LLM+mock-RAG | Готово | `app/main.py::create_app`, проверено вживую на сокете |
-| Все тесты зелёные | Готово | 111 (api, +3 skipped integration) + 21 (llm) = 132, см. команды выше |
+| Все тесты зелёные | Готово | 114 (api, +3 skipped integration) + 21 (llm) = 135, см. команды выше |
 | OpenAPI FastAPI совпадает с контрактом по путям/методам | Готово | `tests/test_openapi_contract.py` — парсит `contracts/openapi.yaml` напрямую (не руками), проверяет и покрытие, и точное совпадение множеств (сейчас 17/17 путей 1:1) |
 | Регистрация: <18 → 403; ledger; логин/JWT | Готово | `tests/test_auth.py` |
 | `/scan/resolve` контрактная форма + `low_confidence` | Готово | `tests/test_scan.py` |
@@ -212,7 +212,43 @@ eager-материализации — да, и оно строже теста �
 `tests/test_chat.py::test_chat_falls_back_to_prompt_citations_when_llm_omits_markers` — LLM-стаб
 без единого `[n]`, проверяет, что `citation`-события всё равно приходят до `done`, нумерация без
 дыр, и что их количество совпадает с `trace.candidate_ids` (персистентность подтверждает то же,
-что ушло в SSE). Волна 3 (ревью 02 целиком) для зоны B закрыта.
+что ушло в SSE).
+
+### v0.3.3: collections не форсируется в /chat — единственный кодовый блокер заморозки (ревью 03)
+
+Живым зондом ревьюера через реальный API обнаружено: сцена 2 демо цитировала 8/8 статей знаний
+вместо 8/8 вин на wine-pick вопросы. Причина — `app/chat/service.py` звал
+`retriever.search(..., collections=("wines", "knowledge"), ...)` явным tuple, что молча обходило
+intent-роутинг настоящего ретривера агента A (pairing-приоритезация wines над knowledge,
+`packages/rag` коммит `ee94ef3`). Контракт v0.3.3 закрепил `collections=None` как дефолт и норму
+(явный tuple остаётся легальным, но только для принудительных спецвызовов — не для `/chat`).
+
+Исправлено: `retriever.search(message, filters=filters, top_k=top_k)` — `collections` не
+передаётся вовсе. `Retriever` (Protocol) и `MockRetriever.search()` приведены к сигнатуре
+`collections: tuple[str, ...] | None = None`; мок при `None` по-прежнему ищет везде (у него нет
+собственного intent-роутинга — не его задача реплицировать эвристики A на 6 фикстурах).
+
+Проверено НАПРЯМУЮ на реальном индексе (не только юнит-тестом на моке) — сравнение одного и того
+же запроса «Посоветуй красное вино к стейку» через настоящий `packages/rag.get_retriever()`:
+- `search(q, top_k=8)` (новое поведение, `collections=None`) → `['wine']*8` — 8/8 вин;
+- `search(q, collections=("wines","knowledge"), top_k=8)` (старое поведение агента B) →
+  `['chunk']*8` — 8/8 статей, ТОЧНОЕ воспроизведение бага живого зонда.
+
+Тесты: `tests/test_chat.py::test_stream_chat_events_calls_search_without_forcing_collections` —
+шпион на аргументах `search()`, проверяет отсутствие ключа `collections` в вызове из
+`stream_chat_events()`; `tests/test_rag_mock.py::test_search_default_collections_is_none_and_behaves_like_searching_everything`
+— сигнатура и эквивалентность `None`/без аргумента/форсированного tuple на моке.
+
+Второй пункт того же ревью (риск-митигация, не сам блокер): в `SYSTEM_PROMPT`
+(`app/chat/prompt.py`) добавлена строка — если вопрос вообще не о вине/еде, модель обязана
+вежливо отказаться, а не подгонять ответ под нерелевантные выдержки, которые всё же прошли порог
+отсечки ретривера. Второй барьер поверх самой отсечки, не замена ей. Тест:
+`test_system_prompt_refuses_off_topic_questions_not_just_insufficient_excerpts` (строковая
+гарантия — не поведенческая, реальную дисциплину модели юнит-тестом не проверить, что и есть
+смысл контракта иметь второй барьер, а не полагаться на один).
+
+114 тестов зелёных (было 111), 3 skipped (integration, без изменений; прогнаны и они — 3/3 на
+реальном индексе). Волна 3 (ревью 02 + ревью 03/prefreeze) для зоны B закрыта.
 
 ### v0.3: /consents — enum скоупов
 

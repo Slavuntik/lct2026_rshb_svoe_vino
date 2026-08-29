@@ -99,9 +99,16 @@ class MockRetriever:
         query: str,
         *,
         filters: Filters | None = None,
-        collections: tuple[str, ...] = ("wines", "knowledge"),
+        collections: tuple[str, ...] | None = None,
         top_k: int = 8,
     ) -> list[Candidate]:
+        # v0.3.3: collections=None — дефолт и норма (intent-роутинг у
+        # настоящего ретривера агента A). У мока нет отдельного
+        # intent-роутинга (нечего роутить на 6 фикстурах и 3 чанках) —
+        # None здесь означает "искать везде", как и раньше был дефолт
+        # буквально; явный tuple по-прежнему форсирует конкретный набор.
+        if collections is None:
+            collections = ("wines", "knowledge")
         scored: list[Candidate] = []
 
         if "wines" in collections:

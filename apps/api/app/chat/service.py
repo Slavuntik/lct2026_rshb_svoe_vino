@@ -31,6 +31,15 @@ v0.3.2 (по флагу B в reports/b-report.md, контракт openapi.yaml/
 выдаче ретривера (до обращения к LLM) и системный промпт (app/chat/prompt.py)
 — это про то, ЧТО подаётся модели; данная правка — про то, что клиент
 ВСЕГДА видит, откуда взялся ответ, даже если сама модель цитаты не расставила.
+
+v0.3.3 (ревью 03, блокер заморозки): retriever.search() ниже зовётся БЕЗ
+`collections` — `collections=None` теперь дефолт и норма контракта, включает
+intent-роутинг внутри search() самого ретривера (pairing-запросы
+приоритезируют wines над knowledge). Раньше здесь стоял явный
+`collections=("wines", "knowledge")`, который молча обходил этот роутинг:
+сцена 2 демо через реальный API цитировала статьи знаний вместо вин на
+wine-pick вопросы (живой зонд ревьюера). Явный tuple остаётся легальным для
+принудительных спецвызовов — просто /chat больше не один из них.
 """
 from __future__ import annotations
 
@@ -85,9 +94,14 @@ def stream_chat_events(
                                                                               персистит, потом сам
                                                                               эмитит citation+done.
     """
-    candidates: list[Candidate] = retriever.search(
-        message, filters=filters, collections=("wines", "knowledge"), top_k=top_k
-    )
+    # v0.3.3 (ревью 03, блокер заморозки): collections НЕ передаём —
+    # collections=None у Retriever.search() это дефолт и норма, включающий
+    # intent-роутинг внутри search() (pairing-запросы приоритезируют wines
+    # над knowledge). Раньше здесь стоял явный tuple ("wines","knowledge"),
+    # который молча обходил роутинг — сцена 2 демо цитировала статьи вместо
+    # вин на wine-pick вопросы (живой зонд ревьюера). Явный tuple — только
+    # для принудительных спецвызовов, не для /chat.
+    candidates: list[Candidate] = retriever.search(message, filters=filters, top_k=top_k)
     if not candidates:
         yield {"type": "refusal", "reason": EMPTY_RETRIEVAL_REASON}
         return

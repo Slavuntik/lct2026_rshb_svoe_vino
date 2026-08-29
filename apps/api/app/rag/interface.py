@@ -22,6 +22,16 @@ candidates_for_taste — сигнатура нормативна с v0.3: поз
 `exclude_ids: list[str]`, `limit: int = 20`, БЕЗ keyword-only `*` (было
 расхождение с v0.2.2, где B держал её keyword-only с Optional/set — приведено
 к контракту и к тому, что уже реализовал агент A в packages/rag/rag/base.py).
+
+v0.3.3 (ревью 03, блокер заморозки): `search()` `collections=None` —
+ДЕФОЛТ и НОРМА, включает intent-роутинг внутри search() (pairing-запросы
+приоритезируют wines над knowledge). Явный tuple — принудительный выбор
+коллекций для специальных вызовов, качество выдачи тогда на вызывающем.
+Раньше здесь (и в app/chat/service.py) был захардкожен явный дефолт
+`("wines", "knowledge")`, который молча обходил intent-роутинг агента A —
+сцена 2 демо через API цитировала статьи знаний вместо вин на wine-pick
+вопросы (живой зонд ревьюера). `app/chat/service.py` теперь не передаёт
+`collections` вовсе.
 """
 from __future__ import annotations
 
@@ -54,9 +64,12 @@ class Retriever(Protocol):
         query: str,
         *,
         filters: Filters | None = None,
-        collections: tuple[str, ...] = ("wines", "knowledge"),
+        collections: tuple[str, ...] | None = None,
         top_k: int = 8,
-    ) -> list[Candidate]: ...
+    ) -> list[Candidate]:
+        """collections=None (дефолт) — норма, intent-роутинг внутри search()
+        (v0.3.3). Явный tuple форсирует набор коллекций, обходя роутинг —
+        только для специальных вызовов, не для /chat."""
 
     def resolve_label(self, text: str, hints: dict | None = None) -> list[Candidate]:
         """Для /scan/resolve: fuzzy по name+winery_name (rapidfuzz), НЕ векторный поиск."""

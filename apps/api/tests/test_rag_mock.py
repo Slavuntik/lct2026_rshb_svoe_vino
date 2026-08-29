@@ -62,6 +62,22 @@ def test_resolve_label_similar_and_analog_all_use_same_wine_meta_shape():
             assert set(c.meta.keys()) == {"source", "derived"}
 
 
+def test_search_default_collections_is_none_and_behaves_like_searching_everything():
+    """contracts/rag-interface.md v0.3.3 (ревью 03, блокер заморозки):
+    collections=None — дефолт и норма (intent-роутинг у настоящего
+    ретривера агента A; мок просто ищет везде — см. app/rag/mock.py). Явный
+    tuple("wines","knowledge") форсирует то же самое, но обходя роутинг —
+    сигнатура обязана принимать None по умолчанию, не жёсткий tuple."""
+    sig = inspect.signature(MockRetriever.search)
+    assert sig.parameters["collections"].default is None
+
+    retriever = MockRetriever()
+    default_call = retriever.search("Что подать к стейку?")
+    explicit_none = retriever.search("Что подать к стейку?", collections=None)
+    forced_both = retriever.search("Что подать к стейку?", collections=("wines", "knowledge"))
+    assert [c.id for c in default_call] == [c.id for c in explicit_none] == [c.id for c in forced_both]
+
+
 def test_candidates_for_taste_signature_is_positional_not_keyword_only():
     """contracts/rag-interface.md v0.3: exclude_ids позиционный, не keyword-only —
     вызов позиционными аргументами обязан работать (это то, что делает
