@@ -30,8 +30,13 @@ class Candidate:
 
 class Retriever:
     def search(self, query: str, *, filters: Filters | None = None,
-               collections: tuple[str, ...] = ("wines", "knowledge"),
+               collections: tuple[str, ...] | None = None,
                top_k: int = 8) -> list[Candidate]: ...
+        # v0.3.3 (ревью 03, блокер): collections=None — ДЕФОЛТ и НОРМА: intent-роутинг
+        # внутри search() (pairing -> wines-first). Именно этим режимом меряется DoD,
+        # и именно так обязан звать /chat. Явный tuple — принудительный выбор коллекций
+        # для специальных вызовов; качество выдачи тогда на вызывающем. Старый дефолт
+        # ("wines","knowledge") в API молча обходил роутинг — сцена 2 цитировала статьи.
     def resolve_label(self, text: str, hints: dict | None = None) -> list[Candidate]:
         """Для /scan/resolve: fuzzy по name+winery_name (rapidfuzz), НЕ векторный поиск."""
     def similar(self, wine_id: str, top_k: int = 6) -> list[Candidate]: ...
