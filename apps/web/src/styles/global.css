@@ -149,6 +149,10 @@ img {
   padding: var(--space-4);
 }
 
+.wine-card-image {
+  border-radius: var(--radius);
+}
+
 /* --- кнопки --- */
 
 .btn {

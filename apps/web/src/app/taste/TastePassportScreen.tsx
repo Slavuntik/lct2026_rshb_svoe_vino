@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SensoryVectorView } from "../../components/SensoryVectorView";
+import { WineImage } from "../../components/WineImage";
 import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
@@ -136,7 +137,7 @@ export function TastePassportScreen() {
           onPointerLeave={() => dragging && handlePointerUp()}
         >
           <div className="stack">
-            {currentWine.image_url && <img src={currentWine.image_url} alt={currentWine.name} width={80} />}
+            <WineImage src={currentWine.image_url} alt={currentWine.name} width={80} />
             <h2>{currentWine.name}</h2>
             <p className="text-small">{currentWine.winery_name}</p>
             <div className="row">

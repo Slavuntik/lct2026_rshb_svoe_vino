@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { SensoryVectorView } from "../../components/SensoryVectorView";
+import { WineImage } from "../../components/WineImage";
 import { useI18n } from "../../i18n";
 import { track, type EventPropsMap } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
@@ -91,7 +92,7 @@ export function WineCardScreen() {
       </button>
 
       <div className="card stack">
-        <img src={source.image_url} alt={source.name} width={96} style={{ borderRadius: "var(--radius)" }} />
+        <WineImage src={source.image_url} alt={source.name} width={96} className="wine-card-image" />
         <h1 className="screen__title">{source.name}</h1>
         <p className="screen__subtitle">
           {source.winery_name} · {source.region_name}
