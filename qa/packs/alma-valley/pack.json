@@ -46,7 +46,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-pino-nuar-krasnoe-suhoe-13"
     },
     {
       "rank": 2,
@@ -80,7 +81,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-risling-beloe-polusuhoe-125"
     },
     {
       "rank": 3,
@@ -118,7 +120,8 @@
         "rating_component": 0.96,
         "completeness_component": 0.8333,
         "composite": 0.9157
-      }
+      },
+      "deep_link": "/app/wine/locantita-sauvignon-blanc-chardonnay"
     },
     {
       "rank": 4,
@@ -147,7 +150,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.6667,
         "composite": 0.8833
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75"
     },
     {
       "rank": 5,
@@ -189,7 +193,8 @@
         "rating_component": 0.0,
         "completeness_component": 0.6667,
         "composite": 0.2333
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-locantita-merlot-cabernet-franc"
     },
     {
       "rank": 6,
@@ -223,7 +228,8 @@
         "rating_component": 0.0,
         "completeness_component": 0.6667,
         "composite": 0.2333
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14"
     },
     {
       "rank": 7,
@@ -260,7 +266,8 @@
         "rating_component": 0.0,
         "completeness_component": 0.6667,
         "composite": 0.2333
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15"
     },
     {
       "rank": 8,
@@ -294,7 +301,8 @@
         "rating_component": 0.0,
         "completeness_component": 0.6667,
         "composite": 0.2333
-      }
+      },
+      "deep_link": "/app/wine/alma-valley-graviti-pino-blan-beloe-suhoe-135"
     }
   ],
   "scenario": {
@@ -305,6 +313,7 @@
       "input_description": "Живая бутылка «Пино Нуар» (Alma Valley) из демо-набора, куплена под этот пак — см. qa/demo-script.md.",
       "sample_scan_text": "Пино Нуар, Alma Valley",
       "expected_wine_id": "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "deep_link_fallback": "/app/wine/alma-valley-pino-nuar-krasnoe-suhoe-13",
       "expected_card": {
         "name": "Пино Нуар",
         "winery_name": "Alma Valley",
@@ -317,7 +326,7 @@
         ],
         "source_url": "https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13"
       },
-      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник."
+      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник. Если сканер подводит (плохой свет — главный технический риск демо, раздел 5 плана) — открыть карточку напрямую по deep_link_fallback, не пересканировать на глазах у гостя."
     },
     "scene_2_sommelier": {
       "scene": 2,
@@ -373,7 +382,13 @@
       "success_criteria": "Ответ предлагает российское вино винодельни Alma Valley в стиле «Бургундское Пино Нуар» (Франция) — в каталоге винодельни 4 вина этого стиля (например, Пино Нуар из пака). Живая RAG-выдача вправе назвать любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка)."
     }
   },
-  "generated_at": "2026-08-27T16:03:19+00:00",
+  "generated_at": "2026-08-29T23:42:18+00:00",
+  "refusal_probe": {
+    "question": "Порекомендуй интересный сериал на выходные.",
+    "source": "packages/rag/eval/goldset.jsonl (type=refusal, верифицировано калибровкой refusal-порога индекса, agents/A-rag.md — не придумано генератором пака)",
+    "total_refusal_examples_in_goldset": 11,
+    "success_criteria": "Честный отказ (SSE-событие type=refusal), ни одной выдуманной цитаты — демонстрирует, что сомелье не притворяется экспертом вне вина, даже на смежную бытовую тему."
+  },
   "generator": {
     "name": "svoy-somelye-demo-pack",
     "version": "1.0.0"

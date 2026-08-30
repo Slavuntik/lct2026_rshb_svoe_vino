@@ -1,6 +1,6 @@
 # Демо-пак: Alma Valley
 
-Сгенерировано: 2026-08-27T16:03:19+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `alma-valley`
+Сгенерировано: 2026-08-29T23:42:18+00:00 · svoy-somelye-demo-pack v1.0.0 · slug `alma-valley`
 
 ## Винодельня
 
@@ -11,16 +11,18 @@
 
 ## Топ-8 бутылок (по рейтингу и полноте карточки)
 
-| # | Вино | Цвет / сахар | Рейтинг | Сорта | Гастропары |
-|---|------|--------------|---------|-------|------------|
-| 1 | [Пино Нуар](https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13) | красное / сухое | 5.0 | Пино Нуар | Сыры |
-| 2 | [Рислинг](https://vino-svoe.ru/wines/alma-valley-risling-beloe-polusuhoe-125) | белое / полусухое | 5.0 | Рислинг | Легкие закуски, Морепродукты, Салаты, Устрицы |
-| 3 | [Locantita Sauvignon Blanc-Chardonnay](https://vino-svoe.ru/wines/locantita-sauvignon-blanc-chardonnay) | белое / сухое | 4.8 | Мцване, Пино Нуар, Рислинг, Совиньон Блан, Шардоне | Блюда из птицы, Блюда из рыбы, Сыры |
-| 4 | [ТБА Совиньон](https://vino-svoe.ru/wines/alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75) | белое / сладкое | 5.0 | Совиньон Блан | Десерты, Сыры |
-| 5 | [Alma Valley Locantita Merlot-Cabernet Franc](https://vino-svoe.ru/wines/alma-valley-locantita-merlot-cabernet-franc) | красное / сухое | — | Каберне Совиньон, Каберне Фран, Красностоп Анапский, Мерло, Пино Нуар, Саперави, Шираз | BBQ, Блюда из птицы, Мясное ассорти, Мясо и стейки, Пицца |
-| 6 | [Альма Гравити. Пино Нуар - Мерло - Каберне Совиньон](https://vino-svoe.ru/wines/alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14) | красное / сухое | — | Пино Нуар | Легкие закуски, Мясо и стейки, Несладкая выпечка |
-| 7 | [Гравити](https://vino-svoe.ru/wines/alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15) | красное / сухое | — | Каберне Совиньон, Мерло, Пино Нуар | BBQ, Блюда из птицы, Паста, Пицца |
-| 8 | [Гравити](https://vino-svoe.ru/wines/alma-valley-graviti-pino-blan-beloe-suhoe-135) | белое / сухое | — | Пино Блан, Пино Гри, Рислинг | Морепродукты |
+| # | Вино | Цвет / сахар | Рейтинг | Сорта | Гастропары | Deep-link |
+|---|------|--------------|---------|-------|------------|-----------|
+| 1 | [Пино Нуар](https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13) | красное / сухое | 5.0 | Пино Нуар | Сыры | `/app/wine/alma-valley-pino-nuar-krasnoe-suhoe-13` |
+| 2 | [Рислинг](https://vino-svoe.ru/wines/alma-valley-risling-beloe-polusuhoe-125) | белое / полусухое | 5.0 | Рислинг | Легкие закуски, Морепродукты, Салаты, Устрицы | `/app/wine/alma-valley-risling-beloe-polusuhoe-125` |
+| 3 | [Locantita Sauvignon Blanc-Chardonnay](https://vino-svoe.ru/wines/locantita-sauvignon-blanc-chardonnay) | белое / сухое | 4.8 | Мцване, Пино Нуар, Рислинг, Совиньон Блан, Шардоне | Блюда из птицы, Блюда из рыбы, Сыры | `/app/wine/locantita-sauvignon-blanc-chardonnay` |
+| 4 | [ТБА Совиньон](https://vino-svoe.ru/wines/alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75) | белое / сладкое | 5.0 | Совиньон Блан | Десерты, Сыры | `/app/wine/alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75` |
+| 5 | [Alma Valley Locantita Merlot-Cabernet Franc](https://vino-svoe.ru/wines/alma-valley-locantita-merlot-cabernet-franc) | красное / сухое | — | Каберне Совиньон, Каберне Фран, Красностоп Анапский, Мерло, Пино Нуар, Саперави, Шираз | BBQ, Блюда из птицы, Мясное ассорти, Мясо и стейки, Пицца | `/app/wine/alma-valley-locantita-merlot-cabernet-franc` |
+| 6 | [Альма Гравити. Пино Нуар - Мерло - Каберне Совиньон](https://vino-svoe.ru/wines/alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14) | красное / сухое | — | Пино Нуар | Легкие закуски, Мясо и стейки, Несладкая выпечка | `/app/wine/alma-valley-alma-graviti-pino-nuar-merlo-kaberne-sovinon-krasnoe-suhoe-14` |
+| 7 | [Гравити](https://vino-svoe.ru/wines/alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15) | красное / сухое | — | Каберне Совиньон, Мерло, Пино Нуар | BBQ, Блюда из птицы, Паста, Пицца | `/app/wine/alma-valley-graviti-kaberne-sovinon-krasnoe-suhoe-15` |
+| 8 | [Гравити](https://vino-svoe.ru/wines/alma-valley-graviti-pino-blan-beloe-suhoe-135) | белое / сухое | — | Пино Блан, Пино Гри, Рислинг | Морепродукты | `/app/wine/alma-valley-graviti-pino-blan-beloe-suhoe-135` |
+
+Deep-link — путь `/app/wine/<slug>` (mvp-plan.html, раздел 0: «страховка от плохого света на сцене» скана) — если камера/OCR не считывает этикетку живьём, открыть карточку напрямую по этому пути (закладка/адресная строка), не пересканировать бесконечно на глазах у гостя. Хост зависит от канала показа (демо-iPhone на staging, веб-версия с лендинга, localhost на прогоне) — генератору неизвестен, путь — универсальная часть.
 
 Методология: composite = 0.65×(рейтинг/5, 0 если рейтинга нет) + 0.35×(доля заполненных необязательных полей из ['vintage', 'public_rating', 'color_in_glass', 'abv_percent', 'similar_wine_slugs', 'derived.reference_style_matches']). Карточки без обязательных полей ('name', 'color', 'sugar_category', 'grapes', 'food_pairings', 'description', 'image_url') исключаются целиком (см. excluded_incomplete), не понижаются в ранге. Равенство composite решается по рейтингу, затем по имени (детерминированность между прогонами).
 
@@ -33,7 +35,8 @@
 - Текст на случай сканера текстом / ручного ввода: «Пино Нуар, Alma Valley»
 - Ожидаемая карточка: красное, сухое, рейтинг 5.0, гастропары: Сыры
 - Первоисточник карточки: https://vino-svoe.ru/wines/alma-valley-pino-nuar-krasnoe-suhoe-13
-- Критерий успеха: Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник.
+- Deep-link на случай плохого света (не пересканировать): `/app/wine/alma-valley-pino-nuar-krasnoe-suhoe-13`
+- Критерий успеха: Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник. Если сканер подводит (плохой свет — главный технический риск демо, раздел 5 плана) — открыть карточку напрямую по deep_link_fallback, не пересканировать на глазах у гостя.
 
 ### Сцена 2 — Вопрос сомелье
 
@@ -54,11 +57,20 @@
 - Иллюстративный пример из пака: **Пино Нуар** (`alma-valley-pino-nuar-krasnoe-suhoe-13`)
 - Критерий успеха: Ответ предлагает российское вино винодельни Alma Valley в стиле «Бургундское Пино Нуар» (Франция) — в каталоге винодельни 4 вина этого стиля (например, Пино Нуар из пака). Живая RAG-выдача вправе назвать любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка).
 
+### Момент доверия — refusal_probe
+
+- Вопрос (из голд-сета калибровки, НЕ придуман): «Порекомендуй интересный сериал на выходные.»
+- Источник: packages/rag/eval/goldset.jsonl (type=refusal, верифицировано калибровкой refusal-порога индекса, agents/A-rag.md — не придумано генератором пака)
+- Критерий успеха: Честный отказ (SSE-событие type=refusal), ни одной выдуманной цитаты — демонстрирует, что сомелье не притворяется экспертом вне вина, даже на смежную бытовую тему.
+- Живая проверка: подтверждён живым API
+
 ## Автопроверка
 
 - Обязательные поля непусты у всех 8 бутылок: OK
 - source_url отвечает 200 на вежливый HEAD: проверено 9 уникальных ссылок, предупреждений: 0
 - Сцена 2 опирается на реальную гастропару пака: OK
 - Сцена 3 — стиль подтверждён в derived.reference_style_matches винодельни: OK
+- Deep-link на карточку есть у каждой из 8 бутылок: OK
+- refusal_probe реально отклоняется живым API: подтверждён живым API
 
 **Вердикт: пак готов к показу.**

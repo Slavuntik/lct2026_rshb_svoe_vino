@@ -36,7 +36,7 @@ from conftest import fake_head_always_200
 @pytest.mark.parametrize("winery_slug", ["abrau-dyurso", "alma-valley"])
 def test_real_winery_pack_generates_and_is_valid(real_catalog_dir, real_ref_dir, winery_slug):
     pack = dp.build_pack(winery_slug, catalog_dir=real_catalog_dir, ref_dir=real_ref_dir, top_n=8)
-    report = dp.validate_pack(pack, check_network=False)
+    report = dp.validate_pack(pack, check_network=False, check_refusal_live=False)
 
     assert len(pack.bottles) == 8
     assert pack.winery["slug"] == winery_slug
@@ -60,10 +60,12 @@ def test_real_winery_pack_generates_and_is_valid(real_catalog_dir, real_ref_dir,
     scene1 = pack.scenario["scene_1_scan"]
     assert scene1["expected_wine_id"] == pack.bottles[0].wine_id
 
-    # Только errors учитываются в report.ok; сеть выключена, так что единственное возможное
-    # предупреждение — "network_check_skipped" (не ошибка).
+    # Только errors учитываются в report.ok; сеть и живая refusal-проверка выключены явно,
+    # так что единственные возможные предупреждения — про то, что они выключены (не ошибка).
     assert report.ok, [dp._issue_dict(i) for i in report.errors]
-    assert all(i.code == "network_check_skipped" for i in report.warnings)
+    assert all(
+        i.code in ("network_check_skipped", "refusal_probe_live_check_disabled") for i in report.warnings
+    ), [dp._issue_dict(i) for i in report.warnings]
 
 
 def test_abrau_pack_has_three_grounded_scenes(real_catalog_dir, real_ref_dir):
@@ -86,6 +88,35 @@ def test_abrau_pack_has_three_grounded_scenes(real_catalog_dir, real_ref_dir):
     # ЕСТЬ хотя бы одно вино этого стиля по всему каталогу, не только среди топ-8 пака.
     assert scene3["winery_style_wine_count"] >= 1
     assert illustrative_bottle.wine_id in scene3["winery_style_wine_ids"]
+
+    # Deep-link — страховка от плохого света (mvp-plan.html, раздел 0) — есть у каждой
+    # бутылки пака и у сцены 1 отдельно (это одно и то же значение, для удобства чтения).
+    for bottle in pack.bottles:
+        assert bottle.deep_link == f"/app/wine/{bottle.wine_id}"
+    scene1 = pack.scenario["scene_1_scan"]
+    assert scene1["deep_link_fallback"] == pack.bottles[0].deep_link
+
+
+def test_abrau_pack_refusal_probe_from_real_goldset(real_catalog_dir, real_ref_dir):
+    """Ревью 03: «момент доверия» демо обязан использовать вопрос, ГАРАНТИРОВАННО отклоняемый
+    — из проверенного голд-сета калибровки (packages/rag/eval/goldset.jsonl, type=refusal),
+    не импровизацию генератора (импровизированное «какое вино снижает давление?» не проходит
+    отсечку — там есть слово «вино»)."""
+    pack = dp.build_pack("abrau-dyurso", catalog_dir=real_catalog_dir, ref_dir=real_ref_dir, top_n=8)
+
+    assert pack.refusal_probe is not None, "packages/rag/eval/goldset.jsonl должен существовать в этом репо"
+    question = pack.refusal_probe["question"]
+    assert question
+    assert "вино" not in question.lower(), "вопрос не должен содержать слово, резонирующее с отсечкой"
+    assert pack.refusal_probe["total_refusal_examples_in_goldset"] >= 1
+
+    # Вопрос реально взят из голд-сета, не придуман генератором.
+    goldset_questions = {
+        json.loads(line)["q"]
+        for line in dp.DEFAULT_GOLDSET_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip() and json.loads(line).get("type") == "refusal"
+    }
+    assert question in goldset_questions
 
 
 def test_pack_reproducible_across_three_runs(real_catalog_dir, real_ref_dir):
@@ -111,7 +142,9 @@ def test_polite_head_against_live_portal_returns_200(real_catalog_dir, real_ref_
     а не зависаем."""
     pack = dp.build_pack("abrau-dyurso", catalog_dir=real_catalog_dir, ref_dir=real_ref_dir, top_n=8)
     try:
-        report = dp.validate_pack(pack, check_network=True, timeout=5.0, polite_delay=0.3)
+        report = dp.validate_pack(
+            pack, check_network=True, timeout=5.0, polite_delay=0.3, check_refusal_live=False
+        )
     except Exception as exc:  # pragma: no cover — защита от полной недоступности сети в CI
         pytest.skip(f"сеть недоступна в этом окружении: {exc!r}")
     bad = [i for i in report.warnings if i.code in ("source_url_bad_status", "source_url_unreachable")]
@@ -139,7 +172,7 @@ def test_broken_card_excluded_from_selection_despite_highest_rating(mini_catalog
     broken_record = pack.selection["excluded_incomplete"][0]
     assert "description" in broken_record["missing_fields"]
 
-    report = dp.validate_pack(pack, check_network=False)
+    report = dp.validate_pack(pack, check_network=False, check_refusal_live=False)
     assert report.ok, [dp._issue_dict(i) for i in report.errors]
 
 
@@ -167,10 +200,11 @@ def test_validate_pack_catches_slipped_in_broken_bottle(mini_catalog_dir, mini_r
         source_url="https://example.invalid/wines/slipped-in-broken",
         reference_style_matches=[],
         score=dp.BottleScore(rating=5.0, rating_component=1.0, completeness_component=0.5, composite=0.825),
+        deep_link=dp.deep_link_for("slipped-in-broken"),
     )
     pack.bottles.append(broken_bottle)
 
-    report = dp.validate_pack(pack, check_network=False)
+    report = dp.validate_pack(pack, check_network=False, check_refusal_live=False)
 
     assert not report.ok
     matching = [i for i in report.errors if i.wine_id == "slipped-in-broken" and i.code == "empty_required_field"]
@@ -244,7 +278,7 @@ def test_pack_is_deterministic_on_synthetic_catalog(mini_catalog_dir, mini_ref_d
 
 def test_write_pack_creates_readable_files(tmp_path, mini_catalog_dir, mini_ref_dir):
     pack = dp.build_pack("test-winery", catalog_dir=mini_catalog_dir, ref_dir=mini_ref_dir, top_n=8)
-    report = dp.validate_pack(pack, check_network=False)
+    report = dp.validate_pack(pack, check_network=False, check_refusal_live=False)
 
     json_path, md_path = dp.write_pack(pack, report, tmp_path / "test-winery")
 
@@ -409,7 +443,10 @@ def test_validate_pack_network_check_uses_injected_head_fn_and_dedupes_urls(mini
         calls.append(url)
         return 200
 
-    report = dp.validate_pack(pack, check_network=True, head_fn=counting_head, polite_delay=0, sleep_fn=lambda _s: None)
+    report = dp.validate_pack(
+        pack, check_network=True, head_fn=counting_head, polite_delay=0, sleep_fn=lambda _s: None,
+        check_refusal_live=False,
+    )
     assert report.ok
     assert len(calls) == len(set(calls))  # ни одного URL не запросили дважды
     assert report.checked_urls == len(calls)
@@ -421,7 +458,10 @@ def test_validate_pack_flags_non_200_as_warning_not_error(mini_catalog_dir, mini
     def head_404(url: str, timeout: float) -> int:
         return 404
 
-    report = dp.validate_pack(pack, check_network=True, head_fn=head_404, polite_delay=0, sleep_fn=lambda _s: None)
+    report = dp.validate_pack(
+        pack, check_network=True, head_fn=head_404, polite_delay=0, sleep_fn=lambda _s: None,
+        check_refusal_live=False,
+    )
     assert report.ok  # 404 -> warning, не роняет пак
     assert any(i.code == "source_url_bad_status" for i in report.warnings)
 
@@ -432,7 +472,10 @@ def test_validate_pack_flags_network_exception_as_warning(mini_catalog_dir, mini
     def head_boom(url: str, timeout: float) -> int:
         raise TimeoutError("simulated network timeout")
 
-    report = dp.validate_pack(pack, check_network=True, head_fn=head_boom, polite_delay=0, sleep_fn=lambda _s: None)
+    report = dp.validate_pack(
+        pack, check_network=True, head_fn=head_boom, polite_delay=0, sleep_fn=lambda _s: None,
+        check_refusal_live=False,
+    )
     assert report.ok
     assert any(i.code == "source_url_unreachable" for i in report.warnings)
 
@@ -441,10 +484,144 @@ def test_validate_pack_sleeps_politely_between_requests(mini_catalog_dir, mini_r
     pack = dp.build_pack("test-winery", catalog_dir=mini_catalog_dir, ref_dir=mini_ref_dir, top_n=8)
     sleeps: list[float] = []
     dp.validate_pack(
-        pack, check_network=True, head_fn=fake_head_always_200, polite_delay=0.42, sleep_fn=sleeps.append
+        pack, check_network=True, head_fn=fake_head_always_200, polite_delay=0.42, sleep_fn=sleeps.append,
+        check_refusal_live=False,
     )
     assert sleeps  # хотя бы одна пауза между уникальными ссылками
     assert all(s == 0.42 for s in sleeps)
+
+
+# ----------------------------------------------------------------------------------
+# refusal_probe и deep_link — ревью 03: «момент доверия» из проверенного голд-сета,
+# автопроверка живым API; deep-link'и /app/wine/<slug> как страховка от плохого света.
+# ----------------------------------------------------------------------------------
+
+
+def _write_goldset(tmp_path: Path, entries: list[dict]) -> Path:
+    path = tmp_path / "goldset.jsonl"
+    path.write_text("\n".join(json.dumps(e, ensure_ascii=False) for e in entries), encoding="utf-8")
+    return path
+
+
+def test_deep_link_for_matches_client_route():
+    assert dp.deep_link_for("abrau-dyurso-victor-dravigny-bryut") == "/app/wine/abrau-dyurso-victor-dravigny-bryut"
+
+
+def test_load_refusal_probe_prefers_known_demo_friendly_question(tmp_path):
+    goldset = _write_goldset(
+        tmp_path,
+        [
+            # "wifi роутер" тоже в _REFUSAL_PROBE_PREFERENCE, но ПОЗЖЕ "сериала" в списке —
+            # порядок предпочтения должен победить порядок в файле (сериал в файле не первый).
+            {"q": "Как настроить wifi роутер дома?", "type": "refusal"},
+            {"q": "Порекомендуй интересный сериал на выходные.", "type": "refusal"},
+            {"q": "Какая столица Франции?", "type": "refusal"},
+            {"q": "Что взять к стейку?", "type": "pairing"},  # не refusal — должен игнорироваться
+        ],
+    )
+    probe = dp.load_refusal_probe(goldset)
+    assert probe is not None
+    assert probe["question"] == "Порекомендуй интересный сериал на выходные."
+    assert probe["total_refusal_examples_in_goldset"] == 3
+
+
+def test_load_refusal_probe_falls_back_to_sorted_first_when_no_preferred_match(tmp_path):
+    goldset = _write_goldset(
+        tmp_path,
+        [
+            {"q": "Как настроить wifi роутер дома?", "type": "refusal"},
+            {"q": "Как починить карбюратор на старой машине?", "type": "refusal"},
+        ],
+    )
+    probe = dp.load_refusal_probe(goldset)
+    assert probe is not None
+    # Ни один вопрос не входит в _REFUSAL_PROBE_PREFERENCE -> берём отсортированный первый
+    # (детерминированность важнее произвольного порядка в файле).
+    assert probe["question"] == sorted(
+        ["Как настроить wifi роутер дома?", "Как починить карбюратор на старой машине?"]
+    )[0]
+
+
+def test_load_refusal_probe_returns_none_when_goldset_missing(tmp_path):
+    assert dp.load_refusal_probe(tmp_path / "does-not-exist.jsonl") is None
+
+
+def test_load_refusal_probe_returns_none_when_no_refusal_type_entries(tmp_path):
+    goldset = _write_goldset(tmp_path, [{"q": "Что взять к стейку?", "type": "pairing"}])
+    assert dp.load_refusal_probe(goldset) is None
+
+
+def test_build_pack_refusal_probe_unavailable_when_goldset_missing(mini_catalog_dir, mini_ref_dir, tmp_path):
+    pack = dp.build_pack(
+        "test-winery",
+        catalog_dir=mini_catalog_dir,
+        ref_dir=mini_ref_dir,
+        top_n=8,
+        goldset_path=tmp_path / "does-not-exist.jsonl",
+    )
+    assert pack.refusal_probe is None
+
+    report = dp.validate_pack(pack, check_network=False, check_refusal_live=False)
+    assert report.ok  # отсутствие голд-сета — не ошибка пака, а честный warning
+    assert any(i.code == "refusal_probe_unavailable" for i in report.warnings)
+
+
+def _pack_with_refusal_probe(mini_catalog_dir, mini_ref_dir):
+    return dp.build_pack("test-winery", catalog_dir=mini_catalog_dir, ref_dir=mini_ref_dir, top_n=8)
+
+
+def test_validate_pack_refusal_probe_confirmed_refused_adds_no_issue(mini_catalog_dir, mini_ref_dir):
+    pack = _pack_with_refusal_probe(mini_catalog_dir, mini_ref_dir)
+    assert pack.refusal_probe is not None  # реальный голд-сет по умолчанию
+
+    def fake_probe(question: str, api_url: str, timeout: float) -> dict:
+        return {"status": "confirmed_refused", "detail": "ok"}
+
+    report = dp.validate_pack(
+        pack, check_network=False, check_refusal_live=True, refusal_probe_fn=fake_probe
+    )
+    assert report.ok
+    assert not any(i.code.startswith("refusal_probe") for i in report.errors)
+    assert not any(i.code.startswith("refusal_probe") for i in report.warnings)
+
+
+def test_validate_pack_refusal_probe_not_refused_is_error(mini_catalog_dir, mini_ref_dir):
+    pack = _pack_with_refusal_probe(mini_catalog_dir, mini_ref_dir)
+
+    def fake_probe(question: str, api_url: str, timeout: float) -> dict:
+        return {"status": "confirmed_not_refused", "detail": "живой API ответил цитатой вместо отказа"}
+
+    report = dp.validate_pack(
+        pack, check_network=False, check_refusal_live=True, refusal_probe_fn=fake_probe
+    )
+    assert not report.ok
+    assert any(i.code == "refusal_probe_not_refused" for i in report.errors)
+
+
+def test_validate_pack_refusal_probe_unreachable_is_warning_not_error(mini_catalog_dir, mini_ref_dir):
+    pack = _pack_with_refusal_probe(mini_catalog_dir, mini_ref_dir)
+
+    def fake_probe(question: str, api_url: str, timeout: float) -> dict:
+        return {"status": "unreachable", "detail": "localhost:8000: connection refused"}
+
+    report = dp.validate_pack(
+        pack, check_network=False, check_refusal_live=True, refusal_probe_fn=fake_probe
+    )
+    assert report.ok
+    assert any(i.code == "refusal_probe_live_check_skipped" for i in report.warnings)
+
+
+def test_validate_pack_refusal_probe_live_check_disabled_flag(mini_catalog_dir, mini_ref_dir):
+    pack = _pack_with_refusal_probe(mini_catalog_dir, mini_ref_dir)
+
+    def boom(*args, **kwargs):
+        raise AssertionError("refusal_probe_fn не должен вызываться при check_refusal_live=False")
+
+    report = dp.validate_pack(
+        pack, check_network=False, check_refusal_live=False, refusal_probe_fn=boom
+    )
+    assert report.ok
+    assert any(i.code == "refusal_probe_live_check_disabled" for i in report.warnings)
 
 
 # ----------------------------------------------------------------------------------
@@ -460,6 +637,7 @@ def test_cli_run_writes_files_and_returns_zero_on_valid_pack(tmp_path, mini_cata
             "--ref-dir", str(mini_ref_dir),
             "--out-dir", str(tmp_path),
             "--no-network",
+            "--no-refusal-check",
         ]
     )
     assert exit_code == 0

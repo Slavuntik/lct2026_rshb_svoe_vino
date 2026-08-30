@@ -47,7 +47,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105"
     },
     {
       "rank": 2,
@@ -81,7 +82,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-abrau-estates-krasnoe-kaberne-sovinon-suhoe-13"
     },
     {
       "rank": 3,
@@ -119,7 +121,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12"
     },
     {
       "rank": 4,
@@ -154,7 +157,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115"
     },
     {
       "rank": 5,
@@ -188,7 +192,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-brut-dor-blanc-de-noirs-pino-nuar-beloe-bryut-125"
     },
     {
       "rank": 6,
@@ -219,7 +224,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-brut-dor-rose-pino-nuar-rozovoe-bryut-12"
     },
     {
       "rank": 7,
@@ -253,7 +259,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-125"
     },
     {
       "rank": 8,
@@ -286,7 +293,8 @@
         "rating_component": 1.0,
         "completeness_component": 0.8333,
         "composite": 0.9417
-      }
+      },
+      "deep_link": "/app/wine/abrau-dyurso-brut-dor-riesling-risling-beloe-bryut-12"
     }
   ],
   "scenario": {
@@ -297,6 +305,7 @@
       "input_description": "Живая бутылка «Abrau Estates Амурский Потапенко» (Абрау-Дюрсо) из демо-набора, куплена под этот пак — см. qa/demo-script.md.",
       "sample_scan_text": "Abrau Estates Амурский Потапенко, Абрау-Дюрсо",
       "expected_wine_id": "abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
+      "deep_link_fallback": "/app/wine/abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105",
       "expected_card": {
         "name": "Abrau Estates Амурский Потапенко",
         "winery_name": "Абрау-Дюрсо",
@@ -310,7 +319,7 @@
         ],
         "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-amurskiy-potapenko-krasnoe-suhoe-105"
       },
-      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник."
+      "success_criteria": "Скан -> карточка ≤3 секунды (mvp-plan.html, раздел 0); карточка показывает рейтинг, гастропары и рабочую ссылку на первоисточник. Если сканер подводит (плохой свет — главный технический риск демо, раздел 5 плана) — открыть карточку напрямую по deep_link_fallback, не пересканировать на глазах у гостя."
     },
     "scene_2_sommelier": {
       "scene": 2,
@@ -394,7 +403,13 @@
       "success_criteria": "Ответ предлагает российское вино винодельни Абрау-Дюрсо в стиле «Шампанское брют без года» (Франция) — в каталоге винодельни 14 вин этого стиля (например, Abrau-Durso Brut Rose Reserve из пака). Живая RAG-выдача вправе назвать любое из них — важно совпадение по стилю и винодельне, не байт-в-байт с конкретной бутылкой пака (фильтр стиля у живого RAG строже статического per-вина списка)."
     }
   },
-  "generated_at": "2026-08-27T16:03:07+00:00",
+  "generated_at": "2026-08-29T23:42:08+00:00",
+  "refusal_probe": {
+    "question": "Порекомендуй интересный сериал на выходные.",
+    "source": "packages/rag/eval/goldset.jsonl (type=refusal, верифицировано калибровкой refusal-порога индекса, agents/A-rag.md — не придумано генератором пака)",
+    "total_refusal_examples_in_goldset": 11,
+    "success_criteria": "Честный отказ (SSE-событие type=refusal), ни одной выдуманной цитаты — демонстрирует, что сомелье не притворяется экспертом вне вина, даже на смежную бытовую тему."
+  },
   "generator": {
     "name": "svoy-somelye-demo-pack",
     "version": "1.0.0"
