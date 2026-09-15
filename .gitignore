@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+
+# Секреты (ключи API) — только локально, шаблон в .env.example
+.env
+*.egg-info/
+.pytest_cache/
+
+# Исходные данные кейса — большие и не наши, в репозиторий не кладём
+data/*.rar
+data/*.zip
+data/*.csv
+data/raw/
+data/eval/
+
+# Сгенерированные артефакты пересобираются скриптами (см. README.md)
+artifacts/
