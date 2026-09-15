@@ -21,8 +21,10 @@
 | 2. Признаки: SigLIP 2 so400m, EasyOCR, SIFT | готово |
 | 3. Поиск: сумма индексов, SIFT- и текстовое переранжирование, решение «не найдено» | готово |
 | 4. API: `POST /v1/eval/predict`, `POST /v1/scan`, карточки | готово, проверено `participant_test.sh` |
-| 5. Мобильная карточка и «Цифровой сомелье» | не начато |
-| Docker | не начато |
+| 5. Функция после поиска: аналоги и «Цифровой сомелье» (бэкенд, без LLM) | готово |
+| 5. Мобильный интерфейс (Nuxt, `web/`) | в работе |
+| Выбор рамки по поиску, обученное слияние, VLM в полосе сомнения | механизмы готовы, параметры подбираются |
+| Docker, Makefile | готово, образ собирается |
 
 Ключевые результаты (подробно — docs/RESULTS.md и ARCHITECTURE.md, раздел 4):
 
@@ -145,9 +147,29 @@ curl -F image=@data/eval/queries/02eef911.webp http://127.0.0.1:8080/v1/scan
 | Эндпоинт | Ответ |
 |---|---|
 | `POST /v1/eval/predict` (multipart `image`) | `{"slug": "…"}` — всегда лучший кандидат |
-| `POST /v1/scan` (multipart `image`) | статус found / not_found, карточка, уверенность, top-5 со слагаемыми скора, рамка, тайминги |
+| `POST /v1/scan` (multipart `image`) | статус found / not_found, карточка, уверенность (полоса high / medium / low), top-5 со слагаемыми скора, рамка, тайминги |
 | `GET /v1/wines/{slug}`, `GET /v1/wines/{slug}/image` | карточка и эталонное фото |
+| `GET /v1/wines/{slug}/analogs?limit=6` | аналоги других виноделен с объяснением по совпавшим полям |
+| `GET /v1/sommelier/questions`, `POST /v1/sommelier/suggest` | «Цифровой сомелье»: вопросы-кнопки и 3 вина из каталога с объяснением |
 | `GET /health` | готовность |
+
+## Makefile
+
+`make help` — список целей. Основные: `make install`, `make data`, `make artifacts GPU=3`
+(каталог, индексы, SIFT-признаки и вырезки эталонов), `make synth`, `make cache GPU=3`,
+`make eval GPU=3`, `make serve GPU=3`, `make participant`, `make test`.
+
+## Docker
+
+Нужен NVIDIA Container Toolkit (для CPU — профиль `cpu`). Данные кейса и артефакты монтируются
+томами, веса моделей кэшируются в томе `hf-cache`.
+
+```bash
+docker compose build api
+docker compose run --rm api make PY=python catalog index features GPU=0   # артефакты внутри контейнера
+docker compose up api                                                      # GPU
+docker compose --profile cpu up api-cpu                                    # CPU
+```
 
 ## Тесты
 
@@ -173,6 +195,9 @@ curl -F image=@data/eval/queries/02eef911.webp http://127.0.0.1:8080/v1/scan
 | `WINESCAN_LOCAL_TOP`, `WINESCAN_LOCAL_WEIGHT` | `5`, `0.15` | SIFT-переранжирование (вес `0` — выключено) |
 | `WINESCAN_USE_OCR`, `WINESCAN_TEXT_WEIGHT` | `1`, `0.02` | текстовое переранжирование |
 | `WINESCAN_MIN_VISUAL_SCORE` | `0.74` | ниже — `/v1/scan` отвечает «не найдено» |
+| `WINESCAN_BOX_CANDIDATES`, `WINESCAN_BOX_RULE` | `1`, `{"prior": 1, "top1": 0, "margin": 0}` | выбор рамки по поиску из K рамок детектора (JSON-веса правила) |
+| `WINESCAN_FUSION` | не задан | путь к обученному слиянию (`configs/fusion_*.json`); заменяет ручные веса SIFT и OCR |
+| `WINESCAN_USE_VLM`, `WINESCAN_VLM_MARGIN` | `0`, `1.0` | поля этикетки Qwen3-VL-4B, если отрыв лучшего кандидата меньше порога (нужно слияние) |
 | `WINESCAN_MIN_MARGIN` | не задан | минимальный отрыв top-1 от top-2 |
 | `CUDA_VISIBLE_DEVICES` | — | на общем сервере GPU 0 и 1 заняты |
 | `WINESCAN_LLM_BASE_URL`, `WINESCAN_LLM_API_KEY` | — | зарезервировано для слоя 5, пока не используется |
