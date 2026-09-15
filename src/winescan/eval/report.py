@@ -37,8 +37,10 @@ def render(eval_dir: Path) -> str:
         "",
         "## Прогоны",
         "",
-        "| прогон | кроп | OCR | top-1 | top-5 | top-1 похожие (pHash) | top-1 общий эталон | F1@1 | детекция, мс | OCR, мс |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "Дата — время прогона: код детектора и слияния менялся в течение дня, сверяйте с docs/WORKLOG.md.",
+        "",
+        "| прогон | дата | кроп | OCR | top-1 | top-5 | top-1 похожие (pHash) | top-1 общий эталон | F1@1 | детекция, мс | OCR, мс |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     sweeps = []
     for run in runs:
@@ -46,8 +48,9 @@ def render(eval_dir: Path) -> str:
         if "all" not in metrics:
             continue
         latency = metrics.get("latency_ms", {})
+        run_time = datetime.fromtimestamp((run / "metrics.json").stat().st_mtime)
         lines.append(
-            f"| `{run.name}` | {metrics['crop']} | {'да' if metrics.get('ocr') else 'нет'} | "
+            f"| `{run.name}` | {run_time:%m-%d %H:%M} | {metrics['crop']} | {'да' if metrics.get('ocr') else 'нет'} | "
             f"{_fmt(metrics['all']['top1_accuracy'])} | {_fmt(metrics['all']['top5_accuracy'])} | "
             f"{_fmt(metrics['in_phash_group']['top1_accuracy'])} | {_fmt(metrics['shares_image']['top1_accuracy'])} | "
             f"{_fmt(metrics['all']['f1_at_1_best']['f1'])} | {latency.get('detect_mean', 0):.0f} | {latency.get('ocr_mean', 0):.0f} |"
@@ -70,7 +73,49 @@ def render(eval_dir: Path) -> str:
             f"{_fmt(metrics['shares_image']['top1_accuracy'])} |"
         )
     lines += ["", "Синтетика оптимистична (в кадре пиксели эталона), см. ARCHITECTURE.md, раздел 4.", ""]
+    lines += _participant_section(eval_dir / "participant_public")
     return "\n".join(lines)
+
+
+def _participant_section(directory: Path) -> list[str]:
+    """Публичные фото через работающий сервис: participant_test.sh + /v1/scan."""
+    predictions_path = directory / "predictions.jsonl"
+    if not predictions_path.exists():
+        return []
+    labels_path = PROJECT_ROOT / "configs" / "eval_public_labels.csv"
+    expected = {}
+    if labels_path.exists():
+        import csv
+
+        with labels_path.open(encoding="utf-8") as fh:
+            expected = {row["image_path"]: row["expected_slug"] for row in csv.DictReader(fh)}
+    lines = [
+        "## Публичные фото через сервис",
+        "",
+        f"`participant_test.sh` кейсодержателя и `/v1/scan` с настройками по умолчанию "
+        f"({datetime.fromtimestamp(predictions_path.stat().st_mtime):%Y-%m-%d %H:%M}). "
+        "Разметка неофициальная (`configs/eval_public_labels.csv`).",
+        "",
+        "| фото | ожидается | /v1/eval/predict | верно | задержка скрипта, мс | /v1/scan | визуальный скор | в сервисе, мс |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for line in predictions_path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        image = row["image_path"]
+        truth = expected.get(image, "")
+        scan_path = directory / f"scan_{Path(image).stem}.json"
+        scan = json.loads(scan_path.read_text(encoding="utf-8")) if scan_path.exists() else {}
+        if truth:
+            verdict = "да" if row["predicted_slug"] == truth else "нет"
+        else:
+            verdict = "вне каталога: " + ("да" if scan.get("status") == "not_found" else "нет")
+        lines.append(
+            f"| {image} | {truth or '(нет в каталоге)'} | {row['predicted_slug']} | {verdict} | {row['latency_ms']} | "
+            f"{scan.get('status', '—')} | {scan.get('confidence', {}).get('visual_score_top1', '—')} | "
+            f"{scan.get('timings_ms', {}).get('total', '—')} |"
+        )
+    lines.append("")
+    return lines
 
 
 def main(argv: list[str] | None = None) -> None:
