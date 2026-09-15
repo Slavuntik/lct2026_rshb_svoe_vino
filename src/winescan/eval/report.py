@@ -72,9 +72,39 @@ def render(eval_dir: Path) -> str:
             f"{_fmt(metrics['all']['top5_accuracy'])} | {_fmt(metrics['in_phash_group']['top1_accuracy'])} | "
             f"{_fmt(metrics['shares_image']['top1_accuracy'])} |"
         )
+    lines += _scanner_section(runs)
     lines += ["", "Синтетика оптимистична (в кадре пиксели эталона), см. ARCHITECTURE.md, раздел 4.", ""]
     lines += _participant_section(eval_dir / "participant_public")
     return "\n".join(lines)
+
+
+def _scanner_section(runs: list[Path]) -> list[str]:
+    """Сквозные прогоны сервисного Scanner (eval.scanner_eval): с решением «не найдено» и задержками."""
+    rows = []
+    for run in runs:
+        metrics = json.loads((run / "metrics.json").read_text(encoding="utf-8"))
+        if "decision" not in metrics:
+            continue
+        decision, latency = metrics["decision"], metrics["latency_ms"]
+        rows.append(
+            f"| `{run.name}` | {metrics['queries']} | {_fmt(metrics.get('all', {}).get('top1_accuracy'))} | "
+            f"{_fmt(decision['answered_correct'])} | {_fmt(decision['answered_wrong'])} | {_fmt(decision['rejected'])} | "
+            f"{_fmt(decision['out_of_catalog_rejected'])} | {latency['total_p50']:.0f} | {latency['total_p95']:.0f} |"
+        )
+    if not rows:
+        return []
+    return [
+        "",
+        "## Сквозные прогоны сервиса (`eval.scanner_eval`)",
+        "",
+        "Учитывается решение «не найдено». `__holdout` — только запросы, не использованные при обучении выбора",
+        "рамки и слияния; варианты с разными моделями сравнивайте на общих запросах (docs/WORKLOG.md).",
+        "Задержки зависят от загрузки машины.",
+        "",
+        "| прогон | запросов | top-1 | верный ответ | неверный ответ | отказ | отклонено вне каталога | p50, мс | p95, мс |",
+        "|---|---|---|---|---|---|---|---|---|",
+        *rows,
+    ]
 
 
 def _participant_section(directory: Path) -> list[str]:
