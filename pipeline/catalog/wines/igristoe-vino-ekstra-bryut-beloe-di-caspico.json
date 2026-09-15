@@ -1,0 +1,147 @@
+{
+  "slug": "igristoe-vino-ekstra-bryut-beloe-di-caspico",
+  "source": {
+    "name": "Игристое вино экстра брют белое Di Caspico",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Первенец Магарача",
+      "Ркацители",
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "соломенный с жемчужными бликами",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Средиземноморская кухня"
+    ],
+    "description": "Di Caspico экстра брют белое — игристое вино с выразительной свежестью и точным, современным стилем, вдохновлённым лёгким морским дыханием Каспийского побережья.  \nВ основе — тщательно подобранный купаж белых сортов, который формирует чистый, строгий профиль и подчёркивает природную элегантность вина. Светло-соломенный цвет с холодными блестящими отблесками и тонкая игра пузырьков задают настроение с первых секунд.  \nАромат раскрывается нотами зелёного яблока, цитрусовой цедры и белых цветов, дополняясь лёгкими минеральными нюансами. Во вкусе — сухое, собранное и энергичное: яркая кислотность, хрустящая фруктовость и очень чистое, освежающее послевкусие без лишней сладости.  \nDi Caspico экстра брют белое — отличный выбор для аперитива, морепродуктов и лёгких закусок, а также для тех моментов, когда хочется идеальной свежести, ясности и безупречного баланса.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DK_bel_eks_bryut_1ef4fd40dc.webp",
+    "similar_wine_slugs": [
+      "dva-brata-pet-nat-kokur-2024",
+      "grand-kyuve",
+      "blan-de-blan",
+      "grand-jete-blanc-de-noirs",
+      "grand-jete-blanc-de-blancs",
+      "perovskih_blan_de_noir",
+      "vinodelnya-vedernikov-vinodelnya-vedernikov-tsimlyanskiy-chernyy-sibirkovyy-ekstra-bryut-beloe-13",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/igristoe-vino-ekstra-bryut-beloe-di-caspico",
+    "fetched_at": "2026-08-25T17:02:40+0300",
+    "content_hash": "7edf319bb3e0d355e6be911319fe76991387412591c5ed54239c15170a8df6bd",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pervenec-magaracha",
+      "rkatsiteli",
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.717,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.675,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cremant",
+      "cava",
+      "champagne-brut-nv"
+    ]
+  }
+}

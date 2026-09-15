@@ -1,0 +1,148 @@
+{
+  "slug": "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+  "source": {
+    "name": "Фанагория Она сказала Да! белое полусладкое",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мерло",
+      "Пино Нуар",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "светло-соломенный с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Азиатская кухня",
+      "Выпечка и десерты",
+      "Фруктово-ягодные десерты"
+    ],
+    "description": "Аромат изящный, с тонами сортовых особенностей винограда. Вкус свежий с хорошей структурой и длительным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Fanagoriya_beloe_polusladkoe_ona_skazala_da_5ed0a48dfd.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe",
+      "lebedushka"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-ona-skazala-da-beloe-polusladkoe",
+    "fetched_at": "2026-08-25T17:02:09+0300",
+    "content_hash": "03255bd0d5bddc5cc8bfaf3fe8ebaca7df80fa189d3b5ec0e9b52b43d0c6ddf2",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo",
+      "pino-nuar",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.662,
+      "tannin": 0.1,
+      "body": 0.567,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "white-semisweet"
+    ]
+  }
+}

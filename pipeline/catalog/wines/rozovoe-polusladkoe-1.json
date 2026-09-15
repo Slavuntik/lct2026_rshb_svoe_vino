@@ -1,0 +1,145 @@
+{
+  "slug": "rozovoe-polusladkoe-1",
+  "source": {
+    "name": "Розовое полусладкое",
+    "winery": "zolotaya_balka",
+    "winery_name": "Золотая Балка",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон",
+      "Мерло",
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры",
+      "Фруктово-ягодные десерты"
+    ],
+    "description": "Свежий аромат вина наполнен тонами слегка засахаренных красных ягод (малина, красная смородина). Вино обладает элегантным, ярким, сочным, хорошо сбалансированным, освежающим, мягким вкусом с приятной, деликатной сладостью и яркими фруктово-ягодными оттенками в послевкусии. Сочетается с мясными блюдами под кисло-сладким соусом, создаст прекрасный союз с запеченной уткой, легкими салатами, фруктовыми десертами и ягодами.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/PU_Sjv7dn_M_Nil_H25_TO_9_Bcb_D_v_EZB_Mijp_NGR_Wvy6u_Ifxk_Fr_Yqzmn_Hkb_TDN_Sql_Q_Sk_M5nnryrf3_Sd_Jnv_NIRGZKU_e_Q_03b44d8031.webp",
+    "similar_wine_slugs": [
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2",
+      "rozovaya-pantera",
+      "zhemchuzhnaya-9-muskat-rozovyj-kaberne-sovinon",
+      "rozovoe-polusladkoe",
+      "perovskih_polusladkoe_rosovoe",
+      "soyuz-vino-lavetti-rozovoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "inkermanskiy-zmv-inkerman-rozovoe-polusladkoe-rkatsiteli-12",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-pino-fran-135",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "zolotaya-balka-zb-moscato-semi-sweet-rose-muskat-yantarnyy-rozovoe-polusladkoe-9",
+      "agora-rosa-viva-muscat"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/rozovoe-polusladkoe-1",
+    "fetched_at": "2026-08-25T17:04:48+0300",
+    "content_hash": "013cefcac73a8e95020e65a8b579ac0fb48c453d766bcdb76fb7c267301959c8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "merlo",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.2,
+      "body": 0.633,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

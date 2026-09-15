@@ -1,0 +1,142 @@
+{
+  "slug": "shato-pino-agpoezdnik-beloe-shardone-suhoe-13",
+  "source": {
+    "name": "A.G.Poezdnik. Белое",
+    "winery": "shato-pino",
+    "winery_name": "Шато Пино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      11,
+      12
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Устрицы"
+    ],
+    "description": "Вкус: Минеральный, свежий с преобладанием тропических фруктов и груши. Яркий с медово-цветочными нотами, переходящие в ноты засахаренной цедры.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shato_pino_beloe_shardone_beloe_suhoe_13_8b4d6eb365.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-pino-agpoezdnik-beloe-shardone-suhoe-13",
+    "fetched_at": "2026-08-25T17:04:56+0300",
+    "content_hash": "14961b42772cb59f834a3dc12209924f1966c08f7605d6d19f52863068078d4f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.63,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "mtsvane-dry",
+      "fiano",
+      "chablis"
+    ]
+  }
+}

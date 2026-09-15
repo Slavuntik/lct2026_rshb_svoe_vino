@@ -1,0 +1,137 @@
+{
+  "slug": "khrustaleva-76-muscat-bryut-beloe",
+  "source": {
+    "name": "Khrustaleva 76 muscat, брют, белое",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры",
+      "Устрицы"
+    ],
+    "description": "Вкус легкий, почти невесомый, сбалансированный, послевкусие средней продолжительности с тонами цитрусов и персика. Аромат с оттенками цветов липы, акации, розы, цитрусов и нектарина.\n\nВино органическое, подтверждено сертификатом РФ. 83 балла в независимой премии российских игристых вин RUSSIAN BUBBLY CHART 2025.\n\nПрессование винограда при 10°C, стабуляж 10 дней при 5°C, брожение в течение 15 дней в ёмкостях из нержавеющей стали с автоматическим контролем температуры брожения 14‑17°C, по окончании брожения — декантация с толстого дрожжевого осадка. Вторичное брожение в течение 20 дней, с остановкой брожения холодом, при необходимых сахарах. Выдержка в акратофоре на дрожжах в течение 1 месяца.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/hrustaleva_bryut_muskat_314381c682.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/khrustaleva-76-muscat-bryut-beloe",
+    "fetched_at": "2026-08-25T17:03:00+0300",
+    "content_hash": "6210c0baf68662bfe79c7ad482586705fe6fe289dd7b52328dac09d0adb030f4",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "muskat"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.6,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

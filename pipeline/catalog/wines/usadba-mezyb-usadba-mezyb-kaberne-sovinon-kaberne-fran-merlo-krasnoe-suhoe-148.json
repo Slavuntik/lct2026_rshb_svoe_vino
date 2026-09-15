@@ -1,0 +1,142 @@
+{
+  "slug": "usadba-mezyb-usadba-mezyb-kaberne-sovinon-kaberne-fran-merlo-krasnoe-suhoe-148",
+  "source": {
+    "name": "Усадьба Мезыбь. Каберне Совиньон, Каберне Фран, Мерло",
+    "winery": "usadba-mezyb",
+    "winery_name": "Усадьба Мезыбь",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Каберне Фран",
+      "Мерло"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Сыры"
+    ],
+    "description": "В аромате тона чёрного чая, чернослива, лесных ягод и хвои. Вкус плотный с бархатистыми танинами, тона спелых фруктов, инжира и чернослива и длительный финиш.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/usadba_mezyb_usadba_mezyb_kaberne_sovinon_kaberne_fran_merlo_krasnoe_suhoe_148_f747c194c8.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/usadba-mezyb-usadba-mezyb-kaberne-sovinon-kaberne-fran-merlo-krasnoe-suhoe-148",
+    "fetched_at": "2026-08-25T17:06:03+0300",
+    "content_hash": "856ab5bde8b34d24aad697c7b8b903e32d4e046ae5ff5de310e5a379d7f71594",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "kaberne-fran",
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.65,
+      "body": 0.743,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-franc-loire",
+      "merlot-chile",
+      "montepulciano-dabruzzo"
+    ]
+  }
+}

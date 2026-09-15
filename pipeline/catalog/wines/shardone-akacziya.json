@@ -1,0 +1,145 @@
+{
+  "slug": "shardone-akacziya",
+  "source": {
+    "name": "Шардоне Акация",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотисто-соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Аромат: сухофрукты, мёд, дыня, сухие травы, цукаты из цитрусовых.\n\nВкус: впечатляющий объём и маслянистость, сочная мякоть спелой печёной груши, приправленной белым перцем, переходящая в яркую и «живую» кислотность. Свежесть и минеральность, присущая терруару «Красная Горка». Долгий, минеральный финиш, с прекрасно интегрированными благородными оттенками дерева акации, нагретого летним солнцем.\n\nОсобенность винификации\n\nРучной сбор 9 сентября. Охлаждение винограда. Инспекция гроздей. Гребнеотделение с последующим частичным дроблением ягоды. Криомацерация в прессе в течение 2 часов. Отбор самотёка и деликатное прессование в атмосфере азота. Брожение сусла в течение 12 дней при температуре 19–20 градусов Цельсия, 50% от объёма — сталь, 50% от объёма — новые бургундские пьесы, изготовленные из древесины венгерской акации высокой плотности, объёмом 228 литров. Полная малолактика для объёма сброженного в бочках из акации. Сталь — без малолактики. Регулярный баттонаж в течение 15 месяцев как для объёмов выдерживаемых в стали, так и для бочек. Ассамбляж. Кларификация. Стабилизация тартратов. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 4.43,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shardone_akacziya_a57018f101.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shardone-akacziya",
+    "fetched_at": "2026-08-25T17:04:52+0300",
+    "content_hash": "aee4bd79c0f10733588730ab14b65c791eb08117e55c68ed64a74c8f74dcff5f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.63,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "meursault",
+      "chardonnay-oaked-new-world",
+      "puligny-montrachet"
+    ]
+  }
+}

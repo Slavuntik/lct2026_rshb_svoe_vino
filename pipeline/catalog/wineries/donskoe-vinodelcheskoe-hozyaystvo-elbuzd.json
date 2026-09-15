@@ -1,0 +1,73 @@
+{
+  "slug": "donskoe-vinodelcheskoe-hozyaystvo-elbuzd",
+  "source": {
+    "name": "Донское винодельческое хозяйство \"Эльбузд\"",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 70.0,
+    "vineyard_area_raw": "70 га",
+    "founded_year": null,
+    "description": "Донское винодельческое хозяйство \"Эльбузд\" — винодельня в регионе Долина Дона. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "«Эльбузд» — донское винодельческое хозяйство в Азовском районе Ростовской области, рядом с одноимённым посёлком и рекой Эльбузд. Это современная гравитационная винодельня, ориентированная на производство сухих белых и красных вин из международных сортов.\n\nТерруар хозяйства находится в долине Дона, на равнинных территориях с карбонатными и суглинистыми чернозёмами на лёссовидных породах. Климат здесь континентальный: жаркое сухое лето, ветреная морозная зима и заметная разница дневных и ночных температур, что помогает винограду набирать зрелость и сохранять свежесть.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/about_river_vineyards_Bbsdy_Q_Mz_03bac2d70e.webp",
+    "wine_slugs": [
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-kaberne-fran-krasnoe-suhoe-13",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-pino-nuar-krasnoe-suhoe-13",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-merlo-krasnoe-suhoe-13",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-sovinon-blan-beloe-suhoe-12",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-shardone-beloe-suhoe-13",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd-risling-beloe-suhoe-12"
+    ],
+    "nearby_winery_slugs": [
+      "vinabani",
+      "blagolyubov",
+      "vinodelnya-vedernikov",
+      "vina-arpachina",
+      "vinodelnya-molchanova",
+      "dacha-serdyuka",
+      "usadba-sarkel",
+      "tsimlyanskie-vina"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/donskoe-vinodelcheskoe-hozyaystvo-elbuzd",
+    "fetched_at": "2026-08-25T21:23:46+0300",
+    "content_hash": "b0bbd9a16cbab215e67a239585183ad3742f7f91c8ad5b50e5165f0e5b81315a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 6
+  }
+}

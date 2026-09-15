@@ -1,0 +1,77 @@
+{
+  "slug": "rossijskie-vina-predstavili-na-concours-mondial-de-bruxelles-2026",
+  "source": {
+    "title": "Российские вина представили на Concours Mondial de Bruxelles 2026",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Российские вина приняли участие в Concours Mondial de Bruxelles 2026 — одной из крупнейших международных винных дегустаций, прошедшей с 21 по 23 мая в Ереване. В этом году Армения впервые стала площадкой проведения конкурса, основанного в 1994 году и входящего в число наиболее авторитетных мировых ориентиров качества в винодельческой отрасли.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">По данным организаторов, в дегустациях участвовали более 320 экспертов из 56 стран. За три дня жюри оценило свыше 7 тыс. образцов вин из 51 страны мира. В отдельные сессии были вынесены тихие и игристые вина.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">При поддержке Ассоциации виноградарей и виноделов России на конкурс была сформирована одна из крупнейших российских заявок последних лет. Всего российские производители направили на Concours Mondial de Bruxelles 125 образцов вин.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В состав международного жюри вошли 14 российских экспертов: Влада Лесниченко, Владимир Косенко, Дмитрий Мережко, Алан Бигати, Ольга Кочурова, Игорь Шарбатов, Наталья Большакова, Александр Смирнов, Артур Саркисян, Алексей Несмеянов, Валерия Тенисон, Татьяна Ястребова, Юрий Юдич и Сергей Аксеновский.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Concours Mondial de Bruxelles ежегодно проходит в разных странах и считается одной из наиболее влиятельных международных дегустационных площадок. Результаты конкурса 2026 года будут опубликованы 10 июня на официальном сайте CMB.&nbsp;</span></p>",
+    "body": "Российские вина приняли участие в Concours Mondial de Bruxelles 2026 — одной из\nкрупнейших международных винных дегустаций, прошедшей с 21 по 23 мая в Ереване.\nВ этом году Армения впервые стала площадкой проведения конкурса, основанного в\n1994 году и входящего в число наиболее авторитетных мировых ориентиров качества\nв винодельческой отрасли.\n\n \n\nПо данным организаторов, в дегустациях участвовали более 320 экспертов из 56\nстран. За три дня жюри оценило свыше 7 тыс. образцов вин из 51 страны мира. В\nотдельные сессии были вынесены тихие и игристые вина. \n\n \n\nПри поддержке Ассоциации виноградарей и виноделов России на конкурс была\nсформирована одна из крупнейших российских заявок последних лет. Всего\nроссийские производители направили на Concours Mondial de Bruxelles 125 образцов\nвин.\n\n \n\nВ состав международного жюри вошли 14 российских экспертов: Влада Лесниченко,\nВладимир Косенко, Дмитрий Мережко, Алан Бигати, Ольга Кочурова, Игорь Шарбатов,\nНаталья Большакова, Александр Смирнов, Артур Саркисян, Алексей Несмеянов,\nВалерия Тенисон, Татьяна Ястребова, Юрий Юдич и Сергей Аксеновский.\n\n \n\nConcours Mondial de Bruxelles ежегодно проходит в разных странах и считается\nодной из наиболее влиятельных международных дегустационных площадок. Результаты\nконкурса 2026 года будут опубликованы 10 июня на официальном сайте CMB.",
+    "body_chars": 1329,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "Concours Mondial de Bruxelles",
+    "published_at": "2026-06-08T17:00:00.000Z",
+    "published_date": "2026-06-08",
+    "published_year": 2026,
+    "modified_at": "2026-06-08T17:19:15.298Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_08_06_26_08_12_59d2d35bbc.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/rossijskie-vina-predstavili-na-concours-mondial-de-bruxelles-2026",
+    "fetched_at": "2026-08-25T21:29:05+0300",
+    "content_hash": "760e34fcd7bf92858b4d5737b707761e7ed93808d71a1f425e3f3edf31b97188",
+    "parser_version": "0.4.0"
+  }
+}

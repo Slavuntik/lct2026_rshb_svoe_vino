@@ -1,0 +1,137 @@
+{
+  "slug": "evolution-pinot-noir-bryut-beloe",
+  "source": {
+    "name": "Evolution pinot noir, брют, белое",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Устрицы"
+    ],
+    "description": "Вкус сбалансированный и минеральный с тонами яблока, груши и хорошей структурной кислотностью. Аромат деликатный, тонкий с нотами зеленого яблока, белых цветов плодовых деревьев и акации. \n\nВино органическое, подтверждено сертификатом РФ. 88 баллов в рейтинге лучших российских игристых вин по версии Simple Wine News 2025/2026.\n\nПрессование винограда целыми гроздями при 10°C, стабуляж 10 дней при 5°C, брожение в течении 15 дней в ёмкостях из нержавеющей стали с автоматическим контролем температуры брожения 14‑17°C, по окончании брожения — декантация с толстого дрожжевого осадка. Вторичное брожение в течении 20 дней, с остановкой брожения холодом, при необходимых сахарах. Выдержка в акратафоре на дрожжах в течении 2,5 месяцев.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/AYA_Mokapy_igristoe_beloe_09976d020f.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/evolution-pinot-noir-bryut-beloe",
+    "fetched_at": "2026-08-25T17:01:48+0300",
+    "content_hash": "fe24cd148e48c86075ffafd16256d1ebb080b8766044796c088395e368253fff",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.1,
+      "body": 0.42,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

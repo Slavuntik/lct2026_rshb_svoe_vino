@@ -1,0 +1,151 @@
+{
+  "slug": "cosaque-krasnaya-gorka",
+  "source": {
+    "name": "Cosaque",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Красностоп Золотовский",
+      "Мерло",
+      "Цимлянский черный"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Блюда из птицы",
+      "Кавказская кухня"
+    ],
+    "description": "Аромат: сложный и яркий, в нём переплетаются, дополняя друг друга, оттенки спелой сочной вишни, ежевики, кофе, благородного дуба, тёплой вспаханной земли и лёгкие копчёные ноты.\n\nВкус: комплексный и сложный, с обилием спелых танинов, долгим и ярким вишнёво-ванильным послевкусием. С течением бутылочной выдержки вкусо-ароматический профиль дополняют ноты анималистики.\n\nОсобенность винификации\n\nРучной сбор. Винификация раздельная по каждому сорту. Двойная инспекция ягод. Деликатное гребнеотделение с получением целых ягод. Предферментационная мацерация в течение 5–7 дней, в зависимости от сорта, при температуре 8 градусов Цельсия. Техника винификации — комбинация ремонтажа и деликатного переворачивания «шапки» специальной боковой мешалкой. Брожение в стальном винификаторе, при температуре 30 градусов Цельсия — 7–8 дней, в зависимости от сорта, с последующей постферментационной мацерацией. Средняя продолжительность скин-контакта — 23 дня. Полная малолактика. Купажирование. Выдержка в новых тонно из французского дуба объёмом 500 литров в течение 12 месяцев — 50% от общего объёма. Остальные 50% выдерживаются 12 месяцев в новых барриках из французского, кавказского и иберийского дубов объёмом 225 литров. Ассамбляж. Кларификация. Стабилизация тартратов. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/kazak_de68fa252f.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/cosaque-krasnaya-gorka",
+    "fetched_at": "2026-08-25T17:00:51+0300",
+    "content_hash": "d7c5b8512d86f40f27a137b8f57d76c46e36a3089e60f42b9631781d3ba74f7b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "krasnostop-zolotovsky",
+      "merlo",
+      "tsimlyansky-chorny"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.613,
+      "tannin": 0.663,
+      "body": 0.76,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bordeaux-right-bank",
+      "bordeaux-left-bank",
+      "northern-rhone-syrah"
+    ]
+  }
+}

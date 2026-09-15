@@ -1,0 +1,146 @@
+{
+  "slug": "relikta-relikta-merlo-kaberne-sovinon-krasnoe-suhoe-135",
+  "source": {
+    "name": "Реликта Мерло, Каберне Совиньон",
+    "winery": "relikta",
+    "winery_name": "Реликта",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Мерло"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      18,
+      22
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Мясное ассорти",
+      "Паштеты",
+      "Сыры"
+    ],
+    "description": "В аромате сухофрукты и ежевика. Вкус полнотелый с фруктово-ягодными нотами, нотами специй и длительным, утонченным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/relikta_relikta_merlo_kaberne_sovinon_krasnoe_suhoe_135_4d7da23f88.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/relikta-relikta-merlo-kaberne-sovinon-krasnoe-suhoe-135",
+    "fetched_at": "2026-08-25T17:04:37+0300",
+    "content_hash": "6269460b163cdcc5d82edadacf1d12e72297d794c347019d499238ce7142909f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.675,
+      "body": 0.755,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "merlot-chile",
+      "montepulciano-dabruzzo",
+      "cotes-du-rhone"
+    ]
+  }
+}

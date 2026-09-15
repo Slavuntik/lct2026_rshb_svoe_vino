@@ -1,0 +1,147 @@
+{
+  "slug": "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+  "source": {
+    "name": "LETO Каберне Совиньон 2023 полусухое красное",
+    "winery": "leto",
+    "winery_name": "LETO",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "насыщенный рубиновый",
+    "vintage": 2023,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Выпечка и десерты"
+    ],
+    "description": "Выдержка в нейтральной ёмкости - сталь. Обладает ярким ароматом красных и черных ягод — черной смородины, спелой вишни, черешни.\nТакже ощущаются оттенки ежевичного джема и карамели.\nВкус вина очень нежный, с элегантной кислотностью. Можно почувствовать оттенки вишневых леденцов, инжира и джема из черешни.",
+    "public_rating": 4.5,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Vino_polusuhoe_krasnoe_KABERNE_SOVINON_cfd594e5f6.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "fiori-di-mare-krasnoe-polusuhoe",
+      "saperavi-premium",
+      "perovskih_polusuhoe_krasnoe",
+      "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+      "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+      "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+    "fetched_at": "2026-08-25T17:03:25+0300",
+    "content_hash": "39163d023f4f3f696a89d8acf5f1a9ce477e417b46b3c3ae409569acbe6ecaed",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.86,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "amarone",
+      "zinfandel-california",
+      "primitivo"
+    ]
+  }
+}

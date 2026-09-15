@@ -1,0 +1,144 @@
+{
+  "slug": "fanagoriya-fanagoriya-blanc-de-noirs-beloe-iz-chyornogo-merlo-igristoe-bryut-beloe-11-13",
+  "source": {
+    "name": "Фанагория. Blanc de Noirs. Белое из чёрного",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мерло",
+      "Пино Нуар"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Сыры"
+    ],
+    "description": "В аромате тона ягод, кремовые ноты и тона сдобы. Вкус свежий, округлый, с длительным сливочным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_fanagoriya_blanc_de_noirs_beloe_iz_chyornogo_merlo_igristoe_bryut_beloe_11_13_a4d16b3226.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-fanagoriya-blanc-de-noirs-beloe-iz-chyornogo-merlo-igristoe-bryut-beloe-11-13",
+    "fetched_at": "2026-08-25T17:02:05+0300",
+    "content_hash": "d8b90bb38ac0b5527c49a3525aab2f9d70092c1d9d0458ec857e61c08e20745f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.1,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "champagne-brut-nv",
+      "pet-nat",
+      "cava"
+    ]
+  }
+}

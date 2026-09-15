@@ -1,0 +1,148 @@
+{
+  "slug": "leto-kollekcziya-leta-kupazh-2021-suhoe-beloe",
+  "source": {
+    "name": "LETO Коллекция Лета Купаж 2021 сухое белое",
+    "winery": "leto",
+    "winery_name": "LETO",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг",
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино бледно-соломенного цвета с золотистыми бликами",
+    "vintage": 2021,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "В течение 11 месяцев на осадке в ёмкостях из нержавеющей стали.  Аромат раскрывается яркими оттенками зеленых яблок и садовых ягод — белой смородины, спелого крыжовника.\nВкус вина нежный и яркий, с умеренной кислотностью яблок и нежными тонами абрикосов, белой смородины и крыжовника.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Vino_suhoe_beloe_KOLLEK_Cz_I_Ya_LETA_KUPA_Zh_0ee86a0a33.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/leto-kollekcziya-leta-kupazh-2021-suhoe-beloe",
+    "fetched_at": "2026-08-25T17:03:26+0300",
+    "content_hash": "303e286b1413f6363cce023d857c79e7617019cefa0d36279e99b4a89d8c757a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling",
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.825,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "riesling-trocken",
+      "marlborough-sb"
+    ]
+  }
+}

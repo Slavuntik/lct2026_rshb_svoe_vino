@@ -1,0 +1,144 @@
+{
+  "slug": "pozdnij-sbor-krasnoe",
+  "source": {
+    "name": "Поздний сбор, Красное",
+    "winery": "litavshchuk-vineyards-and-winery",
+    "winery_name": "Литавщук. Litavshchuk vineyards & winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Рубин Голодриги"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "гранатово-красный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      15,
+      18
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Мясо и стейки"
+    ],
+    "description": "Аромат приятный, мягкий, с яркими нотами вызревшего винограда. Вкус вина гармоничный, насыщенный, бархатистый, с десертной сладостью винограда, собранного в конце сезона.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_22_1b291bec0e.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16",
+      "massandra-bastardo-bastardo-magarachskiy-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/pozdnij-sbor-krasnoe",
+    "fetched_at": "2026-08-25T17:04:34+0300",
+    "content_hash": "dd7a779564c8e3e137487754a84a23a08ba5a21bbfa95a783ad4d46921c9f606",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "rubin-golodrigi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.715,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "port-ruby",
+      "recioto-della-valpolicella",
+      "cahors-dessert-kagor"
+    ]
+  }
+}

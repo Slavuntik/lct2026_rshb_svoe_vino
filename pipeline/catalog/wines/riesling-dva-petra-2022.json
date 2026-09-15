@@ -1,0 +1,149 @@
+{
+  "slug": "riesling-dva-petra-2022",
+  "source": {
+    "name": "Riesling Два Петра 2022",
+    "winery": "dva_petra",
+    "winery_name": "Два Петра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-лимонный",
+    "vintage": 2022,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Вкус: легкий, свежий и минеральный вкус с хорошо интегрированной кислотностью. Гармоничная структура с оттенками зеленого яблока и косточки абрикоса в послевкусии. Баланс и точность — ключевые черты этого вина.\n\nАромат: тонкий и многослойный, с акцентами белых цветов, зеленого яблока и косточковых фруктов. Легкие нюансы цитрусов, молодой травы и характерная для Рислинга бензольная нота придают аромату узнаваемую сортовую элегантность.\n\n\"Два Петра\" Рислинг — белое сухое вино, созданное на крымской винодельне, расположенной в районе Феодосии. Выполненное из винограда сорта Рислинг урожая 2022 года, это вино отражает особенности южного терруара и философию авторского подхода к производству.\n\nБережная переработка урожая начинается с отбора и прессования, после чего сусло сбраживается при контролируемой температуре, что позволяет сохранить естественную свежесть. Вино проходит легкую фильтрацию и разливается без выдержки, сразу после стабилизации.\n\nЭлегантное, сбалансированное и чистое по стилю, оно хорошо подходит как для повседневной подачи, так и для гастрономических сочетаний. Идеально раскрывается при подаче охлажденным.\n\n\"Два Петра\" Рислинг было удостоено бронзовой медали на международной выставке \"Продэкспо-2025\" в Москве. Эта награда подтверждают стабильное качество и высокую оценку вина со стороны профессионального дегустационного сообщества.",
+    "public_rating": 4.8,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Shardone_no_bg_preview_carve_photos_807a0bdba0.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/riesling-dva-petra-2022",
+    "fetched_at": "2026-08-25T17:04:43+0300",
+    "content_hash": "e1df35f03f0e83ae435f3162e99f32984ddb21ad866b5c4efede9a81a74afd17",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.48,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "puligny-montrachet",
+      "pouilly-fuisse",
+      "meursault"
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "slug": "novyj-svet-zolotoj-risling",
+  "source": {
+    "name": "Новый Свет. Золотой Рислинг",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      4,
+      8
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Средиземноморская кухня",
+      "Устрицы"
+    ],
+    "description": "Российское шампанское из отборного белого винограда сорта Рислинг. Это изысканное моносортовое вино ярко передает характеристику терруара западного Крыма. При производстве используется сок только первого отжима. Вино выдерживается на осадке более 36 месяцев в тоннелях конца XIX века при постоянной температуре +14 °С. Технологические операции — перекладка, ремюаж — проводятся вручную. \n\nАромат белого персика, жёлтого лимона, сушеных цветов липы и петрольных тонов, присущих винам из этого сорта с многолетней выдержкой. Во вкусе полнотелое, объемное с прекрасной яркой кислотностью, отличным балансом сахара и долгим минеральным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/4310_5n67_NVV_9e7031b185.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyj-svet-zolotoj-risling",
+    "fetched_at": "2026-08-25T17:04:08+0300",
+    "content_hash": "34bef5f0205f296f063075d6aa7511aa169cc8e8bb28d572e70f059b5bbf24e4",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.39,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

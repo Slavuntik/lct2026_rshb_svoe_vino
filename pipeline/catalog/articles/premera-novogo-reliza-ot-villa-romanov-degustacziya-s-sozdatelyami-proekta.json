@@ -1,0 +1,73 @@
+{
+  "slug": "premera-novogo-reliza-ot-villa-romanov-degustacziya-s-sozdatelyami-proekta",
+  "source": {
+    "title": "Премьера нового релиза от Вилла Романов: дегустация с создателями проекта",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">26 июня ресторан «Вилла Романов» в станице Голубицкой станет площадкой для презентации нового релиза тихих вин «Лалла-Рукъ».&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Вечер начнется в 18:00 и пройдет в формате дегустации с участием создателей проекта. Основатель винодельни Андрей Романов и винодел Егор Симоненко лично представят новую линейку, расскажут о работе с терруаром, особенностях урожая и стилистике вин.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Гости смогут попробовать новинки в сопровождении блюд ресторана, а атмосферу вечера дополнит живая музыка. Количество мест ограничено. Посещение возможно по предварительному бронированию.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Забронировать стол можно по телефону +7 (938) 401-90-40.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Адрес: Краснодарский край, Темрюкский район, станица Голубицкая, ул. Красная, 260.&nbsp;</span></p>",
+    "body": "26 июня ресторан «Вилла Романов» в станице Голубицкой станет площадкой для\nпрезентации нового релиза тихих вин «Лалла-Рукъ». \n\n \n\nВечер начнется в 18:00 и пройдет в формате дегустации с участием создателей\nпроекта. Основатель винодельни Андрей Романов и винодел Егор Симоненко лично\nпредставят новую линейку, расскажут о работе с терруаром, особенностях урожая и\nстилистике вин. \n\n \n\nГости смогут попробовать новинки в сопровождении блюд ресторана, а атмосферу\nвечера дополнит живая музыка. Количество мест ограничено. Посещение возможно по\nпредварительному бронированию.\n\n \n\nЗабронировать стол можно по телефону +7 (938) 401-90-40.\n\nАдрес: Краснодарский край, Темрюкский район, станица Голубицкая, ул. Красная,\n260.",
+    "body_chars": 716,
+    "headings": [],
+    "rubric": "Истории",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "пресс-служба Вилла Романов",
+    "published_at": "2026-06-20T18:07:03.783Z",
+    "published_date": "2026-06-20",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_20_06_26_08_57_1932aeb173.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/premera-novogo-reliza-ot-villa-romanov-degustacziya-s-sozdatelyami-proekta",
+    "fetched_at": "2026-08-25T21:28:47+0300",
+    "content_hash": "be9540a1c187d69e10b84e4b85b4a007f12f570c64cd3844f6351037e990cc02",
+    "parser_version": "0.4.0"
+  }
+}

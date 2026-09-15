@@ -1,0 +1,147 @@
+{
+  "slug": "abrau-dyurso-victor-dravigny-bryut",
+  "source": {
+    "name": "Абрау-Дюрсо Victor Dravigny брют",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Блан",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вино игристое Абрау-Дюрсо Victor Dravigny белое брют, 0.75л отличается минимальным содержанием сахара. Продукт изготовлен из винограда белых сортов (шардоне, совиньон, пино-блан, пино-нуар). Плоды выращены в виноградниках с уникальным мягким климатом и почвами, богатыми природными элементами. Это позволяет получить приятный напиток с легким фруктовым вкусом с нотками лайма. Послевкусие у него приятное гармоничное. Цвет напитка мягкий, красивый, оттенка спелой пшеницы. Дополнительную золотистость ему придает игра пузырьков, которые лучше всего раскрываются в высоких бокалах. Напиток обладает притягательным ароматом винограда с нотками цитрусовых. Он хорошо утоляет жажду в жаркие дни и создает атмосферу праздника в любое время года. Брют прекрасно сочетается с рыбой и морепродуктами, такими как устрицы, мидии, осьминоги, креветки. Его можно подать к столу и с блюдами из белой птицы. Фрукты тоже способны удачно дополнить вкус напитка. Шампанское следует подавать к столу охлажденным, но не замороженным. Для этого заблаговременно его помещают в камеру холодильника или другое прохладное место. Бутылку с игристым вином также можно опустить в ведерко, наполненное водой со льдом. Алкогольный напиток принято пить из длинных бокалов, сделанных из прозрачного стекла.",
+    "public_rating": 4.33,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Abrau_Dyurso_Viktor_Dravini_bryut_4b532f42da.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-victor-dravigny-bryut",
+    "fetched_at": "2026-08-25T16:58:40+0300",
+    "content_hash": "8d8a68ccad451e69856d1de51b1f36ca8edbfcff707101263a1f179c2000723f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-blan",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.575,
+      "oak": 0.1,
+      "aromatic_intensity": 0.6,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-blanc-de-blancs",
+      "champagne-brut-nv"
+    ]
+  }
+}

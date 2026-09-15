@@ -1,0 +1,138 @@
+{
+  "slug": "esse-pino-gri-blush-rozovoe-suhoe-115",
+  "source": {
+    "name": "Пино Гри Blush",
+    "winery": "esse",
+    "winery_name": "ESSE",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Гри"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      9,
+      10
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Дымный шлейф, ягодный микс ежевики и клубники, барбарис, черешня, сливки. Аромат тонкий с легими нотами фруктов и ягод: малина, клюква, смородина, слива.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/esse_pino_gri_blush_rozovoe_suhoe_115_6dbb8b61f3.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/esse-pino-gri-blush-rozovoe-suhoe-115",
+    "fetched_at": "2026-08-25T17:01:41+0300",
+    "content_hash": "8942844c0971c451b3936b85f8b9158833479a8d215af31f6f69b3a3950ce8a8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rosado-spain",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

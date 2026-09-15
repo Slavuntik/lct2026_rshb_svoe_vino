@@ -1,0 +1,80 @@
+{
+  "slug": "v-belom-myse-pokazhut-kabare-vina-spektakl-degustacziya-i-gastronomiya",
+  "source": {
+    "title": "В «Белом мысе» покажут «Кабаре вина»: спектакль, дегустация и гастрономия",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">12 сентября в винном городе «Белый мыс» в Геленджике пройдёт премьера авторского шоу «Кабаре вина» от команды петербургского «Ленинград Центра». Постановку специально создали для эногастрономического кластера: главным героем станет вино, а его характер и настроение будут передавать через сценические образы.</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Что в программе</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Шоу объединит более 30 номеров — музыку, танец, цирк, акробатику, вокал, свет и визуальные эффекты. Программа рассчитана примерно на два часа и состоит из двух отделений с антрактом. Вместо рядов кресел — уютные столики, как в кабаре.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В программу включена дегустация шести вин — три в первом отделении и ещё три во втором, а также гастрономическое сопровождение. Режиссёр-постановщик — Феликс Михайлов, художественный руководитель «Ленинград Центра», известный своими мультижанровыми спектаклями, где «каждый номер, как оголенный нерв, построен на контрастах».</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Место и даты</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><i>Где:</i>&nbsp;Геленджик, Туристическая, 25, ивент-холл «Белого мыса».</span><br><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><i>Когда:</i>&nbsp;12 сентября, сбор гостей в 19:45, спектакль с 20:30 до 23:30&nbsp;.</span><br><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><i>Цена:</i>&nbsp;25 000 — 30 000 ₽.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Это не единственный показ: до 10 октября шоу планируют повторить несколько раз. Детали и билеты — на&nbsp;</span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://wine.ru/events/kabare-vina\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">wine.ru/events/kabare-vina</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">.</span></p>",
+    "body": "12 сентября в винном городе «Белый мыс» в Геленджике пройдёт премьера авторского\nшоу «Кабаре вина» от команды петербургского «Ленинград Центра». Постановку\nспециально создали для эногастрономического кластера: главным героем станет\nвино, а его характер и настроение будут передавать через сценические образы.\n\n\nЧТО В ПРОГРАММЕ\n\nШоу объединит более 30 номеров — музыку, танец, цирк, акробатику, вокал, свет и\nвизуальные эффекты. Программа рассчитана примерно на два часа и состоит из двух\nотделений с антрактом. Вместо рядов кресел — уютные столики, как в кабаре.\n\nВ программу включена дегустация шести вин — три в первом отделении и ещё три во\nвтором, а также гастрономическое сопровождение. Режиссёр-постановщик — Феликс\nМихайлов, художественный руководитель «Ленинград Центра», известный своими\nмультижанровыми спектаклями, где «каждый номер, как оголенный нерв, построен на\nконтрастах».\n\n\nМЕСТО И ДАТЫ\n\nГде: Геленджик, Туристическая, 25, ивент-холл «Белого мыса».\nКогда: 12 сентября, сбор гостей в 19:45, спектакль с 20:30 до 23:30 .\nЦена: 25 000 — 30 000 ₽.\n\nЭто не единственный показ: до 10 октября шоу планируют повторить несколько раз.\nДетали и билеты — на wine.ru/events/kabare-vina\n[https://wine.ru/events/kabare-vina].",
+    "body_chars": 1228,
+    "headings": [
+      "Что в программе",
+      "Место и даты"
+    ],
+    "rubric": "События",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "Елена Глазунова",
+    "published_at": "2026-08-24T09:02:16.589Z",
+    "published_date": "2026-08-24",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/elenglazunova_597_7107873042.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/v-belom-myse-pokazhut-kabare-vina-spektakl-degustacziya-i-gastronomiya",
+    "fetched_at": "2026-08-25T21:30:00+0300",
+    "content_hash": "869ae7fa1fa9a400a36cb0d9167d2df68ecf8c625c8b1b82c4b4c8cd80bd6ad0",
+    "parser_version": "0.4.0"
+  }
+}

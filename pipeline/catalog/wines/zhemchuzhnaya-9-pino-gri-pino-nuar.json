@@ -1,0 +1,144 @@
+{
+  "slug": "zhemchuzhnaya-9-pino-gri-pino-nuar",
+  "source": {
+    "name": "Жемчужная 9 Пино Гри, Пино Нуар",
+    "winery": "aratti",
+    "winery_name": "АРАТТИ",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Гри",
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло лососевый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Салаты",
+      "Устрицы"
+    ],
+    "description": "Вкус и аромат: нежное, с лёгкими ягодными нотами — клубника, белая смородина и немного цитруса. Свежесть и кислотность делают его идеальным летом.\nСочетания: к легким закускам, севиче, салатам с морепродуктами или устрицам.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Pino_Gri_Pino_Nuar_suh_9c75ca2f52.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1",
+      "b-yu-rne-vinisa-zh-suhoe-rozovoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zhemchuzhnaya-9-pino-gri-pino-nuar",
+    "fetched_at": "2026-08-25T17:08:08+0300",
+    "content_hash": "433b90a4092dc28e52c058499aec89bf33ef483a045a755cd65bce20a755a787",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.625,
+      "tannin": 0.2,
+      "body": 0.5,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bandol-rose",
+      "cerasuolo-dabruzzo",
+      "rosado-spain"
+    ]
+  }
+}

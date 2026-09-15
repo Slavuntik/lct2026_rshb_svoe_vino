@@ -1,0 +1,138 @@
+{
+  "slug": "vinodelnya-marchenko-vermilon-kaberne-azos-krasnoe-suhoe-14",
+  "source": {
+    "name": "Вермильон",
+    "winery": "vinodelnya-marchenko",
+    "winery_name": "Винодельня Марченко",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне АЗОС"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "интенсивный красный с рубиновым оттенком",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Кавказская кухня",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус: Глубокий, с пряными нотками свежемолотого перца, деликатными танинами, гармоничной кислотностью и продолжительным послевкусием с шоколадно-ягодными оттенками. Наполнен оттенками черной смородины, ежевики, черноплодной рябины, вишни и алычи, с легкими нотками специй.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_marchenko_vermilon_kaberne_azos_krasnoe_suhoe_14_f967407afe.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-marchenko-vermilon-kaberne-azos-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:07:02+0300",
+    "content_hash": "c67e82e0f87ef651f88a85609ee0928a091a5ca32f12e77875737e36c83bc450",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-azos"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.81,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "montepulciano-dabruzzo",
+      "saperavi-georgia",
+      "cotes-du-rhone"
+    ]
+  }
+}

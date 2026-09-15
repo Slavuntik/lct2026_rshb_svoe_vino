@@ -1,0 +1,140 @@
+{
+  "slug": "usadba-divnomorskoe-grande-cuvee-shardone-beloe-bryut-125",
+  "source": {
+    "name": "Grande Cuvee",
+    "winery": "usadba-divnomorskoe",
+    "winery_name": "Усадьба Дивноморское",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный цвет с легкими золотистыми бликами",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Устрицы"
+    ],
+    "description": "Тонкая игра мелких пузырьков. Аромат легкий и утонченный: открывается прохладной свежестью с едва уловимыми нотами песочного печенья, затем раскрываются тона красного яблока, белой черешни и нежных полевых цветов. Вкус деликатный и свежий, с мягкой кислотностью и чистым послевкусием. Отличный аперитив.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/usadba_divnomorskoe_grande_cuvee_shardone_igristoe_bryut_beloe_125_00b1325ee6.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/usadba-divnomorskoe-grande-cuvee-shardone-beloe-bryut-125",
+    "fetched_at": "2026-08-25T17:05:53+0300",
+    "content_hash": "aa36cbc50f39cc6b98d6a878cd5736673112d1d19ffa3c8b48969467c38b62dc",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-brut-nv",
+      "champagne-blanc-de-blancs"
+    ]
+  }
+}

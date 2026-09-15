@@ -1,0 +1,141 @@
+{
+  "slug": "oxana-istratova-wine-rkatsiteli-2024-oranzhevoe-suhoe-12",
+  "source": {
+    "name": "Ркацители 2024",
+    "winery": "oxana-istratova-wine",
+    "winery_name": "Oxana Istratova Wine",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Ркацители"
+    ],
+    "color": "оранжевое",
+    "sugar_category": "сухое",
+    "color_in_glass": "янтарный",
+    "vintage": 2024,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы"
+    ],
+    "description": "Вкус: Округлый, хорошая кислотность, мягкий танин,сухофрукты. в аромате спелая айва, абрикосы, степные медоносы",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/oxana_istratova_wine_rkatsiteli_2024_oranzhevoe_suhoe_12_7a4aaf2a55.webp",
+    "similar_wine_slugs": [
+      "kuban-vino-shato-tamane-selekt-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-135",
+      "abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "chateau-tamagne-nature-orange",
+      "vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "vaynkraft-rkatsiteli-oranzh-oranzhevoe-suhoe-12",
+      "vaynkraft-traminer-oranzh-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "belbek-muskat-oranzh-muskat-belyy-oranzhevoe-suhoe-125",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "denisov-winery-tsitron-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "oxana-istratova-wine-vione-2024-oranzhevoe-suhoe-13",
+      "oxana-istratova-wine-vione-2023-oranzhevoe-suhoe-119"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/oxana-istratova-wine-rkatsiteli-2024-oranzhevoe-suhoe-12",
+    "fetched_at": "2026-08-25T17:04:26+0300",
+    "content_hash": "a17a73bc5a45c745e70736229fb75fcfbc2ce95bfb4cd8ad5d75342c96e07405",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "rkatsiteli"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.5,
+      "body": 0.55,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "georgian-qvevri-amber",
+      "skin-contact-light",
+      "friuli-orange"
+    ]
+  }
+}

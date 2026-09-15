@@ -1,0 +1,67 @@
+{
+  "slug": "zolotoe-pole",
+  "source": {
+    "name": "Золотое Поле",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Золотое Поле — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Историческая крымская винодельня с производственной площадкой в селе Золотое Поле на востоке полуострова и современными собственными виноградниками в Сакском районе западного Крыма. Сегодня производство развивает ISSI Group; в актуальном портфеле предприятия представлены, в частности, вина Kaffa и «Легенда Крыма».\n\nСовременное предприятие ведет отсчет истории с 1945 года. В 2015 году завод прошел масштабную реконструкцию: были обновлены основные технологические линии, установлены пневматические прессы, емкости из нержавеющей стали, холодильное оборудование и лаборатория. С 2022 года собственное производство на площадке развивает ISSI Group. По данным компании, мощности позволяют перерабатывать около 7,5 тыс. тонн винограда и выпускать до 750 тыс. бутылок в месяц.\n\nВиноградарская история местности старше самого завода: в начале XIX века в районе существовала швейцарская колония Цюрихталь, жители которой занимались в том числе виноградарством. Однако датой основания современного предприятия корректнее считать 1945 год, когда был создан Старо-Крымский виноградно-винодельческий совхоз. К концу 1960-х хозяйство заметно расширило масштабы. После сложного постсоветского периода новый производственный этап начался с реконструкции 2015 года; с 2022 года площадку развивает ISSI Group.\n\nСовременные виноградники находятся в Сакском районе, в районе села Геройское, между селами Степное и Яркое. Здесь распространены южные черноземы и темно-каштановые, в том числе глинисто-черноземные почвы. Основной массив закладывался в 2012-2017 годах с плотностью около 3333 лоз/га; посадочный материал приобретался в питомниках Guillaume во Франции и Rauscedo в Италии. В хозяйстве выращивают более 15 классических европейских и более 10 неоэндемичных сортов. Среди заметных посадок — мерло, каберне совиньон, шардоне, ркацители, мускат оттонель, пино гри, мальвазия, саперави, мальбек, пино нуар, сира, совиньон блан и вионье.6, 34.999033 033 45.120336, 34.999033",
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "kaffa-joy-rkatsiteli",
+      "kaffa-joy-malvasia",
+      "kaffa-joy-merlot-malbec",
+      "kaffa-joy-malbec-glu-glu",
+      "zolotoe-pole-legend-of-crimea-muscat-ottonel-muskat-ottonel-beloe-suhoe-14",
+      "zolotoe-pole-kaffa-vione-beloe-suhoe-13",
+      "zolotoe-pole-legend-of-crimea-cabernet-sauvignon-kaberne-sovinon-krasnoe-suhoe-125",
+      "zolotoe-pole-kaffa-malbek-krasnoe-suhoe-125",
+      "zolotoe-pole-kaffa-kaberne-fran-krasnoe-suhoe-14",
+      "zolotoe-pole-legend-of-crimea-chardonnay-shardone-beloe-suhoe-13",
+      "zolotoe-pole-legend-of-crimea-white-blend-malvaziya-beloe-suhoe-135",
+      "zolotoe-pole-legend-of-crimea-malbec-malbek-krasnoe-suhoe-125"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/zolotoe-pole",
+    "fetched_at": "2026-08-25T21:24:55+0300",
+    "content_hash": "649ca06f25c2744a9f1aeb0f2917a46fdd781f40d012bd808d270a19bbd9b03b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

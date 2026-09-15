@@ -1,0 +1,138 @@
+{
+  "slug": "sacrum-bryut-rozovoe",
+  "source": {
+    "name": "Sacrum, брют, розовое",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Сыры",
+      "Устрицы"
+    ],
+    "description": "Игристое вино нежно-розового цвета завораживает изящным, тонким перляжем, подчеркивающим его утончённый характер. Во вкусе оно мягкое и легко пьющееся, но при этом обладает гармоничной структурой. Живая ягодная кислинка в сочетании с деликатной минеральностью формирует освежающий, динамичный стиль вина. Аромат раскрывается яркими ягодными оттенками, дополненными тонкими растительными нюансами, которые придают букету особую свежесть и элегантность.\n\nСортовой состав: Каберне Совиньон, Шардоне, Пино Блан, Совиньон Блан.\n\nИзготовленное по классической технологии и выдержанное не менее 12 месяцев на осадке. Технология производства включает краткую криомацерацию, выдержку не менее 3 месяцев сусла в американском дубе и полное яблочно-молочное брожение.\n\nНаграды: Лучшие российские игристые вина по версии Simple Wine News 2025/2026; ГРАНД Золото ProdExpo International Wine Competitoin and Guide 2025",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/sacrum_rose_9a0538280a.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/sacrum-bryut-rozovoe",
+    "fetched_at": "2026-08-25T17:04:50+0300",
+    "content_hash": "80d71ec28268c9970f59119b9a8f2cf9c2674071c818a3cbf8e4ffeefce09456",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.2,
+      "body": 0.62,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

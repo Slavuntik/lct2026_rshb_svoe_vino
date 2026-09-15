@@ -1,0 +1,152 @@
+{
+  "slug": "zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+  "source": {
+    "name": "ZB Frizzante Semi-Dry Rose",
+    "winery": "zolotaya_balka",
+    "winery_name": "Золотая Балка",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Алиготе",
+      "Бастардо Магарачский",
+      "Каберне Совиньон",
+      "Мускат Гамбургский",
+      "Пино Нуар",
+      "Рислинг",
+      "Ркацители",
+      "Саперави",
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "нежный розовый оттенок",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Мороженое"
+    ],
+    "description": "Гармоничный аромат ягодных тонов — вишни, чёрной смородины и малины. Вкус деликатный и мягкий, с нежными оттенками земляники и вишни, лёгкая пузырьковая игра оставляет сливочное послевкусие.\nОтличный аперитив, хорошо сочетается с лёгкими закусками, фруктами, ягодными десертами и в формате вечеринки.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zolotaya_balka_zb_frizzante_semi_dry_rose_risling_rozovoe_polusuhoe_10_462381c9b4.webp",
+    "similar_wine_slugs": [
+      "rozovoe-zoloto",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+      "aratti-kaberne-po-belomu-1",
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar",
+      "aya-khrustaleva-76-merlot-organik",
+      "perovskih_merlo",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-rozovoe-novyy-svet-pino-nuar-125",
+      "fanagoriya-brule-cabernet-franc-polusuhoe-rozovoe-kaberne-fran-12",
+      "fanagoriya-zelyonoe-vino-risling-tsitronnyy-magaracha-merlo-rozovoe-polusuhoe-11",
+      "fanagoriya-rose-kaberne-sovinon-rozovoe-polusuhoe-13",
+      "fanagoriya-rose-saperavi-rozovoe-polusuhoe-125",
+      "fanagoriya-par-amour-pervenets-magaracha-rozovoe-polusuhoe-105-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+    "fetched_at": "2026-08-25T17:08:19+0300",
+    "content_hash": "32e0d7fe675b4a477e0969b86a98fc12645610707c72f22c01c61ca0e1dda966",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "aligote",
+      "bastardo-magarachsky",
+      "kaberne-sovinon",
+      "muskat-gamburgsky",
+      "pino-nuar",
+      "risling",
+      "rkatsiteli",
+      "sapervi",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.678,
+      "tannin": 0.2,
+      "body": 0.546,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

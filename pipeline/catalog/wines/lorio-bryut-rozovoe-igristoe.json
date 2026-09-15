@@ -1,0 +1,141 @@
+{
+  "slug": "lorio-bryut-rozovoe-igristoe",
+  "source": {
+    "name": "ЛОРИО. Брют розовое игристое",
+    "winery": "lorio-semejnaya-vinodelnya-logunovyh",
+    "winery_name": "ЛОРИО -  семейная винодельня Логуновых",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Устрицы"
+    ],
+    "description": "Свежее, хрустящее, с тонкой кремовой текстурой. В аромате — сочные красные ягоды, во вкусе — чистый ягодный профиль, хрустящая кислотность, сухой стройный финал с деликатными дрожжевыми и минеральными нюансами.\n\nБережное отделение сусла-самотёка, брожение при контролируемой температуре, частичная малолатика (40%) выдержка на тонком осадке 6 месяцев, ассамбляж. Медленное вторичное брожение, выдержка на осадке не менее 9 месяцев. \n\nНаграды: 89 баллов (серебро) в Гиде Артура Саркисяна 2025",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Igristoe_Rozovoe_Pino_Nuar_bez_fona_0156c8af31.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/lorio-bryut-rozovoe-igristoe",
+    "fetched_at": "2026-08-25T17:03:35+0300",
+    "content_hash": "ec88fa9e987f26c7bb82eafe746d0f48c57e05ca3f97ac13c1523d315e6cff6f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.42,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

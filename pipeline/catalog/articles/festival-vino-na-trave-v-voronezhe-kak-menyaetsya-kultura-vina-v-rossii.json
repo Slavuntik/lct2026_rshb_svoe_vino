@@ -1,0 +1,28 @@
+{
+  "slug": "festival-vino-na-trave-v-voronezhe-kak-menyaetsya-kultura-vina-v-rossii",
+  "source": {
+    "title": null,
+    "schema_type": null,
+    "lead": null,
+    "body": null,
+    "body_chars": null,
+    "headings": [],
+    "rubric": null,
+    "author": null,
+    "photo_credit": null,
+    "published_at": null,
+    "published_date": null,
+    "published_year": null,
+    "modified_at": null,
+    "image_url": null,
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/festival-vino-na-trave-v-voronezhe-kak-menyaetsya-kultura-vina-v-rossii",
+    "fetched_at": "2026-08-25T21:26:23+0300",
+    "content_hash": "436789a699c2746ac48a78cf6decf5b9a218f6d37a98272ef29c2fa0a4bea0be",
+    "parser_version": "0.4.0"
+  }
+}

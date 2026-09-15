@@ -1,0 +1,145 @@
+{
+  "slug": "lorio-rozovoe",
+  "source": {
+    "name": "ЛОРИО. Розовое",
+    "winery": "lorio-semejnaya-vinodelnya-logunovyh",
+    "winery_name": "ЛОРИО -  семейная винодельня Логуновых",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "лососево-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Спелая клубника, малина и белый персик, дополненные тонкими оттенками цветов-медоносов. Вкус — свежий и сочный, с мягкой текстурой, живой кислотностью и фруктовым послевкусием.\n\nВиноградник расположен на прохладном участке с умеренным климатом.",
+    "public_rating": 4.89,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/LORIO_ROZOVOE_9e1be3c909.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1",
+      "b-yu-rne-vinisa-zh-suhoe-rozovoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/lorio-rozovoe",
+    "fetched_at": "2026-08-25T17:03:37+0300",
+    "content_hash": "6cb34d3685962466b0a862fe4a139fca2e4d6f2106d61eab2d6a50b5035330aa",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.625,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "slug": "zolotaya-balka-otkryvaet-letnij-bar-v-love-republic-maison-v-moskve",
+  "source": {
+    "title": "«Золотая Балка» открывает летний бар в LOVE REPUBLIC MAISON в Москве",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В самом центре Москвы, в Столешниковом переулке, открылось новое пространство LOVE REPUBLIC MAISON. Вдохновлённое французской богемной эстетикой, оно переосмысляет привычный формат магазина, превращая его в многоуровневую lifestyle-среду, где мода встречается с гастрономией и искусством.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Партнёром поп-апа выступила винодельня «Золотая Балка». С 2 июля по 16 августа в винтажном винил-баре LOVE REPUBLIC MAISON будет работать бар крымского производителя с коктейльной картой и игристым.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Что ждёт гостей</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В выходные дни в пространстве будут работать команды стилистов и визажистов — можно будет не только попробовать вино, но и получить консультацию по образу.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">По пятницам — Bubble Fridays: DJ-сеты на виниле, коктейли и, конечно, игристое от «Золотой Балки».</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В программе также — лекции и мастер-классы с модными экспертами, историками моды и музами бренда. Среди них — Александр Рогов, Анатоль Вовк и Мария Червоткина.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><i>Адрес</i>: Столешников переулок, 10, строение 1. Вход свободный, программа и расписание мероприятий доступны на площадке.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Почему это интересно</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Крымское игристое в центре Москвы, в пространстве, которое объединяет моду, музыку и вино, — пожалуй, лучшее описание летнего вечера в городе. «Золотая Балка» не просто поставляет вино для бара: участие в таком проекте — это способ говорить с аудиторией на её языке, оставаясь при этом собой.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Летний поп-ап продлится до 16 августа. Успейте застать.</span></p>",
+    "body": "В самом центре Москвы, в Столешниковом переулке, открылось новое пространство\nLOVE REPUBLIC MAISON. Вдохновлённое французской богемной эстетикой, оно\nпереосмысляет привычный формат магазина, превращая его в многоуровневую\nlifestyle-среду, где мода встречается с гастрономией и искусством.\n\n \n\nПартнёром поп-апа выступила винодельня «Золотая Балка». С 2 июля по 16 августа в\nвинтажном винил-баре LOVE REPUBLIC MAISON будет работать бар крымского\nпроизводителя с коктейльной картой и игристым.\n\n \n\n\nЧТО ЖДЁТ ГОСТЕЙ\n\n \n\nВ выходные дни в пространстве будут работать команды стилистов и визажистов —\nможно будет не только попробовать вино, но и получить консультацию по образу.\n\n \n\nПо пятницам — Bubble Fridays: DJ-сеты на виниле, коктейли и, конечно, игристое\nот «Золотой Балки».\n\n \n\nВ программе также — лекции и мастер-классы с модными экспертами, историками моды\nи музами бренда. Среди них — Александр Рогов, Анатоль Вовк и Мария Червоткина.\n\n \n\nАдрес: Столешников переулок, 10, строение 1. Вход свободный, программа и\nрасписание мероприятий доступны на площадке.\n\n \n\n\nПОЧЕМУ ЭТО ИНТЕРЕСНО\n\n \n\nКрымское игристое в центре Москвы, в пространстве, которое объединяет моду,\nмузыку и вино, — пожалуй, лучшее описание летнего вечера в городе. «Золотая\nБалка» не просто поставляет вино для бара: участие в таком проекте — это способ\nговорить с аудиторией на её языке, оставаясь при этом собой.\n\n \n\nЛетний поп-ап продлится до 16 августа. Успейте застать.",
+    "body_chars": 1444,
+    "headings": [
+      "Что ждёт гостей",
+      "Почему это интересно"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "соцсети винодельни Золотая Балка",
+    "published_at": "2026-07-03T21:00:00.000Z",
+    "published_date": "2026-07-03",
+    "published_year": 2026,
+    "modified_at": "2026-07-04T15:22:40.660Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/IMG_20260704_143501_597_1baf2953aa.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/zolotaya-balka-otkryvaet-letnij-bar-v-love-republic-maison-v-moskve",
+    "fetched_at": "2026-08-25T21:31:21+0300",
+    "content_hash": "fef3666087b24e9ac3bb5f9e0d7a52f8c9fbf92c727aa8e8a6bca118568a2e83",
+    "parser_version": "0.4.0"
+  }
+}

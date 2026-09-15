@@ -1,0 +1,145 @@
+{
+  "slug": "marquetry-cabernet-franc",
+  "source": {
+    "name": "Marquetry cabernet franc",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Фран"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "тёмно-гранатовый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Овощи гриль",
+      "Сыры"
+    ],
+    "description": "Интересное прочтение молодого Каберне Фран, который любит выдержку. Концентрированный вкус с ощущением сладости, округлыми сбалансированными танинами, длительным пряным послевкусием с тонами ягод, сладких пряностей и табака. В аромате овощной тон сладкого болгарского перца и сладкой свеклы, ноты спелых чёрных ягод и пряностей.\n\nВино органическое, подтверждено сертификатом РФ.\n\n12 дней холодной мацерации при 5 °C, после ферментация на протяжении 12 дней при 18-24 °C, в процессе которой ежедневно проводились ремонтаж и 5 раз делистаж с отделением и сбросом косточки. После спиртового брожения снятие самотечных фракций молодого вина и прессование стекшей мезги, фракции объединяются. Проведение яблочно-молочного брожения в стали в течение 20 дней. Выдержка 12 месяцев в новых дубовых бочках 225 литров.\n\nНаграды: 90 баллов. Рейтинг лучших российских вин по версии Simple Wine News 2025/2026",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/AYA_marquetry_cabernet_franc_2023_bottle_81526424ed.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/marquetry-cabernet-franc",
+    "fetched_at": "2026-08-25T17:03:43+0300",
+    "content_hash": "633a39beb1bbf65e39fccc38ab143c661b34549d8689bece7a5c4d53baeb1cc2",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.6,
+      "body": 0.63,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bordeaux-right-bank",
+      "carmenere-chile",
+      "bordeaux-left-bank"
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "slug": "myshako-igristoe-beloe-bryut",
+  "source": {
+    "name": "Мысхако игристое белое брют",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Алиготе",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Лёгкие закуски",
+      "Рыба и морепродукты",
+      "Фрукты"
+    ],
+    "description": "Гармоничный аромат вина раскрывается оттенками цветов винограда. Вкус многогранный, наполнен нотками винограда, груши и яблока. Вино является прекрасным аперитивом, хорошо сочетается с морепродуктами, белым мясом, ризотто и рыбными блюдами. Это новинка компании Мысхако, освежающее белое игристое вино из линейки Квинтэссенция, созданное из винограда сорта Совиньон Блан, который выращивается в защищенном географическом регионе Кубань. По окончании сбора урожая плоды подвергаются традиционной винификации при контролируемой температуре в стальных чанах. В дальнейшем игристое вино производится в соответствии с итальянским методом Шарма, который предполагает проведение вторичной ферментации в герметичных автоклавах, где полученное ранее базовое вино бродит с сахаром и дрожжами. Игристое вино идеально в качестве аперитива, а также в паре с легкими блюдами и закусками, рыбой, морепродуктами, устрицами, белым мясом под нежным соусом.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Myshako_igristoe_bryut_beloe_d8ba526bcc.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/myshako-igristoe-beloe-bryut",
+    "fetched_at": "2026-08-25T17:03:58+0300",
+    "content_hash": "a93a0ed29a9fb7d91d13e5e0bd42571625dac13227ed1c7ed40d0eb322d8f50f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "aligote",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.47,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "pet-nat",
+      "champagne-blanc-de-blancs"
+    ]
+  }
+}

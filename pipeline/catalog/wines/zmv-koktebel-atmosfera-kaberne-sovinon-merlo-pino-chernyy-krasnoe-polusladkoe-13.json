@@ -1,0 +1,143 @@
+{
+  "slug": "zmv-koktebel-atmosfera-kaberne-sovinon-merlo-pino-chernyy-krasnoe-polusladkoe-13",
+  "source": {
+    "name": "Атмосфера - Каберне Совиньон, Мерло, Пино Черный",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон",
+      "Мерло",
+      "Пино черный"
+    ],
+    "color": "красное",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "рубиново-гранатовый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Паста",
+      "Пицца",
+      "Сыры"
+    ],
+    "description": "В аромате виишня и слива. Вкус фруктовый, мягкий, сбалансированный, объемный, продолжительный с оттенками вишни, сливы,\nпряности. Мягкая кислотность, приятное фруктовое послевкусие.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_atmosfera_kaberne_sovinon_merlo_pino_chernyy_krasnoe_polusladkoe_13_542fe78f22.webp",
+    "similar_wine_slugs": [
+      "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+      "chernaya-lvicza-polusladkoe-krasnoe",
+      "leto-kaberne-fran-2024-polusladkoe-krasnoe",
+      "perovskih_polusladkoe_krasnoe",
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-polusladkoe-kaberne-sovinon-115",
+      "soyuz-vino-soyuz-vino-izabella-krasnoe-polusladkoe-11",
+      "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11",
+      "soyuz-vino-sheremetevskie-pogreba-krasnoe-polusladkoe-krasnye-sorta-vinograda-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-atmosfera-kaberne-sovinon-merlo-pino-chernyy-krasnoe-polusladkoe-13",
+    "fetched_at": "2026-08-25T17:08:11+0300",
+    "content_hash": "de8002033a973da522af4850c7f2755ab34055743ea5ce68c5b1e45f3985cf22",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "merlo",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.583,
+      "body": 0.663,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "kindzmarauli",
+      "red-semisweet"
+    ]
+  }
+}

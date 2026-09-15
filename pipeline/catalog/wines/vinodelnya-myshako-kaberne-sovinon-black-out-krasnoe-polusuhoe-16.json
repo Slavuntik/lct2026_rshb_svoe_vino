@@ -1,0 +1,137 @@
+{
+  "slug": "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+  "source": {
+    "name": "Каберне Совиньон. Black Out",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "рубиново-красный",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Вкус: Округлый, бархатистый, мягкий, с фруктово-пряным профилем, шелковистыми танинами и долгим, сбалансированным послевкусием. Оттенки черной смородины, вишни, сливы, черешни, пряностей и сладких специй.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_myshako_kaberne_sovinon_black_out_krasnoe_polusuhoe_16_c5bb09a533.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "fiori-di-mare-krasnoe-polusuhoe",
+      "saperavi-premium",
+      "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+      "perovskih_polusuhoe_krasnoe",
+      "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+      "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+      "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+    "fetched_at": "2026-08-25T17:07:09+0300",
+    "content_hash": "c66f72b29c4a42adb0ae55a4b79ede8b587e1e809eddd5422a27689fe66e1167",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.92,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

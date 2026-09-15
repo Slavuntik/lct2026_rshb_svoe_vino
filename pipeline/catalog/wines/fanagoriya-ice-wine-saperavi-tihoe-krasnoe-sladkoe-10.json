@@ -1,0 +1,142 @@
+{
+  "slug": "fanagoriya-ice-wine-saperavi-tihoe-krasnoe-sladkoe-10",
+  "source": {
+    "name": "Ice Wine Саперави тихое",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Мясное ассорти",
+      "Сыры"
+    ],
+    "description": "В аромате ежевика, шелковица, фиалка, шоколад. Вкус плотный, бархатистый.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_ice_wine_saperavi_tihoe_krasnoe_sladkoe_10_9c41c0131c.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "pozdnij-sbor-krasnoe",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-ice-wine-saperavi-tihoe-krasnoe-sladkoe-10",
+    "fetched_at": "2026-08-25T17:02:09+0300",
+    "content_hash": "dcd0237cd685810d6a98608870df7b954cc9a943d05266da7cd2457143da139d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.75,
+      "tannin": 0.8,
+      "body": 0.74,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "port-ruby",
+      "recioto-della-valpolicella"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "slug": "opredelen-pobeditel-xxv-rossijskogo-konkursa-somele-triumf-maksima-grebenika",
+  "source": {
+    "title": "Определен победитель XXV Российского конкурса сомелье: триумф Максима Гребеника",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Москва&nbsp;— Юбилейный, XXV Российский конкурс сомелье подвел итоги. Главный титул и звание лучшего сомелье страны завоевал <strong>Максим Гребеник</strong> из Москвы.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Финал, прошедший в столичном отеле «МонАрх», собрал сильнейших представителей профессии со всей России. В борьбе за победу Максим продемонстрировал исключительный уровень подготовки: члены жюри отметили его точность в дегустационном анализе, безупречную работу с сервисом и глубокое понимание винной культуры.</span></p><p style=\"background-color:white;line-height:normal;margin:12.0pt 0cm;\">&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Второе место занял <strong>Денис Юрченко</strong> (Москва), третье — <strong>Вероника Смирнова</strong> (Санкт-Петербург). Все финалисты подтвердили высокий статус конкурса как главной профессиональной площадки страны, успешно пройдя сложнейшие испытания, включая слепые дегустации, сервисные задания и теоретические блоки, требующие максимальной концентрации и выдержки.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Российский конкурс сомелье остается ключевым событием винной индустрии, определяющим вектор развития профессии. Победа в нем — это не просто титул, а признание высочайшего мастерства и важная точка роста в карьере.</span></p>",
+    "body": "Москва — Юбилейный, XXV Российский конкурс сомелье подвел итоги. Главный титул и\nзвание лучшего сомелье страны завоевал Максим Гребеник из Москвы.\n\n \n\nФинал, прошедший в столичном отеле «МонАрх», собрал сильнейших представителей\nпрофессии со всей России. В борьбе за победу Максим продемонстрировал\nисключительный уровень подготовки: члены жюри отметили его точность в\nдегустационном анализе, безупречную работу с сервисом и глубокое понимание\nвинной культуры.\n\n \n\nВторое место занял Денис Юрченко (Москва), третье — Вероника Смирнова\n(Санкт-Петербург). Все финалисты подтвердили высокий статус конкурса как главной\nпрофессиональной площадки страны, успешно пройдя сложнейшие испытания, включая\nслепые дегустации, сервисные задания и теоретические блоки, требующие\nмаксимальной концентрации и выдержки.\n\n \n\nРоссийский конкурс сомелье остается ключевым событием винной индустрии,\nопределяющим вектор развития профессии. Победа в нем — это не просто титул, а\nпризнание высочайшего мастерства и важная точка роста в карьере.",
+    "body_chars": 1021,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-03-22T04:05:00.000Z",
+    "published_date": "2026-03-22",
+    "published_year": 2026,
+    "modified_at": "2026-03-22T04:57:29.460Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/ii_bee0d04572.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/opredelen-pobeditel-xxv-rossijskogo-konkursa-somele-triumf-maksima-grebenika",
+    "fetched_at": "2026-08-25T21:28:14+0300",
+    "content_hash": "12d60dc3e9a6bc0e7eeeb41f315a19c39f97321d0b71d8091b7212a90c8b2a43",
+    "parser_version": "0.4.0"
+  }
+}

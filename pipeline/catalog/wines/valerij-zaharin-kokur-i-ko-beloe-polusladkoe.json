@@ -1,0 +1,141 @@
+{
+  "slug": "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+  "source": {
+    "name": "Валерий Захарьин Кокур и Ко белое полусладкое",
+    "winery": "valeriy-zaharin",
+    "winery_name": "Валерий Захарьин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур Белый",
+      "Ркацители",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Азиатская кухня",
+      "Блюда из птицы",
+      "Фруктово-ягодные десерты"
+    ],
+    "description": "Аромат фруктовый, с тонами фруктов, яблока и весенних цветов. Вино обладаем мягким, приятным вкусом и фруктово-цветочными тонами.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Valerij_Zaharin_Kokur_i_Ko_igristoe_beloe_polusladkoe_1334dee26c.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe",
+      "lebedushka"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+    "fetched_at": "2026-08-25T17:06:11+0300",
+    "content_hash": "3a4609a2bb1d4ab3170355f1be1ec06c94658f3235886f6c1c6636c2364ea0f5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur",
+      "rkatsiteli",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.65,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "white-semisweet"
+    ]
+  }
+}

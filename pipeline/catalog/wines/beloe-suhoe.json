@@ -1,0 +1,140 @@
+{
+  "slug": "beloe-suhoe",
+  "source": {
+    "name": "Белое сухое",
+    "winery": "solnechnaya_dolina",
+    "winery_name": "Солнечная долина",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Ркацители"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из рыбы",
+      "Морепродукты",
+      "Паста",
+      "Сыры"
+    ],
+    "description": "Аромат вина чистый, слаженный, с деликатными цветочными и фруктовыми нюансами. Вкус вина свежий, мягкий с ненавязчивой благородной кислинкой и тонким, приятным послевкусием.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/PU_Sjv7dn_M_Nil_H25_TO_9_Bcb_Am_GBET_cm_W_Ma_Cxit_V_l_m_G_Tr_RJ_KWX_9ci_Ui_Eg_Js_HYWY_2_Kt2y_Ed_Ew_Mm_XQTL_4_M_Eq_K3w_1a4256a4fa.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/beloe-suhoe",
+    "fetched_at": "2026-08-25T17:00:14+0300",
+    "content_hash": "77440b41e8075b0635ccc1dcf2495fc8e8da3d74ef61ef502d7195455f2a9131",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "rkatsiteli"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rkatsiteli-dry",
+      "assyrtiko",
+      "verdicchio"
+    ]
+  }
+}

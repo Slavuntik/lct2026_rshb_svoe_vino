@@ -1,0 +1,129 @@
+{
+  "slug": "imenie-sikory-krasnostop-zolotovskiy-pozdniy-sbor-rozovoe-sladkoe-13",
+  "source": {
+    "name": "Красностоп Золотовский. Поздний сбор",
+    "winery": "imenie-sikory",
+    "winery_name": "Имение Сикоры",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "розовое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "ярко-розовый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры"
+    ],
+    "description": "В аромате малина, дикая земляника. Вкус сладкий, земляничный джем и свежая кислотность.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/imenie_sikory_krasnostop_zolotovskiy_pozdniy_sbor_rozovoe_sladkoe_13_305f6270ac.webp",
+    "similar_wine_slugs": [
+      "massandra-muskatel-rozovyy-belye-sorta-vinograda-rozovoe-sladkoe-16",
+      "massandra-muskat-rozovyy-pozdnego-sbora-rozovoe-sladkoe-10",
+      "fanagoriya-ice-wine-merlo-rozovoe-sladkoe-10",
+      "zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+      "muskat-pozdnego-sbora-rozovyj",
+      "solnechnaya-dolina-muskatnoe-festivalnoe-muskat-belyy-rozovoe-sladkoe-16",
+      "pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/imenie-sikory-krasnostop-zolotovskiy-pozdniy-sbor-rozovoe-sladkoe-13",
+    "fetched_at": "2026-08-25T17:02:43+0300",
+    "content_hash": "fafdd53babc57ff8115a3deb558446929140828417a90323a69143b4da26cb89",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.68,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

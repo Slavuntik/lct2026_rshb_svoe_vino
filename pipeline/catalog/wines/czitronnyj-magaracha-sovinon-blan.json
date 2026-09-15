@@ -1,0 +1,145 @@
+{
+  "slug": "czitronnyj-magaracha-sovinon-blan",
+  "source": {
+    "name": "Жемчужная 9 Цитрон, Совиньон блан",
+    "winery": "aratti",
+    "winery_name": "АРАТТИ",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан",
+      "Цитронный Магарача"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Вкус и аромат: цветочный букет с нотами лайма и мяты. Во вкусе свежесть сада после дождя — лёгкая, с намёком на цитрус и деликатной сладостью.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Czitron_Sovinon_p_suh_f07f1d8280.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection",
+      "katharon-mezenka-risling-polusuhoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/czitronnyj-magaracha-sovinon-blan",
+    "fetched_at": "2026-08-25T17:00:54+0300",
+    "content_hash": "f6f5d6d8a91d1aee3241a3f1758e2ba256a20a7ebf14d05ad455a5a26431883e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan",
+      "citronny-magaracha"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "pinot-gris-alsace",
+      "white-semisweet"
+    ]
+  }
+}

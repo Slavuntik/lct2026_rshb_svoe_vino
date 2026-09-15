@@ -1,0 +1,80 @@
+{
+  "slug": "litavshchuk-vineyards-and-winery",
+  "source": {
+    "name": "Литавщук. Litavshchuk vineyards & winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 11.0,
+    "vineyard_area_raw": "11 га",
+    "founded_year": 2015,
+    "description": "Литавщук. Litavshchuk vineyards & winery — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Семейная винодельня Литавщуков — хозяйство в Анапе, на территории «Винной деревни» в Анапской долине, где семейные винодельческие традиции развиваются уже более 60 лет. В современном виде винодельня была основана в 2015 году Дмитрием Литавщуком, который продолжил семейное дело и превратил его в полноценный винодельческий проект.\n\nИстория хозяйства связана с несколькими поколениями семьи, для которых виноделие долгое время оставалось ремеслом и семейным увлечением. После появления возможности для частных виноделен Дмитрий Литавщук арендовал землю и заложил собственные виноградники, сделав семейное дело профессиональным винодельческим предприятием.\n\nВиноградники расположены в долине реки Шкуратка, на черноземных равнинах с перегнойно-карбонатными почвами, известковыми и мергелистыми глинами. Климат здесь полусухой средиземноморский, с большим количеством солнечных дней, суммой активных температур 3700–4000 °C и осадками около 600 мм, что позволяет хорошо вызревать даже поздним сортам.\n\nРельеф с уклоном и постоянные ветры обеспечивают хорошую вентиляцию лозы, не дают застаиваться воде и помогают снижать риск гниения и плесени. Такое сочетание почв, солнца, тепла и движения воздуха создает условия для зрелого, выразительного винограда",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_4_0408c34a16.webp",
+    "wine_slugs": [
+      "pozdnij-sbor-beloe",
+      "pozdnij-sbor-krasnoe",
+      "roze-premium",
+      "muskat-premium",
+      "saperavi-premium",
+      "vintazh-premium",
+      "shardone-premium",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    },
+    {
+      "field": "founded_year",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/litavshchuk-vineyards-and-winery",
+    "fetched_at": "2026-08-25T21:23:59+0300",
+    "content_hash": "742fdd8452f0f6fbcfd2485e1acda177e521e536b25681fe93904c9e7f6430a5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 9
+  }
+}

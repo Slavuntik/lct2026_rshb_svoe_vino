@@ -1,0 +1,145 @@
+{
+  "slug": "belmas-winery-malbec-katya-malbek-rozovoe-suhoe-129",
+  "source": {
+    "name": "Malbec Katya",
+    "winery": "belmas-winery",
+    "winery_name": "Belmas Winery",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Вионье",
+      "Мальбек"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "розовое",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Мясное ассорти",
+      "Салаты"
+    ],
+    "description": "В аромате садовые ягоды, спелый персик, полевые цветы. Вкус мягкий, сбалансированный, с гармоничной кислотностью и легким ягодным послевкусием с пикантной горчинкой.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/belmas_winery_malbec_katya_malbek_rozovoe_suhoe_129_a3e291a903.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/belmas-winery-malbec-katya-malbek-rozovoe-suhoe-129",
+    "fetched_at": "2026-08-25T17:00:08+0300",
+    "content_hash": "941292e0f2f853e820f0ab5121af5d1a62a11f540ee8f42f7e99e41cb4121319",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "vione",
+      "malbek"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

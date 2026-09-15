@@ -1,0 +1,129 @@
+{
+  "slug": "zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+  "source": {
+    "name": "Мускат десертный",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат"
+    ],
+    "color": "розовое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "насыщенный розовый",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      15,
+      16
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры"
+    ],
+    "description": "К аромате фруктовые цукаты. де вкусе гармоничный оттенки сухофруктов и фруктовые нюансы и мягкая сладость.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_muskat_desertnyy_rozovoe_sladkoe_16_42c8ac5c99.webp",
+    "similar_wine_slugs": [
+      "massandra-muskatel-rozovyy-belye-sorta-vinograda-rozovoe-sladkoe-16",
+      "massandra-muskat-rozovyy-pozdnego-sbora-rozovoe-sladkoe-10",
+      "imenie-sikory-krasnostop-zolotovskiy-pozdniy-sbor-rozovoe-sladkoe-13",
+      "fanagoriya-ice-wine-merlo-rozovoe-sladkoe-10",
+      "muskat-pozdnego-sbora-rozovyj",
+      "solnechnaya-dolina-muskatnoe-festivalnoe-muskat-belyy-rozovoe-sladkoe-16",
+      "pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+    "fetched_at": "2026-08-25T17:08:13+0300",
+    "content_hash": "1cb9e0a56c4caf6a1ee9fa2ccf585a72ce270aea1296ac0472ad8154e106b407",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.72,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

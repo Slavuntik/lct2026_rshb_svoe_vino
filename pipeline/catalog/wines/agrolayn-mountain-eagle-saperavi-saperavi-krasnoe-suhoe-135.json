@@ -1,0 +1,141 @@
+{
+  "slug": "agrolayn-mountain-eagle-saperavi-saperavi-krasnoe-suhoe-135",
+  "source": {
+    "name": "Mountain Eagle Saperavi",
+    "winery": "agrolayn",
+    "winery_name": "Агролайн",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Овощи гриль",
+      "Паста",
+      "Сыры"
+    ],
+    "description": "Вкус: Полный, хорошо сбалансированный, элегантный, с сочным фруктовым ядром, свежей кислотностью, округлыми танинами и долгим, сухим послевкусием с пикантной пряной горчинкой. Яркий, с оттенками черных и красных ягод, пряностей и трав.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/agrolayn_mountain_eagle_saperavi_saperavi_krasnoe_suhoe_135_6d3f5cfe1e.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/agrolayn-mountain-eagle-saperavi-saperavi-krasnoe-suhoe-135",
+    "fetched_at": "2026-08-25T16:59:01+0300",
+    "content_hash": "8ae5360b10fb3e5787ddcda5f11dad40ff8c3b703b6c07e7029a1c57c493f871",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "saperavi-georgia",
+      "blaufrankisch",
+      "montepulciano-dabruzzo"
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "rustok-glera-ru-140",
+  "source": {
+    "name": "Русток Глера Ru 140",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Глера"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из рыбы",
+      "Морепродукты",
+      "Салаты"
+    ],
+    "description": "В аромате нежные цветочные тона изящно сплетаются с фруктовым букетом, где звучат желтое яблоко, груша, персик и абрикос. Вкус освежающий, мягкий и чистый: в нем преобладают яркие фруктовые акценты и цветочные штрихи, которые дополняются тонкими минеральными нюансами и завершаются приятным, освежающим послевкусием.",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_3_dce2afc6e1.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/rustok-glera-ru-140",
+    "fetched_at": "2026-08-25T17:04:49+0300",
+    "content_hash": "56fb2ad54d9f2502c0b21b103d036dfd47e684090c739ed0fe059a18253f9a26",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "glera"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": 0.55,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "pet-nat",
+      "cava"
+    ]
+  }
+}

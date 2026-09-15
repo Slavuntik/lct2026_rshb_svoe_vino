@@ -1,0 +1,145 @@
+{
+  "slug": "shato-taman-par-la-mer-czvajgelt",
+  "source": {
+    "name": "Шато Тамань. Пар Ла Мер. Цвайгельт",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Цвайгельт"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "от красно-рубинового до темно-гранатового",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Несладкая выпечка",
+      "Паста"
+    ],
+    "description": "Вкус фруктовые ноты с мягкими танинами в послевкусии. В аромате фруктовые оттенки черешни и физалиса, тона розового крыжовника со сливочными нотами.\n\nСбор винограда осуществляется на сахарах 21-23%. Переработка проводится по «красному способу». После дробления винограда, полученную мезгу сульфитируют до 50 (свободная) и оправляют на брожение на чистых культурах дрожжей, в емкостях из нержавеющей стали при температуре до 25 °C, с регулярным орошением «шапки» мезги. После брожения производится съем виноматериала с дрожжевого осадка и внесение чистой культуры бактерий для ЯМБ. Без выдержки.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Par_La_Mer_kras_suh_2024_GU_Normal_5e97b7a0a0.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-taman-par-la-mer-czvajgelt",
+    "fetched_at": "2026-08-25T17:05:11+0300",
+    "content_hash": "483488fcd03d1de9300df2bac121a66f280231589e1165838bd7468db900f618",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "cvaigelt"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.5,
+      "body": 0.52,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rioja-crianza",
+      "rioja-reserva",
+      "zweigelt"
+    ]
+  }
+}

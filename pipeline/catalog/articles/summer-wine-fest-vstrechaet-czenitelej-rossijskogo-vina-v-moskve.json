@@ -1,0 +1,73 @@
+{
+  "slug": "summer-wine-fest-vstrechaet-czenitelej-rossijskogo-vina-v-moskve",
+  "source": {
+    "title": "Summer Wine Fest встречает ценителей российского вина в Москве",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">18 июля в московском пространстве Loft Hall 2 пройдет Summer Wine Fest — летний фестиваль российского вина от рейтинга Top100Wines при поддержке Forbes Russia. Гостей ждет безлимитная дегустация вин ведущих российских виноделен, знакомство с новинками сезона и насыщенная образовательная программа.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В программе — церемония награждения лучших российских игристых вин по версии Top100Wines, встречи с виноделами и экспертами, мастер-классы, гастрономические проекты, музыка, розыгрыши и викторины. Одной из особенностей фестиваля станет возможность для гостей принять участие в выборе названия новой категории российских неклассических игристых вин.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Summer Wine Fest пройдет по адресу: Москва, ул. Ленинская Слобода, 26, стр. 11 (Loft Hall 2).&nbsp;</span></p>",
+    "body": "18 июля в московском пространстве Loft Hall 2 пройдет Summer Wine Fest — летний\nфестиваль российского вина от рейтинга Top100Wines при поддержке Forbes Russia.\nГостей ждет безлимитная дегустация вин ведущих российских виноделен, знакомство\nс новинками сезона и насыщенная образовательная программа. \n\n \n\nВ программе — церемония награждения лучших российских игристых вин по версии\nTop100Wines, встречи с виноделами и экспертами, мастер-классы, гастрономические\nпроекты, музыка, розыгрыши и викторины. Одной из особенностей фестиваля станет\nвозможность для гостей принять участие в выборе названия новой категории\nроссийских неклассических игристых вин. \n\n \n\nSummer Wine Fest пройдет по адресу: Москва, ул. Ленинская Слобода, 26, стр. 11\n(Loft Hall 2).",
+    "body_chars": 751,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-07-10T08:00:00.000Z",
+    "published_date": "2026-07-10",
+    "published_year": 2026,
+    "modified_at": "2026-07-10T08:25:42.770Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_10_07_26_11_01_5f29688aa1.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/summer-wine-fest-vstrechaet-czenitelej-rossijskogo-vina-v-moskve",
+    "fetched_at": "2026-08-25T21:29:43+0300",
+    "content_hash": "a6f4356db21379d00cc1c683631f199eaf7308c136056be17615ef268be8c9c1",
+    "parser_version": "0.4.0"
+  }
+}

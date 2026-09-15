@@ -1,0 +1,54 @@
+{
+  "slug": "sober-bash",
+  "source": {
+    "name": "Собер Баш",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Собер Баш — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "sober-bash-trezvaya-golova-kaberne-fran-krasnostop-krasnoe-suhoe-13",
+      "sober-bash-dostoynyy-krasnoe-suhoe-14",
+      "sober-bash-krasnostop-krasnostop-zolotovskiy-krasnoe-suhoe-14",
+      "sober-bash-kaberne-fran-krasnoe-suhoe-13",
+      "sober-bash-saperavi-krasnoe-suhoe-13",
+      "sober-bash-afa-kaberne-sovinon-krasnoe-suhoe-125",
+      "sober-bash-risling-risling-reynskiy-beloe-suhoe-12",
+      "sober-bash-rubin-rubin-rubin-azos-krasnoe-suhoe-14",
+      "sober-bash-grani-plechistik-krasnoe-suhoe-12",
+      "sober-bash-saperavi-amfora-krasnoe-suhoe-14",
+      "sober-bash-rkatsiteli-beloe-suhoe-14",
+      "sober-bash-krasnostop-amfora-krasnostop-zolotovskiy-krasnoe-suhoe-13"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/sober-bash",
+    "fetched_at": "2026-08-25T21:24:17+0300",
+    "content_hash": "304a4f2c1367f1a27b71ad39087bbb7e7e0b94cc34780e78efe74039054eab9a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

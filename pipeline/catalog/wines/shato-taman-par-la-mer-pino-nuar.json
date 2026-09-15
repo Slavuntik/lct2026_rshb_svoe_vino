@@ -1,0 +1,142 @@
+{
+  "slug": "shato-taman-par-la-mer-pino-nuar",
+  "source": {
+    "name": "Шато Тамань. Пар Ла Мер. Пино Нуар",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "от жемчужно-розового до розового",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус яркий, слаженный, ягоды и минеральность. В аромате черные и красные ягоды.\n\nПосле первичной ферментации виноматериал сбраживается до кондиции сахара не менее 18 г/дм³, давление в резервуаре достигает 500 кПа (при 20 °С). Содержание остаточного сахара при этом не превышает 6 г/дм³. После брожения игристое вино снимают с грубого осадка, выдерживают на тонком осадке до 10 дней, затем охлаждают и фильтруют.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Par_La_Mer_igristoe_brut_rose_9659a53999.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-taman-par-la-mer-pino-nuar",
+    "fetched_at": "2026-08-25T17:05:12+0300",
+    "content_hash": "6ec5b45b8c99ae0319fdd77ff4958208b14388cfe45bf37c0e619a1d51eb6828",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

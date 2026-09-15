@@ -1,0 +1,137 @@
+{
+  "slug": "sacrum-bryut-beloe",
+  "source": {
+    "name": "Sacrum, брют, белое",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "карамельно-золотистый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вино карамельно-золотистого цвета привлекает тёплым, благородным оттенком. Во вкусе ощущается умеренная, гармоничная свежесть, на фоне которой ярко раскрываются тона спелой дыни, сочной груши и мягкого абрикоса. Аромат наполнен оттенками зрелых жёлтых фруктов с лёгкими цитрусовыми акцентами. По мере аэрации букет становится глубже и сложнее, проявляя ноты корочки яблока с гриля и деликатные табачные нюансы, придающие вину элегантность и характер.\n\nИзготовленное по классической технологии и выдержанное не менее 12 месяцев на осадке. Виноград собирается вручную. Технология производства включает краткую криомацерацию, выдержку не менее 3 месяцев сусла в американском дубе и полное яблочно-молочное брожение.\n\nНАГРАДЫ: Лучшие российские игристые вина по версии Simple Wine News 2025/2026",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sacrum_belyj_bryut_c4c2d14bf4.webp",
+    "similar_wine_slugs": [
+      "dva-brata-pet-nat-kokur-2024",
+      "grand-kyuve",
+      "blan-de-blan",
+      "grand-jete-blanc-de-noirs",
+      "grand-jete-blanc-de-blancs",
+      "perovskih_blan_de_noir",
+      "vinodelnya-vedernikov-vinodelnya-vedernikov-tsimlyanskiy-chernyy-sibirkovyy-ekstra-bryut-beloe-13",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/sacrum-bryut-beloe",
+    "fetched_at": "2026-08-25T17:04:50+0300",
+    "content_hash": "5710a1baac35e02b16dc69907a364add9beb6a900013d080788385a5629a0cb7",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.6,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

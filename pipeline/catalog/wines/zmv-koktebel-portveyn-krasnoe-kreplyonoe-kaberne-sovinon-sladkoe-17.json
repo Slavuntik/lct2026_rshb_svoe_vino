@@ -1,0 +1,145 @@
+{
+  "slug": "zmv-koktebel-portveyn-krasnoe-kreplyonoe-kaberne-sovinon-sladkoe-17",
+  "source": {
+    "name": "Портвейн - красное креплёное",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон",
+      "Мерло",
+      "Молдова"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 17.0,
+    "serving_temp_c": [
+      15,
+      16
+    ],
+    "food_pairings": [
+      "Сыры"
+    ],
+    "description": "В аромате лёгкие плодовые тона красных спелых фруктов, тона чёрной смородины и чёрной сливы, пряных специй. Вкус бархатистый, пряный, с мягкими танинами, приятное согревающее послевкусие.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_portveyn_krasnoe_kreplyonoe_kaberne_sovinon_sladkoe_17_ffc534359d.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "pozdnij-sbor-krasnoe",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-portveyn-krasnoe-kreplyonoe-kaberne-sovinon-sladkoe-17",
+    "fetched_at": "2026-08-25T17:08:15+0300",
+    "content_hash": "cbbca21f5f4d907c47a625b64fbce1135517ecbe8c529e72c3cdcae619441311",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "merlo",
+      "moldova"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.55,
+      "tannin": 0.6,
+      "body": 0.8,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cahors-dessert-kagor",
+      "port-ruby",
+      "recioto-della-valpolicella"
+    ]
+  }
+}

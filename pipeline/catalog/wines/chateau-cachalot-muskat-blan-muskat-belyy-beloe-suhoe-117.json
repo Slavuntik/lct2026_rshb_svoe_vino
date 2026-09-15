@@ -1,0 +1,141 @@
+{
+  "slug": "chateau-cachalot-muskat-blan-muskat-belyy-beloe-suhoe-117",
+  "source": {
+    "name": "Мускат Блан",
+    "winery": "chateau-cachalot",
+    "winery_name": "Chateau Cachalot",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенным с лимонными оттенками",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Овощи гриль",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Вкус: Лёгкий, сладковатый и округлый, с тонами лимонов, цветов и белых фруктов, небольшой горчинкой и коротким послевкусием. Свежий, лёгкий и летний аромат с нотами цветов, мёда, яблок и ярким акцентом на мускатные орехи.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/chateau_cachalot_muskat_blan_muskat_belyy_beloe_suhoe_117_d2969be524.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chateau-cachalot-muskat-blan-muskat-belyy-beloe-suhoe-117",
+    "fetched_at": "2026-08-25T17:00:27+0300",
+    "content_hash": "f3bbd59b78360ae586f3be25c823f195ba57c3363b4d9aa2f2abec6a28ea9ae8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-bely"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "torrontes",
+      "mtsvane-dry",
+      "gewurztraminer-alsace"
+    ]
+  }
+}

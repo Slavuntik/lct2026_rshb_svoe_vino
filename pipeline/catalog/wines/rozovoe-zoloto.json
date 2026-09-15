@@ -1,0 +1,141 @@
+{
+  "slug": "rozovoe-zoloto",
+  "source": {
+    "name": "Розовое золото",
+    "winery": "tabiya",
+    "winery_name": "Табия",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Тонкий аромат земляники, красной смородины и черешни. Фруктовый вкус с нотами ягод.",
+    "public_rating": 4.92,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_16_a237793391.webp",
+    "similar_wine_slugs": [
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+      "aratti-kaberne-po-belomu-1",
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar",
+      "aya-khrustaleva-76-merlot-organik",
+      "perovskih_merlo",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-rozovoe-novyy-svet-pino-nuar-125",
+      "zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+      "fanagoriya-brule-cabernet-franc-polusuhoe-rozovoe-kaberne-fran-12",
+      "fanagoriya-zelyonoe-vino-risling-tsitronnyy-magaracha-merlo-rozovoe-polusuhoe-11",
+      "fanagoriya-rose-kaberne-sovinon-rozovoe-polusuhoe-13",
+      "fanagoriya-rose-saperavi-rozovoe-polusuhoe-125",
+      "fanagoriya-par-amour-pervenets-magaracha-rozovoe-polusuhoe-105-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/rozovoe-zoloto",
+    "fetched_at": "2026-08-25T17:04:48+0300",
+    "content_hash": "368d79afe496452e884f7b61c47a3a2d8e1909f21656e4a522e1680b844cb2da",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

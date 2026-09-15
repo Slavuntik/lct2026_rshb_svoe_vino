@@ -1,0 +1,139 @@
+{
+  "slug": "nesterov-winery-krasnostop-rubin-klere-krasnostop-zolotovskiy-rozovoe-suhoe-11",
+  "source": {
+    "name": "Красностоп - Рубин клэрэ",
+    "winery": "nesterov-winery",
+    "winery_name": "Nesterov Winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "насыщенный малиновый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Салаты"
+    ],
+    "description": "Вкус: Яркая кислотность, легкое ягодное послевкусие. Насыщенный ягодный с выраженными нотамии, малины, красной смородины, сливочные оттенки.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/nesterov_winery_krasnostop_rubin_klere_krasnostop_zolotovskiy_rozovoe_suhoe_11_ea3affe402.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/nesterov-winery-krasnostop-rubin-klere-krasnostop-zolotovskiy-rozovoe-suhoe-11",
+    "fetched_at": "2026-08-25T17:04:00+0300",
+    "content_hash": "f0b280ea5b789a9c5e088eaa933f1ee0c23b555da119d34ebbaef2c4ebd28d97",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.62,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

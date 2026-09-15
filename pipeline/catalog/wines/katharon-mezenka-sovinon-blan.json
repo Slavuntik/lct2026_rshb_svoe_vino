@@ -1,0 +1,143 @@
+{
+  "slug": "katharon-mezenka-sovinon-blan",
+  "source": {
+    "name": "Мезенка: Совиньон Блан",
+    "winery": "katharon",
+    "winery_name": "KATHARON",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный с зелеными бликами",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Аромат: крыжовник, грейпфрут, лист чёрной смородины.\nзеленая трава, нюанс крапивы\nВкус: свежий и хрустящий, с высокой освежающей кислотностью ;\nцитрусово- зелёные тона , солоноватая минеральность\nФиниш: чистый , бодрящий, с пикантной свежестью",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Mezenka_Sovinon_blan_d042166bd2.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/katharon-mezenka-sovinon-blan",
+    "fetched_at": "2026-08-25T17:02:59+0300",
+    "content_hash": "69614e45b5cfd232615aab7c7e932b0565c6f76aa0f8284132a892160c333328",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "marlborough-sb",
+      "pouilly-fume"
+    ]
+  }
+}

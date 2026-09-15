@@ -1,0 +1,50 @@
+{
+  "slug": "dva-serdtsa",
+  "source": {
+    "name": "Два Сердца",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Два Сердца — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "dva-serdtsa-saperavi-krasnoe-suhoe-135",
+      "dva-serdtsa-kaberne-fran-krasnoe-suhoe-14",
+      "dva-serdtsa-kokur-beloe-suhoe-125",
+      "dva-serdtsa-vione-beloe-suhoe-125",
+      "dva-serdtsa-rozovoe-kaberne-sovinon-suhoe-13",
+      "dva-serdtsa-muskat-suhoy-muskat-belyy-beloe-suhoe-12",
+      "dva-serdtsa-muskat-muskat-belyy-beloe-polusuhoe-12",
+      "dva-serdtsa-arinarnoa-kaberne-sovinon-krasnoe-suhoe-135"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/dva-serdtsa",
+    "fetched_at": "2026-08-25T21:23:48+0300",
+    "content_hash": "32cfab93b8be8d6b23e20a9ed52f424145f0ad943e0e180286d09c1b03ab89a8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 8
+  }
+}

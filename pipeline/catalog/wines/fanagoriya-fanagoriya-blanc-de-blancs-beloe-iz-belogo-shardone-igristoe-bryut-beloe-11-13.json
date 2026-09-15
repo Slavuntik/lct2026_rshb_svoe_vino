@@ -1,0 +1,142 @@
+{
+  "slug": "fanagoriya-fanagoriya-blanc-de-blancs-beloe-iz-belogo-shardone-igristoe-bryut-beloe-11-13",
+  "source": {
+    "name": "Фанагория. Blanc de Blancs. Белое из белого",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Сыры"
+    ],
+    "description": "В аромате ноты экзотических фруктов, цветов крокуса и медовые оттенки. Вкус мягкий, свежий, с нюансами спелых летних фруктов, сдобной булки , медовых оттенков.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_fanagoriya_blanc_de_blancs_beloe_iz_belogo_shardone_igristoe_bryut_beloe_11_13_2387906571.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-fanagoriya-blanc-de-blancs-beloe-iz-belogo-shardone-igristoe-bryut-beloe-11-13",
+    "fetched_at": "2026-08-25T17:02:04+0300",
+    "content_hash": "6fbb6197c1f277edd767314d1ceb86331aa238f14b219f626805edd10c63450e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.63,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-brut-nv",
+      "champagne-blanc-de-blancs"
+    ]
+  }
+}

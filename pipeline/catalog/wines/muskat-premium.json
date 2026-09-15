@@ -1,0 +1,145 @@
+{
+  "slug": "muskat-premium",
+  "source": {
+    "name": "Мускат. Премиум",
+    "winery": "litavshchuk-vineyards-and-winery",
+    "winery_name": "Литавщук. Litavshchuk vineyards & winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мускат Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Азиатская кухня",
+      "Блюда из птицы",
+      "Паста",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Аромат слаженный, выраженный, нежный, с мускатными тонами. Вкус вина свежий",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_25_e7771a3f2d.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection",
+      "katharon-mezenka-risling-polusuhoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/muskat-premium",
+    "fetched_at": "2026-08-25T17:03:57+0300",
+    "content_hash": "097210bc01c862aa507443917d1a9f669a84fc29d5e41b34403d20500356638d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-bely"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "gewurztraminer-alsace",
+      "pinot-gris-alsace",
+      "white-semisweet"
+    ]
+  }
+}

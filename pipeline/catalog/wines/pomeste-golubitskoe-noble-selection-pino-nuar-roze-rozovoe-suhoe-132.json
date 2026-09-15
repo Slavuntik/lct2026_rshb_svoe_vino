@@ -1,0 +1,141 @@
+{
+  "slug": "pomeste-golubitskoe-noble-selection-pino-nuar-roze-rozovoe-suhoe-132",
+  "source": {
+    "name": "Noble Selection. Пино Нуар розе",
+    "winery": "golubitskoe-estate",
+    "winery_name": "Golubitskoe Estate",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино бледно-лососевого цвета",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Несладкая выпечка",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Нежный цветочно-ягодный аромат с тонами душистых трав, розового персика, цветущей вишни. Строгий, структурный, свежий вкус с гармоничной кислотностью. Красивое, гастрономичное розе.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/pomeste_golubitskoe_noble_selection_pino_nuar_roze_rozovoe_suhoe_132_8c761a20cf.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/pomeste-golubitskoe-noble-selection-pino-nuar-roze-rozovoe-suhoe-132",
+    "fetched_at": "2026-08-25T17:04:31+0300",
+    "content_hash": "7885c79a6878b9502cea9b435873fd992e87977ce0e6d0fd470cde02eb6fe07f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.48,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bandol-rose",
+      "cerasuolo-dabruzzo",
+      "rosado-spain"
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "slug": "shampanskoe-nikolaya-ii-podnyato-so-dna-baltiki-unikalnaya-nahodka-posle-veka-na-glubine",
+  "source": {
+    "title": "Шампанское Николая II поднято со дна Балтики: уникальная находка после века на глубине",
+    "schema_type": "NewsArticle",
+    "lead": "Российская экспедиция iXplorer Ocean Research завершила 15-летний проект, подняв со дна Балтийского моря более 50 ящиков шампанского, предназначенного для новогоднего стола императора Николая II в Зимнем дворце. Груз перевозил шведский пароход Astrid, потопленный немецкой подлодкой U-22 29 ноября 1916 года в международных водах у Швеции и Финляндии на глубине свыше 60 метров.",
+    "body": "Российская экспедиция iXplorer Ocean Research завершила 15-летний проект, подняв\nсо дна Балтийского моря более 50 ящиков шампанского, предназначенного для\nновогоднего стола императора Николая II в Зимнем дворце. Груз перевозил шведский\nпароход Astrid, потопленный немецкой подлодкой U-22 29 ноября 1916 года в\nмеждународных водах у Швеции и Финляндии на глубине свыше 60 метров. Условия идеальной сохранности Вино пролежало более 109 лет в экстремальных, но благоприятных условиях:\nтемпература +2°C, низкий уровень кислорода, отсутствие света и давление, близкое\nк атмосферному внутри бутылок. Руководитель экспедиции Макс Михайлов отметил,\nчто 10 лет ушло на локализацию ящиков внутри корпуса, с десятками погружений,\nрисками декомпрессионной болезни и логистическими вызовами. В июне 2025 года\nподняли первые 36 бутылок; остальное планируют извлечь в 2026-м. Подлинность и дегустация Экспертиза французского дома Birkedal Hartmann (бывшего поставщика\nИмператорского двора) подтвердила аутентичность: шампанское от Veuve Clicquot,\nHeidsieck Monopole, G.H. Mumm и Louis Roederer 1916 года. Дегустация выявила\nсохранность — Heidsieck Monopole с мягкими вкусами яблока и ананаса, Veuve\nClicquot с бархатистой текстурой и цветочными нотами. Будущее императорского груза Часть бутылок уйдёт в музеи и коллекции, остальные — на аукционы Sotheby’s и\nChristie’s «Вкус истории: Императорское шампанское с парохода Astrid (1916)» с\nсертификатами, мюзле и историческим досье. Стартовый ценник — от $9000 за\nбутылку. Это не первая находка с Astrid: в 2010 году шведы подняли Heidsieck\n1907 года. Компании iXplorer и Birkedal Hartmann не публикуют фотографии и видео\nнаходок — они будут доступны участникам аукционов.",
+    "body_chars": 1705,
+    "headings": [
+      "Условия идеальной сохранности",
+      "Подлинность и дегустация",
+      "Будущее императорского груза"
+    ],
+    "rubric": "Новости",
+    "author": "РЕДАКЦИЯ «СВОЁ ВИНО»",
+    "photo_credit": null,
+    "published_at": "2025-12-07T15:05:00.000Z",
+    "published_date": "2025-12-07",
+    "published_year": 2025,
+    "modified_at": "2025-12-07T15:03:31.189Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/edited_image_20251207150209_c6e72f6a13.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/shampanskoe-nikolaya-ii-podnyato-so-dna-baltiki-unikalnaya-nahodka-posle-veka-na-glubine",
+    "fetched_at": "2026-08-25T21:29:25+0300",
+    "content_hash": "d60fea14924d594fea1f29fb9aec45e3c09c88dfc24dd01ee19176ba89d40dc1",
+    "parser_version": "0.4.0"
+  }
+}

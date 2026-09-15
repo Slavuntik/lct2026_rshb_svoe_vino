@@ -1,0 +1,142 @@
+{
+  "slug": "shardone",
+  "source": {
+    "name": "Шардоне",
+    "winery": "chateau-semiray",
+    "winery_name": "Chateau Semiray",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Пицца",
+      "Рыба и морепродукты",
+      "Средиземноморская кухня",
+      "Сыры"
+    ],
+    "description": "Вкус округлый, сбалансированный, минеральный, с оттенками, белого персика, желтой сливы, яблока, белых цветов, лимонной цедры в сливочно-фруктовом долгом послевкусии. Аромат нежный с нотами цитрусовых, груши, яблока, белых фруктов и цветов.\n\n100% Шардоне с лучших виноградников нашего терруара. Шардоне в строгой европейской стилистике, с частичной выдержкой во французском дубе.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Shardone_Semiray_1_0b975120a9.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shardone",
+    "fetched_at": "2026-08-25T17:04:52+0300",
+    "content_hash": "5576f1d9d506d4c1d59da12a27349bb9b5fad1654949d96d20e694e84789c6cc",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "meursault",
+      "chardonnay-oaked-new-world",
+      "puligny-montrachet"
+    ]
+  }
+}

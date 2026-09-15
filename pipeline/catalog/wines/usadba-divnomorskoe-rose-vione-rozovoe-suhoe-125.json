@@ -1,0 +1,146 @@
+{
+  "slug": "usadba-divnomorskoe-rose-vione-rozovoe-suhoe-125",
+  "source": {
+    "name": "Rose",
+    "winery": "usadba-divnomorskoe",
+    "winery_name": "Усадьба Дивноморское",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Вионье",
+      "Марселан",
+      "Сира"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-лососевый с оттенками лепестков роз",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Нежный, деликатный аромат клубники, цветков граната, красной смородины и барбариса. Вкус изысканный и хорошо сбалансированный, освежающий с лёгким ягодным послевкусием.\nПревосходный аперитив, сочетается с морепродуктами, белой рыбой, зелёными салатами, птицей, мягкими сырами.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/usadba_divnomorskoe_rose_vione_rozovoe_suhoe_125_cc6f84dbad.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/usadba-divnomorskoe-rose-vione-rozovoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:05:56+0300",
+    "content_hash": "7e7c95afbf2d8009b4ff7f5d25fdc9f841aff172a2908024c146014409426081",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "vione",
+      "marselan",
+      "sira"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.533,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

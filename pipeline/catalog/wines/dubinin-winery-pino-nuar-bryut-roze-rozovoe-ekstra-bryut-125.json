@@ -1,0 +1,137 @@
+{
+  "slug": "dubinin-winery-pino-nuar-bryut-roze-rozovoe-ekstra-bryut-125",
+  "source": {
+    "name": "Пино Нуар брют розе",
+    "winery": "dubinin-winery",
+    "winery_name": "Dubinin Winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "бледно-розовый переходящий в кремовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      5,
+      8
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Освежающий, многогранный с оттенками сладких леденцов, красных ягод и тонкого сливочного нюанса. Освежающий, с яркими ягодными нотами и легким оттеном автолиза.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/dubinin_winery_pino_nuar_bryut_roze_igristoe_ekstra_bryut_rozovoe_125_f445b9db8a.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/dubinin-winery-pino-nuar-bryut-roze-rozovoe-ekstra-bryut-125",
+    "fetched_at": "2026-08-25T17:01:28+0300",
+    "content_hash": "0b1a32cf9d1f348c0977ba0091c6e324fa9fb6bef00d309b1a70731cdb07db34",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

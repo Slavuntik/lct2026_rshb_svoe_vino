@@ -1,0 +1,73 @@
+{
+  "slug": "wine-retail-week-2026-projdet-v-moskve-s-22-po-26-iyunya",
+  "source": {
+    "title": "Wine Retail Week 2026 пройдет в Москве с 22 по 26 июня",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">С 22 по 26 июня в Москве состоится Wine Retail Week 2026 — VIII Конгресс современной виноторговли, который традиционно проходит в рамках Недели российского ритейла. Площадкой мероприятия станет Центр международной торговли.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В программе запланированы отраслевые сессии, посвященные развитию винного рынка, потребительским трендам, регулированию, маркетингу, цифровым решениям и работе с ассортиментом.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Участники обсудят изменения в структуре спроса, продвижение российских вин, развитие специализированной розницы и современные форматы продаж.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Отдельное внимание будет уделено конкурсу кавистов, образовательным мероприятиям и практическим кейсам участников рынка. В работе конгресса примут участие представители розничных сетей, винодельческих компаний, дистрибьюторов, эксперты, аналитики и представители профильных объединений.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Подробная программа и регистрация доступны на сайте </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://wineretail.info/vinotorgovlya/wine-retail-week-2026.-planka-vyishe-2025-12-11.html\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">WineRetail.info</span></a></p>",
+    "body": "С 22 по 26 июня в Москве состоится Wine Retail Week 2026 — VIII Конгресс\nсовременной виноторговли, который традиционно проходит в рамках Недели\nроссийского ритейла. Площадкой мероприятия станет Центр международной торговли.\n\n \n\nВ программе запланированы отраслевые сессии, посвященные развитию винного рынка,\nпотребительским трендам, регулированию, маркетингу, цифровым решениям и работе с\nассортиментом. \n\n \n\nУчастники обсудят изменения в структуре спроса, продвижение российских вин,\nразвитие специализированной розницы и современные форматы продаж.\n\n \n\nОтдельное внимание будет уделено конкурсу кавистов, образовательным мероприятиям\nи практическим кейсам участников рынка. В работе конгресса примут участие\nпредставители розничных сетей, винодельческих компаний, дистрибьюторов,\nэксперты, аналитики и представители профильных объединений.\n\n \n\nПодробная программа и регистрация доступны на сайте WineRetail.info\n[https://wineretail.info/vinotorgovlya/wine-retail-week-2026.-planka-vyishe-2025-12-11.html]",
+    "body_chars": 1007,
+    "headings": [],
+    "rubric": "События",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "wineretail.info",
+    "published_at": "2026-06-18T15:03:00.824Z",
+    "published_date": "2026-06-18",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/5656_71e59e2c7f.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/wine-retail-week-2026-projdet-v-moskve-s-22-po-26-iyunya",
+    "fetched_at": "2026-08-25T21:31:10+0300",
+    "content_hash": "e5d5ac468c954a8097529aa7c0c861871b9f4fd0c9d52fbd76b44d41d7185b41",
+    "parser_version": "0.4.0"
+  }
+}

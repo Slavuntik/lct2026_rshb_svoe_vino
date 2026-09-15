@@ -1,0 +1,142 @@
+{
+  "slug": "fanagoriya-brule-frizzante-polusladkoe-beloe-pino-nuar-11",
+  "source": {
+    "name": "Brule Frizzante Полусладкое Белое",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "соломенно-жёлтый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "В аромате цветы и фрукты. Вкус мягкий, сладковатый, с тонами яблока, груши и медовыми нюансами.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_brule_frizzante_polusladkoe_beloe_pino_nuar_11_ddb87e2e2b.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-brule-frizzante-polusladkoe-beloe-pino-nuar-11",
+    "fetched_at": "2026-08-25T17:01:57+0300",
+    "content_hash": "e6780fc11ab2391ffcee3b1f6518e7e78c23b0adcd42b60cf56a3930f725abb5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.717,
+      "tannin": 0.1,
+      "body": 0.495,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "white-semisweet"
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "blagolyubov-muskat-ottonel-beloe-suhoe-125",
+  "source": {
+    "name": "Мускат Оттонель",
+    "winery": "blagolyubov",
+    "winery_name": "Благолюбов",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Мускат Оттонель"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотисто-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "Вкус: Вино отличается питким, обволакивающим, стойким вкусом. Ненавязчивый, элегантный, с тонами белой акации, муската, цитрусовых и меда.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/blagolyubov_muskat_ottonel_beloe_suhoe_125_32dd0cb4e6.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/blagolyubov-muskat-ottonel-beloe-suhoe-125",
+    "fetched_at": "2026-08-25T17:00:14+0300",
+    "content_hash": "6c102e4f65e26d045366a48fbe342421c1759eab8f15542cd10a8c57974396cb",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-ottonel"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.55,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "torrontes",
+      "mtsvane-dry",
+      "fiano"
+    ]
+  }
+}

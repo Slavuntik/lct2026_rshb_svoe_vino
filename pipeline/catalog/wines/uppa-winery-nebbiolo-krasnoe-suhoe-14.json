@@ -1,0 +1,140 @@
+{
+  "slug": "uppa-winery-nebbiolo-krasnoe-suhoe-14",
+  "source": {
+    "name": "Неббиоло",
+    "winery": "uppa-winery",
+    "winery_name": "Uppa Winery",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Неббиоло"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "чистый",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Паста"
+    ],
+    "description": "Аромат раскрывается яркой палитрой красных фруктов и ягод: спелая слива, вяленая вишня, брусника, желе из морошки, кизил и шиповник, дополненные изящными нотами эвкалипта, смолы, пряностей и легкими анималистическими акцентами. Вкус заостренный, элегантный, с бодрой кислотностью, сухим танином и долгим послевкусием. Вино требует аэрации.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/uppa_winery_nebbiolo_krasnoe_suhoe_14_2d7e43d3e7.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/uppa-winery-nebbiolo-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:05:52+0300",
+    "content_hash": "4384df9f11850b258a4d80abe728e85192a27daae0753e51015b3a841abfcb74",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "nebbiolo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.9,
+      "body": 0.76,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "saperavi-georgia",
+      "barolo",
+      "xinomavro"
+    ]
+  }
+}

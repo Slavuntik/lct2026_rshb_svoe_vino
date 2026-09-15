@@ -1,0 +1,73 @@
+{
+  "slug": "leto-v-ritme-dzhaza-v-shato-pino-startuyut-muzykalnye-sredy",
+  "source": {
+    "title": "Лето в ритме джаза: в Шато Пино стартуют «Музыкальные среды»",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Виноградники Chateau Pinot вновь становятся главной летней сценой: винодельня открывает сезон культовых «Музыкальных сред». Первый вечер гедонизма под открытым небом состоится уже 17 июня.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Организаторы обещают идеальный рецепт летнего настроения: золотой закат над виноградниками, бокал любимого вина и живую музыку. Открывать сезон доверено группе The Man’s Band — ярко, драйвово и с душой.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Программа вечера:</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">— 17:00 — сбор гостей, уютная подготовка к вечеру;</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">— 19:30 — выступление группы The Man's Band</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Лучшие моменты первого концерта запечатлеет фотограф Эдуард Перов — ждите красивые кадры.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Гостям рекомендуют захватить с собой пледы, красивые наряды и отличное настроение. На территории Chateau Pinot будут работать фудкорты, бистро у открытого бассейна и ресторан (столик лучше бронировать заранее). Для маленьких гостей до 22:00 открыт развлекательный центр.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Важно: вход с собственной едой и напитками запрещен.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Билеты уже в продаже </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://salonsevastopol.ru/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;\">по ссылке</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;\">. Количество мест традиционно ограничено.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Встречаем лето музыкой. Только в Chateau Pinot.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Адрес: г.Новлроссийск, с. Федотовка,&nbsp; ул. Имени Ипполита Кулешевича, 1</span></p>",
+    "body": "Виноградники Chateau Pinot вновь становятся главной летней сценой: винодельня\nоткрывает сезон культовых «Музыкальных сред». Первый вечер гедонизма под\nоткрытым небом состоится уже 17 июня.\n\n \n\nОрганизаторы обещают идеальный рецепт летнего настроения: золотой закат над\nвиноградниками, бокал любимого вина и живую музыку. Открывать сезон доверено\nгруппе The Man’s Band — ярко, драйвово и с душой.\n\n \n\nПрограмма вечера:\n\n— 17:00 — сбор гостей, уютная подготовка к вечеру;\n\n— 19:30 — выступление группы The Man's Band\n\n \n\nЛучшие моменты первого концерта запечатлеет фотограф Эдуард Перов — ждите\nкрасивые кадры.\n\n \n\nГостям рекомендуют захватить с собой пледы, красивые наряды и отличное\nнастроение. На территории Chateau Pinot будут работать фудкорты, бистро у\nоткрытого бассейна и ресторан (столик лучше бронировать заранее). Для маленьких\nгостей до 22:00 открыт развлекательный центр.\n\n \n\nВажно: вход с собственной едой и напитками запрещен.\n\n \n\nБилеты уже в продаже по ссылке [https://salonsevastopol.ru/]. Количество мест\nтрадиционно ограничено.\n\nВстречаем лето музыкой. Только в Chateau Pinot.\n\nАдрес: г.Новлроссийск, с. Федотовка,  ул. Имени Ипполита Кулешевича, 1",
+    "body_chars": 1167,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-06-11T07:00:00.000Z",
+    "published_date": "2026-06-11",
+    "published_year": 2026,
+    "modified_at": "2026-06-11T14:27:15.979Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/In_Shot_20260611_163612647_af3e5ba56d.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/leto-v-ritme-dzhaza-v-shato-pino-startuyut-muzykalnye-sredy",
+    "fetched_at": "2026-08-25T21:27:42+0300",
+    "content_hash": "9779e2b8fc92f39801ae2d066249a06d2f3ee1a59906299554ec482f30569353",
+    "parser_version": "0.4.0"
+  }
+}

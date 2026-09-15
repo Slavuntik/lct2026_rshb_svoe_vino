@@ -1,0 +1,148 @@
+{
+  "slug": "b-yu-rne-vinisa-zh-suhoe-beloe",
+  "source": {
+    "name": "БЮРНЬЕ.ВИНИСАЖ сухое белое",
+    "winery": "vinodelnya-byurne",
+    "winery_name": "Винодельня Бюрнье",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мускат Белый",
+      "Пино Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-лимонный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Яркий и привлекательный фруктовый аромат, раскрывающийся оттенками цветения, косточковых фруктов: абрикоса и персика; ананаса, нотками спелых цитрусовых фруктов и мёда. Лёгкое, сочное, освежающее и сбалансированное во вкусе вино, с приятным длительным послевкусием тропических и цитрусовых фруктов.",
+    "public_rating": 4.71,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Vinisazh_bel_71a4e27f0b.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/b-yu-rne-vinisa-zh-suhoe-beloe",
+    "fetched_at": "2026-08-25T16:59:42+0300",
+    "content_hash": "674fe1508498ac99515fa0f65367110f640dd6900f3c75e96649140a5735be91",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-bely",
+      "pino-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.583,
+      "oak": 0.1,
+      "aromatic_intensity": 0.65,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pinot-blanc-alsace",
+      "chablis",
+      "mtsvane-dry"
+    ]
+  }
+}

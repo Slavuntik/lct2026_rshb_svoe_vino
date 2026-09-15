@@ -1,0 +1,138 @@
+{
+  "slug": "dnk-aura",
+  "source": {
+    "name": "ДНК. Аура",
+    "winery": "usadba-merkotan",
+    "winery_name": "Усадьба Меркотан",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "насыщенно розовый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Средиземноморская кухня"
+    ],
+    "description": "Вкус с нотами красных и черных ягод, со средней кислотностью и приятным послевкусием. Аромат средней интенсивности, с тонами красных фруктов (вишня, малина, клубника) и нотками специй.\n\nОсобенности технологии: Особенности технологии: ранняя ручная уборка для сохранения в ягоде хорошей кислотности и уменьшения потенциального алкоголя. Охлаждение винограда перед переработкой до 5⁰С. Переработка с минимальным контактом с кислородом. с минимальным контактом с кислородом. Контакт с мезгой во время прессования мембранным прессом. Брожение в стальной емкости при 14⁰С с контролем температуры для сохранения яркой ароматики. Выдержка на тонком дрожжевом осадке 3-4 месяца с батонажем 1 раз в 2 недели. Стерильная с батонажем 1 раз в 2 недели. Стерильная фильтрация перед розливом.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DNK_Aura_Merkotan2_b358e92e8d.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/dnk-aura",
+    "fetched_at": "2026-08-25T17:01:16+0300",
+    "content_hash": "0768a712cb8ee365e2e5d10137bd3238f52f6e14320e6664d87871478a1086e7",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.2,
+      "body": 0.68,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

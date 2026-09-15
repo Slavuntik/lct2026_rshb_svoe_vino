@@ -1,0 +1,143 @@
+{
+  "slug": "inkerman-shato-blan",
+  "source": {
+    "name": "Инкерман Шато Блан",
+    "winery": "inkermanskiy_zmv",
+    "winery_name": "Инкерманский ЗМВ",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Алиготе"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Запеченные овощи",
+      "Лёгкие закуски"
+    ],
+    "description": "Вкус вина легкий, свежий, с ненавязчивой, гармоничной сладостью. Вино обладает тонким ароматом с оттенками белых цветов.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Inkerman_Shato_Blan_beloe_polusuhoe_526e6530b9.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection",
+      "katharon-mezenka-risling-polusuhoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/inkerman-shato-blan",
+    "fetched_at": "2026-08-25T17:02:47+0300",
+    "content_hash": "2a508ea88c4c3b9dcb9b7e01b5cd20f6f09de6bb53f532df91cbf1fdb371c85c",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "aligote"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.43,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "vinho-verde",
+      "white-semisweet"
+    ]
+  }
+}

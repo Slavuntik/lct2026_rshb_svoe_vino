@@ -1,0 +1,139 @@
+{
+  "slug": "shato-pino-shary-kolduna-glyu-glyu-vione-krasnoe-suhoe-10",
+  "source": {
+    "name": "Шары Колдуна. Глю Глю",
+    "winery": "shato-pino",
+    "winery_name": "Шато Пино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Вионье"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-красное",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      10,
+      14
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Легкий, свежий, морсовый. Яркий ягодный, с нотами вишни и оттенком цитрусовых.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shato_pino_glyu_glyu_vione_krasnoe_suhoe_10_2f2adaea3e.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-pino-shary-kolduna-glyu-glyu-vione-krasnoe-suhoe-10",
+    "fetched_at": "2026-08-25T17:05:06+0300",
+    "content_hash": "b39d58f5f942e0535979dbcf2a69ada84cdc213d6639c4373f4a7f9f49225034",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "vione"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.45,
+      "tannin": 0.55,
+      "body": 0.64,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cotes-du-rhone",
+      "agiorgitiko",
+      "garnacha-spain"
+    ]
+  }
+}

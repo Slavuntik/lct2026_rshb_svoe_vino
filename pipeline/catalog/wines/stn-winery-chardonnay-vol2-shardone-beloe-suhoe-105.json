@@ -1,0 +1,143 @@
+{
+  "slug": "stn-winery-chardonnay-vol2-shardone-beloe-suhoe-105",
+  "source": {
+    "name": "Chardonnay vol.2",
+    "winery": "stn-winery",
+    "winery_name": "STN Winery",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенно-золотистый",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус: Яркая кислотность, свежестьи и легкие древесные ноты. Ноты пороха, ванили, семечек и желтых фруктов, с оттенками цветущего луга, зеленого раннего яблока, белой смородины и дикой кислой груши.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/stn_winery_chardonnay_vol2_shardone_beloe_suhoe_105_67d76e98d6.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/stn-winery-chardonnay-vol2-shardone-beloe-suhoe-105",
+    "fetched_at": "2026-08-25T17:05:43+0300",
+    "content_hash": "c0f08ea24bb93aa4f728d926f75050a2242ff0a231391662da2b37cda7a3cb86",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.54,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "chablis",
+      "chardonnay-unoaked",
+      "pinot-blanc-alsace"
+    ]
+  }
+}

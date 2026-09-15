@@ -1,0 +1,144 @@
+{
+  "slug": "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+  "source": {
+    "name": "Две долины. Каберне Фран 2023",
+    "winery": "sober-bash",
+    "winery_name": "Собер Баш",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Каберне Фран"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-гранатовый",
+    "vintage": 2023,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      15,
+      17
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Паштеты",
+      "Сыры"
+    ],
+    "description": "В аромате ноты красных и черных ягод. Вкус сочный, с шелковистыми танинами и умеренной кислотностью.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/sober_bash_dve_doliny_kaberne_fran_2023_krasnoe_polusuhoe_14_fae22fb7b6.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "fiori-di-mare-krasnoe-polusuhoe",
+      "saperavi-premium",
+      "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+      "perovskih_polusuhoe_krasnoe",
+      "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+      "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+    "fetched_at": "2026-08-25T17:05:20+0300",
+    "content_hash": "d5be1593accfb9755510cb708097a4ce5a57e568288f988176e07ad7bb1256cd",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.65,
+      "tannin": 0.7,
+      "body": 0.76,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

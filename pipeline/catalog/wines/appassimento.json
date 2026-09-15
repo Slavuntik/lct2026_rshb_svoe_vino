@@ -1,0 +1,143 @@
+{
+  "slug": "appassimento",
+  "source": {
+    "name": "Appassimento",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "плотный рубиново-красный с фиолетовыми отблесками",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Сыры"
+    ],
+    "description": "Вино плотного рубиново-красного цвета с выразительными фиолетовыми отблесками, сразу заявляющими о его концентрации и глубине. Вкус интенсивный и мощный, но при этом удивительно мягкий и элегантный: округлый, прекрасно сбалансированный, многогранный, тёплый и сочный. В палитре ощущаются приятные сладковатые ноты сухофруктов, пряностей, тонкие древесные и пряные оттенки, поддержанные живой, свежей кислотностью. Полированные, благородные танины придают текстуре шелковистость и ведут к стойкому, продолжительному послевкусию. Аромат насыщенный, глубокий и богатый, при этом сохраняющий свежесть. В бокале он раскрывается выразительными тонами спелых красных и тёмных ягод, вишни и чернослива, окутанных изящным ореолом специй и утончёнными ликёрными нюансами, формируя цельный и запоминающийся букет. \n\nСортовой состав: Каберне Совиньон, Саперави.\n\nПоздний сбор урожая, середина октября. Ягода на гребне развешивается в проветриваемом помещении и течение 4 месяцев увяливается до потери 50% влаги. В феврале отжимается, ферментируется и помещается в дубовую бочку Франция на 4 месяца.\n\nНАГРАДЫ:  Золото \"Гид по российским винам\" Артура Саркисяна и РБК, 2026",
+    "public_rating": 4.5,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Appassimento_cbbff6ab39.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "pozdnij-sbor-krasnoe",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/appassimento",
+    "fetched_at": "2026-08-25T16:59:18+0300",
+    "content_hash": "1454c83a684b6312f1fef0db1d9216c42458becbf6e34627dab7a0f23cf0cb83",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "port-lbv",
+      "recioto-della-valpolicella"
+    ]
+  }
+}

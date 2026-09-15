@@ -1,0 +1,140 @@
+{
+  "slug": "chernaya-lvicza-polusladkoe-krasnoe",
+  "source": {
+    "name": "Черная Львица полусладкое красное",
+    "winery": "aratti",
+    "winery_name": "АРАТТИ",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "темно-рубиновый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Сыры"
+    ],
+    "description": "В аромате ярко чувствуется сладкая черешня, ежевика и чернослив в шоколаде. Насыщенный вкус жимолости, обволакивающая терпкость и долгое послевкусие. Идеально сочетается с твердыми сырами, мясными деликатесами и шашлыком.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Chernaya_Lvicza_d00f4b1f84.webp",
+    "similar_wine_slugs": [
+      "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+      "leto-kaberne-fran-2024-polusladkoe-krasnoe",
+      "perovskih_polusladkoe_krasnoe",
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-polusladkoe-kaberne-sovinon-115",
+      "soyuz-vino-soyuz-vino-izabella-krasnoe-polusladkoe-11",
+      "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11",
+      "soyuz-vino-sheremetevskie-pogreba-krasnoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "soyuz-vino-soyuz-vino-evropak-shiraz-krasnoe-polusladkoe-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chernaya-lvicza-polusladkoe-krasnoe",
+    "fetched_at": "2026-08-25T17:00:41+0300",
+    "content_hash": "c4ec4b2f904d50ee049d0af85ec477f18b28f4dffd947432626a4cd143b66350",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.8,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "kindzmarauli"
+    ]
+  }
+}

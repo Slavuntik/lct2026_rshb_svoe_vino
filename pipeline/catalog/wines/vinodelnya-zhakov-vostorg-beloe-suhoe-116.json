@@ -1,0 +1,139 @@
+{
+  "slug": "vinodelnya-zhakov-vostorg-beloe-suhoe-116",
+  "source": {
+    "name": "Восторг",
+    "winery": "vinodelnya-zhakov",
+    "winery_name": "Винодельня Жаков",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Восторг"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: С тонами желтых фруктов и цветочными нотами, освежающей кислотностью и продолжительным послевкусием. Раскрывается тонами персика, ананаса и горных трав с оттенками цитрусовых фруктов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_zhakov_vostorg_beloe_suhoe_116_d4de151c7e.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-zhakov-vostorg-beloe-suhoe-116",
+    "fetched_at": "2026-08-25T17:07:57+0300",
+    "content_hash": "0c42616f2fb3b5b6b168010fa7aa8a869bbd14ecd00ab4ccb1e84b0a435fc3ad",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "vostorg"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": null,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.17,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bourgogne-aligote",
+      "sancerre",
+      "rueda-verdejo"
+    ]
+  }
+}

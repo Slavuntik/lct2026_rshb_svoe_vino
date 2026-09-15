@@ -1,0 +1,148 @@
+{
+  "slug": "riesling",
+  "source": {
+    "name": "Riesling, 2024",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенный",
+    "vintage": 2024,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вино соломенного цвета с изящным зеленоватым оттенком выглядит свежо и элегантно. Его выразительный вкус отличается высокой кислотностью и лёгкостью, создавая живой и освежающий характер. Цветочные и грушево-яблочные тона привлекают уже с первого глотка, а в финале появляется лёгкий намёк на бензольность, добавляющий вкусу глубину и характер. Аромат нежный и утончённый: он манит оттенками хрустящего зелёного яблока и апельсинового цвета, а в послевкусии тонко проявляются бензольные нюансы, подчёркивая классический стиль вина. \n\nВинификация при контролируемой температуре и выдержка вина на осадке с регулярным батонажем проводятся частично в стальных чанах (80%) и частично в барриках из французского дуба (20%). Созревание длится 4 месяца, затем вино бутилируется.\n\nНАГРАДЫ: Серебро, Гид по российским винам Артура Саркисяна и РБК, 2026; Лучшие российские вина 2025/2026, Simple Wine News",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Riesling_2024_562c7e3226.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/riesling",
+    "fetched_at": "2026-08-25T17:04:42+0300",
+    "content_hash": "2ca38b33c50edca1db8a4456cd38c06bd5dc90e7e3a989bfd5b7abbe5b562cf7",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fuisse",
+      "puligny-montrachet"
+    ]
+  }
+}

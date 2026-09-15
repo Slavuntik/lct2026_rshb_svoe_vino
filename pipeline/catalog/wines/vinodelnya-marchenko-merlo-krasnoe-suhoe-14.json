@@ -1,0 +1,139 @@
+{
+  "slug": "vinodelnya-marchenko-merlo-krasnoe-suhoe-14",
+  "source": {
+    "name": "Мерло",
+    "winery": "vinodelnya-marchenko",
+    "winery_name": "Винодельня Марченко",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мерло"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Овощи гриль"
+    ],
+    "description": "Вкус: Сбалансированный, приятно бархатистый, с терпкими тонами темных ягод, умеренной кислотностью, хорошо интегрированными танинами и продолжительным послевкусием с деликатно пряными оттенками. Выразительный, с черносмородиновыми тонами, с элегантными нюансами ванили и дыма.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_marchenko_merlo_krasnoe_suhoe_14_b03e5e2a36.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-marchenko-merlo-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:07:01+0300",
+    "content_hash": "c62bd85838230ab3825e28377a59b7f37e9c3811225f1fa9f9da2f2105bd182e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.55,
+      "body": 0.71,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "merlot-chile",
+      "tempranillo-joven",
+      "cotes-du-rhone"
+    ]
+  }
+}

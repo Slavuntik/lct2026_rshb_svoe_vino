@@ -1,0 +1,138 @@
+{
+  "slug": "olymp-winery-adagum-pinot-noir-pino-nuar-rozovoe-suhoe-11",
+  "source": {
+    "name": "Adagum Pinot Noir",
+    "winery": "olymp-winery",
+    "winery_name": "Olymp Winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-рубиновый с малиновым отливом",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Сортовой аромат красных ягод — вишни, малины, земляники — с тонкими пряными нюансами. Вкус средней полноты, с шелковистыми танинами, свежей кислотностью и ягодным послевкусием.\nПодходит к блюдам из утки, телятины, лёгким мясным закускам, пасте, сырам бри и камамбер.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/olymp_winery_adagum_pinot_noir_pino_nuar_rozovoe_suhoe_11_266cb2d0df.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/olymp-winery-adagum-pinot-noir-pino-nuar-rozovoe-suhoe-11",
+    "fetched_at": "2026-08-25T17:04:22+0300",
+    "content_hash": "151c8ab4c0186d158d09fb118144e1601501205d17e9b10c30ecd628baf4185b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rosado-spain",
+      "provence-rose",
+      "bandol-rose"
+    ]
+  }
+}

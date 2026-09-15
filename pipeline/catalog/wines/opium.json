@@ -1,0 +1,145 @@
+{
+  "slug": "opium",
+  "source": {
+    "name": "Opium, 2020",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий рубиновый",
+    "vintage": 2020,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Вино глубокого рубинового цвета выглядит насыщенно и благородно. Его вкус округлый и сбалансированный, с выразительной танинной структурой, яркими фруктовыми акцентами и долгим, гармоничным послевкусием. Аромат гармоничный и многогранный: в нём доминируют оттенки фруктового джема, чёрной смородины и вишни Морелло, дополненные тонкими нотами ванили и гвоздики, придающими букету глубину и элегантность.\n\nВиноград подвергается ферментации в контакте с мезгой при контролируемой температуре в пижажных винификаторах. По завершении яблочно-молочного брожения вино выдерживается в бочках из кавказского дуба в течение 12 месяцев, а после бутилирования — еще не менее 24 месяцев.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Opium_68e7c19bd9.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/opium",
+    "fetched_at": "2026-08-25T17:04:25+0300",
+    "content_hash": "d88ec1309ecdf19999272cc4ec69c1982241885a324e66ca534dac9fe08523bb",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-napa",
+      "bordeaux-left-bank",
+      "priorat"
+    ]
+  }
+}

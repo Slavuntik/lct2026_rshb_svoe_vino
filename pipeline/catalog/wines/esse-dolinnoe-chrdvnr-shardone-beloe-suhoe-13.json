@@ -1,0 +1,140 @@
+{
+  "slug": "esse-dolinnoe-chrdvnr-shardone-beloe-suhoe-13",
+  "source": {
+    "name": "Dolinnoe CHRD+VNR",
+    "winery": "esse",
+    "winery_name": "ESSE",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      11,
+      13
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Полнотелый, маслянистый с тонами белой черешни и персика. Послевкусие минеральное. Сложный с тонами выдержки. Ноты груши, сливоные оттенки и сдоба.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/esse_dolinnoe_chrdvnr_shardone_beloe_suhoe_13_f8c0b600ad.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/esse-dolinnoe-chrdvnr-shardone-beloe-suhoe-13",
+    "fetched_at": "2026-08-25T17:01:35+0300",
+    "content_hash": "5298521404b0cdf1197e011608331c108990b7026766c531814fdea9383e9e23",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.63,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "meursault",
+      "chardonnay-oaked-new-world",
+      "puligny-montrachet"
+    ]
+  }
+}

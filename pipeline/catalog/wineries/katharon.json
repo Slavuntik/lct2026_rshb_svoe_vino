@@ -1,0 +1,54 @@
+{
+  "slug": "katharon",
+  "source": {
+    "name": "KATHARON",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "KATHARON — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "katharon-katharon-brut-blanc-de-blan",
+      "katharon-katharon-merlo",
+      "katharon-katharon-kaberne-fran",
+      "katharon-katharon-shardone",
+      "katharon-katharon-sovinon-blan",
+      "katharon-katharon-risling-suhoe",
+      "katharon-mezenka-sovinon-blan",
+      "katharon-mezenka-kaberne-fran",
+      "katharon-mezenka-kaberne-fran-merlo",
+      "katharon-mezenka-merlo",
+      "katharon-mezenka-sira",
+      "katharon-mezenka-risling-suhoe"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/katharon",
+    "fetched_at": "2026-08-25T21:23:54+0300",
+    "content_hash": "5a0334fc720e578fe14523c4c04bd78e15c471527786bb812cdc0f703f5f49f1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

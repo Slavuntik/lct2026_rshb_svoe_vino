@@ -1,0 +1,137 @@
+{
+  "slug": "novyj-svet-kaberne-sovinon-polusladkoe",
+  "source": {
+    "name": "Новый Свет. Каберне Совиньон полусладкое",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "темно-рубиновый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "Редкий образец игристого моносортового вина из красного сорта винограда Каберне Совиньон. Впервые вино было создано энологами Дома шампанских вин «Новый Свет» в 1995 году.\n\n*в описании приведен основной сорт винограда, состав которого не менее 85%, уточненный состав на контрэтикетке продукции.\n\nВино темно-рубинового цвета. В аромате преобладает черная смородина, гранат, вишня. Вкус насыщенный, сочетает в себе свежесть и плотное тело, с яркими смородиновыми акцентами. Послевкусие вина бархатное, с тонами сушёного чернослива.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/4309_Xp_Hvu_QW_c001f686c0.webp",
+    "similar_wine_slugs": [
+      "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+      "chernaya-lvicza-polusladkoe-krasnoe",
+      "leto-kaberne-fran-2024-polusladkoe-krasnoe",
+      "perovskih_polusladkoe_krasnoe",
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-polusladkoe-kaberne-sovinon-115",
+      "soyuz-vino-soyuz-vino-izabella-krasnoe-polusladkoe-11",
+      "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11",
+      "soyuz-vino-sheremetevskie-pogreba-krasnoe-polusladkoe-krasnye-sorta-vinograda-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyj-svet-kaberne-sovinon-polusladkoe",
+    "fetched_at": "2026-08-25T17:04:05+0300",
+    "content_hash": "487295773865282500197ffbe737c87ffb522b1a21fd7ca93f8cb0cb27af0548",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.77,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "kindzmarauli"
+    ]
+  }
+}

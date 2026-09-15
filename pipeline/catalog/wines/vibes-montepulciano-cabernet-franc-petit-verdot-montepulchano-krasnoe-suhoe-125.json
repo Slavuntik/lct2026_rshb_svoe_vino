@@ -1,0 +1,137 @@
+{
+  "slug": "vibes-montepulciano-cabernet-franc-petit-verdot-montepulchano-krasnoe-suhoe-125",
+  "source": {
+    "name": "Montepulciano – Cabernet Franc – Petit Verdot",
+    "winery": "vibes",
+    "winery_name": "Vibes",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Монтепульчано"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Мясо и стейки"
+    ],
+    "description": "Вкус: Умеренный с легкой минеральностью, ноты черноплодной рябины в послевкусии. Лакрично-черничный, с нотами чёрного перца, сливы, с оттенками какао и нюансами гуаши.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vibes_montepulciano_cabernet_franc_petit_verdot_montepulchano_krasnoe_suhoe_125_5642303e11.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vibes-montepulciano-cabernet-franc-petit-verdot-montepulchano-krasnoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:06:29+0300",
+    "content_hash": "73747b982914c4ef1295ca9a0854bd0820aa2396b0120b72e8f94619f7f0a3ff",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "montepulchano"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.6,
+      "body": 0.7,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "montepulciano-dabruzzo",
+      "tempranillo-joven",
+      "cotes-du-rhone"
+    ]
+  }
+}

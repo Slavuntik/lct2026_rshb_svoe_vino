@@ -1,0 +1,73 @@
+{
+  "slug": "konkurs-zhenshhiny-v-apk-v-2026-godu-ohvatit-bolee-30-regionov-rossii",
+  "source": {
+    "title": "Конкурс «Женщины в АПК» в 2026 году охватит более 30 регионов России",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Проект, направленный на поддержку женщин, работающих в агропромышленном комплексе, и популяризацию их вклада в развитие агробизнеса и сельских территорий, в этом году выходит на принципиально новый уровень. Региональные этапы Всероссийского конкурса «Женщины в АПК» пройдут более чем в 30 субъектах Российской Федерации.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В прошлом году конкурс впервые состоялся в региональном формате, охватив Воронежскую, Липецкую и Ростовскую области, Татарстан и Краснодарский край. Успех пилотного проекта позволил масштабировать инициативу на десятки регионов уже в 2026 году.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Конкурс проводится по четырем номинациям, каждая из которых отражает разные грани женского лидерства в АПК:</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>«Превосходящая звезда»</strong>&nbsp;— для авторов стартап-проектов в агропромышленном комплексе</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>«Суперженщина»</strong>&nbsp;— для руководителей предприятий отрасли, внедряющих инновации и добивающихся высоких результатов</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>«Кто, если не я?»</strong>&nbsp;— для реализующих социальные инициативы на сельских территориях</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>«Есть женщины в русских селеньях»</strong>&nbsp;— для активных общественных лидеров, меняющих жизнь вокруг себя</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Победительницы региональных этапов примут участие во Всероссийском финале, где будут определены лучшие из лучших.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Прием заявок стартует в апреле 2026 года. Подробности можно узнать на официальных ресурсах Минсельхоза России и региональных министерств сельского хозяйства</span></p>",
+    "body": "Проект, направленный на поддержку женщин, работающих в агропромышленном\nкомплексе, и популяризацию их вклада в развитие агробизнеса и сельских\nтерриторий, в этом году выходит на принципиально новый уровень. Региональные\nэтапы Всероссийского конкурса «Женщины в АПК» пройдут более чем в 30 субъектах\nРоссийской Федерации.\n\n \n\nВ прошлом году конкурс впервые состоялся в региональном формате, охватив\nВоронежскую, Липецкую и Ростовскую области, Татарстан и Краснодарский край.\nУспех пилотного проекта позволил масштабировать инициативу на десятки регионов\nуже в 2026 году.\n\n \n\nКонкурс проводится по четырем номинациям, каждая из которых отражает разные\nграни женского лидерства в АПК:\n\n \n\n«Превосходящая звезда» — для авторов стартап-проектов в агропромышленном\nкомплексе\n\n \n\n«Суперженщина» — для руководителей предприятий отрасли, внедряющих инновации и\nдобивающихся высоких результатов\n\n \n\n«Кто, если не я?» — для реализующих социальные инициативы на сельских\nтерриториях\n\n \n\n«Есть женщины в русских селеньях» — для активных общественных лидеров, меняющих\nжизнь вокруг себя\n\n \n\nПобедительницы региональных этапов примут участие во Всероссийском финале, где\nбудут определены лучшие из лучших.\n\n \n\nПрием заявок стартует в апреле 2026 года. Подробности можно узнать на\nофициальных ресурсах Минсельхоза России и региональных министерств сельского\nхозяйства",
+    "body_chars": 1351,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-03-08T08:00:00.000Z",
+    "published_date": "2026-03-08",
+    "published_year": 2026,
+    "modified_at": "2026-03-08T08:00:05.060Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Bogovich_rsk_a95b5be5db.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/konkurs-zhenshhiny-v-apk-v-2026-godu-ohvatit-bolee-30-regionov-rossii",
+    "fetched_at": "2026-08-25T21:27:28+0300",
+    "content_hash": "424d0168279ce99a585129fa5a7dcec4d2ef156f0866262fce68ecfc041c416c",
+    "parser_version": "0.4.0"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "slug": "usadba-rodnoe-gnezdo-4-elements-risling-beloe-polusuhoe-12",
+  "source": {
+    "name": "4 elements. Рислинг",
+    "winery": "usadba-rodnoe-gnezdo",
+    "winery_name": "Усадьба Родное Гнездо",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Округлое с выраженной кислотностью. Персик, медовые тона, зеленое яблоко, свежескошенная трава, полевые цветы, сладкие ароматы.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/usadba_rodnoe_gnezdo_4_elements_risling_beloe_polusuhoe_12_3621a7b684.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/usadba-rodnoe-gnezdo-4-elements-risling-beloe-polusuhoe-12",
+    "fetched_at": "2026-08-25T17:06:07+0300",
+    "content_hash": "8de2ed620236dbda584fab2597b96d159550f008ba712874864c81928211dfc2",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "vinho-verde"
+    ]
+  }
+}

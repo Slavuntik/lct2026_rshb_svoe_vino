@@ -1,0 +1,143 @@
+{
+  "slug": "denisov-winery-petnat-risling-beloe-ekstra-bryut-10",
+  "source": {
+    "name": "Петнат Рислинг",
+    "winery": "denisov-winery",
+    "winery_name": "Denisov Winery",
+    "region": "samara",
+    "region_name": "Самара",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "золотистый с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Яркий, сочный, с цитрусовыми акцентами и гармоничной освежающей кислинкой в финале. Тонкий, изящный, с нюансами лайма, луговых трав и цветов, белых фруктов.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/denisov_winery_petnat_risling_petnat_ekstra_bryut_belyy_10_8ac6c27fa7.webp",
+    "similar_wine_slugs": [
+      "dva-brata-pet-nat-kokur-2024",
+      "grand-kyuve",
+      "blan-de-blan",
+      "grand-jete-blanc-de-noirs",
+      "grand-jete-blanc-de-blancs",
+      "perovskih_blan_de_noir",
+      "vinodelnya-vedernikov-vinodelnya-vedernikov-tsimlyanskiy-chernyy-sibirkovyy-ekstra-bryut-beloe-13",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/denisov-winery-petnat-risling-beloe-ekstra-bryut-10",
+    "fetched_at": "2026-08-25T17:00:57+0300",
+    "content_hash": "50bae301bef4d60e2cfe6555714cc21f3669666c3aad9509f72d201c9120ac26",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.39,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cremant",
+      "champagne-blanc-de-blancs",
+      "prosecco"
+    ]
+  }
+}

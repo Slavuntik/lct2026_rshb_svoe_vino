@@ -1,0 +1,73 @@
+{
+  "slug": "v-moskve-projdet-meksikanskij-karnaval-dia-del-lobo",
+  "source": {
+    "title": "В Москве пройдет мексиканский карнавал DIA DEL LOBO",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">\n20 июня дизайн-завод «Флакон» на один день превратится в пространство мексиканского уличного праздника. Во внутреннем дворе площадки состоится фестиваль DIA DEL LOBO, посвященный мексиканской культуре, гастрономии и музыке.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">\nОрганизаторы обещают атмосферу традиционного карнавала с яркими декорациями, гирляндами и национальными орнаментами. В программе заявлены выступления музыкантов мариачи, латинская музыка в течение всего дня, мексиканский стрит-фуд, гастрономический маркет, фруктовый бар, пиво и коктейли.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">\n</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">На площадке также откроются тату-студия, виниловый маркет, фотозона с тематической атрибутикой и зона аквагрима.\nВход на фестиваль бесплатный. Для гостей подготовили фирменный гифт-пак, в который войдут футболка, шоппер, бокал, две банки пива, жетоны на фестивальное пиво и снеки от партнеров.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">\n</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Фестиваль пройдет 20 июня с 12:00 во внутреннем дворе дизайн-завода «Флакон» по адресу: Большая Новодмитровская, 36с6.\nПодробности </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://spiritory.ru/diadellobo\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>spiritory.ru</strong></span></a></p>",
+    "body": "20 июня дизайн-завод «Флакон» на один день превратится в пространство\nмексиканского уличного праздника. Во внутреннем дворе площадки состоится\nфестиваль DIA DEL LOBO, посвященный мексиканской культуре, гастрономии и музыке.\n\n \n\nОрганизаторы обещают атмосферу традиционного карнавала с яркими декорациями,\nгирляндами и национальными орнаментами. В программе заявлены выступления\nмузыкантов мариачи, латинская музыка в течение всего дня, мексиканский\nстрит-фуд, гастрономический маркет, фруктовый бар, пиво и коктейли.\n\n\n\nНа площадке также откроются тату-студия, виниловый маркет, фотозона с\nтематической атрибутикой и зона аквагрима. Вход на фестиваль бесплатный. Для\nгостей подготовили фирменный гифт-пак, в который войдут футболка, шоппер, бокал,\nдве банки пива, жетоны на фестивальное пиво и снеки от партнеров.\n\n\n\nФестиваль пройдет 20 июня с 12:00 во внутреннем дворе дизайн-завода «Флакон» по\nадресу: Большая Новодмитровская, 36с6. Подробности spiritory.ru\n[https://spiritory.ru/diadellobo]",
+    "body_chars": 994,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-06-09T10:30:00.000Z",
+    "published_date": "2026-06-09",
+    "published_year": 2026,
+    "modified_at": "2026-06-09T10:36:18.683Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Dia_d90e717b07.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/v-moskve-projdet-meksikanskij-karnaval-dia-del-lobo",
+    "fetched_at": "2026-08-25T21:30:04+0300",
+    "content_hash": "a16c98f76b580aac92bc1155d787a46cd34e54531ef03e0d01779584b647cd51",
+    "parser_version": "0.4.0"
+  }
+}

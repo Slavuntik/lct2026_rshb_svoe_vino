@@ -1,0 +1,142 @@
+{
+  "slug": "vinodelnya-byurne-kaberne-fran-krasnoe-suhoe-135",
+  "source": {
+    "name": "БЮРНЬЕ.КАБЕРНЕ ФРАН сухое красное",
+    "winery": "vinodelnya-byurne",
+    "winery_name": "Винодельня Бюрнье",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Фран"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "насыщенный рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Овощи гриль"
+    ],
+    "description": "Элегантное и самодостаточное вино с хорошим потенциалом развития. Многогранный аромат раскрывается тонами подвяленных тёмных ягод и зёрен граната, присыпанных пряными травами и цветами фиалки. Во вкусе гладкие, зрелые танины, баланс и долгое пряно-ягодное послевкусие.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Kab_Fran_2020_no_bg_preview_carve_photos_467c50d49a.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-byurne-kaberne-fran-krasnoe-suhoe-135",
+    "fetched_at": "2026-08-25T17:06:53+0300",
+    "content_hash": "235a89ff43bb666b72cca421817ce84aac39cf174095c0da844a7a6fb23da8ad",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.6,
+      "body": 0.63,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-franc-loire",
+      "sangiovese-romagna",
+      "zweigelt"
+    ]
+  }
+}

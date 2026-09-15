@@ -1,0 +1,145 @@
+{
+  "slug": "vinodelnya-vedernikov-vedernikov-gubernatorskoe-golubok-krasnoe-suhoe-115",
+  "source": {
+    "name": "Ведерниковъ Губернаторское «Голубок»",
+    "winery": "vinodelnya-vedernikov",
+    "winery_name": "Ведерниковъ",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Голубок",
+      "Каберне Совиньон",
+      "Цимлянский черный"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый с гранатовым отливом",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки"
+    ],
+    "description": "Аромат фруктовый — красные ягоды, вишня с лёгкими пряными акцентами; вкус средней полноты, с мягкими танинами и ягодным послевкусием. К мясным блюдам.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_vedernikov_vedernikov_gubernatorskoe_golubok_krasnoe_suhoe_115_8c9f5c5b2a.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-vedernikov-vedernikov-gubernatorskoe-golubok-krasnoe-suhoe-115",
+    "fetched_at": "2026-08-25T17:07:50+0300",
+    "content_hash": "5e0c2f93f7f491022c5141edccecb266af4cdf9a140b466729c8f4d49b05ecde",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "golubok",
+      "kaberne-sovinon",
+      "tsimlyansky-chorny"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.667,
+      "body": 0.67,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sangiovese-romagna",
+      "dolcetto",
+      "cabernet-franc-loire"
+    ]
+  }
+}

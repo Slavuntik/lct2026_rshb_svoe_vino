@@ -1,0 +1,73 @@
+{
+  "slug": "abrau-dyurso-i-vk-dogovorilis-o-strategicheskom-partnerstve-v-sfere-marketingovyh-tehnologij-i-raboty-s-dannymi",
+  "source": {
+    "title": "«Абрау-Дюрсо» и VK договорились о стратегическом партнерстве в сфере маркетинговых технологий и работы с данными",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Соглашение было подписано в рамках ПМЭФ-2026.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Компании планируют совместно развивать инструменты аналитики потребительского поведения, формировать целевые сегменты аудитории и тестировать маркетинговые гипотезы с использованием больших данных и предиктивной аналитики. В меморандум также вошли проекты, связанные с автоматизацией маркетинговых процессов, облачными сервисами, корпоративными коммуникациями и внедрением технологий искусственного интеллекта.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Как отметили в «Абрау-Дюрсо», сотрудничество с VK позволит компании расширить использование цифровых инструментов для анализа трендов и повышения эффективности бизнес-процессов.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В VK подчеркнули, что объединение технологической экспертизы компании и опыта «Абрау-Дюрсо» в винодельческой отрасли позволит развивать инструменты коммуникации с аудиторией и поддерживать премиальное позиционирование бренда.</span></p>",
+    "body": "Соглашение было подписано в рамках ПМЭФ-2026.\n\n \n\nКомпании планируют совместно развивать инструменты аналитики потребительского\nповедения, формировать целевые сегменты аудитории и тестировать маркетинговые\nгипотезы с использованием больших данных и предиктивной аналитики. В меморандум\nтакже вошли проекты, связанные с автоматизацией маркетинговых процессов,\nоблачными сервисами, корпоративными коммуникациями и внедрением технологий\nискусственного интеллекта.\n\n \n\nКак отметили в «Абрау-Дюрсо», сотрудничество с VK позволит компании расширить\nиспользование цифровых инструментов для анализа трендов и повышения\nэффективности бизнес-процессов.\n\n \n\nВ VK подчеркнули, что объединение технологической экспертизы компании и опыта\n«Абрау-Дюрсо» в винодельческой отрасли позволит развивать инструменты\nкоммуникации с аудиторией и поддерживать премиальное позиционирование бренда.",
+    "body_chars": 872,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-06-08T16:45:00.000Z",
+    "published_date": "2026-06-08",
+    "published_year": 2026,
+    "modified_at": "2026-06-08T17:19:52.490Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Ozero_Abrau_8e9f36579e.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/abrau-dyurso-i-vk-dogovorilis-o-strategicheskom-partnerstve-v-sfere-marketingovyh-tehnologij-i-raboty-s-dannymi",
+    "fetched_at": "2026-08-25T21:25:07+0300",
+    "content_hash": "4136817335b7dcb68a9c35caefe8a1465b01cd841dd334ed47f9ede0436c285c",
+    "parser_version": "0.4.0"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "slug": "vin-ran-v-peterburge-probezhka-vino-i-medal",
+  "source": {
+    "title": "ВинРан в Петербурге - пробежка, вино и медаль",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Сегодня вечером, 24 июля, в Санкт-Петербурге стартует серия городских забегов «ВинРан». Первое событие пройдёт в партнёрстве с брендом Vilash и обещает не только активный отдых, но и гастрономические впечатления. И всё это — совершенно бесплатно.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Что, где и когда</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Место встречи — ресторан «Гости» на Малой Морской улице, 13. Сбор участников — в 19:00. После забега каждого ждёт дегустация вина Levitation Sauvignon Blanc Marlborough. Профессиональный сомелье расскажет, почему именно Совиньон Блан из Мальборо завоевал мировую популярность. А на финише — памятная медаль.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Кто может участвовать</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Участие бесплатное, но количество мест ограничено — всего 28. Регистрация открыта </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://docs.google.com/forms/d/e/1FAIpQLSeMVW0zQi34eO2aJyFUpbkM_WogSF3tFREyJbg--t7TRAfvnw/closedform\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">по ссылке</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">. Успейте занять своё место!</span><br><br><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Вся актуальная информация по забегам </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://t.me/nevinnobegaem\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">тут</span></a></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Вперёд — за эмоциями, новыми знакомствами и бокалом отличного вина! Чтобы летний вечер пятницы не был томным, а запомнился надолго.</span></p>",
+    "body": "Сегодня вечером, 24 июля, в Санкт-Петербурге стартует серия городских забегов\n«ВинРан». Первое событие пройдёт в партнёрстве с брендом Vilash и обещает не\nтолько активный отдых, но и гастрономические впечатления. И всё это — совершенно\nбесплатно.\n\n \n\n\nЧТО, ГДЕ И КОГДА\n\n \n\nМесто встречи — ресторан «Гости» на Малой Морской улице, 13. Сбор участников — в\n19:00. После забега каждого ждёт дегустация вина Levitation Sauvignon Blanc\nMarlborough. Профессиональный сомелье расскажет, почему именно Совиньон Блан из\nМальборо завоевал мировую популярность. А на финише — памятная медаль.\n\n \n\n\nКТО МОЖЕТ УЧАСТВОВАТЬ\n\n \n\nУчастие бесплатное, но количество мест ограничено — всего 28. Регистрация\nоткрыта по ссылке\n[https://docs.google.com/forms/d/e/1FAIpQLSeMVW0zQi34eO2aJyFUpbkM_WogSF3tFREyJbg--t7TRAfvnw/closedform].\nУспейте занять своё место!\n\nВся актуальная информация по забегам тут [https://t.me/nevinnobegaem]\n\nВперёд — за эмоциями, новыми знакомствами и бокалом отличного вина! Чтобы летний\nвечер пятницы не был томным, а запомнился надолго.",
+    "body_chars": 1039,
+    "headings": [
+      "Что, где и когда",
+      "Кто может участвовать"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-07-23T21:00:00.000Z",
+    "published_date": "2026-07-23",
+    "published_year": 2026,
+    "modified_at": "2026-07-24T10:45:19.445Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Izobrazhenie_soczseti_Ne_Vinnye_zabegi2_d8afdf3474.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/vin-ran-v-peterburge-probezhka-vino-i-medal",
+    "fetched_at": "2026-08-25T21:30:15+0300",
+    "content_hash": "6861696d548aabeeeab9500c9eccc0bb8a03f23544cb449da5e4c055280ddee7",
+    "parser_version": "0.4.0"
+  }
+}

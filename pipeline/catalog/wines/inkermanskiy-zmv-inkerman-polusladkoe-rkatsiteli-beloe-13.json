@@ -1,0 +1,147 @@
+{
+  "slug": "inkermanskiy-zmv-inkerman-polusladkoe-rkatsiteli-beloe-13",
+  "source": {
+    "name": "Инкерман полусладкое",
+    "winery": "inkermanskiy_zmv",
+    "winery_name": "Инкерманский ЗМВ",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур",
+      "Рислинг",
+      "Ркацители",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "светло-соломенный с золотистыми бликами",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Десерты"
+    ],
+    "description": "Аромат фруктовый, с нотами спелых яблок, груши и цветов; вкус гармоничный, с приятной натуральной сладостью и освежающей кислотностью. К лёгким десертам, фруктам, мягким пирожным.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/inkermanskiy_zmv_inkerman_polusladkoe_rkatsiteli_beloe_13_5e5f1aa9c4.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/inkermanskiy-zmv-inkerman-polusladkoe-rkatsiteli-beloe-13",
+    "fetched_at": "2026-08-25T17:02:49+0300",
+    "content_hash": "b4dff56764d67d1ca4e7899bcd0df33826051c2571930214baba206cf2b264f5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur",
+      "risling",
+      "rkatsiteli",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": 0.65,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "white-semisweet"
+    ]
+  }
+}

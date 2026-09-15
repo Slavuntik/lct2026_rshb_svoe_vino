@@ -1,0 +1,142 @@
+{
+  "slug": "massandra-kokur",
+  "source": {
+    "name": "Массандра Кокур",
+    "winery": "massandra",
+    "winery_name": "Массандра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Лёгкие закуски"
+    ],
+    "description": "У вина гармоничный, чистый вкус с миндальными нотками, приятной сладостью и освежающим послевкусием. Вино демонстрирует утончённый, свежий аромат, сотканный из нот груши и миндаля. Вино элегантного соломенно-золотистого цвета.",
+    "public_rating": 4.63,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Massandra_Kokur_1fa858a17c.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection",
+      "katharon-mezenka-risling-polusuhoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/massandra-kokur",
+    "fetched_at": "2026-08-25T17:03:45+0300",
+    "content_hash": "a1962d0fc71d81484d61ad45c23b621f7be7b801e4014d275e0e4992ca3ae849",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.5,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "muller-thurgau",
+      "white-semisweet",
+      "pinot-gris-alsace"
+    ]
+  }
+}

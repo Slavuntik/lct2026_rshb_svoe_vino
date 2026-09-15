@@ -1,0 +1,135 @@
+{
+  "slug": "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+  "source": {
+    "name": "Шато де Монгольфьер Шираз Полусухое",
+    "winery": "soyuz-vino",
+    "winery_name": "Союз-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шираз"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "у вина темный пурпурный цвет",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Паста",
+      "Сыры",
+      "Фастфуд"
+    ],
+    "description": "Вино отличается питким, приятным, округлым вкусом с нотками спелых фруктов и легкими древесными штрихами в обрамлении мелкозернистых танинов. Послевкусие мягкое, продолжительное.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/soyuz_vino_shato_de_mongolfer_shiraz_polusuhoe_krasnoe_11_a657118526.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "fiori-di-mare-krasnoe-polusuhoe",
+      "saperavi-premium",
+      "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+      "perovskih_polusuhoe_krasnoe",
+      "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+      "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+    "fetched_at": "2026-08-25T17:05:37+0300",
+    "content_hash": "80a02aa262d59f170bd043fce5f5467fd145420b26c698f7eb6902e53e4930f5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sira"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.77,
+      "oak": 0.1,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "slug": "domaine-lipko-white-blend-muskat-beloe-polusuhoe-12",
+  "source": {
+    "name": "White Blend",
+    "winery": "domaine-lipko",
+    "winery_name": "Domaine Lipko",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Острое",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Насыщенный, но очень мягкий, свежий с отличным балансом тонкой фруктовой сладости и живой кислотности. Послевкусие деликатное, гармоничное, приятное. Яркий и выразительный с соблазнительными тонами тропических фруктов и чайной розы, оттенками жимолости и бузины.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/domaine_lipko_white_blend_muskat_beloe_polusuhoe_12_19ac7b503b.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/domaine-lipko-white-blend-muskat-beloe-polusuhoe-12",
+    "fetched_at": "2026-08-25T17:01:26+0300",
+    "content_hash": "e6db0db3d2b2927324051006ab2579e05df4a94d0c777b9b068fe20d83288c23",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "gewurztraminer-alsace",
+      "pinot-gris-alsace",
+      "white-semisweet"
+    ]
+  }
+}

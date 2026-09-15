@@ -1,0 +1,147 @@
+{
+  "slug": "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+  "source": {
+    "name": "Fanagoria Extra Brut Rose 2019",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар",
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "розовый",
+    "vintage": 2019,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Сыры"
+    ],
+    "description": "В аромате красные ягоды, цитрус, бриошь. Вкус свежий, с ягодно-сливочным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_fanagoria_extra_brut_rose_2019_pino_nuar_igristoe_bryut_rozovoe_ekstra_bryut_12_aef88041a9.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11",
+      "tsimlyanskie-vina-tsimlyanskoe-kaberne-sovinon-ekstra-bryut-rozovoe-13"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+    "fetched_at": "2026-08-25T17:02:04+0300",
+    "content_hash": "46aac54a80a5260343cea16765b2948127dd90fcb54da5f567e259faa74467bb",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.525,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

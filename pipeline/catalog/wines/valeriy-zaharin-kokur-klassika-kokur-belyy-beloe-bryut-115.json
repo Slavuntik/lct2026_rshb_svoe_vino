@@ -1,0 +1,144 @@
+{
+  "slug": "valeriy-zaharin-kokur-klassika-kokur-belyy-beloe-bryut-115",
+  "source": {
+    "name": "Кокур Классика",
+    "winery": "valeriy-zaharin",
+    "winery_name": "Валерий Захарьин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "золотисто-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Сыры",
+      "Устрицы"
+    ],
+    "description": "Вкус: Свежий, гармоничный, с хорошо сбалансированной кислотностью, нотами груши, яблока, лимона и приятным, легким послевкусием. Приятный, ненавязчивый, фруктовый, цветочный, немного медовый, с долей минеральности.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/valeriy_zaharin_kokur_klassika_kokur_belyy_igristoe_bryut_beloe_115_4d15edacbd.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/valeriy-zaharin-kokur-klassika-kokur-belyy-beloe-bryut-115",
+    "fetched_at": "2026-08-25T17:06:19+0300",
+    "content_hash": "cc263ce5f7d0383b7a0062f77c9ab9b7bf3cff6072de372b15ab02932baafaaf",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.47,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pet-nat",
+      "prosecco",
+      "cava"
+    ]
+  }
+}

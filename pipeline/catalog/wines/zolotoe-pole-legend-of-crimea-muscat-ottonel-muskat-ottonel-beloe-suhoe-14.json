@@ -1,0 +1,139 @@
+{
+  "slug": "zolotoe-pole-legend-of-crimea-muscat-ottonel-muskat-ottonel-beloe-suhoe-14",
+  "source": {
+    "name": "Legend of Crimea \"Muscat Ottonel\"",
+    "winery": "zolotoe-pole",
+    "winery_name": "Золотое Поле",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат Оттонель"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-лимонный",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      10,
+      13
+    ],
+    "food_pairings": [
+      "Азиатская кухня",
+      "Кавказская кухня",
+      "Морепродукты"
+    ],
+    "description": "Выразительный аромат с цветочной доминантой, яркой палитрой цитрусов и аккуратной нотой специй. Во вкусе среднее тело, низкая кислотность и пышное послевкусие, из нот пряностей и цветов-медоносов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zolotoe_pole_legend_of_crimea_muscat_ottonel_muskat_ottonel_beloe_suhoe_14_b38aa9e08c.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zolotoe-pole-legend-of-crimea-muscat-ottonel-muskat-ottonel-beloe-suhoe-14",
+    "fetched_at": "2026-08-25T17:08:23+0300",
+    "content_hash": "f788d89503acc3efce76348c835f0f48c36afe83e4eaaab27644e3d16fd386e0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-ottonel"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.61,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "torrontes",
+      "mtsvane-dry",
+      "fiano"
+    ]
+  }
+}

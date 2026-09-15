@@ -1,0 +1,130 @@
+{
+  "slug": "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-krasnoe-novyy-svet-kaberne-sovinon-135",
+  "source": {
+    "name": "Игристое вино выдержанное брют красное «Новый Свет. Каберне Совиньон»",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "брют",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Аромат интенсивный, с нотами тёмных ягод, тёмного шоколада и лёгкими пряными оттенками; вкус яркий, полнотелый, с хорошей структурой и долгим послевкусием с тонами чёрной смородины и вишни. Хорошо к красному мясу на гриле, выдержанным сырам.",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/novyy_svet_dom_shampanskih_vin_igristoe_vino_vyderzhannoe_bryut_krasnoe_novyy_svet_kaberne_sovinon_135_c251fa3c04.webp",
+    "similar_wine_slugs": [
+      "fanagoriya-brule-saperavi-saperavi-igristoe-sladkoe-krasnoe-bryut-125",
+      "novyj-svet-kaberne-sovinon",
+      "vinodelnya-myshako-rouge-de-noirs-merlo-krasnoe-bryut-13"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-krasnoe-novyy-svet-kaberne-sovinon-135",
+    "fetched_at": "2026-08-25T17:04:08+0300",
+    "content_hash": "61e422ddd8b6c672fb238a9fb5f54d16cc8124fd889f23ce4f32d5a21011affd",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "slug": "vinodelnya-myshako-sesto-senso-tropicheskiy-vzryv-gevyurtstraminer-beloe-suhoe-12",
+  "source": {
+    "name": "Sesto Senso. Тропический взрыв",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Гевюрцтраминер"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус: Яркий, насыщенный, сочный со сбалансированной кислотностью, длительным фруктовым послевкусием. Тропические фрукты.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_myshako_sesto_senso_tropicheskiy_vzryv_gevyurtstraminer_beloe_suhoe_12_a6df063535.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-myshako-sesto-senso-tropicheskiy-vzryv-gevyurtstraminer-beloe-suhoe-12",
+    "fetched_at": "2026-08-25T17:07:23+0300",
+    "content_hash": "92003aba73c941e61213bbedb9e864f80bbdba5f09244f9eddbab22bd818e1e3",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "gevyurctraminer"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.4,
+      "tannin": 0.05,
+      "body": 0.7,
+      "oak": 0.1,
+      "aromatic_intensity": 0.95,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "gewurztraminer-alsace",
+      "condrieu-viognier",
+      "torrontes"
+    ]
+  }
+}

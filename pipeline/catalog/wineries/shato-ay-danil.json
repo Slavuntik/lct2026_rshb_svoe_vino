@@ -1,0 +1,71 @@
+{
+  "slug": "shato-ay-danil",
+  "source": {
+    "name": "Шато Ай-Даниль",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": 1835,
+    "description": "Шато Ай-Даниль — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Château Côtes de Saint Daniel — крымская винодельня на Южном берегу Крыма, в посёлке Даниловка (Ай-Даниль), основанная в 1835 году. Это хозяйство полного цикла, где виноград выращивают, перерабатывают и выдерживают прямо на месте, с ориентацией на авторские вина и европейский стиль.\n\nТерруар здесь южнобережный: тёплый субтропический климат, склоны, спускающиеся к морю, и почвы на глинистых сланцах, известняках и каменистых породах. Климат региона обусловлен особенностями рельефа. Горный амфитеатр, окружающий берег с севера и частично с северо-запада и северо-востока, оберегает территорию от холодных зимних ветров, а также от сухих континентальных воздушных масс в летний период. Такой набор условий даёт винам зрелость, структуру и выраженную минеральность, а минимальная разница между дневными и ночными температурами помогает сохранять баланс вкуса.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/aj_danil_c6361a18d9.webp",
+    "wine_slugs": [
+      "shato-ay-danil-tramonto-kaberne-sovinon-krasnoe-suhoe-14",
+      "shato-ay-danil-grenash-krasnoe-suhoe-12",
+      "shato-ay-danil-tokkata-saperavi-krasnoe-suhoe-14",
+      "shato-ay-danil-presto-rezerv-kaberne-sovinon-krasnoe-suhoe-135",
+      "shato-ay-danil-byanko-da-sole-muskat-belyy-beloe-polusladkoe-13",
+      "shato-ay-danil-kapriz-muskat-belyy-beloe-suhoe-135",
+      "shato-ay-danil-skarlatto-da-sole-saperavi-krasnoe-polusladkoe-13",
+      "shato-ay-danil-bomond-aligote-beloe-suhoe-13"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    },
+    {
+      "field": "founded_year",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/shato-ay-danil",
+    "fetched_at": "2026-08-25T21:24:13+0300",
+    "content_hash": "352a80dee01298c0b442b713bb3ea519a6bcf52f946911f3da8300a8bebca42a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 8
+  }
+}

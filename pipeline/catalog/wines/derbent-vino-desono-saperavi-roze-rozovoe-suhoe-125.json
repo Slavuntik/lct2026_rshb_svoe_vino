@@ -1,0 +1,145 @@
+{
+  "slug": "derbent-vino-desono-saperavi-roze-rozovoe-suhoe-125",
+  "source": {
+    "name": "Дэсоно Саперави розе",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Брускетты",
+      "Морепродукты",
+      "Мясное ассорти",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "В аромате ноты малины в сахаре, зимняя ягода с лёгкими нотами ванили. Вкус гармоничный, свежий, в послевкусии лёгкая горчинка красной ягоды.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Desono_Saperavi_roze_a6f976b72e.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/derbent-vino-desono-saperavi-roze-rozovoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:01:02+0300",
+    "content_hash": "a1def28f29f0d61f9b03dbedc011cf239631bec1ccb473dc2f0d2abf4523e99f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bandol-rose",
+      "cerasuolo-dabruzzo",
+      "tavel-rose"
+    ]
+  }
+}

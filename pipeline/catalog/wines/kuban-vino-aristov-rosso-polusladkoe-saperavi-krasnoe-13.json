@@ -1,0 +1,137 @@
+{
+  "slug": "kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+  "source": {
+    "name": "Аристов Россо Полусладкое",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "красное",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "у вина яркий красный цвет",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус вина отличается питкостью, мягкостью, легкой ягодной терпкостью, которая отлично сочетается с деликатной фруктовой сладостью и кислинкой. Послевкусие приятное, мягкое.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/kuban_vino_aristov_rosso_polusladkoe_saperavi_krasnoe_13_ed04238b6b.webp",
+    "similar_wine_slugs": [
+      "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+      "chernaya-lvicza-polusladkoe-krasnoe",
+      "leto-kaberne-fran-2024-polusladkoe-krasnoe",
+      "perovskih_polusladkoe_krasnoe",
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-polusladkoe-kaberne-sovinon-115",
+      "soyuz-vino-soyuz-vino-izabella-krasnoe-polusladkoe-11",
+      "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11",
+      "soyuz-vino-sheremetevskie-pogreba-krasnoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "soyuz-vino-soyuz-vino-evropak-shiraz-krasnoe-polusladkoe-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+    "fetched_at": "2026-08-25T17:03:09+0300",
+    "content_hash": "b4e2a88424f7be0dc5ceadadbb95ce78da083346fdeb8ff5b3bbc265389c4214",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.75,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "kindzmarauli"
+    ]
+  }
+}

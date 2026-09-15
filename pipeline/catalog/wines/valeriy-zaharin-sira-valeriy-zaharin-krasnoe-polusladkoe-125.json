@@ -1,0 +1,137 @@
+{
+  "slug": "valeriy-zaharin-sira-valeriy-zaharin-krasnoe-polusladkoe-125",
+  "source": {
+    "name": "Сира. Валерий Захарьин",
+    "winery": "valeriy-zaharin",
+    "winery_name": "Валерий Захарьин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Сира"
+    ],
+    "color": "красное",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "глубокий рубиново-красный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Выпечка и десерты",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус: Гармоничный, с фруктовой сладостью и ягодной свежестью, с мягкими танинами, хорошей кислотностью и приятным послевкусием. Выразительно-ягодный, с джемовыми тонами зрелой вишни, малины и ежевики, с легким оттенком подлеска.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/valeriy_zaharin_sira_valeriy_zaharin_krasnoe_polusladkoe_125_7c99c350d3.webp",
+    "similar_wine_slugs": [
+      "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+      "chernaya-lvicza-polusladkoe-krasnoe",
+      "leto-kaberne-fran-2024-polusladkoe-krasnoe",
+      "perovskih_polusladkoe_krasnoe",
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "kuban-vino-aristov-rosso-polusladkoe-saperavi-krasnoe-13",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-polusladkoe-kaberne-sovinon-115",
+      "soyuz-vino-soyuz-vino-izabella-krasnoe-polusladkoe-11",
+      "soyuz-vino-konfessa-sandzhoveze-polusladkoe-krasnoe-11",
+      "soyuz-vino-sheremetevskie-pogreba-krasnoe-polusladkoe-krasnye-sorta-vinograda-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/valeriy-zaharin-sira-valeriy-zaharin-krasnoe-polusladkoe-125",
+    "fetched_at": "2026-08-25T17:06:23+0300",
+    "content_hash": "2b97f9fc72f5af692b9c1d6fb55a8427b683f2cbe1e671674409197d4e89ecea",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sira"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.8,
+      "oak": 0.1,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "kindzmarauli"
+    ]
+  }
+}

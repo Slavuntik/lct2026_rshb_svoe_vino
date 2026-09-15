@@ -1,0 +1,137 @@
+{
+  "slug": "vinnyy-fort-adagum-kokur-belyy-beloe-suhoe-12",
+  "source": {
+    "name": "Кокур белый",
+    "winery": "vinnyy-fort-adagum",
+    "winery_name": "Винный форт Адагум",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Кокур"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-золотой",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Сладковато-травянистый, с нотами яблока, дюшеса и необычной горечью мускатного ореха. С нотами лугового меда, белого яблока, печеной айвы, белых цветов и луговых трав, с легкими нюансами мускатного ореха и гранатового корки.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinnyy_fort_adagum_kokur_belyy_beloe_suhoe_12_70d7924326.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinnyy-fort-adagum-kokur-belyy-beloe-suhoe-12",
+    "fetched_at": "2026-08-25T17:06:41+0300",
+    "content_hash": "1a820fd3738ec446b6e97c4a3277eb04bb944b7d6d1298045580798151ef723e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.5,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "soave",
+      "silvaner-franken",
+      "chardonnay-unoaked"
+    ]
+  }
+}

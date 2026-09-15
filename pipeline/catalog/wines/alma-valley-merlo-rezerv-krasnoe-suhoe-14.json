@@ -1,0 +1,139 @@
+{
+  "slug": "alma-valley-merlo-rezerv-krasnoe-suhoe-14",
+  "source": {
+    "name": "Мерло Резерв",
+    "winery": "alma-valley",
+    "winery_name": "Alma Valley",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мерло"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино глубокого рубинового цвета",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Мясо и стейки"
+    ],
+    "description": "Изящный аромат соткан из нот ежевики, черешни, терна, инжира и вяленой вишни с тонкими штрихами шоколада и пряностей. Вкус полный, играющий, с живой кислотностью и мягкими танинами с идеально интегрированной бочкой. В финале тон сушеных ягод и темного шоколада. Красивое и зрелое вино для тихого удовльствия истинного гедониста. Можно пить сейчас или подержать еще год-два для смягчения танинов. Перед подачей аэрировать.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_merlo_rezerv_krasnoe_suhoe_vyderzhannoe_14_ea3e8292cb.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/alma-valley-merlo-rezerv-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T16:59:06+0300",
+    "content_hash": "be787591db7d65eaeee8942b8e3bfaf96c53b6927eb2a16c6fac50418127e130",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.55,
+      "body": 0.71,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bordeaux-right-bank",
+      "merlot-chile",
+      "rioja-crianza"
+    ]
+  }
+}

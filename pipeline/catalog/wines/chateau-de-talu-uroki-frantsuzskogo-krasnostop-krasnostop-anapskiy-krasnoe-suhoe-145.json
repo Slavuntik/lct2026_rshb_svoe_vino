@@ -1,0 +1,54 @@
+{
+  "slug": "chateau-de-talu-uroki-frantsuzskogo-krasnostop-krasnostop-anapskiy-krasnoe-suhoe-145",
+  "source": {
+    "name": null,
+    "winery": null,
+    "winery_name": null,
+    "region": null,
+    "region_name": null,
+    "grapes": [],
+    "color": null,
+    "sugar_category": null,
+    "color_in_glass": null,
+    "vintage": null,
+    "abv_percent": null,
+    "serving_temp_c": null,
+    "food_pairings": [],
+    "description": null,
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": null,
+    "similar_wine_slugs": []
+  },
+  "_field_strategies": [],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chateau-de-talu-uroki-frantsuzskogo-krasnostop-krasnostop-anapskiy-krasnoe-suhoe-145",
+    "fetched_at": "2026-08-25T17:00:34+0300",
+    "content_hash": "365e81c30949d91d2d419d785b527009427b50c0b8176ee61974cf9d4e7bdb2d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": null,
+      "acidity": null,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "pouilly-fume",
+      "chablis"
+    ]
+  }
+}

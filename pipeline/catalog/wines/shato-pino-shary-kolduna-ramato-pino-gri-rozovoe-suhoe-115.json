@@ -1,0 +1,144 @@
+{
+  "slug": "shato-pino-shary-kolduna-ramato-pino-gri-rozovoe-suhoe-115",
+  "source": {
+    "name": "Шары Колдуна. Рамато",
+    "winery": "shato-pino",
+    "winery_name": "Шато Пино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Гри"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "ярко-медный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      9,
+      11
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Овощи гриль",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Обвалакивающий, бархатистый, переходящий в долгое послевкусие. Гастрономичное вино, с плотной явной структурой. Сложный с нотками табачного листа, чая, сухофруктов, кожи,хьюмидора.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shato_pino_ramato_pino_gri_rozovoe_suhoe_115_f6866f40a1.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-pino-shary-kolduna-ramato-pino-gri-rozovoe-suhoe-115",
+    "fetched_at": "2026-08-25T17:05:07+0300",
+    "content_hash": "bc001a23e4f85b1d6de2c35ff557db534ea74da747e5a16670cdd0003c1cd12b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rosado-spain",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

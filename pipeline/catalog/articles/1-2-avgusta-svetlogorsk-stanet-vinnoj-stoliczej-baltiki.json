@@ -1,0 +1,69 @@
+{
+  "slug": "1-2-avgusta-svetlogorsk-stanet-vinnoj-stoliczej-baltiki",
+  "source": {
+    "title": "1–2 августа Светлогорск станет винной столицей Балтики.",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">На территории «Янтарь Холла» пройдет Балтийский эногастрономический фестиваль «Гроздь» — одно из крупнейших летних событий, посвященных российскому вину, локальной гастрономии и культуре.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Гостей ждут дегустации вин от ведущих российских виноделен, фермерская ярмарка с сырами, деликатесами и региональными продуктами, гастрономические проекты Калининградской области, лекции и мастер-классы, концертная программа, модный показ и активности для всей семьи.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Вход на фестивальную площадку свободный, отдельные активности доступны по билетам. В этом году фестиваль проходит в рамках празднования 80-летия Калининградской области и объединяет не только винную, но и гастрономическую культуру региона.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Для профессионалов отрасли подготовлена деловая программа, а для гостей — возможность познакомиться с российским виноделием в неформальной атмосфере у Балтийского моря.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Подробная программа и регистрация доступны на официальном сайте: фестивальгроздь.рф</span></p>",
+    "body": "На территории «Янтарь Холла» пройдет Балтийский эногастрономический фестиваль\n«Гроздь» — одно из крупнейших летних событий, посвященных российскому вину,\nлокальной гастрономии и культуре. \n\n \n\nГостей ждут дегустации вин от ведущих российских виноделен, фермерская ярмарка с\nсырами, деликатесами и региональными продуктами, гастрономические проекты\nКалининградской области, лекции и мастер-классы, концертная программа, модный\nпоказ и активности для всей семьи. \n\n \n\nВход на фестивальную площадку свободный, отдельные активности доступны по\nбилетам. В этом году фестиваль проходит в рамках празднования 80-летия\nКалининградской области и объединяет не только винную, но и гастрономическую\nкультуру региона. \n\n \n\nДля профессионалов отрасли подготовлена деловая программа, а для гостей —\nвозможность познакомиться с российским виноделием в неформальной атмосфере у\nБалтийского моря. \n\n \n\nПодробная программа и регистрация доступны на официальном сайте:\nфестивальгроздь.рф",
+    "body_chars": 968,
+    "headings": [],
+    "rubric": "События",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-07-27T16:40:23.646Z",
+    "published_date": "2026-07-27",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Screenshot_32_f48904d758.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/1-2-avgusta-svetlogorsk-stanet-vinnoj-stoliczej-baltiki",
+    "fetched_at": "2026-08-25T18:48:50+0300",
+    "content_hash": "9348145c8c354030ed4a0f486cee0e5d5d34d66907cf3a5adfc14c3c36349a5e",
+    "parser_version": "0.4.0"
+  }
+}

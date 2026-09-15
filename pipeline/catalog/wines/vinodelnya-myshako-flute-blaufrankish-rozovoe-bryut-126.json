@@ -1,0 +1,138 @@
+{
+  "slug": "vinodelnya-myshako-flute-blaufrankish-rozovoe-bryut-126",
+  "source": {
+    "name": "Flute Блауфранкиш",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Блауфранкиш"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "бледно-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус: Вкус округлый, свежий, красные ягоды, клубника, вишня, сладкий грейпфрут. Хорошая кислотность, плотное тело, хорошая структура, уверенное, прекрасно сбалансированное, гастрономичное. Красные ягоды, вишня, клубника.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_myshako_flute_blaufrankish_igristoe_bryut_rozovoe_126_131ed09b46.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-myshako-flute-blaufrankish-rozovoe-bryut-126",
+    "fetched_at": "2026-08-25T17:07:06+0300",
+    "content_hash": "1f17850862328164ac02aa80c3b6812a792dc81d1d0e73c699cc2411e46e264c",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "blaufrankish"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.75,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "champagne-rose",
+      "prosecco-rose"
+    ]
+  }
+}

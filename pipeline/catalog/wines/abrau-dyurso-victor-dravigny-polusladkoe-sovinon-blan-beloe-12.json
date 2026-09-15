@@ -1,0 +1,145 @@
+{
+  "slug": "abrau-dyurso-victor-dravigny-polusladkoe-sovinon-blan-beloe-12",
+  "source": {
+    "name": "Victor Dravigny. Полусладкое",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг",
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Фрукты"
+    ],
+    "description": "В аромате абрикосы, персики, тропические фрукты, личи, гуава. Вкус яркий и насыщенный, со сбалансированной сладостью.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_victor_dravigny_polusladkoe_sovinon_blan_beloe_12_ec087df76c.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-victor-dravigny-polusladkoe-sovinon-blan-beloe-12",
+    "fetched_at": "2026-08-25T16:58:42+0300",
+    "content_hash": "3dcb4b8a63794f8893c7836fcce93ada396e1d65c29377f236d194253ea217f1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling",
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "white-semisweet"
+    ]
+  }
+}

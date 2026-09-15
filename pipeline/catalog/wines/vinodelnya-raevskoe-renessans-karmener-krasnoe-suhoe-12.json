@@ -1,0 +1,139 @@
+{
+  "slug": "vinodelnya-raevskoe-renessans-karmener-krasnoe-suhoe-12",
+  "source": {
+    "name": "Ренессанс Карменер",
+    "winery": "raevskoe",
+    "winery_name": "Раевское",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Карменер"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий насыщенный темно-рубиновый цвет с фиолетовыми отблесками",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Аромат яркий, сладковатый, раскрывается нотами спелой сливы, сочной черешни, чернослива с легкой копченостью, изящными нотками аниса, черного перца и табака. Вкус слаженный, фруктово-яркий, с ванильными нюансами и объемным танином в теплом послевкусии.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_raevskoe_renessans_karmener_krasnoe_suhoe_12_690f3e8e78.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-raevskoe-renessans-karmener-krasnoe-suhoe-12",
+    "fetched_at": "2026-08-25T17:07:36+0300",
+    "content_hash": "6b23bfb8df10545b15ea68b2715ff21e64035f131660c829e4efd8bfcbda5b8f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "karmener"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.6,
+      "body": 0.7,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tempranillo-joven",
+      "montepulciano-dabruzzo",
+      "cotes-du-rhone"
+    ]
+  }
+}

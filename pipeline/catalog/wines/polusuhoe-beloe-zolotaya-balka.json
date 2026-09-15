@@ -1,0 +1,139 @@
+{
+  "slug": "polusuhoe-beloe-zolotaya-balka",
+  "source": {
+    "name": "Полусухое Белое Золотая Балка",
+    "winery": "zolotaya_balka",
+    "winery_name": "Золотая Балка",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Кухни народов мира",
+      "Рыба и морепродукты"
+    ],
+    "description": "В аромате ярко отзываются летние и осенние травы-медоносы, а также спелый персик, нектарин и груша. Вино обладает хорошо сбалансированным вкусом с ненавязчивой сладостью и долгим послевкусием спелых белых фруктов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Polusuhoe_beloe_b1d39f3c20.webp",
+    "similar_wine_slugs": [
+      "kokur-2025",
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/polusuhoe-beloe-zolotaya-balka",
+    "fetched_at": "2026-08-25T17:04:31+0300",
+    "content_hash": "450a0c701b567c1d6236d101df5c54e335c114dbf58a8b590b1831bc2badccca",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-kabinett",
+      "white-semisweet",
+      "pinot-gris-alsace"
+    ]
+  }
+}

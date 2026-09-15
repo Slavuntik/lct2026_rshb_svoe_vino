@@ -1,0 +1,137 @@
+{
+  "slug": "olymp-winery-adagum-riesling-risling-beloe-suhoe-11",
+  "source": {
+    "name": "Adagum Riesling",
+    "winery": "olymp-winery",
+    "winery_name": "Olymp Winery",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный с золотистыми бликами",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты"
+    ],
+    "description": "Утончённый аромат белых цветов, спелых яблок, груши, цитруса с нюансами абрикоса и лимонной цедры. Вкус освежающий, с живой кислотностью и продолжительным фруктово-цветочным послевкусием.\nРекомендуется как аперитив, к холодным закускам, морской рыбе и морепродуктам, кальмарам на гриле, судаку.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/olymp_winery_adagum_riesling_risling_beloe_suhoe_11_73187f0bc2.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/olymp-winery-adagum-riesling-risling-beloe-suhoe-11",
+    "fetched_at": "2026-08-25T17:04:22+0300",
+    "content_hash": "77a53ec011f13dfc677647f6f5fb235b98fa6d31496a4f29acf7db194b364280",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-trocken",
+      "gruner-veltliner",
+      "sancerre"
+    ]
+  }
+}

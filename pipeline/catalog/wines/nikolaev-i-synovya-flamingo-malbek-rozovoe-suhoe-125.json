@@ -1,0 +1,146 @@
+{
+  "slug": "nikolaev-i-synovya-flamingo-malbek-rozovoe-suhoe-125",
+  "source": {
+    "name": "Фламинго",
+    "winery": "nikolaev_i_synovia",
+    "winery_name": "Николаев и сыновья",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мальбек"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-розовый цвет с коралловыми бликами и приятным блеском",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Паста",
+      "Пицца",
+      "Салаты",
+      "Средиземноморская кухня"
+    ],
+    "description": "Аромат яркий, ягодный: клюква в сахаре, клубника, мармелад из малины, джем из красной смородины, легкие оттенки фруктовых леденцов. Вкус яркий, фруктовый, со свежей кислотностью и освежающим ягодным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/nikolaev_i_synovya_flamingo_malbek_rozovoe_suhoe_125_d400bce4be.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/nikolaev-i-synovya-flamingo-malbek-rozovoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:04:02+0300",
+    "content_hash": "6a6702438eddaab85751e75ee8567fde06e6dde1e8961bcb861ce12bd0a48642",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "malbek"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "loco-cimbali-oranzh-muskat-belyy-beloe-suhoe-129",
+  "source": {
+    "name": "Оранж",
+    "winery": "loco-cimbali",
+    "winery_name": "Loco Cimbali",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино насыщенного желто-соломенного цвета",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Кавказская кухня",
+      "Несладкая выпечка",
+      "Овощи гриль",
+      "Сыры"
+    ],
+    "description": "В аромате тона спелых желтых фруктов, бузины, чайной розы, мускатного ореха, пряных трав. Вкус чистый, простой, с палитрой пряных сухофруктов, едва заметными танинами и ощутимой кислотностью. Послевкусие непродолжительное, фруктово-травянистое.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/loco_cimbali_oranzh_muskat_belyy_beloe_suhoe_129_8e7474bb65.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/loco-cimbali-oranzh-muskat-belyy-beloe-suhoe-129",
+    "fetched_at": "2026-08-25T17:03:33+0300",
+    "content_hash": "318e2868f07b1b7266090a45e248292d8ea026efc1f466bb1985672e982843af",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-bely"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "torrontes",
+      "mtsvane-dry",
+      "gewurztraminer-alsace"
+    ]
+  }
+}

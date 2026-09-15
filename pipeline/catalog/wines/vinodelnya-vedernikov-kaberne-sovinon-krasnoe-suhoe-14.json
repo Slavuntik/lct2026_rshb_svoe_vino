@@ -1,0 +1,138 @@
+{
+  "slug": "vinodelnya-vedernikov-kaberne-sovinon-krasnoe-suhoe-14",
+  "source": {
+    "name": "Каберне Совиньон",
+    "winery": "vinodelnya-vedernikov",
+    "winery_name": "Ведерниковъ",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый с кирпичными бликами",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Сыры"
+    ],
+    "description": "В аромате ноты черной смородины, красных ягод, сушеной вишни, выделанной кожи, копченостей, кедра, розмарина, черного перца, ванильной выпечки и яркими животными нюансами. Вкус Насыщенный, округлый, с сочными танинами, нотами чернослива, вишневого варенья, черной смородины, пряностей и кожи. В послевкусии нюансы ягодного конфитюра и специй.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_vedernikov_kaberne_sovinon_krasnoe_suhoe_14_bf65626333.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-vedernikov-kaberne-sovinon-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:07:45+0300",
+    "content_hash": "16f7c529d22967dfd8f1e9a2260186250d5bca42ff7a34eeeec7f02e71b6c294",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.86,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "saperavi-georgia",
+      "montepulciano-dabruzzo",
+      "plavac-mali"
+    ]
+  }
+}

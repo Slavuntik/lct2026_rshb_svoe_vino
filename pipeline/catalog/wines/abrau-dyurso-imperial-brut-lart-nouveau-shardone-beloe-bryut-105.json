@@ -1,0 +1,146 @@
+{
+  "slug": "abrau-dyurso-imperial-brut-lart-nouveau-shardone-beloe-bryut-105",
+  "source": {
+    "name": "Империал Brut L'Art Nouveau",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Блан",
+      "Пино Нуар",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Морепродукты",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "В аромате цитрусовые ноты, персик, груша. Вкус свежий, сочный, с длительным ягодным послевкусием.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_imperial_brut_lart_nouveau_shardone_beloe_bryut_105_71076b0053.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-imperial-brut-lart-nouveau-shardone-beloe-bryut-105",
+    "fetched_at": "2026-08-25T16:58:33+0300",
+    "content_hash": "333ae4c345daabfd349de7a7e81264fd1c792642a7fe7d04fa4dd2453d4e5f19",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-blan",
+      "pino-nuar",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.1,
+      "body": 0.473,
+      "oak": 0.1,
+      "aromatic_intensity": 0.6,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-blanc-de-blancs",
+      "champagne-brut-nv"
+    ]
+  }
+}

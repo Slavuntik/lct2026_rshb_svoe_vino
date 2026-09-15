@@ -1,0 +1,138 @@
+{
+  "slug": "vinodelnya-vedernikov-pravoberezhnoe-beloe-aligote-suhoe-13",
+  "source": {
+    "name": "Правобережное белое",
+    "winery": "vinodelnya-vedernikov",
+    "winery_name": "Ведерниковъ",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Алиготе"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенное с зелёными бликами",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Устрицы"
+    ],
+    "description": "В аромате свежескошенная трава, крыжовник, манго и минералы. Вкус полнотелый, округлый, очень свежий, с легкой минеральностью, нотами крыжовника, зеленого яблока. Послевкусие долгое, свежее.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_vedernikov_pravoberezhnoe_beloe_aligote_suhoe_13_bc8750c1c8.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-vedernikov-pravoberezhnoe-beloe-aligote-suhoe-13",
+    "fetched_at": "2026-08-25T17:07:46+0300",
+    "content_hash": "24dc4a12f5bf39e6f92962c36f23fced257c4fa71a65ee8d4256357f20d8a574",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "aligote"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.43,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "muscadet",
+      "bourgogne-aligote",
+      "sancerre"
+    ]
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "slug": "vinodelnya-uzunov-rash-risling-beloe-suhoe-127",
+  "source": {
+    "name": "РАШ",
+    "winery": "vinodelnya-uzunov",
+    "winery_name": "Винодельня Узунов",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Алиготе",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино бледно-лимонного цвета с красивым блеском",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вино приготовлено из винограда сортов Рислинг, Алиготе, Шардоне «РАШ». Рислинг и Алиготе - держка 6 месяцев на дрожжевом осадке. Шардоне - брожение \nи выдержка 6 месяцев в бочках из француз ского дуба. Авторский бленд Ярослава \nУзунова и флагманское вино винодельни. \n\nРАШ - вино сложное и многогранное. Вкус свежий, минеральный с широкой \nгаммой оттенков спелых южных фруктов и длительным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_uzunov_rash_risling_beloe_suhoe_127_f5a419791f.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-uzunov-rash-risling-beloe-suhoe-127",
+    "fetched_at": "2026-08-25T17:07:41+0300",
+    "content_hash": "31f42188ce131e004b4c0dab99dbbcca3fed770b672e65a1bce5aea4883073ad",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "aligote",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.5,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "meursault",
+      "chardonnay-oaked-new-world",
+      "pouilly-fuisse"
+    ]
+  }
+}

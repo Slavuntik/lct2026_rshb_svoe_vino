@@ -1,0 +1,137 @@
+{
+  "slug": "chateau-tamagne-nature-orange",
+  "source": {
+    "name": "Chateau Tamagne Nature. Orange",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Цитронный Магарача"
+    ],
+    "color": "оранжевое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотистый с оттенками от оранжевых до янтарных",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Кавказская кухня",
+      "Средиземноморская кухня"
+    ],
+    "description": "Вкус полный, с плотной структурой, приятной гармоничной свежестью и долгим развивающимся послевкусием. Аромат развитый, комплексный с преобладанием тонов спелых фруктов на фоне пряных растительных нот.\n\nПереработку винограда не проводят, а осуществляют загрузку в винификатор (емкость из нержавеющей стали), целыми гроздями. Загруженный виноград сульфитируют диоксидом серы до 30 мг/дм3. Брожение проводят на чистых культурах дрожжей, которые задают в соответствии с рекомендациями фирм производителей, используя сусло образовавшееся при загрузке винограда. Верхнюю часть мезги систематически орошают, перекачивая нижнии слои сусла на поверхность для лучшей экстракции фенольных и ароматических веществ из кожицы винограда. В зависимости от используемого оборудования режимы экстракции могут варьироваться. Брожение проводят при температуре 16- 18°С с осуществлением систематического контроля температуры и количества сброженных сахаров. Брожение считают законченным при содержании сахаров не более 4 г/дм3. Выбродившую мезгу доливают до полна в емкости. Процесс хранения и выдержки на мезге (постферментативный настой) не менее 6 месяцев, после окончания брожения, с постоянным органолептическим и физико- химических контролем всех показателей, а также постоянной доливкой до полна и уходом за виноматериалом. По окончанию срока выдержки, проводят прессование мезги с дальнейшим купажированием и защитой виноматериалов. Без выдержки в дубе. Выдержка на мезге не менее 6 месяцев.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_NATURE_0_75_2024gu_Normal_Orange_88fb104a59.webp",
+    "similar_wine_slugs": [
+      "kuban-vino-shato-tamane-selekt-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-135",
+      "abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "vaynkraft-rkatsiteli-oranzh-oranzhevoe-suhoe-12",
+      "vaynkraft-traminer-oranzh-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "belbek-muskat-oranzh-muskat-belyy-oranzhevoe-suhoe-125",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "denisov-winery-tsitron-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "oxana-istratova-wine-vione-2024-oranzhevoe-suhoe-13",
+      "oxana-istratova-wine-vione-2023-oranzhevoe-suhoe-119",
+      "oxana-istratova-wine-rkatsiteli-2024-oranzhevoe-suhoe-12"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chateau-tamagne-nature-orange",
+    "fetched_at": "2026-08-25T17:00:38+0300",
+    "content_hash": "6ae89b4202c8c8da6cc3f32218c8d29a763091eb60cbc3629652255be5365ca1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "citronny-magaracha"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.5,
+      "body": 0.58,
+      "oak": 0.6,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

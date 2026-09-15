@@ -1,0 +1,149 @@
+{
+  "slug": "madera-krymskaya",
+  "source": {
+    "name": "Мадера Крымская",
+    "winery": "massandra",
+    "winery_name": "Массандра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Альбильо",
+      "Вердельо",
+      "Серсиаль",
+      "Шабаш"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 19.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры",
+      "Шоколад"
+    ],
+    "description": "Роскошный, многогранный, свежий аромат вина раскрывается оттенками лимона, кремния, мокрого камня и специй.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Massandra_Madera_Krymskaya_42f85c120a.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "le-general-hiver",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10",
+      "massandra-portveyn-belyy-krymskiy-kokur-beloe-sladkoe-18"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/madera-krymskaya",
+    "fetched_at": "2026-08-25T17:03:38+0300",
+    "content_hash": "ad9edfa1186558e39e722b0e20a185198cf70ab95fca61fc585827a4776c2e49",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "albilo",
+      "verdelo",
+      "sersial",
+      "shabash"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.675,
+      "tannin": 0.05,
+      "body": 0.722,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "passito",
+      "muscat-beaumes-de-venise",
+      "ice-wine"
+    ]
+  }
+}

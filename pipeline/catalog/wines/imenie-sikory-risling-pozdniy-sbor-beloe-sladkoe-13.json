@@ -1,0 +1,136 @@
+{
+  "slug": "imenie-sikory-risling-pozdniy-sbor-beloe-sladkoe-13",
+  "source": {
+    "name": "Рислинг. Поздний сбор",
+    "winery": "imenie-sikory",
+    "winery_name": "Имение Сикоры",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры"
+    ],
+    "description": "В аромате мёд, спелые фрукты, сладкие пряности. Вкус мягкий, маслянистый, сладкий, с элегантной кислотностью.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/imenie_sikory_risling_pozdniy_sbor_beloe_sladkoe_13_e60898ab3b.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "madera-krymskaya",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "le-general-hiver",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/imenie-sikory-risling-pozdniy-sbor-beloe-sladkoe-13",
+    "fetched_at": "2026-08-25T17:02:45+0300",
+    "content_hash": "45b2c4496144430640c7dc8b1f98a2c83e460607864d48802066ca8b3d32fa60",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.48,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "ice-wine"
+    ]
+  }
+}

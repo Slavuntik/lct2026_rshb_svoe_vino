@@ -1,0 +1,140 @@
+{
+  "slug": "dnk-kaberne-sovinon",
+  "source": {
+    "name": "ДНК. Каберне Совиньон",
+    "winery": "usadba-merkotan",
+    "winery_name": "Усадьба Меркотан",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "тёмно - рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Кавказская кухня",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус комплексный со средней интенсивностью в теле и послевкусии, мягкими танинами и умеренной кислотностью. Аромат с нотами ярких черных фруктов, сухих трав, подлеска и нюансов табачного листа.\n\nПоздняя ручная уборка после достижения фенольной зрелости.  Охлаждение винограда перед переработкой до 5⁰С. Переработка с минимальным контактом с кислородом. Холодная мацерация 3 недели. Брожение в стальной емкости при 26⁰С с контролем температуры. Постферментационная мацерация и ЯМБ на мезге 1 месяц. для Выдержка в стальной емкости 12 месяцев и в барриках из кавказского дуба 6 месяцев. Фильтрация перед розливом. Выдержка в бутылке 3 месяца.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Kaberne_Sovinon_Merkotan_39ee25f793.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/dnk-kaberne-sovinon",
+    "fetched_at": "2026-08-25T17:01:16+0300",
+    "content_hash": "8a768e087ea073fb98064749aede25fb52f41a2bf3b9e27124de0ee012bda792",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.83,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-napa",
+      "bordeaux-left-bank",
+      "priorat"
+    ]
+  }
+}

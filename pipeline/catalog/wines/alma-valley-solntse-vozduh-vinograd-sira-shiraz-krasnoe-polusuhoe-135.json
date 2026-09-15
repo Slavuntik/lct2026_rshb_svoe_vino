@@ -1,0 +1,139 @@
+{
+  "slug": "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+  "source": {
+    "name": "Солнце, воздух, виноград",
+    "winery": "alma-valley",
+    "winery_name": "Alma Valley",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Совиньон",
+      "Каберне Фран",
+      "Сира (Шираз)",
+      "Темпранильо"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Мясное ассорти",
+      "Сыры"
+    ],
+    "description": "Аромат ягодный с нежным сафьяновым оттенком. Вкус гармоничный, ягодный вкус с умеренной кислотностью, с приятной природной сладостью и бархатистыми танинами.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_valley_solntse_vozduh_vinograd_sira_shiraz_krasnoe_polusuhoe_135_7cd3395fb2.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "fiori-di-mare-krasnoe-polusuhoe",
+      "saperavi-premium",
+      "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+      "perovskih_polusuhoe_krasnoe",
+      "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+      "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+    "fetched_at": "2026-08-25T16:59:11+0300",
+    "content_hash": "914c6b3e31d8fe9b3ec53deaba3b46872b6c4fce3ca927ff2520337a0f5fc04d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "kaberne-fran",
+      "sira",
+      "tempranilo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.613,
+      "tannin": 0.7,
+      "body": 0.755,
+      "oak": 0.1,
+      "aromatic_intensity": 0.725,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

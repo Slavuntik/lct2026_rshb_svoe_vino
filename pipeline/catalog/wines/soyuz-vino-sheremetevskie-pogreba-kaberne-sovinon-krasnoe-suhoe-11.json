@@ -1,0 +1,140 @@
+{
+  "slug": "soyuz-vino-sheremetevskie-pogreba-kaberne-sovinon-krasnoe-suhoe-11",
+  "source": {
+    "name": "Шереметьевские Погреба Каберне Совиньон",
+    "winery": "soyuz-vino",
+    "winery_name": "Союз-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино насыщенного; яркого рубинового цвета",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Паста",
+      "Сыры",
+      "Фастфуд"
+    ],
+    "description": "Приятный, мягкий, сбалансированный вкус вина обладает характерными фруктово-ягодными тонами. Послевкусие теплое, пряное, немного терпкое.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/soyuz_vino_sheremetevskie_pogreba_kaberne_sovinon_krasnoe_suhoe_11_06a2c8cff1.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/soyuz-vino-sheremetevskie-pogreba-kaberne-sovinon-krasnoe-suhoe-11",
+    "fetched_at": "2026-08-25T17:05:38+0300",
+    "content_hash": "1a88254adbc968c1d4c5ae2928b118e77a03c568164d54fd796ff3051ab8ada0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.77,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "saperavi-georgia",
+      "montepulciano-dabruzzo",
+      "blaufrankisch"
+    ]
+  }
+}

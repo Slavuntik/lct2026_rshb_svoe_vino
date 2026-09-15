@@ -1,0 +1,81 @@
+{
+  "slug": "chateau-cachalot",
+  "source": {
+    "name": "Chateau Cachalot",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Ландшафт в районе винодельни долинно-холмистый, предгорный",
+    "climate": "мягкий, средиземноморского типа",
+    "vineyard_area_ha": 18.0,
+    "vineyard_area_raw": "18 га",
+    "founded_year": null,
+    "description": "Chateau Cachalot — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Chateau Cachalot — небольшая авторская винодельня, созданная как личный проект Ильи Защука, где упор делается на работу с конкретными участками виноградников и выпуск ограниченных партий вина с ярко выраженным крымским терруаром. Вина производятся в очень малом объёме, адресованы подготовленной аудитории и часто распространяются через специализированные винные бары и импортеров, а не масс‑ретейл. Ключевая идея проекта — показать потенциал отдельных крымских участков в формате «гаражного» виноделия с максимальным личным участием автора во всех этапах — от выбора винограда до финального купажа.\n\nChateau Cachalot работает с виноградом с конкретных участков в Севастопольском регионе: виноградник в районе Чоргуна (Севастополь), и планируются посадки и работа с участками возле Верхнесадового, с сильным влиянием моря и известняковых почв.\n\nПроизводство организовано по принципу малой авторской винодельни: небольшие ёмкости, ручной подход к сырью, внимательная работа с каждым микролотом.\n\nВизиты на виноградники и производство возможны в индивидуальном формате по личным договорённостям, проект по духу ближе к «гаражному» и ориентирован на узкий круг ценителей.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Ilya_50_2b9857f2b5.webp",
+    "wine_slugs": [
+      "chateau-cachalot-shenen-blan-beloe-suhoe-113",
+      "chateau-cachalot-vione-beloe-suhoe-112",
+      "chateau-cachalot-muskat-blan-muskat-belyy-beloe-suhoe-117",
+      "chateau-cachalot-risling-beloe-suhoe-115",
+      "chateau-cachalot-pino-nuar-krasnoe-suhoe-12",
+      "chateau-cachalot-sira-krasnoe-suhoe-12"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/chateau-cachalot",
+    "fetched_at": "2026-08-25T21:23:40+0300",
+    "content_hash": "41b91ea099f4a6190e8626a6ef13f7910bf41333263f505ff1858d8df3baa233",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 6
+  }
+}

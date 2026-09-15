@@ -1,0 +1,143 @@
+{
+  "slug": "kokur-2025",
+  "source": {
+    "name": "Кокур, 2025",
+    "winery": "vinodelnya-bratev-melnikovyh",
+    "winery_name": "Винодельня Братьев Мельниковых",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур"
+    ],
+    "color": "белое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "бледно-соломенный",
+    "vintage": 2025,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из рыбы",
+      "Морепродукты",
+      "Сыры"
+    ],
+    "description": "Интенсивный, живой аромат наполнен оттенками спелых косточковых фруктов, цитрусов и зеленого яблока. Яркая кислотность, тона лимонных леденцов, морской воды и абрикоса в сочном послевкусии.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DSC_00839_Photoroom_418c4b31b3.webp",
+    "similar_wine_slugs": [
+      "massandra-kokur",
+      "inkerman-shato-blan",
+      "muskat-premium",
+      "bukovinka",
+      "risling-1",
+      "czitronnyj-magaracha-sovinon-blan",
+      "zhemchuzhnaya-9-risling-sovinon-blan",
+      "aratti-sovinon-blan-beloe-polusuhoe",
+      "aratti-muskat-belyj-polusuhoe",
+      "leto-risling-2024-polusuhoe-vino",
+      "winemaker-selection",
+      "katharon-mezenka-risling-polusuhoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/kokur-2025",
+    "fetched_at": "2026-08-25T17:03:01+0300",
+    "content_hash": "ce2c53d25d540bec85fa12f4e7f25fd9591b7170f540ee7c935739c0dde8f7cb",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.5,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "muller-thurgau",
+      "white-semisweet",
+      "pinot-gris-alsace"
+    ]
+  }
+}

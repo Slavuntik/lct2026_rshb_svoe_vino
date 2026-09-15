@@ -1,0 +1,143 @@
+{
+  "slug": "risling",
+  "source": {
+    "name": "Рислинг",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "серебристо-соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Брускетты",
+      "Легкие закуски",
+      "Салаты"
+    ],
+    "description": "Аромат: элегантный и свежий, с обилием цитрусовых нюансов и весенних цветов, с деликатным намёком на пчелиный воск и мёд, а также с лёгкими петрольными нотами.\n\nВкус: тонкое, изящное тело, пронзительная и гармоничная кислотность с долгим послевкусием и яркой минеральностью.\n\nОсобенность винификации\n\nРучной сбор. Охлаждение винограда. Инспекция гроздей. Гребнеотделение с последующим дроблением ягоды. Криомацерация в прессе в течение 4 часов. Отбор самотёка и деликатное прессование в атмосфере азота. Стабуляж в течение 14 дней при температуре 2 градуса Цельсия. Брожение сусла в течение 14 дней при температуре 18–19 градусов Цельсия. Сталь — 100%. Регулярный баттонаж в течение 11 месяцев. Ассамбляж. Кларификация. Стабилизация тартратов. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 4.81,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/risling_86f49d6fb2.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/risling",
+    "fetched_at": "2026-08-25T17:04:43+0300",
+    "content_hash": "5a47660a3bd3dafb2707ddb849929f3a6945a056cc13884ba6e776bfc1bf6d21",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.48,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "riesling-trocken",
+      "gruner-veltliner",
+      "pouilly-fume"
+    ]
+  }
+}

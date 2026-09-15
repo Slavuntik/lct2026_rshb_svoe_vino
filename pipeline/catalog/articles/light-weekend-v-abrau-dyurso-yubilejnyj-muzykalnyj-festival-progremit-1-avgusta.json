@@ -1,0 +1,84 @@
+{
+  "slug": "light-weekend-v-abrau-dyurso-yubilejnyj-muzykalnyj-festival-progremit-1-avgusta",
+  "source": {
+    "title": "«Light Weekend» в Абрау-Дюрсо: юбилейный музыкальный фестиваль прогремит 1 августа",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">1 августа легендарное озеро Абрау станет главной музыкальной площадкой лета: здесь пройдёт юбилейный фестиваль Light Weekend. Организаторы обещают живой звук, звёздных исполнителей и танцпол прямо у воды. Вход — по билетам на официальном сайте&nbsp;</span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://abraufest.ru/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">abraufest.ru</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Кто выступит</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Хедлайнером вечера станет МОТ — один из главных лириков страны, чьи треки узнаются с первых строк. «Август — это ты», «Капкан», «Мурашками» в живом исполнении обещают особенно проникновенное звучание.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Компанию ему составит Лолита — ироничная, настоящая и абсолютно «своя» для каждого зрителя. Её выступления всегда превращаются в живой разговор с залом, где смех соседствует со слезами. «Ориентация», «Шампанское», «Титаник» — хиты, которые наверняка заставят весь берег петь хором.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">За ритм и настроение от первого до последнего трека будет отвечать DJ Muwin. Его кавер на «Катюшу» уже собрал семь миллионов прослушиваний, так что вечер обещает быть не только душевным, но и танцевальным.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Где и когда</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Площадка развернётся на площади Александра II, прямо у озера Абрау. Концерт начнётся в 18:00 и продлится до 22:00. Организаторы рекомендуют брать друзей и заранее приобретать билеты — количество мест ограничено.</span></p>",
+    "body": "1 августа легендарное озеро Абрау станет главной музыкальной площадкой лета:\nздесь пройдёт юбилейный фестиваль Light Weekend. Организаторы обещают живой\nзвук, звёздных исполнителей и танцпол прямо у воды. Вход — по билетам на\nофициальном сайте abraufest.ru [https://abraufest.ru/].\n\n \n\n\nКТО ВЫСТУПИТ\n\n \n\nХедлайнером вечера станет МОТ — один из главных лириков страны, чьи треки\nузнаются с первых строк. «Август — это ты», «Капкан», «Мурашками» в живом\nисполнении обещают особенно проникновенное звучание.\n\n \n\nКомпанию ему составит Лолита — ироничная, настоящая и абсолютно «своя» для\nкаждого зрителя. Её выступления всегда превращаются в живой разговор с залом,\nгде смех соседствует со слезами. «Ориентация», «Шампанское», «Титаник» — хиты,\nкоторые наверняка заставят весь берег петь хором.\n\n \n\nЗа ритм и настроение от первого до последнего трека будет отвечать DJ Muwin. Его\nкавер на «Катюшу» уже собрал семь миллионов прослушиваний, так что вечер обещает\nбыть не только душевным, но и танцевальным.\n\n \n\n\nГДЕ И КОГДА\n\n \n\nПлощадка развернётся на площади Александра II, прямо у озера Абрау. Концерт\nначнётся в 18:00 и продлится до 22:00. Организаторы рекомендуют брать друзей и\nзаранее приобретать билеты — количество мест ограничено.",
+    "body_chars": 1233,
+    "headings": [
+      "Кто выступит",
+      "Где и когда"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "соцсети Абрау-Дюрсо",
+    "published_at": "2026-07-03T21:00:00.000Z",
+    "published_date": "2026-07-03",
+    "published_year": 2026,
+    "modified_at": "2026-07-04T07:30:05.073Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/IMG_20260629_215557_413_7459483c16.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/light-weekend-v-abrau-dyurso-yubilejnyj-muzykalnyj-festival-progremit-1-avgusta",
+    "fetched_at": "2026-08-25T21:27:43+0300",
+    "content_hash": "305c0cccae5bff8fccedc808d762989a202d476055641405858d8defd22c6d4d",
+    "parser_version": "0.4.0"
+  }
+}

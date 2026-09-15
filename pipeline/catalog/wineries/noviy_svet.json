@@ -1,0 +1,83 @@
+{
+  "slug": "noviy_svet",
+  "source": {
+    "name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Долинах рек Альма и Кача",
+    "climate": "Мягкий средиземноморский",
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": 1878,
+    "description": "Новый Свет. Дом шампанских вин — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Дом шампанских вин «Новый Свет» — историческая крымская винодельня, специализирующаяся на российском шампанском и игристых винах классической бутылочной выдержки. Предприятие известно как символ русского шампанского и один из ключевых винодельческих брендов Крыма.\n\nДом шампанских вин «Новый Свет» основан князем Львом Сергеевичем Голицыным в 1878 году. Именно здесь в Российской империи впервые в промышленных масштабах начали выпуск шампанского по классической технологии с выдержкой на осадке в бутылке.\n\nСегодня предприятие выпускает несколько линеек российского шампанского и игристых вин, включая выдержанные, коллекционные и лимитированные серии. У бренда большая коллекция наград российских и международных конкурсов.\n\nДом шампанских вин «Новый Свет» был основан в 1878 году князем Львом Сергеевичем Голицыным, который приобрёл имение на юго-восточном побережье Крыма и решил создать здесь игристое вино, способное конкурировать с лучшими французскими образцами. Для этого он заложил виноградники, собрал огромную коллекцию лоз — более 600 сортов — и начал подбирать оптимальные сорта для местных условий.\n\nГолицын выстроил производство не только как винодельню, но и как полноценный проект классического шампанского: под выдержку вин в скале Коба-Кая были прорублены тоннели, а технология ориентировалась на бутылочную выдержку на осадке. Уже к 1890 году производство было поставлено на промышленную основу, а в 1896 году вино «Коронационное» подавали к торжествам по случаю коронации Николая II — это стало важной вехой в истории российского игристого.\n\nПосле революции и последующих потрясений предприятие пережило непростой период: производство останавливалось, а затем было возрождено в советское время. Тем не менее именно «Новый Свет» закрепился в истории как первый Дом шампанских вин России и один из главных символов отечественной школы игристого вина.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/big_1920_IMG_8537_25583e3e5d.webp",
+    "wine_slugs": [
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-shardone-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-yubileynoe-risling-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-pino-fran-135",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-beloe-novyy-svet-risling-125",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    },
+    {
+      "field": "founded_year",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/noviy_svet",
+    "fetched_at": "2026-08-25T21:52:01+0300",
+    "content_hash": "61e9db413aab3e0299eedd048e3c38351682d734e23b959034fed66781340ed2",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

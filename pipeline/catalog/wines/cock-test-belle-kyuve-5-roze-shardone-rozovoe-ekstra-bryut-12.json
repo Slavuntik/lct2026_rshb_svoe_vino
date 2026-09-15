@@ -1,0 +1,136 @@
+{
+  "slug": "cock-test-belle-kyuve-5-roze-shardone-rozovoe-ekstra-bryut-12",
+  "source": {
+    "name": "Кюве №5. Розе",
+    "winery": "cock-test-belle",
+    "winery_name": "Cock t'est belle",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "светло-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус: Свежий, приятный, с пикантной ягодной кислинкой и сухим, бодрящим послевкусием. Свежий, с тонами красных ягод и белых косточковых фруктов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/cock_test_belle_kyuve_5_roze_shardone_igristoe_ekstra_bryut_rozovoe_12_98ac397fd8.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/cock-test-belle-kyuve-5-roze-shardone-rozovoe-ekstra-bryut-12",
+    "fetched_at": "2026-08-25T17:00:50+0300",
+    "content_hash": "a50b92d9390f2a90479e5bf65621b46131e939af8a12e6db5da09570cc259048",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "slug": "rkacziteli-beloe-suhoe",
+  "source": {
+    "name": "Ркацители белое сухое",
+    "winery": "vinodelnya-vedernikov",
+    "winery_name": "Ведерниковъ",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Ркацители"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      9,
+      12
+    ],
+    "food_pairings": [
+      "Азиатская кухня",
+      "Блюда из птицы",
+      "Мясное ассорти"
+    ],
+    "description": "Нос вина интенсивный, свежий, комплексный, с доминантой белых цветов и фруктов, которые раскрываются тропическими тонами бананов, дыни, груши дюшес, красных яблок и сочетают в себе сливки, ваниль и выраженную минеральную основу. Вино полнотелое, округлое, умеренно-свежее, с нюансами бананов, цукатов, выпечки и кедровых орешков. Послевкусие длительное, сливочное, с тонами выпечки.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/PU_Sjv7dn_M_Nil_H25_TO_9_Bcb_HX_Ipy_m_U_Tr_Wd50_Scq_Gjhv_Z2m_AVX_4zqqc_ETZ_Rz075dvr_A_Xeagyogp_Hml_Zh_I3_IH_Jb_Q_3b5c66876c.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/rkacziteli-beloe-suhoe",
+    "fetched_at": "2026-08-25T17:04:44+0300",
+    "content_hash": "75ed06ece004d237bf4528343d885bc0f222c8b1f111e632588aa3f564301d84",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "rkatsiteli"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.55,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rkatsiteli-dry",
+      "assyrtiko",
+      "verdicchio"
+    ]
+  }
+}

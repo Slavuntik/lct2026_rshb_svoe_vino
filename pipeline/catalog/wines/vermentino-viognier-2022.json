@@ -1,0 +1,145 @@
+{
+  "slug": "vermentino-viognier-2022",
+  "source": {
+    "name": "Vermentino-Viognier 2022",
+    "winery": "vibes",
+    "winery_name": "Vibes",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Верментино"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": 2022,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Средиземноморская кухня"
+    ],
+    "description": "В аромате цветы-медоносы, луговые травы, хвойные акценты. Вкус гармоничный, свежий, с мягкой кислотностью. Нежность цветов-медоносов и луговых трав, хвойные акценты, легчайшая морская соленость сочетается с душистой дыней, спелыми абрикосами и сочными персиками, меренгой и лимонной выпечкой.\n\nРучной сбор, холодная мацерация, коферментация, длительное брожение при низких температурах, выдержка на тонком осадке 9 месяцев, розлив в инертной среде.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Vermentino_Viognier_2022_d30e645c2d.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vermentino-viognier-2022",
+    "fetched_at": "2026-08-25T17:06:27+0300",
+    "content_hash": "96931f9b54231c33c51469f85b23c099de016c8065fcead6bfe64975eda4b937",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "vermentino"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.47,
+      "oak": 0.6,
+      "aromatic_intensity": 0.6,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fuisse",
+      "puligny-montrachet",
+      "meursault"
+    ]
+  }
+}

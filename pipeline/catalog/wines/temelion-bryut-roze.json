@@ -1,0 +1,138 @@
+{
+  "slug": "temelion-bryut-roze",
+  "source": {
+    "name": "Темелион брют розе",
+    "winery": "dolina-lefkadiya",
+    "winery_name": "Долина Лефкадия",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-лососевый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Устрицы"
+    ],
+    "description": "Вкус яркий, ягодный с аккуратным финишем вишни в шоколаде и с приятной и игривой кислинкой в послевкусии. Аромат искрящийся, с богатой ягодной палитрой: земляники, вишни, брусники, красной смородины и нежными оттенками клубники со сливками.\n\nСортовой состав: Шардоне, Пино Нуар.\n\nПервичное брожение в стали. Классическая шампанизация, выдержка в бутылке 36 месяцев.\n\nНаграды: Авторский гид Артура Саркисяна - 91 баллов, золото, 2025 год.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Temelion_Bryut_roze_1_a6d6d4234d.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/temelion-bryut-roze",
+    "fetched_at": "2026-08-25T17:05:47+0300",
+    "content_hash": "a949b1529dae896bf6548e4c98cd4c32fc994130f7f864ae9b6f5f5eba9016c8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

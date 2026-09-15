@@ -1,0 +1,144 @@
+{
+  "slug": "massandra-kagor-yuzhnoberezhnyy-saperavi-krasnoe-sladkoe-16",
+  "source": {
+    "name": "Кагор Южнобережный",
+    "winery": "massandra",
+    "winery_name": "Массандра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "тёмно-гранатовый",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Десерты",
+      "Мороженое"
+    ],
+    "description": "Аромат тёплый, насыщенный, с нотами чернослива, шоколада и дубовой пряности — результат выдержки в бочках свыше трёх лет; вкус гармоничный, полное, бархатистое, с нотами тёмных ягод, черносмородинового джема и ванили. К шоколадным десертам, куличам, зрелым сырам.",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/massandra_kagor_yuzhnoberezhnyy_saperavi_krasnoe_sladkoe_16_3299446389.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "pozdnij-sbor-krasnoe",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/massandra-kagor-yuzhnoberezhnyy-saperavi-krasnoe-sladkoe-16",
+    "fetched_at": "2026-08-25T17:03:44+0300",
+    "content_hash": "3e4274933b100a06d667ba471e19269a3d8b3e2b2db1e60d4d60021c48d6d2f9",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.75,
+      "tannin": 0.8,
+      "body": 0.92,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "port-lbv",
+      "recioto-della-valpolicella"
+    ]
+  }
+}

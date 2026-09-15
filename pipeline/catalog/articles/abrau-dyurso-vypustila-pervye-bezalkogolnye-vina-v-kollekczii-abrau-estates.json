@@ -1,0 +1,80 @@
+{
+  "slug": "abrau-dyurso-vypustila-pervye-bezalkogolnye-vina-v-kollekczii-abrau-estates",
+  "source": {
+    "title": "«Абрау-Дюрсо» выпустила первые безалкогольные вина в коллекции Abrau Estates",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Группа «Абрау-Дюрсо» расширяет портфель тихих вин: в коллекции Abrau Estates появились первые безалкогольные вина - Zero Alco. Новинки созданы методом вакуумной деалкоголизации и представлены двумя позициями: белое полусухое из Ркацители и красное полусухое из Мерло.</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Технология и производство</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Метод вакуумной деалкоголизации, используемый при создании Zero Alco, признан Международной организацией винограда и вина (OIV) и предполагает бережное удаление спирта при пониженных температурах - до 40°C, что позволяет максимально сохранить ароматический профиль и структуру вина. Производство организовано на мощностях винодельни «Шеки Шараб» в Азербайджане, а удалённый спирт идёт на выпуск виноградной водки.</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Дегустационные характеристики</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Белое полусухое Zero Alco из Ркацители сочетает в аромате жёлтое яблоко и белые цветы. Вкус — фруктовый, сбалансированный, с освежающей кислотностью.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Красное полусухое Zero Alco из Мерло раскрывается ароматами чёрной смородины и ежевики. Во вкусе — черная вишня, спелая слива, малина и красные фрукты.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Новинки созданы для красивых моментов независимо от повода: ужин, гастрономические эксперименты или спонтанный вечер в тёплой компании друзей. Они уже представлены в Ателье вина «Абрау-Дюрсо» и на портале </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://vino.ru/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">VINO.RU</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"> by Abrau по цене 1199 рублей.</span></p>",
+    "body": "Группа «Абрау-Дюрсо» расширяет портфель тихих вин: в коллекции Abrau Estates\nпоявились первые безалкогольные вина - Zero Alco. Новинки созданы методом\nвакуумной деалкоголизации и представлены двумя позициями: белое полусухое из\nРкацители и красное полусухое из Мерло.\n\n\nТЕХНОЛОГИЯ И ПРОИЗВОДСТВО\n\nМетод вакуумной деалкоголизации, используемый при создании Zero Alco, признан\nМеждународной организацией винограда и вина (OIV) и предполагает бережное\nудаление спирта при пониженных температурах - до 40°C, что позволяет максимально\nсохранить ароматический профиль и структуру вина. Производство организовано на\nмощностях винодельни «Шеки Шараб» в Азербайджане, а удалённый спирт идёт на\nвыпуск виноградной водки.\n\n\nДЕГУСТАЦИОННЫЕ ХАРАКТЕРИСТИКИ\n\nБелое полусухое Zero Alco из Ркацители сочетает в аромате жёлтое яблоко и белые\nцветы. Вкус — фруктовый, сбалансированный, с освежающей кислотностью.\n\nКрасное полусухое Zero Alco из Мерло раскрывается ароматами чёрной смородины и\nежевики. Во вкусе — черная вишня, спелая слива, малина и красные фрукты.\n\nНовинки созданы для красивых моментов независимо от повода: ужин,\nгастрономические эксперименты или спонтанный вечер в тёплой компании друзей. Они\nуже представлены в Ателье вина «Абрау-Дюрсо» и на портале VINO.RU\n[https://vino.ru/] by Abrau по цене 1199 рублей.",
+    "body_chars": 1309,
+    "headings": [
+      "Технология и производство",
+      "Дегустационные характеристики"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-07-31T21:00:00.000Z",
+    "published_date": "2026-07-31",
+    "published_year": 2026,
+    "modified_at": "2026-08-01T08:00:05.074Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/ii_91442d5673.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/abrau-dyurso-vypustila-pervye-bezalkogolnye-vina-v-kollekczii-abrau-estates",
+    "fetched_at": "2026-08-25T21:25:10+0300",
+    "content_hash": "3be0a64b61fa7148dfe5dd25b3939b3cd23db55c387e3d666b93922069e3b7a3",
+    "parser_version": "0.4.0"
+  }
+}

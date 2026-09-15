@@ -1,0 +1,139 @@
+{
+  "slug": "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11",
+  "source": {
+    "name": "Петнат Пино Нуар",
+    "winery": "shato-pino",
+    "winery_name": "Шато Пино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "клубнично-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      9,
+      11
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Рыба и морепродукты",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "Вкус: Хрустящий, элегантный, фруктовые продолжительные оттенки в послевкусии. Свежий аромат нежных ягод.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shato_pino_pino_nuar_igristoe_ekstra_bryut_rozovoe_11_ebf10494b8.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "tsimlyanskie-vina-tsimlyanskoe-kaberne-sovinon-ekstra-bryut-rozovoe-13"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11",
+    "fetched_at": "2026-08-25T17:05:03+0300",
+    "content_hash": "614a910c04e5de16dbdc04293b4c92b622e5da0503e5d80190d8086c1b6b39a2",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "slug": "relikta",
+  "source": {
+    "name": "Реликта",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": "Новороссийский и Анапский район",
+    "climate": "Прибрежно предгорный",
+    "vineyard_area_ha": 30.0,
+    "vineyard_area_raw": "30 га",
+    "founded_year": null,
+    "description": "Реликта — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "«Реликта» — молодая авторская винодельня с виноградниками в Семигорье под Новороссийском и в Анапском районе («Винная деревня»), которая делает тихие и игристые вина из международных и редких советских сортов, включая старые лозы 1980 х годов.\n\nПроект вышел на рынок в 2023 году с первым релизом на фестивале «Цвет лозы»; его основатель Павел Цветков поставил задачу создавать вина, отражающие характер кубанской земли и климата Новороссийска и Анапы, сочетая старые, редкие лозы советской селекции и современные европейские сорта.\n\nВ хозяйстве делают тихие красные, белые и розовые, а также игристые вина; текущий объём производства — около 80 тысяч бутылок с планами роста до 150 тысяч по мере вступления в плодоношение новых участков\n\nТакое сочетание высот, экспозиций и почв — от известняка и песчаника до более глубоких долинных почв — позволяет винодельне работать с разными стилями, от минеральных белых до насыщенных красных и игристых.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/relikta_a0f52b4c00.webp",
+    "wine_slugs": [
+      "relikta-relikta-pervenets-muskat-pervenets-magaracha-beloe-polusladkoe-125",
+      "relikta-relikta-kaberne-sovinon-krasnoe-suhoe-135",
+      "relikta-relikta-ekstra-bryut-shardone-beloe-105",
+      "relikta-relikta-antey-magarachskiy-muskat-belyy-rozovoe-polusuhoe-11",
+      "relikta-relikta-dekabrskiy-krasnoe-polusladkoe-125",
+      "relikta-relikta-muskat-beloe-polusuhoe-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "relikta-relikta-pervenets-pervenets-magaracha-beloe-suhoe-12",
+      "relikta-relikta-muskat-belyy-beloe-suhoe-12",
+      "relikta-relikta-merlo-krasnoe-suhoe-135",
+      "relikta-relikta-sira-krasnoe-suhoe-13",
+      "relikta-relikta-traminer-beloe-suhoe-11"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/relikta",
+    "fetched_at": "2026-08-25T21:24:11+0300",
+    "content_hash": "b623f52d8d0015adc18d5e4e13abb263f2cf8cb2282ff3e7f2a2b470960ccb88",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "slug": "daniel-22",
+  "source": {
+    "name": "Daniel, 2022",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий рубиновый с гранатовыми бликами",
+    "vintage": 2022,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки"
+    ],
+    "description": "Вино глубокого рубинового цвета с изящными гранатовыми бликами выглядит насыщенно и благородно. Его вкус приятный и бархатистый, с выразительными оттенками черноплодной рябины, табака и горького шоколада, поддержанными хорошо сбалансированной кислотностью и долгим, гармоничным послевкусием. Аромат раскрывается нотами тёмных ягод, шоколада и табака, дополненными нежными ванильными нюансами, создавая сложный и элегантный букет.\n\nРучной сбор винограда. Холодная мацерация 22 суток. Брожение при контролируемой температуре 14 дней. ЯМБ на мезге 14 дней. Мацерация на мезге 50 дней. Выдержка в дубовой бочке Франция 500 литровая, первый пассаж.\n\nНАГРАДЫ: Серебро \"Гид по российским винам\" Артура Саркисяна и РБК, 2026",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Daniel_2022_Koffmann_5bba62cc20.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/daniel-22",
+    "fetched_at": "2026-08-25T17:00:55+0300",
+    "content_hash": "f4b7f79d0365ed31f85dfd425e66172cd0507da6c91c53a48ea5d8da1a03131d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.75,
+      "body": 0.78,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bordeaux-left-bank",
+      "ribera-del-duero",
+      "brunello"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "slug": "rem-akchurin",
+  "source": {
+    "name": "Rem Akchurin",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Rem Akchurin — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Винодельческое хозяйство Рема Акчурина — крымский семейный проект с виноградником, заложенным в 2007 году в долине реки Черная, в Севастопольской зоне. Сегодня площадь посадок составляет 72 га, а в ассортименте хозяйства представлены Шардоне, Мускат Белый, Каберне Совиньон, Пино Нуар, Мерло и Кокур.\n\nСтроительство туристическо-винодельческого комплекса началось в 2020 году, запуск производства на собственной площадке был запланирован на 2022 год, а полноценный ввод комплекса — на 2023 год.\n\nТерруар винодельни отличается мергелевыми почвами с высоким содержанием известняка, близостью реки Черная и хорошей проветриваемостью виноградников, что формирует условия для выращивания качественного винограда.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_7_15aa119884.webp",
+    "wine_slugs": [
+      "rem-akchurin-rem-akchurin-pino-nuar-roze-rozovoe-suhoe-14",
+      "rem-akchurin-risling-beloe-polusuhoe-12",
+      "rem-akchurin-muskat-belyy-beloe-suhoe-135",
+      "rem-akchurin-shardone-beloe-bryut-14",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "rem-akchurin-risling-beloe-suhoe-125",
+      "rem-akchurin-bryut-roze-pino-nuar-rozovoe-129"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/rem-akchurin",
+    "fetched_at": "2026-08-25T21:24:11+0300",
+    "content_hash": "366989bec0d12d5a3bbf4e6c9699c7a7780e9c5184e8d7f3bf3fd68416ac3455",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 7
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "slug": "zolotoe-pole-legend-of-crimea-pinot-gris-rose-pino-gri-rozovoe-suhoe-135",
+  "source": {
+    "name": "Legend of Crimea \"Pinot Gris Rose\"",
+    "winery": "zolotoe-pole",
+    "winery_name": "Золотое Поле",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Гри"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "нежный розовый с лососёвым оттенком",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      7,
+      9
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Салаты"
+    ],
+    "description": "В аромате ноты красных сладких ягод и сицилийского апельсина. Во вкусе среднеее тело, ягодная кислотность, свежее послевкусие с тонами брусники и малины.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zolotoe_pole_legend_of_crimea_pinot_gris_rose_pino_gri_rozovoe_suhoe_135_9f75698a01.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zolotoe-pole-legend-of-crimea-pinot-gris-rose-pino-gri-rozovoe-suhoe-135",
+    "fetched_at": "2026-08-25T17:08:24+0300",
+    "content_hash": "9d60fff1fc7c98c4a733b084a90948d590b14754954448f770ba0cc0f775ca05",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rosado-spain",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

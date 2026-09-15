@@ -1,0 +1,91 @@
+{
+  "slug": "domaine-lipko",
+  "source": {
+    "name": "Domaine Lipko",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "рельеф горно-равнинный и долинный",
+    "climate": "мягкий, средиземноморский",
+    "vineyard_area_ha": 46.0,
+    "vineyard_area_raw": "46 га",
+    "founded_year": 2017,
+    "description": "Domaine Lipko — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Семейный проект Алексея и Ивана Липко, основанный в 2017 году. На базе винограда, выращенного на двух различных севастопольских терруарах, семья Липко выпускает вина под торговыми марками Domaine Lipko, Penpalo, «Поместье Трензина» и «Графская балка». В 2021 году вино «Red Blend Поместье Трензина» урожая 2019 года вошло в сотню лучших российских вин по версии рейтинга Forbes Top100Wines.ru.\n\nПроектами управляют Алексей и Иван Липко и Валерий Логинов. Они разрабатывают стратегию развития, осуществляют общее руководство и занимаются продажа-ми. Виноделы — Иван Бурдинский и Павел Большаков.\n\nПосле завершения сотрудничества с Инкерманским заводом Алексей Липко принял решение остаться в Крыму и вместе с сыном Иваном занялся собственным проектом. Виноделом нового проекта стал Павел Большаков, выпускник Тимирязевской академии, консультантом – Иван Бурдинский, бывший начальник экспериментального цеха виноградно-винодельческого комбината «Массандра».\n\nСырьевая база хозяйства – это 40 гектаров молодых плодоносящих виноградников в районе села Хмельницкого (близ Балаклавы) и 6 гектаров виноградников со старыми лозами (в возрасте 30-35 лет) на плато Кара-Тау.\n\nВиноделы успешно экспериментируют с новыми для Крыма сортами, а также работают с автохтонами. Всего высажено около 15 сортов винограда, оптимально подходящих для терруарных условий: каберне совиньон, шардоне, мерло, сира, пино нуар, грюнер вельтлинер, блауфранкиш, неббиоло, санджовезе, мальвазия, треббиано и другие.\n\nВ ближайших планах – открытие собственной производственной площадки. Пока вина перерабатываются и разливаются на технической базе Центра виноделия Усадьбы Перовских.\n\nВиноградники Липко расположены на территории Западного Крыма в окрестностях Севастополя. Климат региона – мягкий, средиземноморский. Средняя годовая температура: +11°C, средняя температура июля: +24°C, средняя температура февраля: +1°C. Особенностью климата Западного Крыма является большое количество солнечных дней в году и повышенная норма осадков.\n\nПочвы бедные, с большим количеством обломочного материала, каменистого известняка, суглинка, гравия, преимущественно расположены на возвышенных площадках 100-200 м, на степных участках – чернозем и лессовидные почвы.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vino_i_vinograd_4b78ec2c50.webp",
+    "wine_slugs": [
+      "domaine-lipko-white-blend-tsitronnyy-magaracha-beloe-suhoe-115",
+      "domaine-lipko-pti-verdo-krasnoe-suhoe-14",
+      "domaine-lipko-sovinon-blan-beloe-suhoe-118",
+      "domaine-lipko-pino-nuar-krasnoe-suhoe-12",
+      "domaine-lipko-muskat-pomeste-trenzina-muskat-belyy-beloe-suhoe-119",
+      "domaine-lipko-kaberne-sovinon-merlo-pomeste-trenzina-krasnoe-suhoe-15",
+      "domaine-lipko-roze-sira-rozovoe-suhoe-135",
+      "domaine-lipko-risling-beloe-polusuhoe-124",
+      "domaine-lipko-blaufrankish-krasnoe-suhoe-126",
+      "domaine-lipko-sauvignon-blanc-domaine-lipko-sovinon-blan-beloe-suhoe-118",
+      "domaine-lipko-petit-verdot-domaine-lipko-pti-verdo-krasnoe-suhoe-14",
+      "domaine-lipko-riesling-m-domaine-lipko-risling-beloe-suhoe-102"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    },
+    {
+      "field": "founded_year",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/domaine-lipko",
+    "fetched_at": "2026-08-25T21:23:46+0300",
+    "content_hash": "92c9fa28f4a1ec63aec8f8477c6bc5969c0851c4db947851feeb12aafa3a961a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

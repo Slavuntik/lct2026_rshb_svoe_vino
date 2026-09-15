@@ -1,0 +1,85 @@
+{
+  "slug": "bogovich-wine-vineyard",
+  "source": {
+    "name": "Bogovich Wine & Vineyard",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "долина рек Кача и Бельбек",
+    "climate": "умеренно-континентальным",
+    "vineyard_area_ha": 2.0,
+    "vineyard_area_raw": "2 га",
+    "founded_year": null,
+    "description": "Bogovich Wine & Vineyard — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Ирина Богович – молодая и талантливая представительница нового крымского виноделия, а в недавнем прошлом – москвичка, историк-лингвист. Виноградник Ирины Богович расположен на плато Кара-Тау. Первое вино под брендом BOGOVICH WINE вышло 2020 году и сразу привлекло внимание экспертов и винной общественности.\n\nПуть к созданию своего винодельческого проекта начался с окончания школы сомелье, практики на крымской винодельне, а затем учёбы в Бургундии. Далее последовали стажировки в Бордо, Венето и работа энологом-консультантом в Иль-де-Франс.\n\nСегодня — это небольшое хозяйство на Плато Кара-Тау между реками Бельбек и Кача, собственный виноградник, дегустационная с видом на море, лавандовое поле и плодовый сад.\n\nВина Ирины Богович продаются по всей России от Калининграда до Владивостока, преимущественно в бутиковых винотеках и лучших ресторанах страны.\n\nИрина выступает главным виноделом не только в своём проекте — она создаёт вина для корпоративных клиентов и частных заказчиков. А крестьянско-фермерское хозяйство «Богович» предоставляет услуги сервиса по уходу за виноградниками.\n\nСоздатель и главный винодел хозяйства – Ирина Богович училась в винной школе «Энотрия» в Москве и поняла, что ее призвание – делать вино. Уехала в Крым, стажировалась в Uppa Winery у Павла Швеца, училась в Дижонском университете, в Бургундии. В Крыму проект Ирины стартовал как негоциантский – виноград она закупала в крымских хозяйствах, а вино изготавливалось на производственных мощностях «Центра виноделия Усадьбы Перовских». Однако в 2020 году Ирина приобрела собственный участок со старыми лозами.\n\nВ 2020 году вышло первое вино — белый сухой Мускат Оранж. Основные сорта, используемые хозяйством: пино нуар, мускат, каберне совиньон, шардоне, мерло. Плотность посадки: 3000 лоз/га.\n\nВиноградники BOGOVICH WINE расположены под Севастополем, в долине рек Кача и Бельбек, на плато Кара-Тау, на высоте более 150 метров над уровнем моря. Климат в этом районе мягкий, умеренно-континентальный, с чертами средиземноморского. Почвы коричневые, карбонатные, суглинистые, на аллювиальных отложениях с включениями древних известняков.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/IMG_0620_bf4c66cad6.webp",
+    "wine_slugs": [
+      "bogovich-wine-vineyard-klassika-pino-nuar-krasnoe-suhoe-125",
+      "bogovich-wine-vineyard-klaret-pino-nuar-krasnoe-suhoe-119",
+      "bogovich-wine-vineyard-merlo-krasnoe-suhoe-14",
+      "bogovich-wine-vineyard-pino-nuar-2-krasnoe-suhoe-12",
+      "bogovich-wine-vineyard-muskat-oranzh-muskat-belyy-beloe-suhoe-125",
+      "bogovich-wine-vineyard-rkatsiteli-oranzh-beloe-suhoe-125",
+      "bogovich-wine-vineyard-faina-sovinon-zelenyy-beloe-suhoe-113",
+      "bogovich-wine-vineyard-kaberne-sovinon-krasnoe-suhoe-125",
+      "bogovich-wine-vineyard-pino-nuar-krasnoe-suhoe-125",
+      "bogovich-wine-vineyard-kaberne-fran-krasnoe-suhoe-135"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "cellar-master",
+      "chateau-cachalot"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/bogovich-wine-vineyard",
+    "fetched_at": "2026-08-25T21:23:38+0300",
+    "content_hash": "0d0e9dff69a35540d3b0f7f6c2b1ce2a34d372ae4670deb3260a7b663ca5351b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 10
+  }
+}

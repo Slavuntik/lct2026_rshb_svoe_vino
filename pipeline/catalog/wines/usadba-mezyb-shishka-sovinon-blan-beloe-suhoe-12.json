@@ -1,0 +1,139 @@
+{
+  "slug": "usadba-mezyb-shishka-sovinon-blan-beloe-suhoe-12",
+  "source": {
+    "name": "Шишка. Совиньон Блан",
+    "winery": "usadba-mezyb",
+    "winery_name": "Усадьба Мезыбь",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотисто-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "В аромате оттенки лайма, свежего сена, крыжовника и зеленого яблока. Вкус тонкий, минеральный, с нюансами цитрусовых, белой сливы и шелковицы. Продолжительный минеральный финиш.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/usadba_mezyb_shishka_sovinon_blan_beloe_suhoe_12_2d7e44f0d9.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/usadba-mezyb-shishka-sovinon-blan-beloe-suhoe-12",
+    "fetched_at": "2026-08-25T17:06:02+0300",
+    "content_hash": "1be5c530a7ef244630c20b5197fe3dc6d8ba7f5802a11698148ef6ace8ac598d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "marlborough-sb",
+      "pouilly-fume"
+    ]
+  }
+}

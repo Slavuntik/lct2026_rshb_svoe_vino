@@ -1,0 +1,148 @@
+{
+  "slug": "aristov-anima-millesimato-beloe-bryut",
+  "source": {
+    "name": "Аристов ANIMA Millesimato белое брют",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Алиготе",
+      "Мюллер-Тургау",
+      "Пино Блан",
+      "Рислинг",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Фрукты"
+    ],
+    "description": "Светло-соломенный цвет игристого Aristov Anima Millesimato, с бледными оттенками жёлтого золота, подчеркивает его непревзойденную красоту, а игра пузырьков создаёт атмосферу торжественности. Развитый аромат, соответствующий сортовому составу, наполняет пространство нюансами зеленых фруктов и минеральности. Настоящее волшебство скрывается в гармоничном вкусе, отличающимся чистотой и ясностью, без тонов окисленности. Anima Millesimato - идеальное сочетание свежести и изысканности, которое подарит истинное удовольствие ценителям игристых вин. Освежающее игристое вино, идеальный тандем легкости и изысканности, истинное удовольствие для ценителей игристых напитков. Для изготовления игристого вина используется виноград сортов Шардоне, Алиготе и Пино Белый, собранный механизированным способом, а также Мюллер-Тургау и Рислинг Рейнский, собранный частично вручную. Сбор винограда проводится с разновозрастных лоз по достижении ягодами оптимальной сахаристости (16-18%). На винодельне виноград проходит мягкое прессование, настолько бережное, чтобы не экстрагировать полифенолы из кожицы винограда. Далее сусло осветляется путем флотации. Ферментация осуществляется при контролируемой температуре 16-18С в стальных чанах. Перед вторичным брожением базовые вина смешиваются в точно выверенных пропорциях для достижения идеального баланса и яркого выражения особенностей вкуса и аромата каждого из сортов. Вторичная ферментация проводится в акратофоре в течение 28 дней. Выдержка на тонком осадке длится не менее 2 месяцев, за это время игристое вино приобретает особенно соблазнительную глубину.",
+    "public_rating": 4.67,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Aristov_Anima_milezimiato_bryut_4a887b783f.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/aristov-anima-millesimato-beloe-bryut",
+    "fetched_at": "2026-08-25T16:59:33+0300",
+    "content_hash": "f06a5a844fe79d1613e9935165e086d149faa976bc5ad0a6ead2fdb885a877d6",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "aligote",
+      "myuller-turgau",
+      "pino-blan",
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.68,
+      "tannin": 0.05,
+      "body": 0.488,
+      "oak": 0.6,
+      "aromatic_intensity": 0.583,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

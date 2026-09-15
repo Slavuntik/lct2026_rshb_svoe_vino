@@ -1,0 +1,143 @@
+{
+  "slug": "uva-vallis-risling",
+  "source": {
+    "name": "Uva Vallis Рислинг",
+    "winery": "uva-vallis",
+    "winery_name": "Uva Vallis",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотисто-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Закуски",
+      "Салаты"
+    ],
+    "description": "Аромат раскрывается классическими для сорта нотами белых цветов, хрустящего белого яблока и груши, дополненными деликатными нюансами специй и воска. \n\nВо вкусе вино строгое и структурное, с яркой, хрустящей и сбалансированной кислотностью, средним телом и выраженным минеральным послевкусием. Классический молодой рислинг с характерной минеральностью, сочностью и гастрономическим потенциалом.",
+    "public_rating": 4.33,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/cu3xjk4e93p2zxvazyl9c3jlidfny9ub_cf6ed0e9b3.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium",
+      "rubin-golodrigi"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/uva-vallis-risling",
+    "fetched_at": "2026-08-25T17:06:09+0300",
+    "content_hash": "9b3acbf23800ef412c86b7dba10ae9855b3f5c4cc739da313ad51e0a6d3af950",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.55,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-franc-loire",
+      "cru-beaujolais",
+      "bierzo-mencia"
+    ]
+  }
+}

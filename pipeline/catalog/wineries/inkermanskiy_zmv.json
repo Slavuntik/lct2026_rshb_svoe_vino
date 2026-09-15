@@ -1,0 +1,87 @@
+{
+  "slug": "inkermanskiy_zmv",
+  "source": {
+    "name": "Инкерманский ЗМВ",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "рельеф холмистый",
+    "climate": "умеренно континентальный",
+    "vineyard_area_ha": 3250.0,
+    "vineyard_area_raw": "3250 га",
+    "founded_year": null,
+    "description": "Инкерманский ЗМВ — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Inkerman – флагманский бренд для виноделия западного Крыма. Получив инвестиционную поддержку и переоснастив производство современным оборудованием, Inkerman восстановил свою репутацию производителя высококачественных сухих вин и продолжает развиваться, разрабатывая новые ассортиментные линейки и завоевывая медали на винных конкурсах.\n\nВинная летопись «Инкермана» начинается в 1961 году, когда на базе инкерманских штолен – выработок строительного камня близ Севастополя – был создан завод марочных вин. Изначально он ориентировался на производство тихих сухих вин, однако в 1967 году был также введен в эксплуатацию цех выдержки крепких и десертных вин.\n\nВ 1980 году был взят еще один важный рубеж – на предприятии была создана научно-исследовательская лаборатория.Вторая половина 1980-х и 1990-годы были трудным периодом для всего виноделия постсоветского пространства. Однако уже в 1998 году Инкерманский завод марочных вин запустил новый высокотехнологичный комплекс розлива вина, оснащенный современным оборудованием.\n\nВ 2001 году была зарегистрирована торговая марка Inkerman, которая в течение первых двух десятилетий 21 века набирала вес полноценного бренда. С 2004 по 2012 год в состав холдинга, кроме Инкерманского завода марочных вин, вошли два виноградарских хозяйства: «Качинский+» и Агрофирма «Черноморец». Более того, была введена в эксплуатацию вторая производственная площадка.\n\nВ числе недавних новостей от «Инкермана» – запуск премиальной линейки Special Reserve, расширение ассортимента за счет игристых вин, развитие экскурсионно-туристического направления.\n\nЗападный Крым неслучайно считается наиболее благоприятным регионом для производства сухих и игристых вин. Солнечные склоны холмов предгорного Крыма обеспечивают красным сортам достижение полноценной физиологической зрелости, а такие факторы, как близость черноморского побережья, расположение виноградников на высоте вплоть до 300-400 метров над уровнем моря, достаточная норма выпадения осадков в Севастопольской зоне (иногда более 600 мм в год), а также присутствие известняка в почве, позволяют добиваться свежести и элегантности в сухих белых и игристых винах.\n\nПрименяя современные агротехнические практики на своих виноградниках, Inkerman становится универсальным винодельческим предприятием с огромным потенциалом развития и неограниченными возможностями по расширению ассортиментной гаммы.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/photo_2026_08_06_22_02_09_a064e2c564.webp",
+    "wine_slugs": [
+      "inkerman-shato-blan",
+      "inkerman-muskatnoe-beloe",
+      "inkerman-shato-ruzh",
+      "winemaker-selection",
+      "inkermanskiy-zmv-inkerman-rozovoe-polusladkoe-rkatsiteli-12",
+      "inkermanskiy-zmv-inkerman-muskat-polusladkoe-beloe-13",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "inkermanskiy-zmv-inkerman-polusladkoe-rkatsiteli-beloe-13",
+      "inkermanskiy-zmv-inkerman-bryut-rkatsiteli-beloe-12",
+      "inkermanskiy-zmv-winemakers-selection-saperavi-krasnoe-polusladkoe-12",
+      "inkermanskiy-zmv-inkerman-bryut-shardone-beloe-135"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/inkermanskiy_zmv",
+    "fetched_at": "2026-08-25T21:51:59+0300",
+    "content_hash": "7bb8b097e51792877c2d90cced900d69a98bb151f5feeb3ed1b62a3f9949afbc",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

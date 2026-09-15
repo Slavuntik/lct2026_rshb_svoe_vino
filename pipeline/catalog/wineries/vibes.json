@@ -1,0 +1,71 @@
+{
+  "slug": "vibes",
+  "source": {
+    "name": "Vibes",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Vibes — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "VIBES — негоциантский винодельческий проект из Крыма, работающий в концепции terroir hunting. Команда ежегодно ищет наиболее выразительные участки и создаёт из крымского винограда малотиражные тихие вина и петнаты, не стремясь повторять каждую этикетку от винтажа к винтажу.\n\nТерруар VIBES не фиксирован в одной точке: проект работает с мозаикой крымских участков. В ранних винтажах основой служили виноградники долин Бельбека и Качи — западно-предгорной зоны Крыма с морским влиянием, сухим тёплым сезоном, продолжительной осенью и сочетанием каменистых, мергелистых, аллювиальных и карбонатных почв.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/IMG_5336_278fdb3733.webp",
+    "wine_slugs": [
+      "cabernet-franc-pinot-noir-2021",
+      "cabernet-franc-pinot-noir-2022",
+      "vibes-chardonnay-barrel-fermented-2021",
+      "vibes-montepulchano-kaberne-fran-pti-verdo",
+      "vibes-vermentino-viognier-barrel-fermented-2022",
+      "vibes-glera-col-fondo-2022",
+      "vibes-pinot-grigio-2021",
+      "vibes-riesling-silvaner-2022",
+      "vermentino-viognier-2022",
+      "vibes-silvaner-silvaner-beloe-suhoe-125",
+      "vibes-riesling-silvaner-risling-beloe-suhoe-115",
+      "vibes-vermentino-viognier-barrel-fermented-vermentino-beloe-suhoe-115"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/vibes",
+    "fetched_at": "2026-08-25T21:24:29+0300",
+    "content_hash": "0267e7c3a4749a8c8c6965f2ce87798c19110c4aa886b087edb9dbdc52d505ed",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

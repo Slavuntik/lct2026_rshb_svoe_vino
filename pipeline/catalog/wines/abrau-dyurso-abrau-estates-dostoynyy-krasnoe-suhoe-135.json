@@ -1,0 +1,139 @@
+{
+  "slug": "abrau-dyurso-abrau-estates-dostoynyy-krasnoe-suhoe-135",
+  "source": {
+    "name": "Abrau Estates. Достойный",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Достойный"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Морепродукты",
+      "Салаты"
+    ],
+    "description": "В аромате джемовые ноты красных ягод: смородины, вишни, кизила и терна. тона сафьяна и тонкая копченая нота. Аромат яркий, объемный с ягодной свежестью, тонкой кислотностью и бархатными танинами.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_estates_dostoynyy_krasnoe_suhoe_135_a2b9e120e4.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-dostoynyy-krasnoe-suhoe-135",
+    "fetched_at": "2026-08-25T16:58:27+0300",
+    "content_hash": "d968b2c0bdac8cd027b595c25da8e9cfc73d72b64ea2157febb624880bbbb98d",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "dostojny"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": null,
+      "tannin": 0.55,
+      "body": 0.68,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.17,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tempranillo-joven",
+      "cabernet-franc-loire",
+      "sangiovese-romagna"
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "slug": "fanagoriya-ice-wine-merlo-rozovoe-sladkoe-10",
+  "source": {
+    "name": "Ice Wine Мерло розовое",
+    "winery": "fanagoriya",
+    "winery_name": "Фанагория",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Мерло"
+    ],
+    "color": "розовое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "розовый",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры"
+    ],
+    "description": "В аромате красные ягоды, цветочные тона. Вкус мягкий, с длительным послевкусием.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/fanagoriya_ice_wine_merlo_rozovoe_sladkoe_10_f04efb1e6f.webp",
+    "similar_wine_slugs": [
+      "massandra-muskatel-rozovyy-belye-sorta-vinograda-rozovoe-sladkoe-16",
+      "massandra-muskat-rozovyy-pozdnego-sbora-rozovoe-sladkoe-10",
+      "imenie-sikory-krasnostop-zolotovskiy-pozdniy-sbor-rozovoe-sladkoe-13",
+      "zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+      "muskat-pozdnego-sbora-rozovyj",
+      "solnechnaya-dolina-muskatnoe-festivalnoe-muskat-belyy-rozovoe-sladkoe-16",
+      "pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fanagoriya-ice-wine-merlo-rozovoe-sladkoe-10",
+    "fetched_at": "2026-08-25T17:02:08+0300",
+    "content_hash": "31d72748b0f0c6d5337bce7233cdefb5497e2ad53e1722c4035f38640b2affc7",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.5,
+      "tannin": 0.2,
+      "body": 0.59,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "igristoe-vino-bryut-rozovoe-di-kaspiko-blan-de-nuar-di-caspico-blanc-de-noirs",
+  "source": {
+    "name": "Ди Каспико Блан де Нуар",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "бледно розовый ближе к телесному",
+    "vintage": null,
+    "abv_percent": 12.5,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Сыры"
+    ],
+    "description": "Di Caspico Blanc de Noir — изысканное игристое вино, созданное из тёмных сортов винограда по белой технологии, в котором сочетаются выразительность характера и утончённая свежесть.\n\nВ бокале — светлый соломенно-золотистый оттенок с мягким сиянием и тонкой игрой пузырьков. Аромат яркий и многогранный: лёгкие ноты спелых красных ягод переплетаются с оттенками белых цветов и едва уловимой сливочной нежностью.\n\nВо вкусе — гармония и глубина: деликатная ягодная структура поддерживается освежающей кислотностью, создавая объёмное и чистое послевкусие с тонкими фруктовыми нюансами.\n\nDi Caspico Blanc de Noir — идеальный выбор для особых встреч, камерных ужинов и моментов, когда хочется подчеркнуть стиль, индивидуальность и лёгкую игривость настроения.",
+    "public_rating": 3.67,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DI_CASPICO_Bd_N_468dd912ff.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/igristoe-vino-bryut-rozovoe-di-kaspiko-blan-de-nuar-di-caspico-blanc-de-noirs",
+    "fetched_at": "2026-08-25T17:02:39+0300",
+    "content_hash": "9c5a04e2eb06933e53de9d0422e8bf8cc2e70505a2a554ee22f2907676acf13b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.2,
+      "body": 0.665,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "slug": "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-polusladkoe",
+  "source": {
+    "name": "Абрау Дюрсо Удельное Ведомство Императорское белое полусладкое",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг",
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "светло-соломенный с тонким золотистым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Брускетты",
+      "Выпечка и десерты",
+      "Салаты",
+      "Сыры",
+      "Фруктово-ягодные десерты"
+    ],
+    "description": "Великолепное свежее игристое вино, искрящееся золотистыми живыми пузырьками, имеющее яркий ароматный букет с нотками цитрусовых фруктов, яблока и груши и прекрасно сбалансированный вкус с длительным послевкусием. Полусладкое от Абрау-Дюрсо — одно из лучших российских игристых вин, завоевавшее четыре медали на международных винных конкурсах. Оно произведено мастерами Русского Шампанского Дома Абрау-Дюрсо по французской технологии методом Шарма из купажа тщательно отобранного винограда. Метод Шарма был разработан в Италии директором института энологии города Асти Федерико Мартинотти. Особенность технологии заключается в проведении вторичной ферментации в больших герметичных цистернах, после чего вино фильтруется, стабилизируется и разливается под давлением в отдельные бутылки. Вино имеет неограниченный срок хранения, в зависимости от длительности выдержки крепость вина может колебаться от 10,5 до 12,5%.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Abrau_Dyurso_Udelnoe_Vedomstvo_Imperatorskoe_beloe_polusladkoe_fac98a6538.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-polusladkoe",
+    "fetched_at": "2026-08-25T16:58:40+0300",
+    "content_hash": "a7abe91a22dbf3b2d0a50cc98207435cbfe3cce755e073310259ec854a121097",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling",
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.6,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "madeira",
+      "marsala"
+    ]
+  }
+}

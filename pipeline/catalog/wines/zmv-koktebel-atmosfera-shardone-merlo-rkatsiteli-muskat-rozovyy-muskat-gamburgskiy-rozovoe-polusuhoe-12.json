@@ -1,0 +1,151 @@
+{
+  "slug": "zmv-koktebel-atmosfera-shardone-merlo-rkatsiteli-muskat-rozovyy-muskat-gamburgskiy-rozovoe-polusuhoe-12",
+  "source": {
+    "name": "Атмосфера - Шардоне, Мерло, Ркацители, Мускат Розовый, Мускат Гамбургский",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мерло",
+      "Мускат Гамбургский",
+      "Мускат Розовый",
+      "Ркацители",
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "светло-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Морепродукты",
+      "Мясное ассорти",
+      "Паста",
+      "Пицца",
+      "Сыры"
+    ],
+    "description": "В аромате цветочные оттенки, ягодные оттенки с нюансами муската и тропических фруктов. Вкус свежий, цветочный с нюансами ягод и тропических фруктов. Приятное свежее послевкусие сочных фруктов",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_atmosfera_shardone_merlo_rkatsiteli_muskat_rozovyy_muskat_gamburgskiy_rozovoe_polusuhoe_12_5fd10c99b4.webp",
+    "similar_wine_slugs": [
+      "rozovoe-zoloto",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+      "aratti-kaberne-po-belomu-1",
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar",
+      "aya-khrustaleva-76-merlot-organik",
+      "perovskih_merlo",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-rozovoe-novyy-svet-pino-nuar-125",
+      "zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+      "fanagoriya-brule-cabernet-franc-polusuhoe-rozovoe-kaberne-fran-12",
+      "fanagoriya-zelyonoe-vino-risling-tsitronnyy-magaracha-merlo-rozovoe-polusuhoe-11",
+      "fanagoriya-rose-kaberne-sovinon-rozovoe-polusuhoe-13",
+      "fanagoriya-rose-saperavi-rozovoe-polusuhoe-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-atmosfera-shardone-merlo-rkatsiteli-muskat-rozovyy-muskat-gamburgskiy-rozovoe-polusuhoe-12",
+    "fetched_at": "2026-08-25T17:08:11+0300",
+    "content_hash": "cc8e79b5f23f239af36ed56d4c660a04cb4ff00d2af4044aca0aee9bf6638225",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo",
+      "muskat-gamburgsky",
+      "muskat-rozovy",
+      "rkatsiteli",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.57,
+      "tannin": 0.2,
+      "body": 0.59,
+      "oak": 0.1,
+      "aromatic_intensity": 0.717,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "shato-taman-par-la-mer-sovinon",
+  "source": {
+    "name": "Шато Тамань. Пар Ла Мер. Совиньон",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-лимонный с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус прекрасно сбалансированный и сочный, минеральное послевкусие. В аромате ноты крыжовника и чёрной смородины, травы и цитрусовые.\n\nСбор винограда осуществляется на сахарах 21-23%, прессование винограда проходит в мягком режиме (чтобы не экстрагировать полифенолы из кожицы винограда), осветление сусла проводится с помощью технологического способа – флотация. Затем проводится брожение в емкостях из нержавеющей стали при температуре 16-18 °С. После брожения производится съем с дрожжевого осадка с дальнейшим проведением батонажа на тонком дрожжевом осадке не менее 4 месяцев. Без выдержки.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Par_La_Mer_Beloe_suh_2024_GU_Normal_717117b640.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-taman-par-la-mer-sovinon",
+    "fetched_at": "2026-08-25T17:05:12+0300",
+    "content_hash": "b6d62dc3462592b1eddc9a6b45583ebf19d13b3358159940ad5654b37eb2cac0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.6,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fuisse",
+      "puligny-montrachet"
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+  "source": {
+    "name": "Абрау Дюрсо Удельное Ведомство Императорское белое брют",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг",
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный с тонким зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Фрукты"
+    ],
+    "description": "Великолепное вино, искрящееся множеством мелких пузырьков, имеющее нежный цветочно-фруктовый аромат и свежий вкус с душистым, привлекательным послевкусием. Благодаря универсальному характеру, игристое вино станет не только восхитительным аперитивом, но и составит пару широкому спектру блюд. Абрау-Дюрсо, Брют — одно из лучших российских игристых вин. Оно произведено мастерами Русского Шампанского Дома Абрау-Дюрсо по французской технологии методом Шарма из купажа тщательно отобранного винограда. Метод Шарма был разработан в Италии директором института энологии города Асти Федерико Мартинотти. Особенность технологии заключается в проведении вторичной ферментации в больших герметичных цистернах, после чего вино фильтруется, стабилизируется и разливается под давлением в отдельные бутылки. Вино имеет неограниченный срок хранения, в зависимости от длительности выдержки крепость вина может колебаться от 10,5 до 12,5%.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Abrau_Dyurso_Udelnoe_vedomtsvo_bryut_80a96f319c.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+    "fetched_at": "2026-08-25T16:58:40+0300",
+    "content_hash": "573f5468c7cb9d7d5b56eadfea0170620c36eb74299a9985a234bcdf6cbbaaf0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling",
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.6,
+      "oak": 0.6,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

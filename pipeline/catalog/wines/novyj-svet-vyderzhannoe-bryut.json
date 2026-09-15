@@ -1,0 +1,139 @@
+{
+  "slug": "novyj-svet-vyderzhannoe-bryut",
+  "source": {
+    "name": "Новый Свет выдержанное брют",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Виноград, рожденный на меловых почвах предгорной зоны западного Крыма, в долине рек Альма и Кача, собирается вручную в прохладные утренние часы и тщательно сортируется. При производстве используется сок только первого отжима — «кюве». Вино выдерживается на осадке не менее 12 месяцев в тоннелях конца XIX века при постоянной температуре +14С. Технологические операции: перекладка, ремюаж — проводятся вручную.\n\nВино светло-соломенного цвета с лимонными отблесками. Окутывает ароматом луговых весенних цветов. Во вкусе груша, персик и яблоко. Нежное минеральное послевкусие.\n\nСорта винограда: Шардоне, Рислинг, Пино Нуар, Пино Гри",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/4300_tl_K_Hp_Eg_0fa0eef9b4.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyj-svet-vyderzhannoe-bryut",
+    "fetched_at": "2026-08-25T17:04:07+0300",
+    "content_hash": "60233c672bcc78e13bfa2d5d1cdf44cb8ec84814ff183b24f34897c6df8db6ea",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.54,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-brut-nv",
+      "champagne-blanc-de-blancs"
+    ]
+  }
+}

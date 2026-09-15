@@ -1,0 +1,145 @@
+{
+  "slug": "zmv-koktebel-kagor-vysshego-kachestva-kaberne-sovinon-krasnoe-sladkoe-16",
+  "source": {
+    "name": "Кагор Высшего Качества",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Бастардо",
+      "Каберне Совиньон",
+      "Каберне Фран"
+    ],
+    "color": "красное",
+    "sugar_category": "сладкое",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      17,
+      18
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Мороженое",
+      "Сыры",
+      "Фрукты",
+      "Шоколад"
+    ],
+    "description": "В аромате джемовые тона, ноты чернослива, красных и чёрных ягод, шоколада. Вкус бархатистый, послевкусие долгое, обволакивающие, умеренная танинность, оттенки свежих и сушеных красных и черных ягод.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_kagor_vysshego_kachestva_kaberne_sovinon_krasnoe_sladkoe_16_d2bf326549.webp",
+    "similar_wine_slugs": [
+      "kyuve-czimlyanskij-chernyj-i-krasnostop-zolotoj",
+      "chateau-tamagne-grand-dessert-nectar",
+      "igristoe-krasnoe-sladkoe-czimlyanskoe",
+      "privat",
+      "pozdnij-sbor-krasnoe",
+      "vintazh-premium",
+      "soyuz-vino-kanonicheskie-traditsii-krasnoe-sladkoe-kaberne-sovinon-115",
+      "massandra-portveyn-krasnyy-alushta-krasnye-sorta-vinograda-krasnoe-sladkoe-17",
+      "massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16",
+      "massandra-portveyn-krasnyy-livadiya-kaberne-sovinon-krasnoe-sladkoe-185",
+      "massandra-lakrima-kristi-aleatiko-krasnoe-sladkoe-16",
+      "massandra-kagor-gurzuf-saperavi-krasnoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-kagor-vysshego-kachestva-kaberne-sovinon-krasnoe-sladkoe-16",
+    "fetched_at": "2026-08-25T17:08:12+0300",
+    "content_hash": "b8907060370d85d0a827981698cd3795f211e5c29aeb2b582613df01ba5be081",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "bastardo",
+      "kaberne-sovinon",
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.633,
+      "tannin": 0.633,
+      "body": 0.787,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "port-ruby",
+      "cahors-dessert-kagor",
+      "recioto-della-valpolicella"
+    ]
+  }
+}

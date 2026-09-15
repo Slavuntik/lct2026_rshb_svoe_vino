@@ -1,0 +1,149 @@
+{
+  "slug": "ballet-blanc",
+  "source": {
+    "name": "Ballet Blanc",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг",
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "cветло-соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Аромат: свежие ягоды и фрукты: яблоко, абрикос, зелёный крыжовник; полевые травы и весенние цветы.\n\nВкус: лёгкий, с освежающей кислотностью, солоноватый с минеральным финишем – мокрые камни и створки моллюсков.\n\nОсобенность винификации\n\nРаздельная уборка и винификация каждого из сортов. Тщательная инспекция ягод. Настаивание в прессе для Рислинга и Совиньона Блана в течение четырёх часов, Шардоне — без настаивания. Отбор лучшего сока. Для Рислинга и Совиньона Блана брожение только в стали при температуре 18–19 градусов Цельсия. Для Шардоне 19–20 градусов Цельсия, частично в стали, частично в бургундский пьесах из французского дуба, 2-ой пассаж. В бочках проводится полная малолактика. Выдержка на осадке с регулярным батоннажем в течение 11 мес. Интенсивность батоннажей снижается по мере выдержки. Ассамбляж, оклейка и розлив с применением инертного газа. Отдых в бутылке более 3 мес перед началом оформления и продаж.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/balet_blan_7c53c7fcdb.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/ballet-blanc",
+    "fetched_at": "2026-08-25T16:59:46+0300",
+    "content_hash": "95fbc4f7b0a1c5bdd341950441fb5d7c6e429811ffb7ea5540eb350697d9bd23",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling",
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.63,
+      "oak": 0.6,
+      "aromatic_intensity": 0.825,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "meursault",
+      "chardonnay-oaked-new-world",
+      "puligny-montrachet"
+    ]
+  }
+}

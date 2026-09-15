@@ -1,0 +1,133 @@
+{
+  "slug": "radiowine-muskat-amber-muskat-ottonel-beloe-suhoe-13",
+  "source": {
+    "name": "Мускат Амбер",
+    "winery": "radio-wine",
+    "winery_name": "Radio Wine",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат Оттонель"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "янтарный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": null,
+    "food_pairings": [
+      "Овощи гриль",
+      "Острое",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Плотный, фруктовый, слегка терпкий. Насыщенный, с тонами тропических фруктов, цитрусовых с оттенками меда и воска.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/radiowine_muskat_amber_muskat_ottonel_beloe_suhoe_13_30d2cbdd8f.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/radiowine-muskat-amber-muskat-ottonel-beloe-suhoe-13",
+    "fetched_at": "2026-08-25T17:04:35+0300",
+    "content_hash": "69c4ef0bea98eca4c53f640af63e004bae74cb58bb046539fee1292b2e50a6ba",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-ottonel"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "torrontes",
+      "mtsvane-dry",
+      "fiano"
+    ]
+  }
+}

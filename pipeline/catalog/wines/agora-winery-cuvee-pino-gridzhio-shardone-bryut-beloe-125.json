@@ -1,0 +1,138 @@
+{
+  "slug": "agora-winery-cuvee-pino-gridzhio-shardone-bryut-beloe-125",
+  "source": {
+    "name": "CUVEE Пино Гриджио Шардоне, брют, белое",
+    "winery": "agora-winery",
+    "winery_name": "AGORA WINERY",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Гриджио"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      7,
+      9
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Гармоничный, свежий, с хрустящей кислотностю Нежный с оттенками цитрусовых, белых цветов и выпечки",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/agora_winery_cuvee_pino_gridzhio_shardone_bryut_beloe_igristoe_bryut_beloe_125_16b20c89df.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/agora-winery-cuvee-pino-gridzhio-shardone-bryut-beloe-125",
+    "fetched_at": "2026-08-25T16:58:55+0300",
+    "content_hash": "7cda055148d6c3247a922aff8cc077ba06a0e223953a6d9b4f6f5b133a73ee4e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.55,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cava",
+      "prosecco",
+      "cremant"
+    ]
+  }
+}

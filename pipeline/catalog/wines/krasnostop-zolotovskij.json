@@ -1,0 +1,145 @@
+{
+  "slug": "krasnostop-zolotovskij",
+  "source": {
+    "name": "Красностоп Золотовский",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий рубиновый",
+    "vintage": null,
+    "abv_percent": 15.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Блюда из птицы",
+      "Мясное ассорти"
+    ],
+    "description": "Аромат: кофе мокко, тёмный шоколад, терново-черносливовые оттенки, кожаное седло и лакрица.\n\nВкус: объёмное тело, мощные спелые танины обещают вину долгое поступательное развитие в бутылке. Преобладающие оттенки вкуса: чернослив, ежевика, сочная вишня. Долгий финиш с кофейно-сливочным оттенком, тёплый за счет высокой спиртуозности.\n\nОсобенность винификации\n\nРучная уборка в последних числах сентября. В этот момент ягоды заизюмлены на лозе на 60%. 2/3 винограда направляются на винификацию. 1/3 — на дополнительное подвяливание в кассетных ящиках с перфорацией. Увяливание происходит в течение 3-х недель на открытом воздухе под навесом и на ветру, в абсолютно естественных условиях — классическая технология апассименто. 2/3 винограда, который сразу после уборки направился на винификацию: деликатное гребнеотделение, без дробления ягоды. Перемещаем в винификатор и делаем холодное настаивание в течение 4-х суток при температуре 3–5 градусов Цельсия. Затем поднимаем температуру до 25 градусов Цельсия, задаём дрожжи — штамм специально селекционированный для Амароне. Брожение при температуре 29–30 градусов Цельсия. Техники винификации: комбинация деликатного медленного ворошения шапки специальной встроенной в винификатор лопастью и ремонтаж. После завершения брожения, которое длится 9 дней, проводим постферментационную мацерацию. Общий скин-контакт более 20 дней. Деликатное лёгкое прессование, осветление и залив в новые 500-литровые тонно из французского дуба. Малолактика в тонно. Выдержка в тонно 2 года. Кларификация — свежий альбумин из яиц домашней курицы. Деликатная фильтрация. Розлив в бутылку с применением инертного газа и вакуумирования. Выдержка в бутылке 1 год. С виноградом, оставленным на естественное увяливание на воздухе — всё то же, но задаётся гипперконцентрация дрожжей, чтобы запустить брожение.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/krasnostop_cca9e0b43e.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/krasnostop-zolotovskij",
+    "fetched_at": "2026-08-25T17:03:03+0300",
+    "content_hash": "241a3cb6df8e7e26f685eeaa39e950e4d389f3f38675ecc07830524c86fc95a4",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.75,
+      "body": 0.84,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "northern-rhone-syrah",
+      "bordeaux-left-bank",
+      "ribera-del-duero"
+    ]
+  }
+}

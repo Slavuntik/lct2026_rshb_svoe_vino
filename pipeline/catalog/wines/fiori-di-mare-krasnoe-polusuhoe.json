@@ -1,0 +1,140 @@
+{
+  "slug": "fiori-di-mare-krasnoe-polusuhoe",
+  "source": {
+    "name": "Fiori di Mare красное полусухое",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Мерло",
+      "Молдова",
+      "Пино Нуар"
+    ],
+    "color": "красное",
+    "sugar_category": "полусухое",
+    "color_in_glass": "рубиновый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Закуски",
+      "Мясное ассорти",
+      "Салаты"
+    ],
+    "description": "В свежем аромате гармонично переплетаются нежные ягодные и цветочные ноты. В легком, питком, манящем вкусе преобладают цитрусовые тона, дополненные мягкой перечной ноткой и тонкой сладостью красных ягод из сиропа. Выраженная кислотность прекрасно балансирует остаточный сахар и дарит свежее, стойкое послевкусие.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Derbent_Vino_Fori_di_Mare_Di_Kaspiko_d67089804b.webp",
+    "similar_wine_slugs": [
+      "inkerman-shato-ruzh",
+      "saperavi-premium",
+      "leto-kaberne-sovinon-2023-polusuhoe-krasnoe",
+      "perovskih_polusuhoe_krasnoe",
+      "soyuz-vino-shato-de-mongolfer-shiraz-polusuhoe-krasnoe-11",
+      "alma-valley-solntse-vozduh-vinograd-sira-shiraz-krasnoe-polusuhoe-135",
+      "sober-bash-dve-doliny-kaberne-fran-2023-krasnoe-polusuhoe-14",
+      "sober-bash-dve-doliny-saperavi-kachich-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-chernoe-iz-krasnogo-appassimento-kaberne-sovinon-krasnoe-polusuhoe-15",
+      "vinodelnya-myshako-kaberne-sovinon-black-out-krasnoe-polusuhoe-16",
+      "vinodelnya-myshako-quintessence-storm-shiraz-krasnoe-polusuhoe-15"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/fiori-di-mare-krasnoe-polusuhoe",
+    "fetched_at": "2026-08-25T17:02:22+0300",
+    "content_hash": "6dba0bf55a282980b4b41a12e80475650440056b3c6caea6cfb518cbd44b2aa7",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo",
+      "moldova",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.583,
+      "tannin": 0.467,
+      "body": 0.533,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "red-semisweet"
+    ]
+  }
+}

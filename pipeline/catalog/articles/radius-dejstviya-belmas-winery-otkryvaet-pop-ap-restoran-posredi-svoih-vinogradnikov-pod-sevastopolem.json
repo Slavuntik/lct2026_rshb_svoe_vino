@@ -1,0 +1,73 @@
+{
+  "slug": "radius-dejstviya-belmas-winery-otkryvaet-pop-ap-restoran-posredi-svoih-vinogradnikov-pod-sevastopolem",
+  "source": {
+    "title": "«Радиус» действия: Belmas Winery открывает поп-ап ресторан посреди своих виноградников под Севастополем",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">С 1 мая винодельня <strong>Belmas Winery</strong> запускает новый гастрономический проект — <strong>поп-ап ресторан «Радиус»</strong>. Площадка расположится прямо на красной клетке виноградника в селе Родном (Севастополь), среди четырехлетних лоз Сиры, Мурведра, Гренаша и Санджовезе.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Концепция проекта — полное единение с природой без ущерба комфорту. Гостей обещают удивить локацией: «in the middle of nowhere» (где-то в уединении), на фоне поросших лесом гор, под стрекот цикад. В центре внимания — длинный стол с белоснежной скатертью, авторские блюда шеф-повара Любови Плаксиной, вина хозяйства и истории от винодела.</span></p><p>&nbsp;</p><blockquote><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">«Ничего вокруг, только природа, человек и вино», — описывают атмосферу организаторы.</span></p></blockquote><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">К подготовке проекта привлекли архитектора, ландшафтного дизайнера, плотников, электриков и строителей. На площадке смогут комфортно разместиться до двадцати человек.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Важная деталь: «Радиус» не будет работать в формате a la carte. Посещение — только по предварительному бронированию через сайт, который скоро запустят. Гостям предложат сеты: вечерние ужины или дневные дегустации с более легким, но продуманным набором закусок.</span></p><p>&nbsp;</p><blockquote><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">«Мы хотим, чтобы каждый гость получил уникальный опыт. Чтобы единение с природой было не только красивым, но и комфортным. Чтобы не \"ресторанное обслуживание\", а будто вы приехали к нам в гости», — делятся планами в блоге Belmas Winery.</span></p></blockquote><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Проект сезонный: «Радиус» будет работать примерно до октября, после чего закроется до следующей весны. Первых гостей на винограднике ждут уже 1 мая.</span></p>",
+    "body": "С 1 мая винодельня Belmas Winery запускает новый гастрономический проект —\nпоп-ап ресторан «Радиус». Площадка расположится прямо на красной клетке\nвиноградника в селе Родном (Севастополь), среди четырехлетних лоз Сиры,\nМурведра, Гренаша и Санджовезе.\n\n \n\nКонцепция проекта — полное единение с природой без ущерба комфорту. Гостей\nобещают удивить локацией: «in the middle of nowhere» (где-то в уединении), на\nфоне поросших лесом гор, под стрекот цикад. В центре внимания — длинный стол с\nбелоснежной скатертью, авторские блюда шеф-повара Любови Плаксиной, вина\nхозяйства и истории от винодела.\n\n \n\n> «Ничего вокруг, только природа, человек и вино», — описывают атмосферу\n> организаторы.\n\n \n\nК подготовке проекта привлекли архитектора, ландшафтного дизайнера, плотников,\nэлектриков и строителей. На площадке смогут комфортно разместиться до двадцати\nчеловек.\n\n \n\nВажная деталь: «Радиус» не будет работать в формате a la carte. Посещение —\nтолько по предварительному бронированию через сайт, который скоро запустят.\nГостям предложат сеты: вечерние ужины или дневные дегустации с более легким, но\nпродуманным набором закусок.\n\n \n\n> «Мы хотим, чтобы каждый гость получил уникальный опыт. Чтобы единение с\n> природой было не только красивым, но и комфортным. Чтобы не \"ресторанное\n> обслуживание\", а будто вы приехали к нам в гости», — делятся планами в блоге\n> Belmas Winery.\n\n \n\nПроект сезонный: «Радиус» будет работать примерно до октября, после чего\nзакроется до следующей весны. Первых гостей на винограднике ждут уже 1 мая.",
+    "body_chars": 1523,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "РЕДАКЦИЯ «СВОЁ ВИНО»",
+    "photo_credit": null,
+    "published_at": "2026-04-11T12:10:00.000Z",
+    "published_date": "2026-04-11",
+    "published_year": 2026,
+    "modified_at": "2026-04-11T12:12:04.592Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/photo_5389048655349755323_y_3dc59c5764.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/radius-dejstviya-belmas-winery-otkryvaet-pop-ap-restoran-posredi-svoih-vinogradnikov-pod-sevastopolem",
+    "fetched_at": "2026-08-25T21:28:55+0300",
+    "content_hash": "5955669afeb8fc77a413f5255ca3d795366da221f004be8e89a7e239d6275747",
+    "parser_version": "0.4.0"
+  }
+}

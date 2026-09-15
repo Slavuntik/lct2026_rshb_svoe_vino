@@ -1,0 +1,148 @@
+{
+  "slug": "valerij-zaharin-kokur-i-ko-beloe-bryut",
+  "source": {
+    "name": "Валерий Захарьин Кокур и Ко белое брют",
+    "winery": "valeriy-zaharin",
+    "winery_name": "Валерий Захарьин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Кокур Белый",
+      "Ркацители",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из рыбы",
+      "Лёгкие закуски",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Отличается чистым интенсивным ароматом, в котором угадываются зеленое яблоко, лимон, белые цветы и грушевые леденцы. А его легкий сбалансированный вкус с оттенками зеленого яблока, крыжовника, грушевых леденцов и скошенной травы хорошо сочетается с устрицами, блюдами из рыбы, морепродуктами, легкими закусками и твердыми сырами.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Valerij_Zaharin_Kokur_i_Ko_igristoe_beloe_bryut_127fa85774.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/valerij-zaharin-kokur-i-ko-beloe-bryut",
+    "fetched_at": "2026-08-25T17:06:11+0300",
+    "content_hash": "0a02ca4b23338cbdbfe8ac1982c5dd2248f99b5804873ca141be4900eb5319b1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kokur",
+      "rkatsiteli",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.65,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-blanc-de-blancs",
+      "champagne-brut-nv"
+    ]
+  }
+}

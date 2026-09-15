@@ -1,0 +1,140 @@
+{
+  "slug": "nosorog-night",
+  "source": {
+    "name": "Nosorog night",
+    "winery": "winemafia",
+    "winery_name": "WINEMAFIA",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки"
+    ],
+    "description": "Вино глубокого рубинового цвета, отражающего его насыщенность и благородный характер. Вкус бархатистый и гармоничный, с выразительными оттенками черноплодной рябины, ванили, табака и горького шоколада. Сбалансированная кислотность придаёт вину стройность и элегантность, подчёркивая его цельную структуру. Аромат сложный и развивающийся: в процессе аэрации постепенно раскрываются ноты черноплодки и чёрной смородины, добавляя глубину и многослойность букету.\n\nСортовой состав: Красностоп Золотовский и Каберне Совиньон\n\nРучной сбор винограда. Холодная мацерация 22 суток. Брожение при контролируемой температуре 14 дней. ЯМБ на мезге 14 дней. Мацерация на мезге 50 дней. Выдержка в дубовой бочке Франция 500 литровая, первый пассаж.\n\nНАГРАДЫ: Серебро \"\"Гид по российским винам\"\" Артура Саркисяна и РБК, 2026",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Nosorog_noch_bdcfc8be7f.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/nosorog-night",
+    "fetched_at": "2026-08-25T17:04:03+0300",
+    "content_hash": "b8e0becead264385086a5b0f23987f9d12ac699be17f14ca5e53f3d706ccc9d6",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.75,
+      "body": 0.78,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "northern-rhone-syrah",
+      "bordeaux-left-bank",
+      "ribera-del-duero"
+    ]
+  }
+}

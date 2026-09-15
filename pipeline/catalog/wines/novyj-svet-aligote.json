@@ -1,0 +1,137 @@
+{
+  "slug": "novyj-svet-aligote",
+  "source": {
+    "name": "Новый Свет. Алиготе",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Алиготе"
+    ],
+    "color": "белое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "соломенный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Паста",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Виноград собирают вручную, охлаждают при переработке, осуществляют деликатное прессование, брожение происходит на чистой культуре дрожжей при низких температурах, хранение виноматериалов в условиях инертного газа, тираж и закладка на вторичное брожение с использованием собственной культуры дрожжей, выдержка на осадке в старинных подвалах при температуре 14 градусов. \n\nЯркий аромат с оттенками зеленого яблока и лимонника, нотками акации и лайма. Вкус гармоничный, округлый со средней плюс кислотностью, умеренным алкоголем, нотами яблок и мяты в длительном послевкусии",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/2938_CG_6_Oxk_C_8ebbf0da39.webp",
+    "similar_wine_slugs": [
+      "dva-brata-pet-nat-kokur-2024",
+      "grand-kyuve",
+      "blan-de-blan",
+      "grand-jete-blanc-de-noirs",
+      "grand-jete-blanc-de-blancs",
+      "perovskih_blan_de_noir",
+      "vinodelnya-vedernikov-vinodelnya-vedernikov-tsimlyanskiy-chernyy-sibirkovyy-ekstra-bryut-beloe-13",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyj-svet-aligote",
+    "fetched_at": "2026-08-25T17:04:04+0300",
+    "content_hash": "10e001282ebe8ecc1da64edb0e2e86dabfccb5edef6ac9faa6cca2bc5c3d4287",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "aligote"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.34,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

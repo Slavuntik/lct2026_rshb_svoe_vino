@@ -1,0 +1,136 @@
+{
+  "slug": "aya-organic-wine-vineyards-blush-3-kaberne-fran-rozovoe-ekstra-bryut-132",
+  "source": {
+    "name": "Blush #3",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Каберне Фран"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "яркий розовый с вишневыми отблесками",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Пицца"
+    ],
+    "description": "Вкус питкий и гармоничный, с освежающей фруктово-ягодной кислотностью и деликатным пряным послевкусием. Аромат свежий с нотами кислых ягод: малины и клюквы.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/aya_organic_wine_vineyards_blush_3_kaberne_fran_petnat_ekstra_bryut_rozovyy_132_a094099a22.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/aya-organic-wine-vineyards-blush-3-kaberne-fran-rozovoe-ekstra-bryut-132",
+    "fetched_at": "2026-08-25T16:59:37+0300",
+    "content_hash": "2d5c1ca20c2f941db6f24a5521030aec0b54a0820e4d4bf73fadcf7d9b1cd67b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.63,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "champagne-rose",
+      "prosecco-rose"
+    ]
+  }
+}

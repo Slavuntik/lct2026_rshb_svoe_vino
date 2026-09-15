@@ -1,0 +1,132 @@
+{
+  "slug": "pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115",
+  "source": {
+    "name": "Tête de Cheval\n сладкое розе",
+    "winery": "golubitskoe-estate",
+    "winery_name": "Golubitskoe Estate",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пино Гри"
+    ],
+    "color": null,
+    "sugar_category": null,
+    "color_in_glass": "вино светло-персикового цвета",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Выпечка и десерты",
+      "Легкие закуски",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "Аромат мягкий, летний, с тонами спелых садовых фруктов, ванили и корочки яблочного пирога. Вкус полный, плотный, с умеренной кислотностью и щедрой остаточной сладостью. На финише сочные фруктовые ноты.",
+    "public_rating": 3.5,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/pomeste_golubitskoe_tte_de_cheval_sladkoe_roze_pino_gri_sladkoe_rozovoe_115_f49c737b87.webp",
+    "similar_wine_slugs": [
+      "massandra-muskatel-rozovyy-belye-sorta-vinograda-rozovoe-sladkoe-16",
+      "massandra-muskat-rozovyy-pozdnego-sbora-rozovoe-sladkoe-10",
+      "imenie-sikory-krasnostop-zolotovskiy-pozdniy-sbor-rozovoe-sladkoe-13",
+      "fanagoriya-ice-wine-merlo-rozovoe-sladkoe-10",
+      "zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+      "muskat-pozdnego-sbora-rozovyj",
+      "solnechnaya-dolina-muskatnoe-festivalnoe-muskat-belyy-rozovoe-sladkoe-16"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115",
+    "fetched_at": "2026-08-25T17:04:33+0300",
+    "content_hash": "8ee62642a6b70c0761b6db25a3abe1050b6354350a3f2b911d1f2ffd1bfcf08b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": null,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pinot-grigio",
+      "orvieto",
+      "frascati"
+    ]
+  }
+}

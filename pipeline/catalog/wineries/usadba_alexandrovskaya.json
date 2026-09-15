@@ -1,0 +1,43 @@
+{
+  "slug": "usadba_alexandrovskaya",
+  "source": {
+    "name": "Усадьба Александровская",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Усадьба Александровская — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "usadba-aleksandrovskaya-bubnovyy-valet-kaberne-sovinon-krasnoe-polusladkoe-13"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/usadba_alexandrovskaya",
+    "fetched_at": "2026-08-25T21:52:01+0300",
+    "content_hash": "5d531b5da1503db26c874b55cc3a843ec5bb0aebdcd3f0e1a05f809da62fce21",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 1
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "slug": "dacha-serdyuka-kazache-krasnostop-zolotovskiy-krasnoe-suhoe-135",
+  "source": {
+    "name": "Казачье",
+    "winery": "dacha-serdyuka",
+    "winery_name": "Дача Сердюка",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "насыщенный фиолетово-вишневый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Вкус: Интенсивный, многослойный, с мягкими нотами сухофруктов, шоколада и ванили. Фруктово-пряный с яркими акцентами темных ягод и теплых специй, тонкими нюансами соли, овощей, лакрицы и чернослива.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/dacha_serdyuka_kazache_krasnostop_zolotovskiy_krasnoe_suhoe_135_4d9bef956f.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/dacha-serdyuka-kazache-krasnostop-zolotovskiy-krasnoe-suhoe-135",
+    "fetched_at": "2026-08-25T17:00:53+0300",
+    "content_hash": "8a80e42f37553f6f3dc1bc2023fb0c062ab176ceaaf30eaf3b6be127e9450368",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.75,
+      "body": 0.78,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "chianti-classico",
+      "northern-rhone-syrah",
+      "montepulciano-dabruzzo"
+    ]
+  }
+}

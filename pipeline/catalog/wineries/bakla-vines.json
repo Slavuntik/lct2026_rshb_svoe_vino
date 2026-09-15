@@ -1,0 +1,83 @@
+{
+  "slug": "bakla-vines",
+  "source": {
+    "name": "Bakla Vines",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Бахчисарайский район Крыма",
+    "climate": "умеренно континентальный",
+    "vineyard_area_ha": 10.0,
+    "vineyard_area_raw": "10 га",
+    "founded_year": null,
+    "description": "Bakla Vines — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Молодой семейный винодельческий проект в Бахчисарайском районе Крыма назван «Лозы Баклы» в честь исторического места — пещерного городища III века н.э., расположенного «в стенах» внутренней крымской гряды. Виноделы прошлых времен оставили здесь после себя выдолбленные в породе виноградные давильни-тарапаны и связанные с ними емкости для сбраживания. Кстати, логотип хозяйства — древнее изображение солнечной системы, найденное в одной из пещер.\n\nПроект создали москвичи, супруги — Дарья Ходченкова и Виктор Процко. Виктор — доктор медицинских наук, врач, хирург родился в Ялте и для него занятие виноделием — возвращение к корням. Все началось с 4 га в старом русле реки Альмы, близ Малиновки. В 2017 году здесь высадили армянский сорт кангун, с которым в Крыму никто не работал, и крымский сорт — цитронный магарача. Два белых вина вышли на рынок первыми и удивили специалистов хорошим уровнем.\n\nХарактер альминского терруара обусловили аллювиальные почвы старого русла, близость горной гряды, лесной массив и «вилка» между ночными и дневными температурами.\n\n«Титульный» терруар хозяйства — Бакла — расположен выше — на высоте 350 метров. Здесь на древнем участке морского дна, во многих местах видны доисторические ракушки и отпечатки скелетов ископаемых рыб. Такие же камни с древними раковинами находят и среди лоз. На площади 5,5 га на мергелевой почве Баклы в 2020-2021 был заложен виноградник. Ему есть куда расти — общая площадь участка составляет 19,5 га. Этот прохладный терруар имеет потенциал для создания элегантных и свежих вин.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/IMG_1201_04cea054c0.webp",
+    "wine_slugs": [
+      "bakla-vines-kangun-oranzh-beloe-suhoe-119",
+      "bakla-vines-kangun-ps-beloe-suhoe-128",
+      "bakla-vines-sira-krasnoe-suhoe-135",
+      "bakla-vines-pino-nuar-krasnoe-suhoe-125",
+      "bakla-vines-tsitron-krymskiy-tsitronnyy-magaracha-beloe-suhoe-118",
+      "bakla-vines-kangun-beloe-suhoe-12",
+      "bakla-vines-risling-beloe-polusuhoe-125",
+      "bakla-vines-kaberne-fran-krasnoe-suhoe-143"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master",
+      "chateau-cachalot"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/bakla-vines",
+    "fetched_at": "2026-08-25T21:23:33+0300",
+    "content_hash": "60246cb9026ab3ed9647a2ee694a7e4edfc9af129381cbce675d354257bb80a1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 8
+  }
+}

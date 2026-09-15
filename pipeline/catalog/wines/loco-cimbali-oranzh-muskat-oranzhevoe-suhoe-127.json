@@ -1,0 +1,141 @@
+{
+  "slug": "loco-cimbali-oranzh-muskat-oranzhevoe-suhoe-127",
+  "source": {
+    "name": "Оранж",
+    "winery": "loco-cimbali",
+    "winery_name": "Loco Cimbali",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат"
+    ],
+    "color": "оранжевое",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотисто-янтарный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус: Объемный, поторяющий аромат, с мягкими танинами и легкой горчинкой. Насыщенный аромат кураги, изюма, сладких специй, легие тона воска и ладана.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/loco_cimbali_oranzh_muskat_oranzhevoe_suhoe_127_dc98a21033.webp",
+    "similar_wine_slugs": [
+      "kuban-vino-shato-tamane-selekt-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-135",
+      "abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "chateau-tamagne-nature-orange",
+      "vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "vaynkraft-rkatsiteli-oranzh-oranzhevoe-suhoe-12",
+      "vaynkraft-traminer-oranzh-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "belbek-muskat-oranzh-muskat-belyy-oranzhevoe-suhoe-125",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "denisov-winery-tsitron-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "oxana-istratova-wine-vione-2024-oranzhevoe-suhoe-13",
+      "oxana-istratova-wine-vione-2023-oranzhevoe-suhoe-119"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/loco-cimbali-oranzh-muskat-oranzhevoe-suhoe-127",
+    "fetched_at": "2026-08-25T17:03:32+0300",
+    "content_hash": "83467c06f67980df063a3e5b3138cd856c252e34c9c4d455ca049994f1e7acef",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.5,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "friuli-orange",
+      "georgian-qvevri-amber",
+      "skin-contact-light"
+    ]
+  }
+}

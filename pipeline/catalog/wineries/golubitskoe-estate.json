@@ -1,0 +1,79 @@
+{
+  "slug": "golubitskoe-estate",
+  "source": {
+    "name": "Golubitskoe Estate",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": "Голубицкая стрелка, узкий перешеек между Азовским морем и Ахтанизовским лиманом",
+    "climate": "Умеренный, тёплый, с большим количеством осадков и ветрами",
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Golubitskoe Estate — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "История началась в 2006 году, когда предприниматель Андрей Романов учредил винное хозяйство «Вилла Романов» и выделил под него около тысячи гектаров земли; в 2009‑м стартовала закладка виноградников, а первый урожай собрали в 2016 году. В 2018 году проект перешёл под управление Beluga Group, и бренд трансформировался в Golubitskoe Estate, сохранив фамилию Романовых в названии бутик‑отеля и гастропроекта Villa Romanov. Сегодня здесь действуют современный винзавод с подземными галереями, центр винного туризма, собственные виноградники на 231 гектар и небольшой, но очень «киношный» отель с видом на море и лозы. У истоков проекта стоит Андрей Романов, который задумал «Виллу Романов» как частное поместье на берегу моря с виноградниками, рестораном и небольшим отелем для единомышленников. Позже к управлению подключилась команда Beluga Group: генеральным директором «Поместья Голубицкого» стал Сергей Куренёв, а над развитием винного туризма и гастрономической части работают отдельные команды сомелье, энологов и шеф‑поваров, выстраивающих единую историю бренда от этикетки до подачи в бокале и тарелке. Вина хозяйства регулярно появляются в российских рейтингах и профессиональных подборках, а терруар Голубицкой стрелки рассматривается как одна из ключевых «витрин» потенциала Азовского побережья.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DJI_0143_b23ae58142.webp",
+    "wine_slugs": [
+      "golubitskoe-estate-risling",
+      "pomeste-golubitskoe-tte-de-cheval-sladkoe-roze-pino-gri-rozovoe-115",
+      "pomeste-golubitskoe-kaberne-sovinon-rezerv-krasnoe-suhoe-143",
+      "pomeste-golubitskoe-noble-selection-pino-nuar-roze-rozovoe-suhoe-132",
+      "pomeste-golubitskoe-shardone-rezerv-beloe-suhoe-132",
+      "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+      "pomeste-golubitskoe-tte-de-cheval-sladkoe-risling-reynskiy-beloe-12",
+      "pomeste-golubitskoe-tte-de-cheval-blanc-de-blancs-shardone-beloe-bryut-12",
+      "golubitskoe-estate-merlo-krasnoe-suhoe-135",
+      "golubitskoe-estate-petnat-white-risling-reynskiy-beloe-suhoe-115",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "golubitskoe-estate-sovinon-blan-beloe-suhoe-11"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "gunko-winery",
+      "jd_winery",
+      "legato"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/golubitskoe-estate",
+    "fetched_at": "2026-08-25T21:23:53+0300",
+    "content_hash": "39a18a0663608d1e687559cea5b948083ae3f2f1f6110b73332eab160e182b5f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "slug": "relikta-relikta-antey-magarachskiy-muskat-belyy-rozovoe-polusuhoe-11",
+  "source": {
+    "name": "Реликта Антей Магарачский, Мускат Белый",
+    "winery": "relikta",
+    "winery_name": "Реликта",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Антей магарачский",
+      "Мускат Белый"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      15,
+      18
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Морепродукты"
+    ],
+    "description": "В аромате груши, цитрусы и  садовые цветы. Во вкусе клубника, землиника со сливками.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/relikta_relikta_antey_magarachskiy_muskat_belyy_rozovoe_polusuhoe_11_22ccbaad9f.webp",
+    "similar_wine_slugs": [
+      "rozovoe-zoloto",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+      "aratti-kaberne-po-belomu-1",
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar",
+      "aya-khrustaleva-76-merlot-organik",
+      "perovskih_merlo",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-rozovoe-novyy-svet-pino-nuar-125",
+      "zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+      "fanagoriya-brule-cabernet-franc-polusuhoe-rozovoe-kaberne-fran-12",
+      "fanagoriya-zelyonoe-vino-risling-tsitronnyy-magaracha-merlo-rozovoe-polusuhoe-11",
+      "fanagoriya-rose-kaberne-sovinon-rozovoe-polusuhoe-13",
+      "fanagoriya-rose-saperavi-rozovoe-polusuhoe-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/relikta-relikta-antey-magarachskiy-muskat-belyy-rozovoe-polusuhoe-11",
+    "fetched_at": "2026-08-25T17:04:36+0300",
+    "content_hash": "556623a52c13a76b2176e1aeb9f1d670ba2a9552f509a04c08fb45b34bd1b5b9",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "antey-magarachsky",
+      "muskat-bely"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

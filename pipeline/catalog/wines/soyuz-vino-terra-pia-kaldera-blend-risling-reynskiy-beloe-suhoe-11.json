@@ -1,0 +1,144 @@
+{
+  "slug": "soyuz-vino-terra-pia-kaldera-blend-risling-reynskiy-beloe-suhoe-11",
+  "source": {
+    "name": "Терра Пиа Кальдера Бленд",
+    "winery": "soyuz-vino",
+    "winery_name": "Союз-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг Рейнский",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "цвет колеблется от светло-соломенного до соломенного с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Рыба и морепродукты"
+    ],
+    "description": "Вкус вина сложный, свежий, с высокой натуральной кислотностью, фруктовыми оттенками и живым, бодрящим послевкусием с минеральными нюансами.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/soyuz_vino_terra_pia_kaldera_blend_risling_reynskiy_beloe_suhoe_11_0a3230fc09.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/soyuz-vino-terra-pia-kaldera-blend-risling-reynskiy-beloe-suhoe-11",
+    "fetched_at": "2026-08-25T17:05:40+0300",
+    "content_hash": "6b8156ca5677e1d4c7ee17fbfec021dcc17f4525dc274b80bb902edb4853e36c",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.725,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fume",
+      "chablis",
+      "albarino"
+    ]
+  }
+}

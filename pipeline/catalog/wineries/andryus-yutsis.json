@@ -1,0 +1,85 @@
+{
+  "slug": "andryus-yutsis",
+  "source": {
+    "name": "Andryus Yutsis",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "долина реки Черная",
+    "climate": "умеренно континентальный",
+    "vineyard_area_ha": 6.0,
+    "vineyard_area_raw": "6 га",
+    "founded_year": null,
+    "description": "Andryus Yutsis — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Андрюс работает как с органическим виноградом, так и с конвенциональным, производя консервативные классические вина и современные натуральные на диких дрожжах без добавления серы.\n\n- выдержки винограда на сверхнизких температурах- выдержки на дне моря- получения множества винных интерпретаций одного сорта применяя различные техники включая гравитационный метод- ферментации в бетонных яйцах и пр. емкостях\n\nДо создания собственного бренда Андрюс прошел путь от простого студента Тимирязевской сельскохозяйственной академии до винодела со своим хозяйством, не пользуясь никакой инвесторской поддержкой. Сегодня винодел выпускает 10 тыс. бутылок ежегодно на своих собственных мощностях.\n\nАндрюс работает как с органическим виноградом, так и с конвенциональным, производя консервативные классические вина и современные натуральные без добавления серы. Вина коллекции Andryus Yutsis – это результат непрерывных экспериментов: от ферментации в бетонных яйцах до выдержки на дне моря, от тройного виноградного сбора до получения 8 интерпретаций одного сорта путем сбраживания в разных емкостях и бочках.\n\nАндрюс Юцис родился в подмосковном городе Электросталь. Окончил московскую сельскохозяйственную академию имени К.А.Тимирязева. Решив стать виноделом, параллельно с магистратурой, поехал на стажировку в Южную Моравию, где освоил полный цикл производства вина. Работал кавистом в московских винотеках.\n\n2016 - 2019Преподаватель в филиале МГУ имени М.В.Ломоносова. Регистрация товарной марки, закупка винограда и производство своих первых вин ТМ «Андрюс Юцис» на мощностях вин. завода «Усадьба Перовских» в г. Севастополь\n\n2020 - 2021Молодой предприниматель России. Победитель регионального конкурса в Севастополе. Появление вин ТМ «Андрюс Юцис» в ресторанах со звездами Мишлен\n\n2022 - 2023Аренда и модернизированние винодельни в г. Бахчисарай. Появление вин ТМ «Андрюс Юрис» в поездах России следующих по маршруту Санкт-Петербург - Москва - Севастополь. Создание в подмосковном Клину завода по производству премиальных сидров совместно с другом и однокурсником Павлом Большаковым.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/3_1d122f589f.webp",
+    "wine_slugs": [
+      "andryus-yutsis-organic-syrah-sira-krasnoe-suhoe-135",
+      "andryus-yutsis-muscat-blanc-muskat-beloe-suhoe-112",
+      "andryus-yutsis-pinot-grigio-pino-gri-beloe-suhoe-125",
+      "andryus-yutsis-orange-vermentino-beloe-suhoe-112",
+      "andryus-yutsis-muskat-blan-vione-beloe-suhoe-117",
+      "andryus-yutsis-shenen-blan-beloe-suhoe-12",
+      "andryus-yutsis-risling-beloe-suhoe-12",
+      "andryus-yutsis-pino-nuar-krasnoe-suhoe-12",
+      "andryus-yutsis-vione-beloe-suhoe-112",
+      "andryus-yutsis-organik-risling-beloe-suhoe-115"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master",
+      "chateau-cachalot"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/andryus-yutsis",
+    "fetched_at": "2026-08-25T21:23:33+0300",
+    "content_hash": "7edc5b77796b8beea0accce31f5a0171cdf410c39b97bb10efb541c005f0ddc0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 10
+  }
+}

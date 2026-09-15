@@ -1,0 +1,81 @@
+{
+  "slug": "vi-uralskij-kubok-somele-registracziya-otkryta",
+  "source": {
+    "title": "VI Уральский кубок сомелье - регистрация открыта!",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Сомелье, кависты, профессионалы и начинающие свой путь в винной сфере от Казани до Владивостока — регистрация на VI Уральский кубок сомелье официально открыта.&nbsp;</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Мероприятие пройдёт&nbsp;12-13 сентября 2026 года&nbsp;в&nbsp;Екатеринбурге. Конкурс обещает стать крупнейшим профессиональным событием Уральского региона в винной сфере.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Что ждёт участников</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Во время прохождения конкурсной программы вашими проводниками, наставниками и строгими судьями будут лучшие сомелье России, президенты Ассоциаций, представители виноторговых компаний и виноделен. Это отличная возможность продемонстрировать свои знания, отточить навыки и обменяться опытом с ведущими экспертами отрасли.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Участников ждут интереснейшие испытания: дегустации вслепую, проверка теоретических знаний и практических навыков обслуживания и многое другое.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Аттестация РАС — в те же дни</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В эти дни вы сможете пройти аттестацию Российской Ассоциации Сомелье (РАС) — удобный повод совместить участие в конкурсе с подтверждением квалификации.</span></p><p>&nbsp;</p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Как участвовать</span></h2><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Количество мест ограничено — рекомендуем не откладывать регистрацию. Ссылка на регистрацию доступна на сайте РАС:&nbsp;</span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://sommelier.ru/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">sommelier.ru</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">.</span></p>",
+    "body": "Сомелье, кависты, профессионалы и начинающие свой путь в винной сфере от Казани\nдо Владивостока — регистрация на VI Уральский кубок сомелье официально открыта. \n\nМероприятие пройдёт 12-13 сентября 2026 года в Екатеринбурге. Конкурс обещает\nстать крупнейшим профессиональным событием Уральского региона в винной сфере.\n\n \n\n\nЧТО ЖДЁТ УЧАСТНИКОВ\n\n \n\nВо время прохождения конкурсной программы вашими проводниками, наставниками и\nстрогими судьями будут лучшие сомелье России, президенты Ассоциаций,\nпредставители виноторговых компаний и виноделен. Это отличная возможность\nпродемонстрировать свои знания, отточить навыки и обменяться опытом с ведущими\nэкспертами отрасли.\n\n \n\nУчастников ждут интереснейшие испытания: дегустации вслепую, проверка\nтеоретических знаний и практических навыков обслуживания и многое другое.\n\n \n\n\nАТТЕСТАЦИЯ РАС — В ТЕ ЖЕ ДНИ\n\n \n\nВ эти дни вы сможете пройти аттестацию Российской Ассоциации Сомелье (РАС) —\nудобный повод совместить участие в конкурсе с подтверждением квалификации.\n\n \n\n\nКАК УЧАСТВОВАТЬ\n\n \n\nКоличество мест ограничено — рекомендуем не откладывать регистрацию. Ссылка на\nрегистрацию доступна на сайте РАС: sommelier.ru [https://sommelier.ru/].",
+    "body_chars": 1181,
+    "headings": [
+      "Что ждёт участников",
+      "Аттестация РАС — в те же дни",
+      "Как участвовать"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-07-19T21:00:00.000Z",
+    "published_date": "2026-07-19",
+    "published_year": 2026,
+    "modified_at": "2026-07-20T08:00:05.074Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/nano_banana_20260719_160721_0dfc05f2_bb131e7d0e.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/vi-uralskij-kubok-somele-registracziya-otkryta",
+    "fetched_at": "2026-08-25T21:30:14+0300",
+    "content_hash": "b9cdafad2ecc1a10a9274ab8a59c78bbfd5ec21e837d34117470bafe002e4667",
+    "parser_version": "0.4.0"
+  }
+}

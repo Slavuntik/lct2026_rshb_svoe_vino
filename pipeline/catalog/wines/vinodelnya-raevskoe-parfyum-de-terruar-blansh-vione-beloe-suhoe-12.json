@@ -1,0 +1,141 @@
+{
+  "slug": "vinodelnya-raevskoe-parfyum-de-terruar-blansh-vione-beloe-suhoe-12",
+  "source": {
+    "name": "Парфюм Де Терруар. Бланш",
+    "winery": "raevskoe",
+    "winery_name": "Раевское",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Вионье"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "лимонно-соломенный",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Рыба и морепродукты",
+      "Сыры"
+    ],
+    "description": "Вкус: Сбалансированный с фруктовыми, минеральными, цитрусовыми и цветочными штрихами, пикантной кислинкой и сдержанным послевкусием. Изысканный, с оттенками яблока, груши, личи, персика, лайма, розы и минералов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_raevskoe_parfyum_de_terruar_blansh_vione_beloe_suhoe_12_da74965f85.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-raevskoe-parfyum-de-terruar-blansh-vione-beloe-suhoe-12",
+    "fetched_at": "2026-08-25T17:07:34+0300",
+    "content_hash": "9661273cbbc3562ea059fc01add06b010aa2353f8dc7d9ae1a696a473482ffc5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "vione"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.45,
+      "tannin": 0.05,
+      "body": 0.7,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "condrieu-viognier",
+      "white-rhone-blend",
+      "gewurztraminer-alsace"
+    ]
+  }
+}

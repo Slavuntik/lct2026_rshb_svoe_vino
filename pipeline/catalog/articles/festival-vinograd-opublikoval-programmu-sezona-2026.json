@@ -1,0 +1,73 @@
+{
+  "slug": "festival-vinograd-opublikoval-programmu-sezona-2026",
+  "source": {
+    "title": "Фестиваль «Виноград» опубликовал программу сезона 2026",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Эногастрономический фестиваль «Виноград» в 2026 году пройдет сразу в нескольких российских городах. Первая площадка сезона откроется в Великом Новгороде 6 июня. Фестиваль продлится до 14 июня, после чего проект отправится в другие регионы страны.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Основной площадкой станет Аркада Гостиного двора. В течение девяти дней здесь будут работать винная ярмарка, гастрономические зоны, лекторий и открытые площадки с концертами и кинопоказами.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В программе заявлены более 150 российских винных брендов из Кубани, Крыма, Кавказа и Долины Дона. Гостей ждут дегустации, встречи с виноделами и образовательная площадка «Винология» где проходят мастер-классы, дегустации и публичные дискуссии, посвященные российскому виноделию и винной культуре.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Один из крупнейших эногастрономических проектов организовывает команда «Национального агентства маркетинга российского вина». В каждом городе организаторы собирают собственную программу с учетом локальной гастрономии, городской среды и культурной повестки.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Фестиваль «Виноград» проводится уже пятый сезон подряд и постепенно завоевывает сердца винолюбов по всей стране, оставаясь крупнейшей площадкой для популяризации российского вина и внутреннего гастрономического туризма.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Подробнее о событии и программа </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://festvinograd.ru/#tab3\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">festvinograd.ru</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><span>&nbsp;&nbsp;</span></span></p>",
+    "body": "Эногастрономический фестиваль «Виноград» в 2026 году пройдет сразу в нескольких\nроссийских городах. Первая площадка сезона откроется в Великом Новгороде 6 июня.\nФестиваль продлится до 14 июня, после чего проект отправится в другие регионы\nстраны. \n\n \n\nОсновной площадкой станет Аркада Гостиного двора. В течение девяти дней здесь\nбудут работать винная ярмарка, гастрономические зоны, лекторий и открытые\nплощадки с концертами и кинопоказами. \n\n \n\nВ программе заявлены более 150 российских винных брендов из Кубани, Крыма,\nКавказа и Долины Дона. Гостей ждут дегустации, встречи с виноделами и\nобразовательная площадка «Винология» где проходят мастер-классы, дегустации и\nпубличные дискуссии, посвященные российскому виноделию и винной культуре. \n\n \n\nОдин из крупнейших эногастрономических проектов организовывает команда\n«Национального агентства маркетинга российского вина». В каждом городе\nорганизаторы собирают собственную программу с учетом локальной гастрономии,\nгородской среды и культурной повестки. \n\n \n\nФестиваль «Виноград» проводится уже пятый сезон подряд и постепенно завоевывает\nсердца винолюбов по всей стране, оставаясь крупнейшей площадкой для\nпопуляризации российского вина и внутреннего гастрономического туризма.\n\n \n\nПодробнее о событии и программа festvinograd.ru\n[https://festvinograd.ru/#tab3]",
+    "body_chars": 1314,
+    "headings": [],
+    "rubric": "События",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "НАМ российского вина",
+    "published_at": "2026-05-26T07:59:25.830Z",
+    "published_date": "2026-05-26",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/2789653_0_160_3072_1888_600x0_80_0_0_aa8f2d373987cda751ed1cceee04b49f_jpg_2cdc34c0cd.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/festival-vinograd-opublikoval-programmu-sezona-2026",
+    "fetched_at": "2026-08-25T21:26:26+0300",
+    "content_hash": "d3ffe25a94f21c70bd4a89699ec1a666b0d2a627a969e219ce37a6e6d8941b94",
+    "parser_version": "0.4.0"
+  }
+}

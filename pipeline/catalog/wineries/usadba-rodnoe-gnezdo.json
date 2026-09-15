@@ -1,0 +1,73 @@
+{
+  "slug": "usadba-rodnoe-gnezdo",
+  "source": {
+    "name": "Усадьба Родное Гнездо",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 22.0,
+    "vineyard_area_raw": "22 га",
+    "founded_year": null,
+    "description": "Усадьба Родное Гнездо — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Усадьба “Родное гнездо” - цельный винно-туристический комплекс в окружении природы недалеко от Севастополя. И удивительное место для перезагрузки и восстановления в уникальном крымском терруаре.\n\nПроект винодельни, разработанный молодыми специалистами архитектурного бюро, представляет собой конструкцию в виде винной бочки, гармонично врезанную в скалу. Эта форма подчеркивает связь с природой и создает атмосферу традиций виноделия.\n\nК винодельне будет пристроен современный цех готовой продукции, а композицию обрамит колоннада из камня Алуштинского диабаза, добавляя проекту элегантности.\n\nНа верхнем этаже разместится смотровой ресторан с захватывающим видом на окрестности, а дегустационный зал в сердце бочковой выдержки позволит гостям продегустировать уникальные вина. Этот проект объединяет искусство, природу и гастрономию, приглашая ценителей насладиться моментами истинного удовольствия.\n\nВиноградник первый и единственный в Севастополе террасируемый с перепадами высот более 100 метров. Высажено 9 га международных сортов и в ближайшее время планируется увеличение посадки до 13 га.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/1_768x614_4d17a36983.webp",
+    "wine_slugs": [
+      "usadba-rodnoe-gnezdo-4-elements-risling-beloe-suhoe-12",
+      "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-polusladkoe-12",
+      "usadba-rodnoe-gnezdo-4-elements-sovinon-blan-beloe-suhoe-12",
+      "usadba-rodnoe-gnezdo-4-elements-risling-beloe-polusuhoe-12",
+      "usadba-rodnoe-gnezdo-4-elements-kaberne-sovinon-krasnoe-suhoe-15",
+      "usadba-rodnoe-gnezdo-4-elements-sira-roze-rozovoe-polusuhoe-135"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/usadba-rodnoe-gnezdo",
+    "fetched_at": "2026-08-25T21:24:25+0300",
+    "content_hash": "77ac07bab765565f0df3ec2c4fcac84b78f00f57a4c26dbb311214568011e6ec",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 6
+  }
+}

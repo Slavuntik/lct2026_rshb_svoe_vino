@@ -1,0 +1,73 @@
+{
+  "slug": "pervyj-rossijskij-vinodelcheskij-festival-startuet-v-restoranah-po-vsej-strane-1",
+  "source": {
+    "title": "Первый Российский Винодельческий Фестиваль стартует в ресторанах по всей стране",
+    "schema_type": "NewsArticle",
+    "lead": "С 15 ноября по 7 декабря в ресторанах по всей стране пройдет первый Российский\nвинодельческий фестиваль. \n\nМероприятия проводятся под эгидой только что завершившегося Винодельческого\nфорума.\n\nОрганизаторы фестиваля в лице Россельхозбанка и Росконгресса намерены таким образом\nповысить популярность и узнаваемость российских вин.\n\nВ мероприятии примут участие более 450 ресторанов, винных баров и кафе из\nразных городов. \nГостям предложат попробовать гастрономические сеты,\nдополненные гармонично подобранным отечественным вином.\n\nПодробную информацию о фестивале и ресторанах-участниках можно найти на сайте russianwinefest.ru",
+    "body": "С 15 ноября по 7 декабря в ресторанах по всей стране пройдет первый Российский\nвинодельческий фестиваль. Мероприятия проводятся под эгидой только что\nзавершившегося Винодельческого форума. Организаторы фестиваля в лице\nРоссельхозбанка и Росконгресса намерены таким образом повысить популярность и\nузнаваемость российских вин. В мероприятии примут участие более 450 ресторанов,\nвинных баров и кафе из разных городов. Гостям предложат попробовать\nгастрономические сеты, дополненные гармонично подобранным отечественным вином.\nПодробную информацию о фестивале и ресторанах-участниках можно найти на сайте\nrussianwinefest.ru",
+    "body_chars": 620,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2025-11-15T10:16:00.941Z",
+    "published_date": "2025-11-15",
+    "published_year": 2025,
+    "modified_at": "2025-11-15T10:16:00.941Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Dolina_Lefkadia_Amphora_8ce9e51ca6.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/pervyj-rossijskij-vinodelcheskij-festival-startuet-v-restoranah-po-vsej-strane-1",
+    "fetched_at": "2026-08-25T21:28:28+0300",
+    "content_hash": "7358551d993150b95dc2400622206706c687601be745238f3e0979c028be7a88",
+    "parser_version": "0.4.0"
+  }
+}

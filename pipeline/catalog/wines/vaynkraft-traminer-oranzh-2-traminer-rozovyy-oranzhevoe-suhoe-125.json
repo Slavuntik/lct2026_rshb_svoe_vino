@@ -1,0 +1,139 @@
+{
+  "slug": "vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+  "source": {
+    "name": "Траминер Оранж 2",
+    "winery": "vajn-kraft",
+    "winery_name": "ВайнКрафт",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Траминер Розовый"
+    ],
+    "color": "оранжевое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светлый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Вкус: Мягкий, фруктовый, с приятной сбалансированной кислинкой и свежим послевкусием. Яркий, фруктовый, с сочными тонами тропических плодов, сладкого апельсина, летнего цветущего луга и сладких специй.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vaynkraft_traminer_oranzh_2_traminer_rozovyy_oranzhevoe_suhoe_125_3c507d40ce.webp",
+    "similar_wine_slugs": [
+      "kuban-vino-shato-tamane-selekt-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-135",
+      "abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "chateau-tamagne-nature-orange",
+      "vaynkraft-rkatsiteli-oranzh-oranzhevoe-suhoe-12",
+      "vaynkraft-traminer-oranzh-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "belbek-muskat-oranzh-muskat-belyy-oranzhevoe-suhoe-125",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "denisov-winery-tsitron-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "oxana-istratova-wine-vione-2024-oranzhevoe-suhoe-13",
+      "oxana-istratova-wine-vione-2023-oranzhevoe-suhoe-119",
+      "oxana-istratova-wine-rkatsiteli-2024-oranzhevoe-suhoe-12"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:06:26+0300",
+    "content_hash": "37ba2f555570a6abcad2cfbd696015cf93da84fa1fa7660dc192f5dcae9dd3e0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "traminer"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.5,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "friuli-orange",
+      "georgian-qvevri-amber",
+      "skin-contact-light"
+    ]
+  }
+}

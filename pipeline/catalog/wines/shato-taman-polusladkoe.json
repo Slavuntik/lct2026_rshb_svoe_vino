@@ -1,0 +1,141 @@
+{
+  "slug": "shato-taman-polusladkoe",
+  "source": {
+    "name": "Шато Тамань Полусладкое",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "светло-соломенный с оттенками от зеленоватого до золотистого",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Легкие закуски"
+    ],
+    "description": "Вкус лёгкий, с гармоничной, приятной сладостью и незначительной кислинкой. В аромате цветочные тона.\n\nСбор винограда осуществляется на сахарах 19-21%. Прессование винограда проходит в мягком режиме (чтобы не экстрагировать полифенолы из кожицы винограда). Осветление сусла проводится с помощью технологического способа – флотация. Затем проводится брожение в емкостях из нержавеющей стали при температуре 16-18 градусов. После брожения производится съем с дрожжевого осадка с дальнейшим купажированием виноматериалов.\n \nВо время вторичной ферментации бродильную смесь направляют на шампанизацию в бродильные резервуары. Брожение проводят при температуре не выше 20°С. Первые 24 часа брожение открытое, после начала активного выделения СО2 — герметичное. В процессе вторичной ферментации должно быть сброжено не менее 18 г/дм3 сахара и достигнуто давление в бродильном резервуаре не менее 450 кПа при 20°С, после чего проводится остановка брожения путем охлаждения бродильной смеси до температуры 0°С, предварительно шампанизированное вино охлаждают до температуры +7 - +10°С и снимают с дрожжевого осадка. Затем шампанизированное вино охлаждают до температуры минус 4°С. Охлаждение вина производят за время не более 18 часов, после чего его выдерживают при температуре охлаждения не менее 48 часов.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Igristoe_0_75_l_2024gu_Normal_Beloe_Polusl_59c8d1f2c5.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "myshako-igristoe-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/shato-taman-polusladkoe",
+    "fetched_at": "2026-08-25T17:05:12+0300",
+    "content_hash": "c5867154c9281c7c78935a22ee5d0f3cfabf7f2d4b23f52d959088cc8ce63507",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "white-semisweet",
+      "riesling-kabinett"
+    ]
+  }
+}

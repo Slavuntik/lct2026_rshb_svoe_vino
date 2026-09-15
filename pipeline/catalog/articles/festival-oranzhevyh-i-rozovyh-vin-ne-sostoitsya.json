@@ -1,0 +1,77 @@
+{
+  "slug": "festival-oranzhevyh-i-rozovyh-vin-ne-sostoitsya",
+  "source": {
+    "title": "Фестиваль оранжевых и розовых вин не состоится",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">16 апреля в Акцизном зале Центра современного искусства Винзавод планировался необычный </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://vino-svoe.ru/articles/v-moskve-projdet-festival-oranzhevyh-i-rozovyh-vin\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">тематический салон</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">, направленный только на два стиля: розовые и оранжевые вина.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">К большому сожалению, на днях организаторы сообщили об отмене мероприятия, озвучив несколько причин. Одна из возможных – невысокий интерес аудитории к нишевым категориям и не столь широким ассортиментом у виноделов. Также организаторы обратили внимание на падение эффективности продвижения в привычных каналах коммуникации.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">За последние недели рекламный рынок, действительно, «просел». Рекламодатели приостанавливают промо, а потребители теперь разрознены по площадкам, а то и не имеет доступ к некоторым совсем.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Мы сожалеем, что событие не состоится и желаем организаторам успехов в будущих мероприятиях. &nbsp;</span></p>",
+    "body": "16 апреля в Акцизном зале Центра современного искусства Винзавод планировался\nнеобычный тематический салон\n[https://vino-svoe.ru/articles/v-moskve-projdet-festival-oranzhevyh-i-rozovyh-vin],\nнаправленный только на два стиля: розовые и оранжевые вина.\n\n \n\nК большому сожалению, на днях организаторы сообщили об отмене мероприятия,\nозвучив несколько причин. Одна из возможных – невысокий интерес аудитории к\nнишевым категориям и не столь широким ассортиментом у виноделов. Также\nорганизаторы обратили внимание на падение эффективности продвижения в привычных\nканалах коммуникации. \n\n \n\nЗа последние недели рекламный рынок, действительно, «просел». Рекламодатели\nприостанавливают промо, а потребители теперь разрознены по площадкам, а то и не\nимеет доступ к некоторым совсем.\n\n \n\nМы сожалеем, что событие не состоится и желаем организаторам успехов в будущих\nмероприятиях.",
+    "body_chars": 869,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "РЕДАКЦИЯ «СВОЁ ВИНО»",
+    "photo_credit": "социальные сети сообщества Энотузиасты",
+    "published_at": "2026-04-10T08:30:00.000Z",
+    "published_date": "2026-04-10",
+    "published_year": 2026,
+    "modified_at": "2026-04-10T09:05:19.133Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/photo_2026_03_23_20_27_58_843591c4e6.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/festival-oranzhevyh-i-rozovyh-vin-ne-sostoitsya",
+    "fetched_at": "2026-08-25T21:26:22+0300",
+    "content_hash": "c908225744f916658208549cdc5b5a62d20cf43ec0bddd91346f004d25dea37d",
+    "parser_version": "0.4.0"
+  }
+}

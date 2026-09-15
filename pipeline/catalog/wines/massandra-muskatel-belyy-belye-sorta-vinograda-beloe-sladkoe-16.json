@@ -1,0 +1,140 @@
+{
+  "slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+  "source": {
+    "name": "Мускатель белый",
+    "winery": "massandra",
+    "winery_name": "Массандра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Белые сорта винограда"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "янтарно-золотистый",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Мороженое"
+    ],
+    "description": "Аромат мускатный, цветочный с нотами акации, мёда и персика; вкус сладкий, гармоничный, с богатой мускатной ароматикой и долгим медово-цветочным послевкусием. К фруктовым десертам, выпечке, мягким сырам.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/massandra_muskatel_belyy_belye_sorta_vinograda_beloe_sladkoe_16_f7e0314033.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "madera-krymskaya",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "le-general-hiver",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10",
+      "massandra-portveyn-belyy-krymskiy-kokur-beloe-sladkoe-18"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+    "fetched_at": "2026-08-25T17:03:48+0300",
+    "content_hash": "713624dd07adb8f40dcd18ed47f3abdc409150ce46e69c75adc5c6c263795e68",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": null,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.17,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "ice-wine",
+      "muscat-beaumes-de-venise",
+      "passito"
+    ]
+  }
+}

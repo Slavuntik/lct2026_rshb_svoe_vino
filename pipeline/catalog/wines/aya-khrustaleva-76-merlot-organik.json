@@ -1,0 +1,141 @@
+{
+  "slug": "aya-khrustaleva-76-merlot-organik",
+  "source": {
+    "name": "Aya Khrustaleva 76 merlot Органик",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мерло"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусухое",
+    "color_in_glass": "розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус элегантный, минеральный, с хорошей структурой, с приятным ягодным-сливочным послевкусием. Аромат сдержанный, раскрывается нотками северных ягод, клюквы, клубники, барбариса с минеральными оттенками.",
+    "public_rating": 4.75,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/PU_Sjv7dn_M_Nil_H25_TO_9_Bcb_Bjo_R8u_Zy_Sbk_V5_WTE_Jjg3_C_Ky_5_U_v_Ue_Qv_P6o_l_XGG_5q_NED_Mtd_Ztu_Uj_Etjwa_Qrt_TX_Ag_c31d9f8afc.webp",
+    "similar_wine_slugs": [
+      "rozovoe-zoloto",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1",
+      "aratti-kaberne-po-belomu-1",
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar",
+      "perovskih_merlo",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-polusuhoe-rozovoe-novyy-svet-pino-nuar-125",
+      "zolotaya-balka-zb-frizzante-semi-dry-rose-risling-rozovoe-polusuhoe-10",
+      "fanagoriya-brule-cabernet-franc-polusuhoe-rozovoe-kaberne-fran-12",
+      "fanagoriya-zelyonoe-vino-risling-tsitronnyy-magaracha-merlo-rozovoe-polusuhoe-11",
+      "fanagoriya-rose-kaberne-sovinon-rozovoe-polusuhoe-13",
+      "fanagoriya-rose-saperavi-rozovoe-polusuhoe-125",
+      "fanagoriya-par-amour-pervenets-magaracha-rozovoe-polusuhoe-105-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/aya-khrustaleva-76-merlot-organik",
+    "fetched_at": "2026-08-25T16:59:36+0300",
+    "content_hash": "554f4131eedad746eec228c85879b7326167d1ffdb3d9a402d677120eeb10122",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "merlo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.3,
+      "acidity": 0.5,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

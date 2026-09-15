@@ -1,0 +1,141 @@
+{
+  "slug": "skalistyy-bereg-skalistyy-bereg-krasnostop-zolotovskiy-krasnoe-suhoe-133",
+  "source": {
+    "name": "Скалистый берег. Красностоп Золотовский",
+    "winery": "skalistyy-bereg",
+    "winery_name": "Скалистый берег",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Красностоп Золотовский"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-гранатовый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      17,
+      19
+    ],
+    "food_pairings": [
+      "Сыры"
+    ],
+    "description": "В аромате печеное яблоко, хлебная корочка, ежевика, чернослив, шоколад, свежая сдобная булочка. Вкус плотный, насыщенный, со спелыми интенсивными танинами, оттенками пастилы, сливы и шоколода и длительным послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/skalistyy_bereg_skalistyy_bereg_krasnostop_zolotovskiy_krasnoe_suhoe_133_b9963f6e31.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/skalistyy-bereg-skalistyy-bereg-krasnostop-zolotovskiy-krasnoe-suhoe-133",
+    "fetched_at": "2026-08-25T17:05:16+0300",
+    "content_hash": "366189f7736af263f1961821859e442b1258a4e873a42c67fea0b6680b5ec157",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "krasnostop-zolotovsky"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.75,
+      "body": 0.78,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "chianti-classico",
+      "northern-rhone-syrah",
+      "montepulciano-dabruzzo"
+    ]
+  }
+}

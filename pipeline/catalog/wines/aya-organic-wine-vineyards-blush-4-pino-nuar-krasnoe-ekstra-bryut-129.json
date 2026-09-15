@@ -1,0 +1,117 @@
+{
+  "slug": "aya-organic-wine-vineyards-blush-4-pino-nuar-krasnoe-ekstra-bryut-129",
+  "source": {
+    "name": "Blush #4",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "красное",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "насыщенный рубиново-вишневый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус легкий, питкий, уточненный, выразительно-фруктовый, с мягкими танинами и нежной ягодной кислинкой. В аромате спелые красные ягоды, джем и специи.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/aya_organic_wine_vineyards_blush_4_pino_nuar_petnat_ekstra_bryut_krasnyy_129_26041a124c.webp",
+    "similar_wine_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/aya-organic-wine-vineyards-blush-4-pino-nuar-krasnoe-ekstra-bryut-129",
+    "fetched_at": "2026-08-25T16:59:37+0300",
+    "content_hash": "d4000d456ab81194f59f9cb1ac9c5af39f9e38fb6f3aa5813e257252168a8b30",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.7,
+      "tannin": 0.4,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

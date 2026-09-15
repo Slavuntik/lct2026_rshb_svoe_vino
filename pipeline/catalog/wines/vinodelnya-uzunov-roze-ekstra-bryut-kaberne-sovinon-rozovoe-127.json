@@ -1,0 +1,138 @@
+{
+  "slug": "vinodelnya-uzunov-roze-ekstra-bryut-kaberne-sovinon-rozovoe-127",
+  "source": {
+    "name": "Розе экстра брют",
+    "winery": "vinodelnya-uzunov",
+    "winery_name": "Винодельня Узунов",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Каберне Фран"
+    ],
+    "color": "розовое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "бледно-розовый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вино приготовлено из винограда сортов Каберне Совиньон и Каберне Фран. \nОднократное брожение при низкой температуре в стальной емкости и выдержка на полном дрожжевом осадке 6 месяцев. Яркое, свежее, очень ягодное и сочное игристое. Аромат яркий и комплексный. В первом носе раскрываются тона ежевики, смородины, барбариса. Далее следуют ноты садовой розы, медоносных цветов и ягодных леденцов. Вкус стройный, сбалансированный, с сочной гастрономичной кислотностью и тонким ягодным послевкусием. Свежо, колко, ягодно.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_uzunov_roze_ekstra_bryut_kaberne_sovinon_igristoe_ekstra_bryut_rozovoe_127_e1e68b12cc.webp",
+    "similar_wine_slugs": [
+      "pet-nat-sosedi-2024",
+      "magnatum-rose",
+      "grand-jete-rose",
+      "denisov_pet_nat_rubin",
+      "perovskih_rose",
+      "inkermanskiy-zmv-inkerman-roze-zero-dozazh-kokur-rozovoe-ekstra-bryut-12",
+      "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+      "fanagoriya-alveus-ultra-cuvee-ekstra-bryut-rozovoe-merlo-12",
+      "relikta-relikta-petnat-antey-magarachskiy-rozovoe-ekstra-bryut-11",
+      "aristov-kyuve-aleksandr-roze-de-pino",
+      "shato-pino-petnat-pino-gri-rozovoe-ekstra-bryut-11",
+      "shato-pino-petnat-pino-nuar-rozovoe-ekstra-bryut-11"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-uzunov-roze-ekstra-bryut-kaberne-sovinon-rozovoe-127",
+    "fetched_at": "2026-08-25T17:07:41+0300",
+    "content_hash": "43f307fa2fea0b9ac5af716db5150e93a3cb3fa2c35bb58c5accf16eea70207a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "kaberne-fran"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.65,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

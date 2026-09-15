@@ -1,0 +1,142 @@
+{
+  "slug": "vysokij-bereg-risling-zelenaya-seriya-2",
+  "source": {
+    "name": "Высокий берег Рислинг. Зеленая серия",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "экстра брют",
+    "color_in_glass": "светло-соломенный с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус яркий и сочный с фруктово-цитрусовыми акцентами с живой кислотностью и стойким, сухим, пикантным послевкусием. В аромате оттенки лайма и зелёного яблока.\n\nСбор винограда осуществляется на сахарах 19–22%, прессование винограда проходит в мягком режиме, (чтобы не экстрагировать полифенолы из кожицы винограда), осветление сусла проводится с помощью технологического способа – флотация. Затем проводится брожение в емкостях из нержавеющей стали при температуре 16–18 градусов. После брожения производится съем с дрожжевого осадка с дальнейшим проведением батонажа на тонком дрожжевом осадке не менее 4 месяцев. Проводится в бутылке, брожение протекает 30-40 суток. Бутылочная выдержка на дрожжевом осадке не менее 9 месяцев при температуре 14–16 градусов.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/VB_Risling_vyderzhannoe_ekstrabryut_0_75_l_2022_30cc340906.webp",
+    "similar_wine_slugs": [
+      "dva-brata-pet-nat-kokur-2024",
+      "grand-kyuve",
+      "blan-de-blan",
+      "grand-jete-blanc-de-noirs",
+      "grand-jete-blanc-de-blancs",
+      "perovskih_blan_de_noir",
+      "vinodelnya-vedernikov-vinodelnya-vedernikov-tsimlyanskiy-chernyy-sibirkovyy-ekstra-bryut-beloe-13",
+      "inkermanskiy-zmv-inkerman-pino-blan-zero-dozazh-beloe-ekstra-bryut-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-blan-de-nuar-pino-nuar-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-ekstra-bryut-beloe-novyy-svet-aligote-13",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-shardone-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-ekstra-bryut-beloe-novyy-svet-kyuve-de-prestizh-shardone-125"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vysokij-bereg-risling-zelenaya-seriya-2",
+    "fetched_at": "2026-08-25T17:08:02+0300",
+    "content_hash": "0b457bcc9c5c232594dc1f4521fb19f525927b97a1aa9948caa8f21370f33f0f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.02,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.6,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

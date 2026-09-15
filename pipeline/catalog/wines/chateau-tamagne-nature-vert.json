@@ -1,0 +1,144 @@
+{
+  "slug": "chateau-tamagne-nature-vert",
+  "source": {
+    "name": "Chateau Tamagne Nature. Vert",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Цветочный"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "соломенное с зеленоватым оттенком",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски"
+    ],
+    "description": "Во вкусе ярко выраженная кислотность, фруктово-лаймовые тона. Аромат освежающий, изысканный, лайм, маракуйя, смородина и мята.\n\nСбор винограда осуществляется на сахарах 19-21%, прессование винограда проходит в мягком режиме, (чтобы не экстрагировать полифенолы из кожицы винограда), осветление сусла проводится с помощью технологического способа – флотация. Затем проводится брожение с использованием чистой культуры дрожжей в емкостях из нержавеющей стали при температуре 16-18 ° С. После брожения производится съем с дрожжевого осадка с дальнейшей защитой виноматериала. Без выдержки.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Vert_295ed64be6.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chateau-tamagne-nature-vert",
+    "fetched_at": "2026-08-25T17:00:39+0300",
+    "content_hash": "524488939f47a3061a64981ef0772b5343d88aa40dde0185b10f99292507d63f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "cvetochny"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.5,
+      "tannin": 0.05,
+      "body": 0.52,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fuisse",
+      "puligny-montrachet",
+      "meursault"
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "slug": "nebo-rossii-glera",
+  "source": {
+    "name": "Небо России Глера",
+    "winery": "kalos-limen",
+    "winery_name": "Kalos Limen",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Глера"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Морепродукты",
+      "Сыры"
+    ],
+    "description": "В 2024 году рязанки Оксана Трунина и Юлия Машкова при поддержке винодельни Uva Vallis запустили авторскую линейку вин, посвящённую фестивалю воздухоплавания «Небо России». В 2025 году к ней добавилось игристое из глеры, сделанное вместе с Kalos Limen по методу ансестраль (петнат). «Небо России Глера» — третье вино проекта после Сира Розе и Совиньон Блан; оно задумано как ода свободе и лёгкости и отражает атмосферу августовского фестиваля, собирающего в Рязани тысячи гостей.\n\nОсобенности «Небо России Глера»: минимальное содержание сахара для изысканной лёгкости; длительная выдержка на осадке, дающая нежные ноты свежей выпечки; деликатный перляж, ассоциирующийся с россыпью аэростатов в синем небе. Каждая бутылка — воплощение мечты о полёте, созданное с любовью.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_6_Photoroom_b5b45ec3f4.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/nebo-rossii-glera",
+    "fetched_at": "2026-08-25T17:03:59+0300",
+    "content_hash": "3f862d675c75557956c1b58d339a7ae250e9ba88668cc244d9886e6da6977f8f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "glera"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.6,
+      "aromatic_intensity": 0.55,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

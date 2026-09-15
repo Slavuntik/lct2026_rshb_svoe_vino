@@ -1,0 +1,73 @@
+{
+  "slug": "villa-sofiya-uskoryaet-proizvodstvo-klassicheskogo-igristogo-bez-kompromissov-v-kachestve",
+  "source": {
+    "title": "«Вилла София» ускоряет производство классического игристого без компромиссов в качестве",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:Playfair Display;font-size:18px;\">Винодельня установила жиропалет — современное оборудование для автоматического ремюажа, процесса сведения осадка в бутылках после вторичного брожения.</span></p><p>&nbsp;</p><p><span style=\"font-family:Playfair Display;font-size:18px;\">Если раньше ремюаж на дубовых пюпитрах занимал около месяца, то теперь партия из 600 бутылок проходит этот этап всего за пять дней. При этом сама технология производства классического игристого остается неизменной: вторичное брожение в бутылке, ремюаж, дегоржаж, укупорка и маркировка.</span></p><p>&nbsp;</p><p><span style=\"font-family:Playfair Display;font-size:18px;\">Для российских виноделен такие обновления становятся важной частью развития категории классических игристых. Автоматизация позволяет не только ускорять процессы, но и повышать стабильность результата, особенно при растущем спросе на вина, произведенные традиционным методом.</span></p>",
+    "body": "Винодельня установила жиропалет — современное оборудование для автоматического\nремюажа, процесса сведения осадка в бутылках после вторичного брожения.\n\n \n\nЕсли раньше ремюаж на дубовых пюпитрах занимал около месяца, то теперь партия из\n600 бутылок проходит этот этап всего за пять дней. При этом сама технология\nпроизводства классического игристого остается неизменной: вторичное брожение в\nбутылке, ремюаж, дегоржаж, укупорка и маркировка.\n\n \n\nДля российских виноделен такие обновления становятся важной частью развития\nкатегории классических игристых. Автоматизация позволяет не только ускорять\nпроцессы, но и повышать стабильность результата, особенно при растущем спросе на\nвина, произведенные традиционным методом.",
+    "body_chars": 719,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-05-13T09:15:00.000Z",
+    "published_date": "2026-05-13",
+    "published_year": 2026,
+    "modified_at": "2026-05-13T09:41:46.035Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_13_05_26_11_57_689405023e.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/villa-sofiya-uskoryaet-proizvodstvo-klassicheskogo-igristogo-bez-kompromissov-v-kachestve",
+    "fetched_at": "2026-08-25T21:30:14+0300",
+    "content_hash": "cbf90e6a728bf88b7fe56e433fb61d6536de19c4e8f6e7308768af77edec8b72",
+    "parser_version": "0.4.0"
+  }
+}

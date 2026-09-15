@@ -1,0 +1,145 @@
+{
+  "slug": "kaberne-sovinon-appasimento",
+  "source": {
+    "name": "Каберне Совиньон Appassimento",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "глубокий рубиновый",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Кавказская кухня",
+      "Мясо и стейки"
+    ],
+    "description": "Аромат: необычайно сложный и концентрированный, преобладают оттенки кофе, шоколада, вишневой пастилы, джема из черных лесных ягод, лакричной карамели и восточных специй. Дополняют палитру ароматов благородные бальзамические ноты.\n\nВкус: невероятно рельефный ягодный, вино плотное, но при этом абсолютно сбалансированное. Длительное послевкусие с оттенками подлеска, сладких фиников и засахаренного инжира.\n\nОсобенность винификации\n\nКаберне Совиньон с отдельного парцеля на Западном склоне Лысой Горы заизюмливается на лозе в финальной стадии созревания. После уборки грозди дополнительно подсушиваются в специальных кассетных ящиках под навесом винодельни. Увяливание проходило в течение 14 дней. После деликатного гребнеотделения провели холодное настаивание мезги в течение 7 дней при t 8 С. Медленное брожение осуществлялось в стальных винификаторах, длительностью 20 дней при t 25 С. Техника винификации – деликатный ремонтаж. Постферментационная мацерация – 14 дней. Общий скин-контакт – 41 день. Прессование, потом первичное осветление и переливка в бочки тонно из французского дуба, из которых 20% - новые, а остальные 80%–2, 3, 4 пассажей. Выдержка в тонно – 3 года, затем переливка в дубовые буты, объемом 3000 литров. Выдержка в бутах – 1 год. Деликатная кларификация и розлив без фильтрации в декабре 2024. Дополнительная выдержка в бутылках – 10 месяцев.",
+    "public_rating": 4.94,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/kab_sov_apas_5d86695316.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/kaberne-sovinon-appasimento",
+    "fetched_at": "2026-08-25T17:02:54+0300",
+    "content_hash": "1538c38e00bb856c87a172adf1e57e118810d844a4022cfd3a71e9303f320940",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.8,
+      "body": 0.92,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-napa",
+      "bordeaux-left-bank",
+      "priorat"
+    ]
+  }
+}

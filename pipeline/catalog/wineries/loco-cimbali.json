@@ -1,0 +1,87 @@
+{
+  "slug": "loco-cimbali",
+  "source": {
+    "name": "Loco Cimbali",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Балаклавский район",
+    "climate": "Мягкий средиземноморский",
+    "vineyard_area_ha": 1400.0,
+    "vineyard_area_raw": "1400 га",
+    "founded_year": null,
+    "description": "Loco Cimbali — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Loco Cimbali Winery — авторская крымская винодельня полного цикла в Балаклавской долине под Севастополем, создающая тихие премиальные вина из собственного винограда под руководством энолога Олега Репина.\n\nLoco Cimbali — авторская винодельня в Балаклавской долине, где делают премиальные тихие вина из собственного винограда, стремясь максимально точно передать особенности местного места и климата. Проект под руководством Олега Репина строится вокруг идеи виноделия, в котором ключевую роль играет происхождение винограда и характер конкретных участков.\n\nНазвание хозяйства связано с историей этих земель: «Локо Чимбали» — старинный топоним, уходящий к генуэзскому периоду и напоминающий о давнем прошлом Балаклавы. Таким образом, винодельня соединяет исторический контекст региона с современным авторским подходом к производству вина.\n\nТерруар Loco Cimbali считается одним из самых интересных в Севастопольской винодельческой зоне. Виноградники расположены в южной части Крыма, где на лозу одновременно влияют морской воздух, мягкий средиземноморский климат, солнечная экспозиция и сложный рельеф Балаклавской долины. Именно сочетание этих факторов формирует у вин хозяйства выразительный, точный и узнаваемый стиль.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinogradniki_3_98d9bada8d.webp",
+    "wine_slugs": [
+      "loco-cimbali-loco-cimbali-red-kaberne-sovinon-krasnoe-suhoe-135",
+      "loco-cimbali-loco-cimbali-pinot-meunier-mene-krasnoe-suhoe-125",
+      "loco-cimbali-oranzh-muskat-belyy-beloe-suhoe-129",
+      "loco-cimbali-risling-risling-reynskiy-beloe-suhoe-13",
+      "loco-cimbali-pino-mene-krasnoe-suhoe-115",
+      "loco-cimbali-rkatsiteli-oranzhevoe-suhoe-13",
+      "loco-cimbali-pino-nuar-krasnoe-suhoe-126",
+      "loco-cimbali-pino-blan-beloe-suhoe-13",
+      "loco-cimbali-oranzh-muskat-oranzhevoe-suhoe-127",
+      "loco-cimbali-shardone-beloe-suhoe-127",
+      "loco-cimbali-kaberne-sovinon-krasnoe-suhoe-146",
+      "loco-cimbali-risling-beloe-suhoe-125"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/loco-cimbali",
+    "fetched_at": "2026-08-25T21:24:01+0300",
+    "content_hash": "12d81dc3dd7e409e6862abd3d9a74a11b1916077bee7d8ba1c6f98b821ad47e3",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

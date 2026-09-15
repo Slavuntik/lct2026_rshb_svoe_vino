@@ -1,0 +1,140 @@
+{
+  "slug": "chateau-tamagne-signature-saperavi",
+  "source": {
+    "name": "Chateau Tamagne Signature. Саперави",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Саперави"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "от рубинового до темно-рубинового с гранатовым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Кавказская кухня",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус приятно терпкий, насыщенный глубокий, с развивающимся долгим послевкусием. В аромате сочетание черных фруктов и ягод с сырно-молочными тонами, тонами хорошо выделанной кожи и теплого дерева.\n\nСбор винограда осуществляется на сахарах 21-23%. Переработка проводится по «красному способу», каждого сорта винограда по отдельности. После дробления винограда, полученную мезгу сульфитируют до 50 (свободная) и оправляют на брожение на чистых культурах дрожжей, в емкостях из нержавеющей стали при температуре до 23-25°С, с регулярным орошением «шапки» мезги. В ходе брожения осуществляется систематический контроль за температурой и количеством сброженных сахаров, а также состоянием микрофлоры. После брожения производится съем виноматериала с дрожжевого осадка и внесение чистой культуры бактерий для ЯМБ. После окончания яблочно-молочного брожения проводят открытую переливку с сульфитацией и купажированием виноматериала. Затем виноматериал направляют на выдержку. Выдержку производят в технологической таре, в том числе в дубовой, не менее 12 месяцев.\n \nВыдержку производят в технологической таре, в том числе в дубовой таре, не менее 12 месяцев. После снятия с выдержки виноматериалов, осуществляют сбор производственного купажа.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Sh_T_Signature_Saperavi_23_417cbfd691.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/chateau-tamagne-signature-saperavi",
+    "fetched_at": "2026-08-25T17:00:40+0300",
+    "content_hash": "aa77e3e8534c3228880a4c585af6825cd305c8c44d417b899f95334239e833e1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sapervi"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.8,
+      "body": 0.8,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "brunello",
+      "saperavi-georgia",
+      "barolo"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "slug": "kollekcziya-tokluk-popolnilas-suhim-krasnym-iz-kaberne-frana",
+  "source": {
+    "title": "Коллекция «Токлук» пополнилась сухим красным из Каберне Франа",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">\nВ коллекции «Токлук» от «Солнечной долины» вышло новое сухое красное вино «Токлук Каберне Фран». В основе ассамбляжа Каберне Фран, Каберне Совиньон и Мерло — классические бордоские сорта, получившие более плотное и зрелое звучание в условиях жаркого крымского терруара.\n</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В аромате раскрываются черные ягоды, увяленная вишня, сухофрукты и смородиновый лист. Затем появляются оттенки гвоздики, тимьяна и черного перца. Вино отличается зрелыми бархатистыми танинами, заметной кислотностью и мягким ягодным вкусом.\n</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">«Токлук Каберне Фран» рекомендуют подавать к насыщенным мясным и грибным блюдам, а также к выдержанным сырам.\nТираж урожая 2025 года составил 41 тысячу бутылок. Новинка представлена в фирменной сети в Крыму и винотеках AST.\n</span></p>",
+    "body": "В коллекции «Токлук» от «Солнечной долины» вышло новое сухое красное вино\n«Токлук Каберне Фран». В основе ассамбляжа Каберне Фран, Каберне Совиньон и\nМерло — классические бордоские сорта, получившие более плотное и зрелое звучание\nв условиях жаркого крымского терруара.\n\nВ аромате раскрываются черные ягоды, увяленная вишня, сухофрукты и смородиновый\nлист. Затем появляются оттенки гвоздики, тимьяна и черного перца. Вино\nотличается зрелыми бархатистыми танинами, заметной кислотностью и мягким ягодным\nвкусом.\n\n«Токлук Каберне Фран» рекомендуют подавать к насыщенным мясным и грибным блюдам,\nа также к выдержанным сырам. Тираж урожая 2025 года составил 41 тысячу бутылок.\nНовинка представлена в фирменной сети в Крыму и винотеках AST.",
+    "body_chars": 735,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-08-05T07:00:00.000Z",
+    "published_date": "2026-08-05",
+    "published_year": 2026,
+    "modified_at": "2026-08-05T08:35:56.293Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_03_08_26_08_11_2_dc1794eb6c.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/kollekcziya-tokluk-popolnilas-suhim-krasnym-iz-kaberne-frana",
+    "fetched_at": "2026-08-25T21:27:27+0300",
+    "content_hash": "3e6ee7340d8d4bad1f3c58d82bb0949251a61e02b852309c00c5176efa44f94e",
+    "parser_version": "0.4.0"
+  }
+}

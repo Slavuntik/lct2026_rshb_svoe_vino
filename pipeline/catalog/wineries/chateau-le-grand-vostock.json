@@ -1,0 +1,91 @@
+{
+  "slug": "chateau-le-grand-vostock",
+  "source": {
+    "name": "Château Le Grand Vostock",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": "окрестности хутора Садовый",
+    "climate": "Континентальный климат, смягченный влиянием Черного моря",
+    "vineyard_area_ha": 308.0,
+    "vineyard_area_raw": "308 га",
+    "founded_year": 2003,
+    "description": "Château Le Grand Vostock — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Винодельня была основана в 2003 году на юге Краснодарского края как первое в России винодельческое хозяйство полного цикла, созданное по образцу классического французского шато при участии французских инвесторов.\n\nВиноградники Château Le Grand Vostock растут на мергеливых почвах с высоким содержанием известняка. Данный состав почвы придает винам характерную и высоко ценимую знатоками минеральность.\n\nВиноградники Château le Grand Vostock расположены на склонах пологих холмов. Нисходящие террасы виноградников гигантскими ступенями спускаются с 350 м до 125 м над уровнем моря, позволяя ветрам благотворно влиять на здоровье виноградников.\n\nУникальный климатический рисунок — идеален для выращивания и созревания винограда. Климатические условия отличаются жарким летом и холодной зимой, а, как известно, белый виноград созревает и накапливает ароматику и вкус при холодных температурах.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/shato_le_gran_vostok_1_4140500157.webp",
+    "wine_slugs": [
+      "chteau-le-grand-vostock-merlot-reserve-merlo-krasnoe-suhoe-145",
+      "chteau-le-grand-vostock-grand-karsov-shardone-beloe-suhoe-14",
+      "chteau-le-grand-vostock-le-chene-royal-reserve-merlo-krasnoe-suhoe-145",
+      "chteau-le-grand-vostock-cabernet-sauvignon-reserve-kaberne-sovinon-krasnoe-suhoe-14",
+      "chteau-le-grand-vostock-cuvee-karsov-reserve-shardone-beloe-suhoe-14",
+      "chteau-le-grand-vostock-pinot-gris-reserve-pino-gri-beloe-suhoe-135",
+      "chteau-le-grand-vostock-fagotine-pino-gri-rozovoe-polusladkoe-11",
+      "chteau-le-grand-vostock-pinot-gris-rose-reserve-pino-gri-rozovoe-suhoe-14",
+      "chteau-le-grand-vostock-fagotine-pino-gri-beloe-polusladkoe-105",
+      "chteau-le-grand-vostock-cabernet-franc-reserve-kaberne-fran-krasnoe-suhoe-14",
+      "chteau-le-grand-vostock-sauvignon-blanc-reserve-sovinon-blan-beloe-suhoe-14",
+      "chteau-le-grand-vostock-krasnostop-reserve-krasnostop-krasnoe-suhoe-14"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery",
+      "legato"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    },
+    {
+      "field": "founded_year",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/chateau-le-grand-vostock",
+    "fetched_at": "2026-08-25T21:23:43+0300",
+    "content_hash": "fba8aded32135e67a9f9c20ef785a345ff1bf6f4224b0e86e83f65a24f07c83a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "slug": "abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+  "source": {
+    "name": "Abrau Estates Оранж",
+    "winery": "abrau-dyurso",
+    "winery_name": "Абрау-Дюрсо",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Цитронный Магарача"
+    ],
+    "color": "оранжевое",
+    "sugar_category": "сухое",
+    "color_in_glass": "янтарный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Мясное ассорти"
+    ],
+    "description": "В аромате медовые и цитрусовые оттенки, ноты спелых и сочных белых фруктов, пряные тона полевых трав с нюансами мяты. Вкус сбалансированный с сочными, но тонкими танинами, цитрусовой легкой кислинкой и медовой сладостью.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/abrau_dyurso_abrau_estates_oranzh_tsitronnyy_magaracha_oranzhevoe_suhoe_105_95e00a834b.webp",
+    "similar_wine_slugs": [
+      "kuban-vino-shato-tamane-selekt-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-135",
+      "chateau-tamagne-nature-orange",
+      "vaynkraft-traminer-oranzh-2-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "vaynkraft-rkatsiteli-oranzh-oranzhevoe-suhoe-12",
+      "vaynkraft-traminer-oranzh-traminer-rozovyy-oranzhevoe-suhoe-125",
+      "belbek-muskat-oranzh-muskat-belyy-oranzhevoe-suhoe-125",
+      "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+      "denisov-winery-tsitron-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+      "rem-akchurin-muskat-oranzh-oranzhevoe-suhoe-115",
+      "oxana-istratova-wine-vione-2024-oranzhevoe-suhoe-13",
+      "oxana-istratova-wine-vione-2023-oranzhevoe-suhoe-119",
+      "oxana-istratova-wine-rkatsiteli-2024-oranzhevoe-suhoe-12"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/abrau-dyurso-abrau-estates-oranzh-tsitronnyy-magaracha-oranzhevoe-suhoe-105",
+    "fetched_at": "2026-08-25T16:58:28+0300",
+    "content_hash": "d63b204c046c6d8814a721f0c44f6d22ddd305f53b153dede84d9688816f731f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "citronny-magaracha"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.5,
+      "body": 0.49,
+      "oak": 0.1,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "friuli-orange",
+      "skin-contact-light",
+      "georgian-qvevri-amber"
+    ]
+  }
+}

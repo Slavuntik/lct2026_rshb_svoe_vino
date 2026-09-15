@@ -1,0 +1,140 @@
+{
+  "slug": "marquetry-syrah",
+  "source": {
+    "name": "Marquetry syrah",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Сира"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "тёмно-рубиновый",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Аромат спелых красных и черных ягод элегантно и плавно перетекает в мягкий вкус этого гастрономичного и дружелюбного вина.\n\nВино органическое, подтверждено сертификатом РФ.\n\n0 дней холодной мацерации при 5 °C, после ферментация на протяжении 15 дней при 18-24 °C, в процессе которой ежедневно проводились ремонтаж и 4 раза делистаж с отделением и сбросом косточки. После спиртового брожения снятие самотечных фракций молодого вина и прессование стекшей мезги, фракции объединяются. Проведение яблочно-молочного брожения в стали в течение 20 дней. Выдержка 12 месяцев в новых дубовых бочках 225 литров.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/AYA_marquetry_syrah_2023_bottle_90a876b523.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/marquetry-syrah",
+    "fetched_at": "2026-08-25T17:03:43+0300",
+    "content_hash": "2f6c887d232cfc5c03ebb3736b8143aedde33990c1c5ec89967b3c14bce14f84",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sira"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.86,
+      "oak": 0.6,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "shiraz-barossa",
+      "northern-rhone-syrah",
+      "toro-tinta"
+    ]
+  }
+}

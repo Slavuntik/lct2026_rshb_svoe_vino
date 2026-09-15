@@ -1,0 +1,140 @@
+{
+  "slug": "novyj-svet-paradizio",
+  "source": {
+    "name": "Новый Свет. Парадизио",
+    "winery": "noviy_svet",
+    "winery_name": "Новый Свет. Дом шампанских вин",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      4,
+      8
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Средиземноморская кухня",
+      "Сыры"
+    ],
+    "description": "Игристое вино Новый Свет Парадизио Брют обладает изысканным вкусом с яркими фруктовыми оттенками и приятной кислинкой. Оно отлично подходит для торжественных мероприятий и романтических ужинов. \n\nВино производится на одном из старейших винодельческих предприятий Крыма. Игристое вино Новый Свет Парадизио Брют получило множество наград на международных конкурсах.     \n\nНовый Свет, Парадизио является настоящим сокровищем Дома и выпускается только в исключительные годы, когда урожай превышает даже самые смелые ожидания виноделов. \"История — достойная удивления, изысканность достойная восторга\" — это их главный посыл. Утонченный, аристократичный вкус этого игристого вина — результат долгих исканий и плод давних мечтаний великого крымского винодела — князя Льва Сергеевича Голицына. В конце XIX века так называлась одна из первых и наиболее известных созданных им линеек. В 1900-м году \"Новый Свет. Парадизио\" впервые в истории отечественного виноделия удостоилось Гран-при на Всемирной выставке в Париже.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/2934_gdn4e_Jx_261a22f964.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/novyj-svet-paradizio",
+    "fetched_at": "2026-08-25T17:04:05+0300",
+    "content_hash": "cfaf8f8d8aa457c190d2cc1b5b5fa98936d8041399bf4dd44932db4abd6b0585",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.54,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco",
+      "champagne-brut-nv",
+      "champagne-blanc-de-blancs"
+    ]
+  }
+}

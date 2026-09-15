@@ -1,0 +1,139 @@
+{
+  "slug": "igristoe-zhemchuzhnoe-vino-polusladkoe-rozovoe-di-kaspiko-fiori-di-mare-di-caspico-fiori-di-mare",
+  "source": {
+    "name": "Игристое жемчужное вино полусладкое розовое \"Ди Каспико Фиори ди Маре\" (Di Caspico Fiori di Mare)",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Фрукты"
+    ],
+    "description": "Di Caspico Fiori di Mare — нежное жемчужное вино с лёгким морским настроением и ягодной свежестью, созданное для моментов радости и спонтанных встреч.\nВ бокале — утончённый нежно-розовый оттенок, подчёркивающий его воздушный характер. Аромат выразительный и свежий, с сочными ягодными акцентами, которые сразу создают ощущение лета.\nВо вкусе — гармоничный баланс: ноты свежих ягод мягко переходят в тонкое сладкое послевкусие, оставляя ощущение лёгкости и беззаботности.\nDi Caspico Fiori di Mare — идеальный выбор для тёплых вечеров, прогулок у воды и тех случаев, когда хочется добавить в день немного розового настроения и морского бриза.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/roz_plsl_besczv_03_02_2026_6c352de785.webp",
+    "similar_wine_slugs": [
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2",
+      "rozovaya-pantera",
+      "zhemchuzhnaya-9-muskat-rozovyj-kaberne-sovinon",
+      "rozovoe-polusladkoe-1",
+      "rozovoe-polusladkoe",
+      "perovskih_polusladkoe_rosovoe",
+      "soyuz-vino-lavetti-rozovoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "inkermanskiy-zmv-inkerman-rozovoe-polusladkoe-rkatsiteli-12",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-pino-fran-135",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "zolotaya-balka-zb-moscato-semi-sweet-rose-muskat-yantarnyy-rozovoe-polusladkoe-9"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/igristoe-zhemchuzhnoe-vino-polusladkoe-rozovoe-di-kaspiko-fiori-di-mare-di-caspico-fiori-di-mare",
+    "fetched_at": "2026-08-25T17:02:41+0300",
+    "content_hash": "5bc45edc0ed10e69d72fae2b3f062cf03012d555d9f69809e40c27d7ac388d18",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "slug": "roze-1",
+  "source": {
+    "name": "Розе",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Мерло",
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-розовый с лососевым оттенком и блеском",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясное ассорти",
+      "Салаты"
+    ],
+    "description": "Аромат: чистый и свежий, с нюансами клубники, малины и белой смородины.\n\nВкус: звонкий и лёгкий, с оттенками садовых ягод, освежающей кислотностью и ярким финишем. \n\nОсобенность винификации\n\nРучной сбор каждого сорта по отдельности. Охлаждение винограда до +5 градусов Цельсия. Инспекция гроздей. Раздельная переработка. Гребнеотделение с последующим деликатным дроблением ягод. Холодная мацерация в прессе в течение 2 часов. Отбор самотёка и деликатное прессование в атмосфере азота. Стабуляж — 50% объёма, в течение 15 дней при температуре 2 градуса Цельсия. Продолжительность брожения — 15 дней при температуре 16–17 градусов Цельсия. Выдержка 8 месяцев на тонком дрожжевом осадке, без баттонажа. Ассамбляж. Кларификация. Стабилизация тартратов. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 4.8,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/roze_0cd69a079f.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1",
+      "b-yu-rne-vinisa-zh-suhoe-rozovoe"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/roze-1",
+    "fetched_at": "2026-08-25T17:04:45+0300",
+    "content_hash": "68244593f1f1ca9657b7fc7934554f5463c801693e573ddae6e24adc6cb18c44",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "merlo",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.2,
+      "body": 0.663,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

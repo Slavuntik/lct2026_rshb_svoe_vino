@@ -1,0 +1,141 @@
+{
+  "slug": "le-general-hiver",
+  "source": {
+    "name": "Le General Hiver",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "янтарный",
+    "vintage": null,
+    "abv_percent": 10.0,
+    "serving_temp_c": [
+      8,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Фруктово-ягодные десерты",
+      "Фрукты"
+    ],
+    "description": "Аромат: в аромате невероятное переплетение оттенков спелой дыни и мёда, засахаренных цукатов и сухофруктов, цветов и восточных специй.\n\nВкус: полный и яркий, с доминантой белых фруктов в меду, отличный баланс. Живая кислотность умело и уверенно уравновешивает высокую сахаристость вина. Невероятно долгое послевкусие с медовым оттенком.\n\nОсобенность винификации\n\nРучной сбор в конце ноября, ранним утром после заморозков. Виноград собирается очень бережно. Тщательная инспекция ягод. Прессование целыми гроздями в пневматическом прессе. Отбор лучшей части концентрированного сока. Брожение в стальной емкости при температуре 15-16 градусов Цельсия - 45 дней. Выдержка в бургундских бочках второго и третьего пассажа из французского дуба, объёмом 228 литров в течение 15 месяцев - 100 % от общего объема. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/output_img_037_425130ed89.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "madera-krymskaya",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10",
+      "massandra-portveyn-belyy-krymskiy-kokur-beloe-sladkoe-18"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/le-general-hiver",
+    "fetched_at": "2026-08-25T17:03:18+0300",
+    "content_hash": "5cb3a252723945a53c056fb2b479da77ae6cf7f8b6654d0c3a6c5af39247124f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.39,
+      "oak": 0.6,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "slug": "myshako-igristoe-beloe-polusladkoe",
+  "source": {
+    "name": "Мысхако игристое белое полусладкое",
+    "winery": "vinodelnya-myshako",
+    "winery_name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "соломенно-желтый с золотистым оттенком",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      8,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты"
+    ],
+    "description": "Аромат яркий и развитый, демонстрирует щедрые и объемные фруктово-ягодные тона, подчеркнутые нюансами цветов. Вкус легкий, гармоничный и утонченный, наполнен нотами зрелых фруктов и сочных ягод в обрамлении цветочных оттенков. Вино станет прекрасным дополнением к легким блюдам, белому мясу, молодым сырам, салатам, фруктам и бисквиту. Освежающее и сбалансированное белое игристое вино, изготовленное из винограда сортов Шардоне и Совиньон Блан, который выращивается на виноградниках компании. Урожай собирается по достижении ягодами оптимального уровня зрелости. Игристое вино производится резервуарным методом Шарма. Составит прекрасную пару всевозможным легким блюдам, свежим фруктам и десертам. Вкус и аромат игристого вина полностью раскрываются при температуре 10-12С.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Myshako_igristoe_polusladkoe_beloe_846a405f2a.webp",
+    "similar_wine_slugs": [
+      "caucasian-dzharag",
+      "inkerman-muskatnoe-beloe",
+      "czimlyanskoe-beloe-polusladkoe",
+      "czimlyanskoe-bianka",
+      "valerij-zaharin-kokur-i-ko-beloe-polusladkoe",
+      "abrau-dyurso-fizz-beloe-polusladkoe",
+      "fanagoriya-beloe-polusladkoe",
+      "fanagoriya-ona-skazala-da-beloe-polusladkoe",
+      "zb-wine-moscato-beloe-polusladkoe",
+      "balaklava-muskat-beloe-polusladkoe",
+      "monte-garu-beloe-polusladkoe",
+      "lebedushka"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/myshako-igristoe-beloe-polusladkoe",
+    "fetched_at": "2026-08-25T17:03:59+0300",
+    "content_hash": "b005390e7da24a79921eda89426eda32ff7c26f06fcef95fef588fc57709bd6b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.7,
+      "tannin": 0.05,
+      "body": 0.57,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "white-semisweet",
+      "riesling-kabinett"
+    ]
+  }
+}

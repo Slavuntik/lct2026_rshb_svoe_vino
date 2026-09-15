@@ -1,0 +1,136 @@
+{
+  "slug": "tempelhof-winery-risling-risling-reynskiy-beloe-suhoe-115",
+  "source": {
+    "name": "Рислинг",
+    "winery": null,
+    "winery_name": null,
+    "region": "stavropole",
+    "region_name": "Ставрополье",
+    "grapes": [
+      "Рислинг Рейнский"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "вино бледно-соломенного цвета",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "Деликатный аромат постепенно раскрывается нотами яблока гольден, груши, цитрусовой цедры и весенних цветов. Вкус свежий, летний, с мягкой кислотностью и фруктовым послевкусием.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/tempelhof_winery_risling_risling_reynskiy_beloe_suhoe_115_825c5cd60a.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/tempelhof-winery-risling-risling-reynskiy-beloe-suhoe-115",
+    "fetched_at": "2026-08-25T17:05:48+0300",
+    "content_hash": "7e9ed741b95a5ca54c33e3d233b3c3d45650fcb8c8eeac0209c8bbf76456e14c",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.42,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "riesling-trocken",
+      "pouilly-fume"
+    ]
+  }
+}

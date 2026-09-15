@@ -1,0 +1,73 @@
+{
+  "slug": "inkerman-stal-partnyorom-gastronomicheskogo-festivalya-pervye-v-kosmose",
+  "source": {
+    "title": "INKERMAN стал партнёром гастрономического фестиваля «Первые в космосе»",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">1 апреля стартовал национальный гастрономический фестиваль «Первые в космосе», посвящённый 65-летию первого полёта человека в космос. Партнёром проекта выступила винодельня INKERMAN.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Фестиваль объединил 70 ресторанов из 18 городов России — от Москвы и Санкт-Петербурга до Владивостока и Калининграда. Ведущие шеф-повара страны, среди которых Владимир Мухин, Сергей Мирошников, Мирко Дзаго и другие, подготовили специальные «космические сеты». Гостям предлагают попробовать «Марсианский закат», гастрономические «Объекты Солнечной системы» и ощутить «Невесомость» — через вкус, конечно.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Миссия проекта — перевести историю освоения космоса на универсальный язык еды, сделав её ближе и понятнее каждому.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Главный приз для гостей фестиваля — поездка на космодром Байконур. Победители увидят запуск пилотируемого корабля «Союз МС-29», пообщаются с космонавтами и побывают на месте, откуда 65 лет назад Юрий Гагарин отправился в космос.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Узнать подробности и список ресторанов-участников можно на сайте фестиваля:</span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://festival-kosmos.ru/restaurants\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">&nbsp;festival-kosmos.ru.</span></a></p>",
+    "body": "1 апреля стартовал национальный гастрономический фестиваль «Первые в космосе»,\nпосвящённый 65-летию первого полёта человека в космос. Партнёром проекта\nвыступила винодельня INKERMAN.\n\n \n\nФестиваль объединил 70 ресторанов из 18 городов России — от Москвы и\nСанкт-Петербурга до Владивостока и Калининграда. Ведущие шеф-повара страны,\nсреди которых Владимир Мухин, Сергей Мирошников, Мирко Дзаго и другие,\nподготовили специальные «космические сеты». Гостям предлагают попробовать\n«Марсианский закат», гастрономические «Объекты Солнечной системы» и ощутить\n«Невесомость» — через вкус, конечно.\n\n \n\nМиссия проекта — перевести историю освоения космоса на универсальный язык еды,\nсделав её ближе и понятнее каждому.\n\n \n\nГлавный приз для гостей фестиваля — поездка на космодром Байконур. Победители\nувидят запуск пилотируемого корабля «Союз МС-29», пообщаются с космонавтами и\nпобывают на месте, откуда 65 лет назад Юрий Гагарин отправился в космос.\n\n \n\nУзнать подробности и список ресторанов-участников можно на сайте\nфестиваля: festival-kosmos.ru. [https://festival-kosmos.ru/restaurants]",
+    "body_chars": 1082,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": null,
+    "published_at": "2026-04-06T08:00:00.000Z",
+    "published_date": "2026-04-06",
+    "published_year": 2026,
+    "modified_at": "2026-04-06T08:00:05.102Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/ii_novost_pervye_v_kosmose_89352052ab.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/inkerman-stal-partnyorom-gastronomicheskogo-festivalya-pervye-v-kosmose",
+    "fetched_at": "2026-08-25T21:26:43+0300",
+    "content_hash": "457276960c58e7a2a70ed9baa71799d1cf05116d64ef96775e6f61ea5c480010",
+    "parser_version": "0.4.0"
+  }
+}

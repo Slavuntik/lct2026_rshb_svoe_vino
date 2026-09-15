@@ -1,0 +1,136 @@
+{
+  "slug": "tempelhof-winery-tsimlyanskiy-chernyy-krasnoe-suhoe-125",
+  "source": {
+    "name": "Цимлянский Черный",
+    "winery": null,
+    "winery_name": null,
+    "region": "stavropole",
+    "region_name": "Ставрополье",
+    "grapes": [
+      "Цимлянский черный"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "прозрачный рубиновый цвет с фиолетовым оттенком и ровным красивым блеском",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      14,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Аромат сочный, фруктовый, раскрывается нотами спелой сливы, перетертой с сахаром смородины и малинового джема. Нежные нюансы цветущего пиона, спелой черешни и розового перца. Вкус мягкий, сочный, с изящной кислотностью, пряными оттенками и шелковистым танином в послевкусии.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/tempelhof_winery_tsimlyanskiy_chernyy_krasnoe_suhoe_125_31e822d3f0.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/tempelhof-winery-tsimlyanskiy-chernyy-krasnoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:05:48+0300",
+    "content_hash": "f328c595834727961c9f1ddf8503da4c0380a48539b016f6a67ed29b907b6c03",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "tsimlyansky-chorny"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.55,
+      "body": 0.6,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "cabernet-franc-loire",
+      "dolcetto",
+      "sangiovese-romagna"
+    ]
+  }
+}

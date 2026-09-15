@@ -1,0 +1,144 @@
+{
+  "slug": "zmv-koktebel-madera-albilo-beloe-sladkoe-19",
+  "source": {
+    "name": "Мадера",
+    "winery": "zmv-koktebel",
+    "winery_name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Альбильо",
+      "Вердельо",
+      "Ркацители",
+      "Шабаш"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "золотисто-янтарный",
+    "vintage": null,
+    "abv_percent": 19.0,
+    "serving_temp_c": [
+      15,
+      16
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Сыры"
+    ],
+    "description": "В аромате ноты сухофруктов, медовые и ореховые оттенки. Вкус гармоничный, приятный остро-жгучий, фруктовые оттенки, ноты сухофруктов, чернослива, ржаной корочки.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/zmv_koktebel_madera_albilo_beloe_sladkoe_19_5ce87b8df7.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "madera-krymskaya",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "le-general-hiver",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zmv-koktebel-madera-albilo-beloe-sladkoe-19",
+    "fetched_at": "2026-08-25T17:08:13+0300",
+    "content_hash": "f6e003f90a33cccde1f772d1531adfa3a74ad92be20ad442acd6b8c994978191",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "albilo",
+      "verdelo",
+      "rkatsiteli",
+      "shabash"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.65,
+      "tannin": 0.05,
+      "body": 0.735,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "slug": "triumf-rossijskogo-vinodeliya-46-medalej-cmb-merit-zavoevali-vina-iz-rossii",
+  "source": {
+    "title": "Триумф российского виноделия на Concours Mondial de Bruxelles (CMB)",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Международное жюри престижного конкурса Concours Mondial de Bruxelles (CMB) опубликовало результаты дегустаций, и российские производители вина подтвердили свой высокий статус, получив высшие награды Grand Gold, Gold и Silver.</span></p>",
+    "body": "Международное жюри престижного конкурса Concours Mondial de Bruxelles (CMB)\nопубликовало результаты дегустаций, и российские производители вина подтвердили\nсвой высокий статус, получив высшие награды Grand Gold, Gold и Silver. Высшая проба: Grand Gold Высшей награды Grand Gold удостоились сразу восемь российских вин. Среди них —\nАбрау-Дюрсо с Brut d'Or Riesling 2022. Винодельня Альма Вэлли получила сразу два\nGrand Gold: за Cabernet Franc Reserve 2021 и Reserve Red 2021. Массандра\nотмечена за Cabernet Author's Wine 2022. Винодельня Аранчи также взяла два Grand\nGold — за Cabernet Sauvignon South Coast Reserve 2021 и Cabernet Sauvignon\nReserve 2021. И наконец, Winepark покорил жюри винтажным Cabernet Sauvignon\nKuchuk-Isar. Золото конкурса Награды Gold удостоены 17 вин. Абрау-Дюрсо добавила в копилку золото за Imperial\nVintage 2021. Chateau Le Grand Vostock получил золото за Grand Karsov White\n2024, а Массандра — за Saperavi Author's Wine Red Dry 2022. Винодельня Криница\nотмечена за Rivage 2022, Chateau Tamagne — за Saperavi Reserve 2018, а Высокий\nБерег — за игристое Graphite Extra Brut 2019. Мысхако взяло два золота: за\nChardonnay Noble Age Blanc de Blancs Brut 2024 и Pinot Noir Noble Age Blanc de\nNoirs Brut 2024. Фанагория получила золото за Saqra 2022, а Усадьба Дивноморское\n— сразу за три вина: East Hill Blend White 2024, Merlot 2022 и Marselan 2022.\nТакже золотые медали завоевали Винодельня Аранчи с Bordeaux Blend Reserve 2021,\nВалерий Захарьин с Author’s Wine Cabernet Sauvignon 2024 и Sary Pandas Aged\nWhite 2024, а также Винодельня Ведерниковъ с Sibirkoviy Aligote Zero Dosage\n2021. Завершают золотой список Winepark с Kuchuk-Isar Red 2021 и Pinot Blanc\n2024. Серебряные медали Награды Silver удостоены 20 вин. Список открывает Абрау-Дюрсо с Victor Dravigny\nBrut 2023 и Русское игристое Brut White 2025. Alma Valley получила серебро за\nCollection Extra Brut Blanc de Noirs 2017, Шато Ай-Даниль — за Bomond 2023, а\nМассандра — за Kokur Author's Wine White Dry 2024. Винодельня Криница отмечена\nза Arena 2022, Château Tamagne — за Premier Blanc Reserve 2021, Высокий Берег —\nза Riesling Graphite 2023. Усадьба Мезыбь взяла два серебра: за Old Road To\nDzhankhot Cabernet Sauvignon 2017 и Old Road To Dzhankhot Cabernet Sauvignon\nCabernet Franc 2022. Фанагория получила серебро за 100 Shades Of Red Saperavi\n2023, Раевское — за Genesis Brut Rose 2022. Валерий Захарьин добавил серебряные\nмедали за Albedo Reserve White 2024 и Aleatico Kefesia Rose 2024. Винодельня\nВедерниковъ отмечена за Tverdyi Znak 2020 и Tsimlyanskiy Cherniy Brut Rose 2022.\nЗавершает список Winepark с Symbiosis Red 2021. Так-же по итогам отбора сразу 46\nобразцов из России удостоены награды CMB Merit — знака высокого качества,\nкоторый присуждается напиткам, набравшим внушительные баллы в слепом\nтестировании. Поздравляем всех российских виноделов с блестящими результатами на\nмеждународной арене! Полный список победителей и оценки доступны на официальном\nсайте Concours Mondial de Bruxelles.",
+    "body_chars": 2992,
+    "headings": [
+      "Высшая проба: Grand Gold",
+      "Золото конкурса",
+      "Серебряные медали"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "сгенерировано ИИ",
+    "published_at": "2026-06-10T10:01:00.000Z",
+    "published_date": "2026-06-10",
+    "published_year": 2026,
+    "modified_at": "2026-06-10T16:22:22.933Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Generated_Image_June_10_2026_7_09_PM_png_da870514d0.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/triumf-rossijskogo-vinodeliya-46-medalej-cmb-merit-zavoevali-vina-iz-rossii",
+    "fetched_at": "2026-08-25T21:29:55+0300",
+    "content_hash": "1c710a2dcc07cdb4d902dae673f26aaeb58d9aebe8a68f1903cb50f1ffea31c8",
+    "parser_version": "0.4.0"
+  }
+}

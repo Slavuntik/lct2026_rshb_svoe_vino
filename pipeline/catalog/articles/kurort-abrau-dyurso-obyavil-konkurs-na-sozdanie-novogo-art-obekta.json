@@ -1,0 +1,77 @@
+{
+  "slug": "kurort-abrau-dyurso-obyavil-konkurs-na-sozdanie-novogo-art-obekta",
+  "source": {
+    "title": "Курорт «Абрау-Дюрсо» объявил конкурс на создание нового арт-объекта",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">На сайте </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://visitabrau.ru/konkurs-na-sozdaniye-novogo-simvola-kurorta/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">visitabrau.ru</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"> &nbsp;принимают&nbsp;<span> </span>заявки на участие в Открытом архитектурном конкурсе по созданию арт-объекта для въездной группы.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Будущий объект должен стать новым визуальным символом курорта и воплотить концепцию бренд-платформы «Эно — Эко — Этно», объединяющей виноделие, природу и культурное наследие территории. К участию приглашаются архитекторы, дизайнеры, художники, скульпторы, студенты профильных вузов, индивидуальные авторы и проектные бюро.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Участникам предстоит разработать концепцию выразительного объекта, который сформирует современный образ курорта и станет одной из его узнаваемых достопримечательностей. Автор лучшей работы получит вознаграждение в размере 500 тысяч рублей, а также возможность принять участие в дальнейшей реализации проекта.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Для участников, занявших второе и третье места, предусмотрены специальные нематериальные призы. Конкурс продолжает курс «Абрау-Дюрсо» на развитие общественных пространств и туристической инфраструктуры, где архитектура и искусство становятся частью впечатлений гостей наряду с винодельческой культурой.</span></p>",
+    "body": "На сайте visitabrau.ru\n[https://visitabrau.ru/konkurs-na-sozdaniye-novogo-simvola-kurorta/]  принимают \nзаявки на участие в Открытом архитектурном конкурсе по созданию арт-объекта для\nвъездной группы. \n\n \n\nБудущий объект должен стать новым визуальным символом курорта и воплотить\nконцепцию бренд-платформы «Эно — Эко — Этно», объединяющей виноделие, природу и\nкультурное наследие территории. К участию приглашаются архитекторы, дизайнеры,\nхудожники, скульпторы, студенты профильных вузов, индивидуальные авторы и\nпроектные бюро.\n\n \n\nУчастникам предстоит разработать концепцию выразительного объекта, который\nсформирует современный образ курорта и станет одной из его узнаваемых\nдостопримечательностей. Автор лучшей работы получит вознаграждение в размере 500\nтысяч рублей, а также возможность принять участие в дальнейшей реализации\nпроекта.\n\n \n\nДля участников, занявших второе и третье места, предусмотрены специальные\nнематериальные призы. Конкурс продолжает курс «Абрау-Дюрсо» на развитие\nобщественных пространств и туристической инфраструктуры, где архитектура и\nискусство становятся частью впечатлений гостей наряду с винодельческой\nкультурой.",
+    "body_chars": 1148,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "Роскачество || Русский Винный дом «Абрау-Дюрсо»",
+    "published_at": "2026-06-25T14:00:00.000Z",
+    "published_date": "2026-06-25",
+    "published_year": 2026,
+    "modified_at": "2026-06-25T14:38:51.052Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Screenshot_2_7a088f6625.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/kurort-abrau-dyurso-obyavil-konkurs-na-sozdanie-novogo-art-obekta",
+    "fetched_at": "2026-08-25T21:27:39+0300",
+    "content_hash": "ff3a6f13acecdb4ec23ddb64c38ae097e8582f8e60a9621d6e8d43f273db4675",
+    "parser_version": "0.4.0"
+  }
+}

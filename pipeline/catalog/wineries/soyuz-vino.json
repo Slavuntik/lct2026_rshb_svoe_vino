@@ -1,0 +1,54 @@
+{
+  "slug": "soyuz-vino",
+  "source": {
+    "name": "Союз-Вино",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Союз-Вино — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11",
+      "soyuz-vino-shato-de-mongolfer-risling-polusuhoe-beloe-11",
+      "soyuz-vino-lavetti-krasnoe-suhoe-krasnye-sorta-vinograda-11",
+      "soyuz-vino-zelyonaya-dolina-shardone-beloe-suhoe-12",
+      "soyuz-vino-shato-de-mongolfer-shiraz-moellyo-krasnoe-polusladkoe-11",
+      "soyuz-vino-zelyonaya-dolina-kaberne-merlo-kaberne-sovinon-krasnoe-polusladkoe-12",
+      "soyuz-vino-zelyonaya-dolina-kaberne-sovinon-krasnoe-suhoe-12",
+      "soyuz-vino-zelyonaya-dolina-sovinon-blan-suhoe-beloe-12",
+      "soyuz-vino-zelyonaya-dolina-pino-nuar-krasnoe-suhoe-12",
+      "soyuz-vino-terra-pia-kaldera-blend-risling-reynskiy-beloe-suhoe-11",
+      "soyuz-vino-terra-pia-lava-blend-merlo-krasnoe-suhoe-12",
+      "soyuz-vino-zelyonaya-dolina-sovinon-blan-polusladkoe-beloe-12"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/soyuz-vino",
+    "fetched_at": "2026-08-25T21:24:18+0300",
+    "content_hash": "3b6a1b75b653a9088b8644be7f2cf98fbfb809e5e0907f1406802201643267a9",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

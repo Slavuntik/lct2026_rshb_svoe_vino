@@ -1,0 +1,67 @@
+{
+  "slug": "dva_petra",
+  "source": {
+    "name": "Два Петра",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Два Петра — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "«Два Петра» — семейная винодельня из Восточного Крыма, основанная двумя братьями, Петром Михайловичем и Петром Николаевичем Щука. Проект стартовал в 2019 году, а первые вина были выпущены в 2022 году из урожая 2021 года.\n\nБратья выросли в винодельческом регионе на юге Молдавии, а крымский проект стал продолжением их профессионального пути и авторского подхода к вину. Один из основателей — винодел с более чем 17-летним опытом, прошедший путь от работы с виноматериалами до главного технолога в Молдове; позже он переехал в Крым и начал собственный проект.\n\nВиноградники расположены в восточно-крымском микрорегионом в окрестностях Феодосии, у подножия горы Агармыш. Здесь сочетаются долинно-холмистый рельеф, умеренно-континентальный сухостепной и предгорный климат, а также почвы с высоким содержанием известняка, включая южные и карбонатные черноземы и бурые горно-лесные почвы.\n\nИзвестняк хорошо удерживает влагу, что помогает формировать вина с выразительной кислотностью, плотной текстурой и хорошим потенциалом развития. Участки в этом районе хорошо продуваются, что также благоприятно для виноградарства и позволяет минимизировать обработку лозы",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_6_f99d288e28.webp",
+    "wine_slugs": [
+      "riesling-dva-petra-2022",
+      "twopeters_shardone",
+      "twopeters_kaberne_sovinion",
+      "twopeters_saperavi",
+      "twopeters_risling",
+      "twopeters_sauvignon",
+      "twopeters_kokur",
+      "twopeters_tandem"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/dva_petra",
+    "fetched_at": "2026-08-25T21:51:59+0300",
+    "content_hash": "66a3d0511e9406a1afdb04f01432ac69c3d3b424c6eb980facf2997f3db83c65",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 8
+  }
+}

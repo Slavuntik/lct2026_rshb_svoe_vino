@@ -1,0 +1,144 @@
+{
+  "slug": "agora-rosa-viva-rozovoe-polusladkoe",
+  "source": {
+    "name": "Agora Rosa Viva Розовое Полусладкое",
+    "winery": "agora-winery",
+    "winery_name": "AGORA WINERY",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Нуар",
+      "Совиньон Блан",
+      "Шардоне"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "розовый",
+    "vintage": null,
+    "abv_percent": 12.5,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Десерты",
+      "Фрукты"
+    ],
+    "description": "Вкус мягкий и сбалансированный, с выразительной, элегантной сладостью и освежающей структурой. Послевкусие бархатное и продолжительное.\n\nВ аромате красные ягоды, цитрусовые, свежесть.",
+    "public_rating": 3.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/obmsa6_YZNZPDCKY_1775200312_524a5e0fbb.webp",
+    "similar_wine_slugs": [
+      "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2",
+      "rozovaya-pantera",
+      "zhemchuzhnaya-9-muskat-rozovyj-kaberne-sovinon",
+      "rozovoe-polusladkoe-1",
+      "rozovoe-polusladkoe",
+      "perovskih_polusladkoe_rosovoe",
+      "soyuz-vino-lavetti-rozovoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "inkermanskiy-zmv-inkerman-rozovoe-polusladkoe-rkatsiteli-12",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-pino-fran-135",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "zolotaya-balka-zb-moscato-semi-sweet-rose-muskat-yantarnyy-rozovoe-polusladkoe-9"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/agora-rosa-viva-rozovoe-polusladkoe",
+    "fetched_at": "2026-08-25T16:58:53+0300",
+    "content_hash": "d3444f84238a5e51a975d528510e98c5a94f64e1d548018d3d16fe56c2b4f5ee",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar",
+      "sovinon-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.7,
+      "tannin": 0.2,
+      "body": 0.54,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

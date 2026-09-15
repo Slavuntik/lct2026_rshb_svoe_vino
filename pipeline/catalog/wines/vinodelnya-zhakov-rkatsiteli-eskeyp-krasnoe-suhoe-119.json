@@ -1,0 +1,139 @@
+{
+  "slug": "vinodelnya-zhakov-rkatsiteli-eskeyp-krasnoe-suhoe-119",
+  "source": {
+    "name": "Ркацители Эскейп",
+    "winery": "vinodelnya-zhakov",
+    "winery_name": "Винодельня Жаков",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Ркацители"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "золотистый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Кухни народов мира",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Вкус: Сбалансированный, мягкий, с оттенками персика, груши, яблока, цитрусовых, минералов и древесины, тонкой кислинкой и сухим послевкусием. Гармоничный с фруктовыми, цитрусовыми и цветочными штрихами.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_zhakov_rkatsiteli_eskeyp_krasnoe_suhoe_119_0b92b05d72.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-zhakov-rkatsiteli-eskeyp-krasnoe-suhoe-119",
+    "fetched_at": "2026-08-25T17:07:55+0300",
+    "content_hash": "e815dc594332528429a2737fe30ad7e07bdfbd4c81acc7ce6cecfac396036ed9",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "rkatsiteli"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.55,
+      "body": 0.52,
+      "oak": 0.1,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sangiovese-romagna",
+      "dolcetto",
+      "zweigelt"
+    ]
+  }
+}

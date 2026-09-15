@@ -1,0 +1,135 @@
+{
+  "slug": "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+  "source": {
+    "name": "Tête de Cheval\n брют",
+    "winery": "golubitskoe-estate",
+    "winery_name": "Golubitskoe Estate",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рислинг Рейнский"
+    ],
+    "color": null,
+    "sugar_category": null,
+    "color_in_glass": "красивый золотистый цвет с ярким блеском",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      10
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Пузырьки тонкие, изящные, образуют продолжительную устойчивую игру. Аромат многослойный и утонченный. Встречает нотами спелых фруктов и легкой сладостью пастилы, раскрывается акцентами сочного золотого крыжовника и тонами свежей выпечки с лимонной цедрой. Вкус мягкий, прекрасно сбалансированный. Приятная освежающая кислотность подчеркивает сложную ароматику и ведет к изящному, продолжительному элегантному финалу. Идеальный аперитив.",
+    "public_rating": 4.5,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/pomeste_golubitskoe_tte_de_cheval_bryut_risling_reynskiy_igristoe_bryut_beloe_12_2bf0507734.webp",
+    "similar_wine_slugs": [
+      "lesnaya-proseka",
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+    "fetched_at": "2026-08-25T17:04:32+0300",
+    "content_hash": "9bae3f758f62c6d6c3e522f27ffbfe12f19d7e7f09b5b0903fe29989eab84845",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "risling"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": null,
+      "acidity": 0.85,
+      "tannin": 0.05,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": 0.8,
+      "bubbles": 0.0,
+      "confidence": 0.33,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "pouilly-fume",
+      "riesling-trocken"
+    ]
+  }
+}

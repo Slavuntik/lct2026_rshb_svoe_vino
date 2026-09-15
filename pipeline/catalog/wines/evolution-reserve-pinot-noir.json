@@ -1,0 +1,140 @@
+{
+  "slug": "evolution-reserve-pinot-noir",
+  "source": {
+    "name": "Evolution reserve pinot noir",
+    "winery": "aya-organic-wine-vineyards",
+    "winery_name": "AYA Organic Wine & Vineyards",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Мясо и стейки"
+    ],
+    "description": "Вкус структурный, с отлично сбалансированными танинами, ягодный, пряный с продолжительным послевкусием. Аромат с нотами спелых красных ягод, сушеной земляники, клюквы, сухих листьев и сладких специй.\n\nВидна эволюция сорта после выдержки в бочке. Тонкое и элегантное вино с большим потенциалом к выдержке будет красиво взрослеть. \n\nВино органическое, подтверждено сертификатом РФ. 91 балл в рейтинг лучших российских вин по версии Simple Wine News 2025/2026. EXPERT CUP 2025, Серебро.\n\n10 дней холодной мацерации при 5 °C, после ферментация на протяжении 10 дней при 18-24 °C, в процессе которой ежедневно проводился ремонтаж и три раза делистаж с отделением и сбросом косточки. После спиртового брожения снятие самотечных фракций молодого вина и прессование стекшей мезги, фракции объединяются. Проведение яблочно-молочного брожения в стали в течение 20 дней. Выдержка 12 месяцев в новых пятисотлитровых дубовых бочках слабого обжига.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/2023g_Aya_Evolution_Pinot_noir_b850f06043.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/evolution-reserve-pinot-noir",
+    "fetched_at": "2026-08-25T17:01:49+0300",
+    "content_hash": "0b18092c340d444cc40ab3442f9208f7db8585df778478a699faeda42e90a80b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.4,
+      "body": 0.48,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "burgundy-pinot",
+      "rioja-crianza",
+      "pinot-noir-oregon"
+    ]
+  }
+}

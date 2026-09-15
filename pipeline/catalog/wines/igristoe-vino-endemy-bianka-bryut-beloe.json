@@ -1,0 +1,141 @@
+{
+  "slug": "igristoe-vino-endemy-bianka-bryut-beloe",
+  "source": {
+    "name": "Эндемы Бианка брют белое",
+    "winery": "derbent-vino",
+    "winery_name": "Дербент Вино",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Бианка"
+    ],
+    "color": "розовое",
+    "sugar_category": "брют",
+    "color_in_glass": "нежно-розовый",
+    "vintage": null,
+    "abv_percent": 12.5,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Рыба и морепродукты",
+      "Салаты"
+    ],
+    "description": "Эндемы Бианка — моносортовое вино, отражающее природную гармонию и мягкий характер уникального сорта в его аутентичном звучании.\n\nВ бокале — светлый соломенно-золотистый оттенок с прозрачным блеском, подчёркивающим чистоту стиля. Аромат деликатный и многослойный: раскрываются ноты спелого яблока и груши, белой сливы и луговых цветов, дополненные тонкими медовыми и лёгкими ореховыми нюансами.\n\nВо вкусе — мягкость и округлость, свойственные сорту Бианка. Фруктовые оттенки абрикоса и сочной груши гармонично переплетаются с умеренной, освежающей кислотностью. Текстура гладкая, сбалансированная, с аккуратной минеральной линией, переходящей в чистое, спокойное послевкусие с лёгким цветочным акцентом.\nНа этикетке — образ редкого природного символа региона, подчёркивающий идею эндемичности и уникальности. Бианка, как и истинные природные эндемики, раскрывается особенно ярко в своём родном терруаре, демонстрируя устойчивость, выразительность и природную силу.\n\nЭто вино для тех, кто ценит мягкую элегантность, естественную гармонию и честное звучание одного сорта — без лишних акцентов, с вниманием к деталям и уважением к природе.",
+    "public_rating": 4.75,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Endemy_Bianka_7cf66eca8c.webp",
+    "similar_wine_slugs": [
+      "endemy-saperavi",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush",
+      "rozovoe-bryut-spumante",
+      "rozovoe-bryut-1",
+      "rozovoe-bryut",
+      "di-caspico-rozovoe-bryut",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-kollektsionnoe-bryut-beloe-novyy-svet-kyuve-de-prestizh-pino-gri-millezim-rozovoe-125",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-bryut-rozovoe-novyy-svet-kaberne-kaberne-sovinon-11",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-bryut-rozovoe-novyy-svet-pino-fran-135"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/igristoe-vino-endemy-bianka-bryut-beloe",
+    "fetched_at": "2026-08-25T17:02:40+0300",
+    "content_hash": "c0d6851ad8a1a6be9f1c631f975067024b0c58e5305ee67f2b7ad4c139774d70",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [],
+    "grape_slugs": [
+      "bianka"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.6,
+      "tannin": 0.05,
+      "body": 0.515,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.6,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "prosecco-rose",
+      "champagne-rose"
+    ]
+  }
+}

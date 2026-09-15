@@ -1,0 +1,140 @@
+{
+  "slug": "lefkadiya-krasnoe",
+  "source": {
+    "name": "Лефкадия Красное",
+    "winery": "dolina-lefkadiya",
+    "winery_name": "Долина Лефкадия",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Пти Вердо"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-рубиновый с вишневыми оттенками",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Мясо и стейки",
+      "Сыры"
+    ],
+    "description": "Вкус хорошо сбалансированный с фруктово-пряными оттенками, минеральными нюансами и долгим послевкусием. Аромат богатый, щедрый аромат раскрывается в бокале оттенками сливы, ежевики, черного перца и табака.\n\nСортовой состав: Пти Вердо, Мальбек, Каберне Фран, Каберне Совиньон, Мерло.\n\nБрожение в стали. Выдержка во франц. и карпат. дубе 3-16 мес.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Levkadiya_krasnoe_1_bff42ff522.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/lefkadiya-krasnoe",
+    "fetched_at": "2026-08-25T17:03:21+0300",
+    "content_hash": "c7df26906161c9b570e54ade0b85ed6617ecdcc6597bd1e5266f91f13dddbe8b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "pti-verdo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.85,
+      "body": 0.88,
+      "oak": 0.6,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "bordeaux-left-bank",
+      "ribera-del-duero",
+      "toro-tinta"
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "slug": "sober-bash-dve-doliny-liuri-2023-dostoynyy-rozovoe-suhoe-13",
+  "source": {
+    "name": "Две долины. Лиури 2023",
+    "winery": "sober-bash",
+    "winery_name": "Собер Баш",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Достойный",
+      "Каберне Фран",
+      "Красностоп Золотовский",
+      "Пино Гри"
+    ],
+    "color": "розовое",
+    "sugar_category": "сухое",
+    "color_in_glass": "насыщенный розовый",
+    "vintage": 2023,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Брускетты",
+      "Морепродукты",
+      "Мясное ассорти",
+      "Салаты",
+      "Сыры"
+    ],
+    "description": "В аромате спелые красные ягоды и сливочные оттенки. Вкус яркий, сочный, спелый, с гармоничной кислотностью.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/sober_bash_dve_doliny_liuri_2023_dostoynyy_rozovoe_suhoe_13_cb46b8033e.webp",
+    "similar_wine_slugs": [
+      "pino-nuar-2025",
+      "massandra-rozovoe-suhoe",
+      "golubitskoe-rose",
+      "vysokij-bereg-czvajgelt",
+      "roze-premium",
+      "roze-2",
+      "lorio-rozovoe",
+      "roze-1",
+      "zhemchuzhnaya-9-muskat-rozovyj-pino-gri",
+      "zhemchuzhnaya-9-pino-gri-pino-nuar",
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj",
+      "leto-kollekcziya-leta-2020-suhoe-beloe-1"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/sober-bash-dve-doliny-liuri-2023-dostoynyy-rozovoe-suhoe-13",
+    "fetched_at": "2026-08-25T17:05:20+0300",
+    "content_hash": "d8fb60b7cef98266e63dc3ee0d48dc608a3be69c53dfdf1436b6363287e6966f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "dostojny",
+      "kaberne-fran",
+      "krasnostop-zolotovsky",
+      "pino-gri"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.633,
+      "tannin": 0.2,
+      "body": 0.663,
+      "oak": 0.1,
+      "aromatic_intensity": 0.633,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "tavel-rose",
+      "bandol-rose",
+      "cerasuolo-dabruzzo"
+    ]
+  }
+}

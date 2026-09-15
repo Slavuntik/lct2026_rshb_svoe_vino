@@ -1,0 +1,137 @@
+{
+  "slug": "tempelhof-winery-pino-nuar-krasnoe-suhoe-125",
+  "source": {
+    "name": "Пино Нуар",
+    "winery": null,
+    "winery_name": null,
+    "region": "stavropole",
+    "region_name": "Ставрополье",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "яркий рубиновый цвет с фиолетовым оттенком",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      12,
+      14
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Легкие закуски",
+      "Мясо и стейки",
+      "Овощи гриль",
+      "Сыры"
+    ],
+    "description": "Аромат мягко раскрывается насыщенным букетом красных ягод. Изящно и тонко звучат оттенки малинового джема, спелой ежевики, вяленой вишни, выразительные нотки терна и кизила. Вкус свежий, легкий, с яркой кислотностью, сочной ягодностью и утонченным танином в послевкусии.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/tempelhof_winery_pino_nuar_krasnoe_suhoe_125_9f8f5502f9.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/tempelhof-winery-pino-nuar-krasnoe-suhoe-125",
+    "fetched_at": "2026-08-25T17:05:47+0300",
+    "content_hash": "e02ce234a722376f31a66f0e53939ee9fcf46ab9c47665af58285b4dda94eb0e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.4,
+      "body": 0.45,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "burgundy-pinot",
+      "cru-beaujolais",
+      "valpolicella"
+    ]
+  }
+}

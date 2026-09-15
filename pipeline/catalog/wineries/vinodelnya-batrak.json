@@ -1,0 +1,84 @@
+{
+  "slug": "vinodelnya-batrak",
+  "source": {
+    "name": "Винодельня Батрак",
+    "region": "stavropole",
+    "region_name": "Ставрополье",
+    "locality": "Долине реки Кума, у подножия горы Верблюд",
+    "climate": "Умеренно континентальный",
+    "vineyard_area_ha": 23.0,
+    "vineyard_area_raw": "23 га",
+    "founded_year": null,
+    "description": "Винодельня Батрак — винодельня в регионе Ставрополье. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Семейное винодельческое хозяйство Виталия Батрака находится в Ставропольском крае, в долине реки Кума, у подножия горы Верблюд у села Прикумское Минераловодского округа. Этот ухоженный виноградник с ровными рядами шпалер, разбитый в идиллической предгорной долине, часто сравнивают с живописными пейзажами Тосканы. Производимые здесь вина тоже заслуживают восторженных оценок и медалей высокого достоинства на российских конкурсах.\n\nГлава хозяйства и его идейный вдохновитель, Виталий Батрак – уважаемый винодел с богатым опытом работы в отрасли с 1976 года. За его спиной – создание более чем 30 марок отечественного вина.\n\nВ 2007 году Виталий Васильевич решил создать собственный винный проект и заняться «гаражным» виноделием. Посадив первые лозы, он в 2018 году начал восстановление исторического винного подвала, построенного еще в 1895 году, а в 2020 году его винодельня получила лицензию на производство и оборот вина.\n\nСегодня в винодельческом проекте Батрака участвует вся его семья. Виноделие стало не только неотъемлемой частью быта, но и семейным бизнесом, и культурным наследием семьи Батрак.\n\nСемейная винодельня открыта для посещения по предварительной договоренности, причем гостей встречают и принимают члены семьи винодела. При поездке на винодельню вы можете безусловно приобрести вина под семейным брендом, а вдалеке от Краснодарского края заказать их через сайт.\n\nВинодельня Батрака находится в 25 км от Железноводска, на той же знаменитой «винной» 45-й параллели, что и Бордо, Пьемонт и Венето. Эта вдохновляющая предпосылка заставляет Виталия Васильевича и его семью увлеченно исследовать свойства своего предгорного терруара и воплощать его особенности в своих винах.\n\nНа своих 23 гектарах (из которых пока только 16 — плодоносящие) Батрак выращивает 12 сортов винограда: Шардоне, Совиньон Блан, Рислинг, Мускат Оттонель, Мускат Розовый, Каберне Совиньон, Каберне Фран, Каберне Кортис, Пино Нуар, Менье, Мерло и Саперави.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/_adbf5f3bdc.webp",
+    "wine_slugs": [
+      "vinodelnya-batrak-perfekt-klassik-pino-nuar-krasnoe-suhoe-12",
+      "vinodelnya-batrak-kaberne-kortis-krasnoe-suhoe-12",
+      "vinodelnya-batrak-glyu-glyu-podarok-magaracha-krasnoe-suhoe-12",
+      "vinodelnya-batrak-prikumskoe-sonnenschein-shardone-beloe-suhoe-12",
+      "vinodelnya-batrak-klaret-podarok-magaracha-rozovoe-suhoe-12",
+      "vinodelnya-batrak-monte-di-cammello-nuvola-bianca-risling-beloe-suhoe-12",
+      "vinodelnya-batrak-prikumskoe-vitale-kraft-kaberne-sovinon-krasnoe-suhoe-135",
+      "vinodelnya-batrak-perfekt-klassik-muskat-rozovyy-rozovoe-suhoe-125",
+      "vinodelnya-batrak-contadina-merlo-krasnoe-suhoe-14",
+      "vinodelnya-batrak-shpinel-kaberne-sovinon-rozovoe-suhoe-12",
+      "vinodelnya-batrak-perfekt-klassik-saperavi-krasnoe-suhoe-135",
+      "vinodelnya-batrak-perfekt-klassik-muskat-belyy-beloe-suhoe-125"
+    ],
+    "nearby_winery_slugs": [
+      "ferrum-winery",
+      "vinnyy-kooperativ-intuitsiya",
+      "vinodelnya-marko",
+      "levokumskoe",
+      "vinodelnya_kolesnikova"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/vinodelnya-batrak",
+    "fetched_at": "2026-08-25T21:24:37+0300",
+    "content_hash": "9a2da046d1aee62aac8bed5d2257b36ec457391bb168fa46545e3565183f6840",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1",
+  "source": {
+    "name": "Жемчужная 9 Каберне Совиньон, Пино Нуар",
+    "winery": "aratti",
+    "winery_name": "АРАТТИ",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Каберне Совиньон",
+      "Пино Нуар"
+    ],
+    "color": "розовое",
+    "sugar_category": "полусладкое",
+    "color_in_glass": "темно-розовый",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Сыры",
+      "Фруктово-ягодные десерты"
+    ],
+    "description": "Вкус и аромат: чёрная смородина, ежевичное варенье, капля красного компота. Вкус округлый, фруктовый, с бодрой кислинкой — как раскусить ягоду прямо с куста. Легкая газация",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Kaberne_Pino_nuar_p_sl_ba5ed7824d.webp",
+    "similar_wine_slugs": [
+      "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2",
+      "rozovaya-pantera",
+      "zhemchuzhnaya-9-muskat-rozovyj-kaberne-sovinon",
+      "rozovoe-polusladkoe-1",
+      "rozovoe-polusladkoe",
+      "perovskih_polusladkoe_rosovoe",
+      "soyuz-vino-lavetti-rozovoe-polusladkoe-krasnye-sorta-vinograda-11",
+      "inkermanskiy-zmv-inkerman-rozovoe-polusladkoe-rkatsiteli-12",
+      "novyy-svet-dom-shampanskih-vin-igristoe-vino-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-pino-fran-135",
+      "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "zolotaya-balka-zb-moscato-semi-sweet-rose-muskat-yantarnyy-rozovoe-polusladkoe-9",
+      "agora-rosa-viva-muscat"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/zhemchuzhnaya-9-kaberne-sovinon-pino-nuar-1",
+    "fetched_at": "2026-08-25T17:08:08+0300",
+    "content_hash": "050a9ee4e687b210c6a5de463c49b79f2a67cd360d07ab1e86440e742bfacb14",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "kaberne-sovinon",
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.55,
+      "acidity": 0.65,
+      "tannin": 0.2,
+      "body": 0.595,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "rose-semisweet"
+    ]
+  }
+}

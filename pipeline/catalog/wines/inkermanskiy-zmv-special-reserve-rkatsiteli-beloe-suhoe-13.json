@@ -1,0 +1,147 @@
+{
+  "slug": "inkermanskiy-zmv-special-reserve-rkatsiteli-beloe-suhoe-13",
+  "source": {
+    "name": "Special Reserve. Ркацители",
+    "winery": "inkermanskiy_zmv",
+    "winery_name": "Инкерманский ЗМВ",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Ркацители"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледно-золотистый цвет с яркими отблесками",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      12,
+      16
+    ],
+    "food_pairings": [
+      "Блюда из птицы",
+      "Кавказская кухня",
+      "Мясо и стейки",
+      "Несладкая выпечка",
+      "Овощи гриль"
+    ],
+    "description": "Аромат с оттенками спелого яблока, груши Дюшес, абрикоса, пряных трав, фруктового джема и дуба. Вкус с умеренной свежестью и тонами выдержки, тонкими нюансами тостов и ванили в послевкусии.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/inkermanskiy_zmv_special_reserve_rkatsiteli_beloe_suhoe_vyderzhannoe_13_0f63a24569.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/inkermanskiy-zmv-special-reserve-rkatsiteli-beloe-suhoe-13",
+    "fetched_at": "2026-08-25T17:02:50+0300",
+    "content_hash": "88768b868616786ca57c28ee896bb0193b9a65f15c1c6298fc50e0e0babbd7b3",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "rkatsiteli"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.75,
+      "tannin": 0.05,
+      "body": 0.58,
+      "oak": 0.6,
+      "aromatic_intensity": 0.5,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "pouilly-fuisse",
+      "puligny-montrachet",
+      "meursault"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "slug": "rok-krymskoe-vino-i-vecher-na-istoricheskoj-massandre",
+  "source": {
+    "title": "Рок, крымское вино и вечер на исторической «Массандре»",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Есть места, где рок звучит особенно правильно. На «Массандре» — среди старых винных стен, вечернего крымского воздуха и винодельни с историей почти в полтора века — он приобретает совсем другое настроение.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">16 мая Центр виноделия «Массандра» проведет концерт под открытым небом группы «КУРАГА» с Антоном Андреевским. В программе — авторские треки и узнаваемые рок-хиты в новых аранжировках: от ностальгии по классике до живого фестивального драйва.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Кажется, формат винодельческих событий в Крыму окончательно выходит за рамки экскурсий и дегустаций. Теперь это еще и музыка, вечерние концерты и еще один повод для энотуризма, где вино становится частью большого культурного опыта.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Начало в 18:00. Концерт пройдет на территории Центра виноделия «Массандра» в Ялте. Билеты доступны на Kassa24.</span></p>",
+    "body": "Есть места, где рок звучит особенно правильно. На «Массандре» — среди старых\nвинных стен, вечернего крымского воздуха и винодельни с историей почти в полтора\nвека — он приобретает совсем другое настроение.\n\n \n\n16 мая Центр виноделия «Массандра» проведет концерт под открытым небом группы\n«КУРАГА» с Антоном Андреевским. В программе — авторские треки и узнаваемые\nрок-хиты в новых аранжировках: от ностальгии по классике до живого фестивального\nдрайва.\n\n \n\nКажется, формат винодельческих событий в Крыму окончательно выходит за рамки\nэкскурсий и дегустаций. Теперь это еще и музыка, вечерние концерты и еще один\nповод для энотуризма, где вино становится частью большого культурного опыта.\n\n \n\nНачало в 18:00. Концерт пройдет на территории Центра виноделия «Массандра» в\nЯлте. Билеты доступны на Kassa24.",
+    "body_chars": 802,
+    "headings": [],
+    "rubric": "События",
+    "author": "РЕДАКЦИЯ «СВОЁ ВИНО»",
+    "photo_credit": null,
+    "published_at": "2026-05-14T10:43:38.311Z",
+    "published_date": "2026-05-14",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_14_05_26_12_51_1_65bd1bb74b.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/rok-krymskoe-vino-i-vecher-na-istoricheskoj-massandre",
+    "fetched_at": "2026-08-25T21:29:02+0300",
+    "content_hash": "2f02c71f2e7340c035d1560d3c39929e00d22b5000a61b6f52be5f1b1d675ded",
+    "parser_version": "0.4.0"
+  }
+}

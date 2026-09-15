@@ -1,0 +1,138 @@
+{
+  "slug": "domaine-lipko-petit-verdot-domaine-lipko-pti-verdo-krasnoe-suhoe-14",
+  "source": {
+    "name": "Petit Verdot Domaine Lipko",
+    "winery": "domaine-lipko",
+    "winery_name": "Domaine Lipko",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пти Вердо"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-рубиновый",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Овощи гриль",
+      "Сыры"
+    ],
+    "description": "Вкус: С яркой, но сбалансированной кислотностью, бархатистыми танинами, с нотами спелой сливы, ежевики и черноплодной рябины. Послевкусие продолжительное, сухое, приятно пряное. Сложный с оттенками свежих черных лесных ягод, дополненных пряными тонами кожи, табака и специй.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/domaine_lipko_petit_verdot_domaine_lipko_pti_verdo_krasnoe_suhoe_14_d4fda4146c.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/domaine-lipko-petit-verdot-domaine-lipko-pti-verdo-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:01:22+0300",
+    "content_hash": "ecede192af7fe1154c9f4876314faeed989df4b4de8232d2af83af0bb961a30a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pti-verdo"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.65,
+      "tannin": 0.85,
+      "body": 0.91,
+      "oak": 0.1,
+      "aromatic_intensity": 0.7,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "saperavi-georgia",
+      "plavac-mali",
+      "bordeaux-left-bank"
+    ]
+  }
+}

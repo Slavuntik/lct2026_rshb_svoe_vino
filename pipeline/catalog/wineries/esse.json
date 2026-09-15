@@ -1,0 +1,87 @@
+{
+  "slug": "esse",
+  "source": {
+    "name": "ESSE",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Качинская долина",
+    "climate": "средиземноморский",
+    "vineyard_area_ha": 158.0,
+    "vineyard_area_raw": "158 га",
+    "founded_year": null,
+    "description": "ESSE — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Винодельня использует итальянское оборудование для переработки винограда «Della Toffola». Ферментация вина в емкостях из нержавеющей стали с контролем температур. Оборудование переработки винограда «Pellenс» и розлива вина \"Fimer\". Для выдержки используется французский дуб, производитель «Radoux» и «Seguin Moreau». Система «Giropallete» с автоматическим ремюажем используется для производства игристых вин классическим способом.\n\nВладельцы и основатели винодельческого хозяйства Игорь Самсонов, Максим Факеев, Руслан и Марианна Классовы, создали собственный успешный винный бренд и новую философию крымского виноделия.\n\nЗа 15 лет существования бренда мы много экспериментировали и можем поделиться с вами нашими эмоциями, знаниями, успехами и неудачами, историями через наши вина.\n\nВинодельня расположена в уникальном терруаре Качинской долины Бахчисарайского района Крыма, отличающемся горно-морским климатом, высотой лоз около 300 метров над уровнем моря и карбонатными почвами.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/DPP_13453_22_dbc74e4e52.webp",
+    "wine_slugs": [
+      "esse-mama-marselan-krasnoe-suhoe-135",
+      "esse-pino-gri-beloe-suhoe-135",
+      "esse-muskat-belyy-beloe-suhoe-135",
+      "esse-pino-gri-blash-rozovoe-suhoe-125",
+      "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-13",
+      "esse-roze-kaberne-sovinon-rozovoe-suhoe-135",
+      "esse-brut-zero-dosage-shardone-beloe-ekstra-bryut-135",
+      "esse-nectar-muscat-muskat-belyy-beloe-polusuhoe-12",
+      "esse-shardone-otbornoe-beloe-suhoe-12",
+      "esse-kaberne-otbornoe-kaberne-sovinon-krasnoe-suhoe-12",
+      "esse-muskat-muskat-belyy-beloe-suhoe-115",
+      "esse-merlo-otbornoe-krasnoe-suhoe-13"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/esse",
+    "fetched_at": "2026-08-25T21:23:48+0300",
+    "content_hash": "e2a49646fe11f14a1df9ca6dbdab2fff505152dd92c7271f28daf17b2ea2599e",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

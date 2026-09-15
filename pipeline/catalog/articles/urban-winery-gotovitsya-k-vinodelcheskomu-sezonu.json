@@ -1,0 +1,84 @@
+{
+  "slug": "urban-winery-gotovitsya-k-vinodelcheskomu-sezonu",
+  "source": {
+    "title": "Urban Winery готовится к винодельческому сезону",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Московская городская винодельня Urban Winery завершает подготовку к переработке нового урожая — главному событию в жизни любого винодельческого хозяйства. В ожидании сезона проект на «Бауманской» меняет формат работы: теперь цокольный этаж с производством станет местом для экскурсий и мероприятий.&nbsp;</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Производство как часть пространства</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Urban Winery — первая современная городская винодельня в Москве, где вино действительно производят, а не просто наливают. Она расположена в цокольном этаже исторического особняка XVIII века на Спартаковской улице. Под руководством главного винодела Арсения Гордиенко здесь перерабатывают виноград из Краснодарского края, Крыма и Ставрополья, а затем выдерживают вино в дубовых бочках, бетонных яйцах, стальных ёмкостях и керамических овоидах.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Особенность Urban Winery в том, что производство не спрятано от глаз гостей. Оно находится в том же пространстве, что и винный паб, поэтому наблюдать за процессом рождения вина можно в реальном времени — с бокалом в руке.</span></p><h2><span style=\"font-family:Playfair Display;font-size:36px;\">Экскурсии с дегустацией</span></h2><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Экскурсии с дегустацией — базовый формат для любой винодельни. Ближайшие экскурсии пройдут&nbsp;<strong>4, 11 и 25 августа</strong>. Записаться можно на сайте Urban Winery. Количество мест ограничено.</span></p>",
+    "body": "Московская городская винодельня Urban Winery завершает подготовку к переработке\nнового урожая — главному событию в жизни любого винодельческого хозяйства. В\nожидании сезона проект на «Бауманской» меняет формат работы: теперь цокольный\nэтаж с производством станет местом для экскурсий и мероприятий. \n\n\nПРОИЗВОДСТВО КАК ЧАСТЬ ПРОСТРАНСТВА\n\nUrban Winery — первая современная городская винодельня в Москве, где вино\nдействительно производят, а не просто наливают. Она расположена в цокольном\nэтаже исторического особняка XVIII века на Спартаковской улице. Под руководством\nглавного винодела Арсения Гордиенко здесь перерабатывают виноград из\nКраснодарского края, Крыма и Ставрополья, а затем выдерживают вино в дубовых\nбочках, бетонных яйцах, стальных ёмкостях и керамических овоидах.\n\nОсобенность Urban Winery в том, что производство не спрятано от глаз гостей. Оно\nнаходится в том же пространстве, что и винный паб, поэтому наблюдать за\nпроцессом рождения вина можно в реальном времени — с бокалом в руке.\n\n\nЭКСКУРСИИ С ДЕГУСТАЦИЕЙ\n\nЭкскурсии с дегустацией — базовый формат для любой винодельни. Ближайшие\nэкскурсии пройдут 4, 11 и 25 августа. Записаться можно на сайте Urban Winery.\nКоличество мест ограничено.",
+    "body_chars": 1210,
+    "headings": [
+      "Производство как часть пространства",
+      "Экскурсии с дегустацией"
+    ],
+    "rubric": "Новости",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "соцсети URBAND WINE",
+    "published_at": "2026-08-02T21:00:00.000Z",
+    "published_date": "2026-08-02",
+    "published_year": 2026,
+    "modified_at": "2026-08-03T12:03:54.393Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Urban_Vajneri_ebde4f2d7c.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    },
+    {
+      "field": "headings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/urban-winery-gotovitsya-k-vinodelcheskomu-sezonu",
+    "fetched_at": "2026-08-25T21:29:57+0300",
+    "content_hash": "e25bc3ed72cf92f0483bdc46ae27c403dcaab653c10555bb452b74b60bb986d2",
+    "parser_version": "0.4.0"
+  }
+}

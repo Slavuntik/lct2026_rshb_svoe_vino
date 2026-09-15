@@ -1,0 +1,138 @@
+{
+  "slug": "agrolayn-mountain-eagle-pedro-ximenez-pedro-himenes-beloe-suhoe-11",
+  "source": {
+    "name": "Mountain Eagle Pedro Ximenez",
+    "winery": "agrolayn",
+    "winery_name": "Агролайн",
+    "region": "dagestan",
+    "region_name": "Дагестан",
+    "grapes": [
+      "Педро Хименес"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "бледного соломенного",
+    "vintage": null,
+    "abv_percent": 11.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Паста"
+    ],
+    "description": "Вкус: Гладкий, свежий, с яркой кислотностью, тонами лайма, ананаса, яблока и бодрящим послевкусием. Наполнен сдержанными нотами лайма, лимона, яблок летних сортов.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/agrolayn_mountain_eagle_pedro_ximenez_pedro_himenes_beloe_suhoe_11_f778a838b5.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/agrolayn-mountain-eagle-pedro-ximenez-pedro-himenes-beloe-suhoe-11",
+    "fetched_at": "2026-08-25T16:59:00+0300",
+    "content_hash": "a1adca91be6758e27f458f8e02fba8ddc55a53ce335348cd69444f620136c016",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "pedro-himenes"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.35,
+      "tannin": 0.05,
+      "body": 0.67,
+      "oak": 0.1,
+      "aromatic_intensity": 0.6,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "white-rhone-blend",
+      "pinot-gris-alsace",
+      "fiano"
+    ]
+  }
+}

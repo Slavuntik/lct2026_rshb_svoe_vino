@@ -1,0 +1,143 @@
+{
+  "slug": "sovinon-blan-krasnaya-gorka",
+  "source": {
+    "name": "Совиньон Блан",
+    "winery": "galiczkij-i-galiczkij",
+    "winery_name": "Галицкий и Галицкий",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Совиньон Блан"
+    ],
+    "color": "белое",
+    "sugar_category": "сухое",
+    "color_in_glass": "светло-соломенный",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      10,
+      12
+    ],
+    "food_pairings": [
+      "Брускетты",
+      "Закуски",
+      "Салаты"
+    ],
+    "description": "Аромат: яркие оттенки белой спаржи, смородинового листа и зеленого крыжовника.\n\nВкус: обилие фруктовых нюансов: маракуйя, спелый нектарин на фоне освежающей кислотности. Прекрасный баланс. Очень долгое послевкусие с минеральным финишем.\n\nОсобенность винификации\n\nРучной сбор. Охлаждение винограда. Инспекция гроздей. Гребнеотделение с последующим дроблением ягоды. Криомацерация в прессе в течение 3–4 часов. Отбор самотёка и деликатное прессование в атмосфере азота. Стабуляж — 10 дней при температуре 2 градуса Цельсия. Брожение сусла в течение 12 дней при температуре 19–20 градусов Цельсия. Сталь — 100%. Регулярный баттонаж в течение 10 месяцев. Ассамбляж. Кларификация. Стабилизация тартратов. Розлив с применением инертного газа и вакуумирования.",
+    "public_rating": 4.67,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/sov_blan_c03a466980.webp",
+    "similar_wine_slugs": [
+      "sosedi-aligote-shardone-2025",
+      "shardone-barrel-2023",
+      "aligote-barrel-2024",
+      "aligote-barrel-2025",
+      "risling-2024",
+      "makitra-selection",
+      "koktebel-casa-belyj-kupazh",
+      "massandra-muskat",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "shato-pino-klassika-sauvignon-blanc",
+      "golubitskoe-estate-chardonnay"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/sovinon-blan-krasnaya-gorka",
+    "fetched_at": "2026-08-25T17:05:33+0300",
+    "content_hash": "fdb79d64d7ac0b8ffd37ad7603f13c96453c1ce086e7ffa9bf7a0a61e327a96c",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "sovinon-blan"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.8,
+      "tannin": 0.05,
+      "body": 0.48,
+      "oak": 0.1,
+      "aromatic_intensity": 0.85,
+      "bubbles": 0.0,
+      "confidence": 0.5,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "sancerre",
+      "marlborough-sb",
+      "pouilly-fume"
+    ]
+  }
+}

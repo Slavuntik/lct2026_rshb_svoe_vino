@@ -1,0 +1,73 @@
+{
+  "slug": "ch-in-ch-in-2026-v-moskve-projdet-gorodskoj-festival-vina-muzyki-i-gastronomii",
+  "source": {
+    "title": "«ЧИН-ЧИН» 2026: в Москве пройдет городской фестиваль вина, музыки и гастрономии",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">24 мая в Москве пройдет фестиваль «ЧИН-ЧИН» — большой, но ламповый фестиваль с атмосферой винного уикенда. Площадкой станет AG Loft, а организаторы ожидают около 1500 гостей.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Фестиваль придумала команда энтузиастов винной культуры, которая делает события не в формате профильных салонов, а скорее собирая дружеское комьюнити вокруг вина, еды и музыки.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В этом году на площадке соберутся более 15 винодельческих проектов. Среди участников заявлены «Массандра», «Фанагория», Inkerman, Villa di Alma, «Бельбек», «Коктебель», Chateau Mukhrani, Olymp Winery, Cloudy Winery и другие.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Кроме дегустаций организаторы готовят винное казино, арт-пространство с росписью бутылок, гастрономические зоны, музыкальную программу и несколько лаунж-зон. Отдельная часть фестиваля посвящена еде: приготовят раклет, морепродукты, гриль, сыры и закуски для винных пейрингов.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Сам формат «ЧИН-ЧИН» хорошо показывает, как меняется российская винная аудитория. Люди приходят на подобные события не только ради дегустаций, а за особой атмосферой. Как ни странно, вино здесь не является центром вселенной, но органично вписывается в настроение.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Москва, AG Loft&nbsp;</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">24 мая с 16:00 до 21:00&nbsp;</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В стоимость<strong> </strong></span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://cincinfest.ru\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong>билета</strong></span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><strong> </strong>входит дегустационный бокал, который гости смогут забрать с собой.</span></p>",
+    "body": "24 мая в Москве пройдет фестиваль «ЧИН-ЧИН» — большой, но ламповый фестиваль с\nатмосферой винного уикенда. Площадкой станет AG Loft, а организаторы ожидают\nоколо 1500 гостей.\n\n \n\nФестиваль придумала команда энтузиастов винной культуры, которая делает события\nне в формате профильных салонов, а скорее собирая дружеское комьюнити вокруг\nвина, еды и музыки. \n\n \n\nВ этом году на площадке соберутся более 15 винодельческих проектов. Среди\nучастников заявлены «Массандра», «Фанагория», Inkerman, Villa di Alma,\n«Бельбек», «Коктебель», Chateau Mukhrani, Olymp Winery, Cloudy Winery и другие.\n\n \n\nКроме дегустаций организаторы готовят винное казино, арт-пространство с росписью\nбутылок, гастрономические зоны, музыкальную программу и несколько лаунж-зон.\nОтдельная часть фестиваля посвящена еде: приготовят раклет, морепродукты, гриль,\nсыры и закуски для винных пейрингов.\n\n \n\nСам формат «ЧИН-ЧИН» хорошо показывает, как меняется российская винная\nаудитория. Люди приходят на подобные события не только ради дегустаций, а за\nособой атмосферой. Как ни странно, вино здесь не является центром вселенной, но\nорганично вписывается в настроение.\n\n \n\nМосква, AG Loft \n\n24 мая с 16:00 до 21:00 \n\nВ стоимость билета [https://cincinfest.ru] входит дегустационный бокал, который\nгости смогут забрать с собой.",
+    "body_chars": 1291,
+    "headings": [],
+    "rubric": "События",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "cincinfest.ru",
+    "published_at": "2026-05-22T12:13:33.644Z",
+    "published_date": "2026-05-22",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/chin_d9bb73ef8b.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/ch-in-ch-in-2026-v-moskve-projdet-gorodskoj-festival-vina-muzyki-i-gastronomii",
+    "fetched_at": "2026-08-25T21:25:42+0300",
+    "content_hash": "f15f1cd3cf782883b8b0fafdf35347dff4ac9cfd46d58482d0c2db21eda8fa05",
+    "parser_version": "0.4.0"
+  }
+}

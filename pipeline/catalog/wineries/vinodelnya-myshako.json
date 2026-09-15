@@ -1,0 +1,79 @@
+{
+  "slug": "vinodelnya-myshako",
+  "source": {
+    "name": "Мысхако",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 891.0,
+    "vineyard_area_raw": "891 га",
+    "founded_year": null,
+    "description": "Мысхако — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "«Мысхако» — одно из старейших винодельческих предприятий России, работающее в Новороссийске, в селе Мысхако, и выпускающее тихие и игристые вина.\n\nТрадицию виноградарства и виноделия в живописных местах, где сейчас раскинулся поселок Мысхако, возродил доктор Михаил Фёдорович Пенчул. Его винодельня быстро стала одной из лучших на Черноморском побережье. Михаил Федорович разумно подбирал сорта винограда и лично контролировал работы на виноградниках.\n\nВинзавод «Мысхако» не прекращал свою деятельность даже в годы, когда на Малой земле шли ожесточенные бои. В 1943 году здесь находился командный пункт начальника политотдела 18-й армии полковника Леонида Ильича Брежнева, где он вручал награды и партийные билеты. Спустя много лет Брежнев вернулся на эти земли.\n\nВ 1974 году на территории винзавода «Мысхако» построили дегустационный зал специально к приезду генерального секретаря ЦК КПСС Леонида Ильича Брежнева. Дегустационный зал винзавода «Мысхако» в Новороссийске до сих пор хранит на своих полках образцы бутылок, по которым разливалось вино в СССР.\n\nВ советские годы Мысхако был любимым местом отдыха партийной элиты, выпускал небольшие партии, зато самого высокого качества. В начало третьего тысячелетия предприятие вошло с титулом «Официальный поставщик Кремля».\n\nРельеф местности горный, с крутыми и пологими склонами. Зона характеризуется горно-морским климатом с сухим и продолжительным жарким летом, теплой осенью, влажной и бесснежной зимой и коротким весенним периодом. В почвах преобладают горные породы мелового периода и палеогена: сланцевый мергель, карбонатные породы, тонкослоистый известняк.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/myshako_351b4a8e46.webp",
+    "wine_slugs": [
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "green-cape-sovinon-blan",
+      "green-cape-risling",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "myshako-igristoe-beloe-polusladkoe",
+      "vinodelnya-myshako-oranzhevoe-iz-belogo-gevyurtstraminer-krasnoe-suhoe-142",
+      "vinodelnya-myshako-shardone-beloe-suhoe-123",
+      "vinodelnya-myshako-tempranilo-rozovoe-suhoe-134",
+      "vinodelnya-myshako-marselan-krasnoe-suhoe-143",
+      "vinodelnya-myshako-pino-gridzhio-beloe-polusuhoe-123"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/vinodelnya-myshako",
+    "fetched_at": "2026-08-25T21:24:48+0300",
+    "content_hash": "2173e6f4b9247e1c3a28c9e1b03ae67a1b5d10d333543e72932248407011dd4a",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

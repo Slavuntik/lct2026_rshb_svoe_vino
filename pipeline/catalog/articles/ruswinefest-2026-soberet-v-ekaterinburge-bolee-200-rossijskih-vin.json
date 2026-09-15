@@ -1,0 +1,69 @@
+{
+  "slug": "ruswinefest-2026-soberet-v-ekaterinburge-bolee-200-rossijskih-vin",
+  "source": {
+    "title": "RUSWINEFEST 2026 соберет в Екатеринбурге более 200 российских вин",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">30 мая в Екатеринбурге пройдет фестиваль российских вин RUSWINEFEST 2026. Площадкой события станет Международный центр искусств «Главный проспект». Фестиваль уже несколько лет остается одной из крупнейших винных встреч на Урале и собирает как виноделов, так и любителей российского вина.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В этом году организаторы заявили более 200 вин от российских хозяйств и порядка 40 винных стендов. Гости смогут познакомиться с новыми релизами, попробовать вина в формате свободной дегустации и лично пообщаться с представителями виноделен. В программе также заявлены мастер-классы, камерные дегустации и гастрономическая зона с участием ресторанных проектов Екатеринбурга.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Среди участников фестиваля: Усадьба Дивноморское, Абрау-Дюрсо, Николаев и сыновья, Винодельня Ведерниковъ, Олег Репин, Esse, Villa di Alma и другие.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Фестиваль пройдет в две сессии: дневную с 12:00 до 15:00 и вечернюю с 16:00 до 19:00. Организаторы также планируют народное голосование за лучшие вина фестиваля, победителей которого объявят по итогам мероприятия.&nbsp;</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">RUSWINEFEST подарит возможность за один день получить срез современного российского виноделия: от крупных известных брендов до небольших авторских хозяйств, которые редко представлены за пределами своих регионов.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Билеты и регистрация для профи </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://ruswinefest.ru \"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">ruswinefest.ru&nbsp;</span></a></p>",
+    "body": "30 мая в Екатеринбурге пройдет фестиваль российских вин RUSWINEFEST 2026.\nПлощадкой события станет Международный центр искусств «Главный проспект».\nФестиваль уже несколько лет остается одной из крупнейших винных встреч на Урале\nи собирает как виноделов, так и любителей российского вина. \n\n \n\nВ этом году организаторы заявили более 200 вин от российских хозяйств и порядка\n40 винных стендов. Гости смогут познакомиться с новыми релизами, попробовать\nвина в формате свободной дегустации и лично пообщаться с представителями\nвиноделен. В программе также заявлены мастер-классы, камерные дегустации и\nгастрономическая зона с участием ресторанных проектов Екатеринбурга. \n\n \n\nСреди участников фестиваля: Усадьба Дивноморское, Абрау-Дюрсо, Николаев и\nсыновья, Винодельня Ведерниковъ, Олег Репин, Esse, Villa di Alma и другие. \n\n \n\nФестиваль пройдет в две сессии: дневную с 12:00 до 15:00 и вечернюю с 16:00 до\n19:00. Организаторы также планируют народное голосование за лучшие вина\nфестиваля, победителей которого объявят по итогам мероприятия. \n\n \n\nRUSWINEFEST подарит возможность за один день получить срез современного\nроссийского виноделия: от крупных известных брендов до небольших авторских\nхозяйств, которые редко представлены за пределами своих регионов.\n\n \n\nБилеты и регистрация для профи ruswinefest.ru  [https://ruswinefest.ru ]",
+    "body_chars": 1334,
+    "headings": [],
+    "rubric": "События",
+    "author": "Александра Кожуханцева",
+    "photo_credit": null,
+    "published_at": "2026-05-26T14:44:21.743Z",
+    "published_date": "2026-05-26",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/ruswinefest_0b3d3c25ac.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/ruswinefest-2026-soberet-v-ekaterinburge-bolee-200-rossijskih-vin",
+    "fetched_at": "2026-08-25T21:29:12+0300",
+    "content_hash": "b6ba483510d2699c5001d21420209747119ab87be4c6fa5eddef19ffe8051771",
+    "parser_version": "0.4.0"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "slug": "vinodelnya-marchenko-rubin-rubin-azos-krasnoe-suhoe-14",
+  "source": {
+    "name": "Рубин",
+    "winery": "vinodelnya-marchenko",
+    "winery_name": "Винодельня Марченко",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Рубин АЗОС"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-гранатовый с фиолетовыми отблесками",
+    "vintage": null,
+    "abv_percent": 14.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "Кавказская кухня"
+    ],
+    "description": "Вкус: Богатый, приятно танинный, выраженными фруктово-ягодными тонами, с продолжительным послевкусием с пряными и шоколадными нюансами. Яркий, с акцентами спелых темных фруктов и лесных ягод, с штрихами древесной коры и болгарского перца.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vinodelnya_marchenko_rubin_rubin_azos_krasnoe_suhoe_14_d37b2bc288.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/vinodelnya-marchenko-rubin-rubin-azos-krasnoe-suhoe-14",
+    "fetched_at": "2026-08-25T17:07:02+0300",
+    "content_hash": "29765aed5cbf47fc3ae9aec14494f11aa35db98a04cbdbdacc798bc0387596e5",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "rubin-azos"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.7,
+      "body": 0.81,
+      "oak": 0.1,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "montepulciano-dabruzzo",
+      "cotes-du-rhone",
+      "saperavi-georgia"
+    ]
+  }
+}

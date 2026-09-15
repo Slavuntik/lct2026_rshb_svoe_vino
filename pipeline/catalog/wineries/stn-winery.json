@@ -1,0 +1,75 @@
+{
+  "slug": "stn-winery",
+  "source": {
+    "name": "STN Winery",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": "Мягкий средиземноморский",
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "STN Winery — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "STN Winery — севастопольский негоциантский проект Натальи Степаненко и Андрея Долингера, ориентированный на яркие вина из покупного винограда региона. В производстве делают ставку на спонтанную ферментацию, минимум технологических вмешательств, сталь и дуб.\n\nНегоциантская винодельня в Севастополе, работающая с отобранным покупным виноградом из различных микрозон региона. Основной фокус — преимущественно французские сорта, дикие дрожжи, натуральный подход и выразительный авторский стиль.\n\nПроект расположен в городской черте Севастополя, недалеко от центра. Производственная площадка используется несколькими независимыми винодельческими проектами, включая Yaiyla, Никиту Абалихина и Gavras Estate. Для винификации и выдержки применяются ёмкости из нержавеющей стали и дубовые бочки.\n\nSTN Winery была создана в 2021 году Натальей Степаненко и Андреем Долингером — сомелье и начинающим на тот момент виноделом. Название STN образовано от инициалов Натальи Степаненко.\n\nАндрей Долингер с 2015 года развивал профессиональный опыт в винной сфере: получил образование сомелье, посещал европейские винодельни и проходил стажировку у Павла Швеца в UPPA Winery. В проекте его подход соединяет эксперименты с технологической точностью; для брожения используются природные дикие дрожжи, сокращается применение химических препаратов, а долгосрочная цель заявлена как отказ от сульфитации.\n\nУ STN нет единого собственного терруара в классическом смысле: проект закупает виноград с разных участков Севастопольского региона. Поэтому стиль вин формируется через отбор конкретных виноградников, сортов и урожаев, а не за счёт одного массива посадок.\n\nБазовые характеристики региона — долинно-холмистый рельеф, горные склоны, близость Чёрного моря, речные долины и глинисто-известняковые почвы. Такой набор условий создаёт множество микрозон с различной инсоляцией, температурным режимом и почвенным профилем.\n\nНапример, вино STN Syrah 2022 сделано из винограда с участка в селе Родное, а Sauvignon Gris 2022 — из винограда с плато Кара-Тау у села Верхнесадовое. Это наглядно отражает негоциантскую модель работы проекта.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/IMG_8583_e163cbd3d0.webp",
+    "wine_slugs": [
+      "stn-winery-arhitektor-sira-krasnoe-suhoe-12",
+      "stn-winery-merlo-krasnoe-suhoe-14",
+      "stn-winery-pino-nuar-krasnoe-suhoe-12",
+      "stn-winery-wiess-risling-beloe-suhoe-12",
+      "stn-winery-muskat-beloe-suhoe-115",
+      "stn-winery-bratstvo-kochergi-pino-nuar-krasnoe-suhoe-12",
+      "stn-winery-traminer-traminer-beloe-suhoe-13",
+      "stn-winery-trio-aligote-beloe-suhoe-13",
+      "stn-winery-saignee-sira-rozovoe-suhoe-125",
+      "stn-winery-cyberpunk-pino-nuar-krasnoe-suhoe-12",
+      "stn-winery-syrah-sira-krasnoe-suhoe-13",
+      "stn-winery-chardonnay-vol2-shardone-beloe-suhoe-105"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/stn-winery",
+    "fetched_at": "2026-08-25T21:24:18+0300",
+    "content_hash": "71c7a6b8460a55715682b36698b65e02569056711bf9195c19aeb612f72b67b1",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

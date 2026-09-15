@@ -1,0 +1,144 @@
+{
+  "slug": "massandra-muskat-belyy-yuzhnoberezhnyy-beloe-sladkoe-16",
+  "source": {
+    "name": "Мускат Белый Южнобережный",
+    "winery": "massandra",
+    "winery_name": "Массандра",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Мускат Белый"
+    ],
+    "color": "белое",
+    "sugar_category": "сладкое",
+    "color_in_glass": "насыщенный золотистый цвет с красивыми бликами тёмного янтаря",
+    "vintage": null,
+    "abv_percent": 16.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Выпечка и десерты",
+      "Легкие закуски",
+      "Сыры",
+      "Фрукты"
+    ],
+    "description": "Аромат сладко-цветочный, очень элегантный, раскрывается нотами спелого персика, мармелада из личи и джема из дыни, переходя к оттенкам засахаренных лимонных долек, грушевой пастилы, запечённого с мёдом яблока, айвового мармелада. Вкус элегантный, маслянистый, прекрасно сбалансированный, с тягучей сладостью, мягкой кислотностью и медовым послевкусием с мускатно-пряными оттенками. Прекрасный дижестив.",
+    "public_rating": 4.5,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/massandra_muskat_belyy_yuzhnoberezhnyy_beloe_desertnoe_16_609f9d79d5.webp",
+    "similar_wine_slugs": [
+      "portvejn-surozh",
+      "sary-pandas-vyderzhannoe",
+      "madera-krymskaya",
+      "massandra-heres",
+      "chateau-tamagne-grand-dessert-muscat",
+      "portvejn-krymskij",
+      "pozdnij-sbor-beloe",
+      "le-general-hiver",
+      "b-yu-rne-pino-gri-pozdnij-sbor-sladkoe-beloe",
+      "massandra-portveyn-belyy-alushta-belye-sorta-vinograda-beloe-sladkoe-17",
+      "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+      "massandra-muskat-belyy-pozdnego-sbora-beloe-sladkoe-10"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/massandra-muskat-belyy-yuzhnoberezhnyy-beloe-sladkoe-16",
+    "fetched_at": "2026-08-25T17:03:47+0300",
+    "content_hash": "efe13524a4dbcc9aaf526c8df13dfefb82c8f7d64e1db650df80fdd32bf46be0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [],
+    "grape_slugs": [
+      "muskat-bely"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.85,
+      "acidity": 0.55,
+      "tannin": 0.05,
+      "body": 0.72,
+      "oak": 0.1,
+      "aromatic_intensity": 0.9,
+      "bubbles": 0.0,
+      "confidence": 0.67,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "muscat-beaumes-de-venise",
+      "passito",
+      "tokaji-aszu"
+    ]
+  }
+}

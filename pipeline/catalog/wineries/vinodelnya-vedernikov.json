@@ -1,0 +1,79 @@
+{
+  "slug": "vinodelnya-vedernikov",
+  "source": {
+    "name": "Ведерниковъ",
+    "region": "dolina-dona",
+    "region_name": "Долина Дона",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 160.0,
+    "vineyard_area_raw": "160 га",
+    "founded_year": null,
+    "description": "Ведерниковъ — винодельня в регионе Долина Дона. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Хозяйство «Винодельня Ведерниковъ» расположено в Ростовской области в хуторе Ведерников на правом берегу реки Дон. Созданные в русских винодельческих традициях, на донской земле, из местного винограда, вина «Винодельни Ведерниковъ» каждый год получают высокие оценки на престижных международных конкурсах.\n\nАроматный и сбалансированный виноград, который необходим для производства изысканных вин, обычно получают именно в прохладном климате. Сумма активных температур за вегетационный период в терруаре хутора Ведерников составляет от 3600 до 3900 ºС , что позволяет вызревать даже поздним сортам. Среднегодовое количество осадков — 412 мм.\n\nТакже терруар хутора Ведерников отличается ветреной сухой и жаркой погодой. Это способствует быстрому осушению виноградников даже после сильных дождей, препятсвует созданию благотворных условий для развитии болезней, что позволяет уменьшить количество обработок. Их общее число в 2-3 раза меньше, чем на обычных виноградниках Европы.\n\nПочвы представлены южными чернозёмами с обеднённым плодородным слоем. Подстилающая порода — глина, материнская порода – ракушечное плато. Толщина слоев варьируется, но общая композиция сохраняется. Именно благодаря плато морского ракушечника вина из хутора Ведерников приобретают деликатную минеральность. Из-за глубоко залегающих грунтовых вод корневая система вынуждена проникать на глубину более пяти метров. Однако большая часть почв хорошо дренирована, и это позволяет корням великолепно сохраняться при любых погодных условиях.\n\nУкрывное виноградарство — дело очень трудоемкое и дорогостоящее, встретить его можно лишь в нескольких регионах мира. Главным препятствием для выращивания винограда на Дону являются суровые и продолжительные зимние заморозки, ведь если лоза подвергнется воздействию температур -20ºC и ниже в течении хотя бы пары суток, она погибнет. Однако, резон выращивать виноград там, где бывает холодно, огромен, поскольку в экстремальных условиях получаются самые интересные вина.\n\nКлимат Долины Дона, охватывающей 460 км от Ростова на востоке до Цимлянского водохранилища на западе, непрост для виноградарства. Летом здесь очень жарко, зимы суровы, а вегетационный период лозы очень короткий. Под влиянием крупной реки и других факторов разница дневных и ночных температур в августе-сентябре доходит до 15-20 ºС.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/vedernikov1_cd7b645a41.webp",
+    "wine_slugs": [
+      "rkacziteli-beloe-suhoe",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-2-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-krasnostop-zolotovskiy-magnum-krasnoe-suhoe-145",
+      "vinodelnya-vedernikov-vedernikov-gubernatorskoe-golubok-krasnoe-suhoe-115",
+      "vinodelnya-vedernikov-vedernikov-puhlyakovskiy-beloe-suhoe-12",
+      "vinodelnya-vedernikov-vedernikov-kaberne-sovinon-krasnoe-suhoe-145",
+      "vinodelnya-vedernikov-vedernikov-pet-nat-platovskiy-aligote-bryut-beloe-suhoe-10",
+      "vinodelnya-vedernikov-vedernikov-pet-nat-golubok-krasnyy-bryut-krasnoe-suhoe-13",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-bryut-roze-tsimlyanskiy-chernyy-rozovoe-12",
+      "vinodelnya-vedernikov-vedernikov-dolina-dona-krasnoe-suhoe-kaberne-sovinon-125",
+      "vinodelnya-vedernikov-vedernikov-krasnostop-zolotovskiy-krasnoe-suhoe-145",
+      "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-tsimlyanskiy-chernyy-krasnoe-suhoe-14"
+    ],
+    "nearby_winery_slugs": [
+      "vinabani",
+      "blagolyubov",
+      "vina-arpachina",
+      "vinodelnya-molchanova",
+      "dacha-serdyuka",
+      "donskoe-vinodelcheskoe-hozyaystvo-elbuzd",
+      "usadba-sarkel",
+      "tsimlyanskie-vina"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/vinodelnya-vedernikov",
+    "fetched_at": "2026-08-25T21:24:51+0300",
+    "content_hash": "e754f1e989317c3384082305e3820e77cad43ed40485e3301fefd0f7f874cbc4",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "slug": "pinot-noir-2024-one-barrel-by-dmitry-maslov-pino-nuar-2024-uan-barrel-dmitrij-maslov",
+  "source": {
+    "name": "Pinot Noir 2024 One Barrel by Dmitry Maslov (Пино Нуар 2024 Уан Баррел Дмитрий Маслов)",
+    "winery": "one-barrel-uan-barrel",
+    "winery_name": "One Barrel (Уан Баррел)",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Пино Нуар"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "рубиновый",
+    "vintage": 2024,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      13,
+      15
+    ],
+    "food_pairings": [
+      "Легкие закуски",
+      "Мясо и стейки"
+    ],
+    "description": "Преобладает элегантный и яркий фруктовый аромат красных ягод брусники и кизила. Легкотелое, мягкое с лёгким и спелым танином. Средняя кислотность.  Pinot Noir One Barrel 2024, тираж 1956 бутылок\n\nУрожай Пино Нуар, клон #375, для второго винтажа с виноградника в коммуне Айвовое на западе Бахчисарайского района, в долине реки Кача был собран в конце августа. Этот редкий клон Пино Нуар культивируется в Бургундии, в единственном «тихом» апеласьоне Кото Шампенуа в Шампани, где из него производят красные вина, и в Лангедоке. Он показал в жарком и сухом 2024 отличную фенольную зрелость и алкоголь получился 12%.\n\nУ вина «южный профиль в северной упаковке»,  кислотность выше среднего, тело среднее минус, в основе элегантный и яркий фруктовый аромат красных ягод брусники и кизила, мягкая  танинная структура, длина, и возможность потребления молодым, а также отличный потенциал. \n\nТехнология производства: гребнеотделение, 7 дней мацерации, 70% целыми ягодами, 30% - дробление, низкая t ферментации, без пижажей только ремонтаж, 7 бочек по 225 литров, 4 заливка, выдержка 10 месяцев. \n\nФирменная этикетка из обоев выпуска 1988 года Пермского целлюлозно-бумажного комбината. Оттенок 65. На обоях тоже попадаются в тему мелкие ягодки.",
+    "public_rating": null,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/IMG_20250829_WA_0033_1_aa1d35a672.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "uva-vallis-sira",
+      "pino-nuar-premium",
+      "rubin-premium"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "vintage",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/pinot-noir-2024-one-barrel-by-dmitry-maslov-pino-nuar-2024-uan-barrel-dmitrij-maslov",
+    "fetched_at": "2026-08-25T17:04:30+0300",
+    "content_hash": "e5ca924fddf7c963acee805ff5662eda38e9e9adf895449b4722170aafd9c012",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "pino-nuar"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.7,
+      "tannin": 0.4,
+      "body": 0.45,
+      "oak": 0.6,
+      "aromatic_intensity": null,
+      "bubbles": 0.0,
+      "confidence": 0.83,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "burgundy-pinot",
+      "rioja-crianza",
+      "pinot-noir-oregon"
+    ]
+  }
+}

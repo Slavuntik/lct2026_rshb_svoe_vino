@@ -1,0 +1,77 @@
+{
+  "slug": "v-avguste-vhod-v-winepark-po-budnyam-stanet-besplatnym",
+  "source": {
+    "title": "В августе вход в WINEPARK по будням станет бесплатным",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">С 1 по 31 августа посетить WINEPARK в будние дни можно бесплатно. По выходным для гостей будет действовать специальная стоимость билетов.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">На территории площадью 30 гектаров расположены прогулочные маршруты, виноградники, современная винодельня, винная башня высотой 54,5 метра, ресторан WineKitchen и бар «Фонотека» с коллекцией винила. С территории парка открывается панорамный вид на Южный берег Крыма.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Ежедневно в 10:00 и 15:00 для гостей проводят бесплатные ознакомительные прогулки с гидом. За 20 минут посетителям расскажут об истории WINEPARK, виноградниках и доступных форматах отдыха.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Также гости могут отправиться на экскурсию по винодельне и виноградникам, подняться на винную башню, посетить дегустации и гастрономические программы.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В течение августа до WINEPARK будут курсировать фирменные трансферы из Ялты, Севастополя и Симферополя.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Предложение действует до 31 августа.</span></p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Подробнее на сайте </span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://winepark.ru/visiting/ekskursii-i-vkhodnoy-bilet/poseshchenie-winepark/\"><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">winepark.ru</span></a></p>",
+    "body": "С 1 по 31 августа посетить WINEPARK в будние дни можно бесплатно. По выходным\nдля гостей будет действовать специальная стоимость билетов.\n\nНа территории площадью 30 гектаров расположены прогулочные маршруты,\nвиноградники, современная винодельня, винная башня высотой 54,5 метра, ресторан\nWineKitchen и бар «Фонотека» с коллекцией винила. С территории парка открывается\nпанорамный вид на Южный берег Крыма.\n\nЕжедневно в 10:00 и 15:00 для гостей проводят бесплатные ознакомительные\nпрогулки с гидом. За 20 минут посетителям расскажут об истории WINEPARK,\nвиноградниках и доступных форматах отдыха.\n\nТакже гости могут отправиться на экскурсию по винодельне и виноградникам,\nподняться на винную башню, посетить дегустации и гастрономические программы.\n\nВ течение августа до WINEPARK будут курсировать фирменные трансферы из Ялты,\nСевастополя и Симферополя.\n\nПредложение действует до 31 августа.\n\nПодробнее на сайте winepark.ru\n[https://winepark.ru/visiting/ekskursii-i-vkhodnoy-bilet/poseshchenie-winepark/]",
+    "body_chars": 1003,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "пресс-служба WINEPARK",
+    "published_at": "2026-08-04T08:00:00.000Z",
+    "published_date": "2026-08-04",
+    "published_year": 2026,
+    "modified_at": "2026-08-04T08:48:34.405Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/IMG_8095_3d3b6fe5fa.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/v-avguste-vhod-v-winepark-po-budnyam-stanet-besplatnym",
+    "fetched_at": "2026-08-25T21:30:00+0300",
+    "content_hash": "74672d0dde0929efe23acaea0bc335284a353d6b3f6aadf6d88b2db6e2df3feb",
+    "parser_version": "0.4.0"
+  }
+}

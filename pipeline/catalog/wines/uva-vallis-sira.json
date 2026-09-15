@@ -1,0 +1,145 @@
+{
+  "slug": "uva-vallis-sira",
+  "source": {
+    "name": "Uva Vallis Сира",
+    "winery": "uva-vallis",
+    "winery_name": "Uva Vallis",
+    "region": "krym",
+    "region_name": "Крым",
+    "grapes": [
+      "Сира"
+    ],
+    "color": "красное",
+    "sugar_category": "сухое",
+    "color_in_glass": "темно-рубиновый",
+    "vintage": null,
+    "abv_percent": 13.0,
+    "serving_temp_c": [
+      16,
+      18
+    ],
+    "food_pairings": [
+      "BBQ",
+      "Блюда из птицы",
+      "Кавказская кухня"
+    ],
+    "description": "Аромат яркий и комплексный, раскрывается доминирующими нотами свежераздавленных ягод черники, ежевики, сливы и шелковицы, дополненными оттенками шоколадной крошки и розового перца шинус. При аэрации проявляется лёгкая ментоловая нота, придающая аромату дополнительную глубину. \n\nВкус наполненный и объёмный, с отличным балансом, умеренной сочной кислотностью и гладкими танинами. В послевкусии раскрываются пряные нюансы и нотки кофе, создавая выразительное и гармоничное завершение. Отличная молодая фруктовая сира с характерным сортовым профилем, гастрономичная и дружелюбная, обладающая потенциалом выдержки на 2–3 года.",
+    "public_rating": 5.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/jwfz7urcks7eam5k34zxwku1wxz88kkd_29a9e03cbf.webp",
+    "similar_wine_slugs": [
+      "karbon-glyu-2024",
+      "pino-glyu-2025",
+      "miroir-de-talu-merlot-cabernet-sauvignon",
+      "miroir-de-talu-merlot-krasnostop",
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "chateau-de-talu-merlot",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "uva-vallis-risling",
+      "pino-nuar-premium",
+      "rubin-premium",
+      "rubin-golodrigi"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/uva-vallis-sira",
+    "fetched_at": "2026-08-25T17:06:10+0300",
+    "content_hash": "92ba5b6ef23696d151606ee500a2d4645203a207fbd2db79759e1bf5c61502b8",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "тихое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "sira"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.05,
+      "acidity": 0.6,
+      "tannin": 0.75,
+      "body": 0.83,
+      "oak": 0.6,
+      "aromatic_intensity": 0.75,
+      "bubbles": 0.0,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": [
+      "shiraz-barossa",
+      "northern-rhone-syrah",
+      "ribera-del-duero"
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "slug": "abrau-dyurso-vozglavilo-rejting-10-luchshih-obektov-gastronomicheskogo-turizma-rossii-2026-po-versii-putevoditelya-50-best-tastes-of-russia",
+  "source": {
+    "title": "«Абрау-Дюрсо» возглавляет рейтинг 10 лучших объектов гастрономического туризма России 2026 по версии путеводителя 50 Best Tastes of Russia",
+    "schema_type": "NewsArticle",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Рейтинг формируется на основе голосования представителей ресторанной и туристической индустрии, включая рестораторов, шеф-поваров, отельеров, предпринимателей и профильных экспертов. Участники оценивают проекты, формирующие наиболее целостный гастрономический опыт.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">Эксперты отметили эногастрономическую инфраструктуру курорта «Абрау-Дюрсо», включая виноградники, исторические подвалы, рестораны с локальной гастрономией и винным сопровождением, а также экскурсионные и событийные программы.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;font-size:18px;\">В числе факторов, повлиявших на итоговую оценку, названы мастер-классы, фестивали и комплексный подход к развитию винного туризма на территории курорта.</span></p>",
+    "body": "Рейтинг формируется на основе голосования представителей ресторанной и\nтуристической индустрии, включая рестораторов, шеф-поваров, отельеров,\nпредпринимателей и профильных экспертов. Участники оценивают проекты,\nформирующие наиболее целостный гастрономический опыт.\n\n \n\nЭксперты отметили эногастрономическую инфраструктуру курорта «Абрау-Дюрсо»,\nвключая виноградники, исторические подвалы, рестораны с локальной гастрономией и\nвинным сопровождением, а также экскурсионные и событийные программы.\n\n \n\nВ числе факторов, повлиявших на итоговую оценку, названы мастер-классы,\nфестивали и комплексный подход к развитию винного туризма на территории курорта.",
+    "body_chars": 652,
+    "headings": [],
+    "rubric": "Новости",
+    "author": "Александра Кожуханцева",
+    "photo_credit": "социальные сети ГК «Абрау-Дюрсо»",
+    "published_at": "2026-06-09T08:15:00.000Z",
+    "published_date": "2026-06-09",
+    "published_year": 2026,
+    "modified_at": "2026-06-09T08:11:42.342Z",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_08_06_26_08_01_7f3462701b.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "modified_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/abrau-dyurso-vozglavilo-rejting-10-luchshih-obektov-gastronomicheskogo-turizma-rossii-2026-po-versii-putevoditelya-50-best-tastes-of-russia",
+    "fetched_at": "2026-08-25T21:25:09+0300",
+    "content_hash": "ae44573906fcaf12ab699fd0f6cf2c2e241b51feccbbd60ef0101b5136065cf7",
+    "parser_version": "0.4.0"
+  }
+}

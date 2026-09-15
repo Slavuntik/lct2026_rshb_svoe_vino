@@ -1,0 +1,146 @@
+{
+  "slug": "lesnaya-proseka",
+  "source": {
+    "name": "Лесная просека",
+    "winery": "kuban-vino",
+    "winery_name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "grapes": [
+      "Алиготе",
+      "Пино Блан",
+      "Шардоне"
+    ],
+    "color": "белое",
+    "sugar_category": "брют",
+    "color_in_glass": "светло-золотистый",
+    "vintage": null,
+    "abv_percent": 12.0,
+    "serving_temp_c": [
+      6,
+      8
+    ],
+    "food_pairings": [
+      "Блюда из рыбы",
+      "Салаты",
+      "Сыры",
+      "Устрицы"
+    ],
+    "description": "«Лесная Просека» от Aristov Arte — лёгкое, свежее и гастрономичное игристое брют, созданное главным энологом Артемом Васильевым как «питкий» купаж ароматных белых сортов (Шардоне, Пино Блан и Алиготе) без амбиций стать «российским просекко», но точно попавшее в настроение и стиль потребления современной аудитории. Вино производится методом вторичного брожения в резервуарах с выдержкой на тонком дрожжевом осадке, что обеспечивает чистоту вкуса и аккуратную глубину.\n\nВ бокале оно светло-соломенное с зелено-золотистыми отблесками; в аромате играют белые фрукты, лёгкие цветочные нюансы и тонкая минеральность, а во вкусе — живое, бодрящее игристое с деликатной колкостью и продолжительным минеральным послевкусием. Оптимальная температура подачи — 5–7°C; отлично работает как аперитив и в паре с лёгкими закусками: тартаром из рыбы, устрицами, салатами с цитрусовой заправкой, мягкими козьими сырами.",
+    "public_rating": 4.0,
+    "public_rating_count": null,
+    "roskachestvo_rating": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/Screenshot_4_7c7945f9a9.webp",
+    "similar_wine_slugs": [
+      "nebo-rossii-glera",
+      "glera-manno",
+      "rustok-glera-ru-140",
+      "aristov-anima-millesimato-beloe-bryut",
+      "solnechnaya-dolina-meganom-kokur-beloe-bryut",
+      "myshako-igristoe-beloe-bryut",
+      "myshako-green-cape-shardone-beloe-bryut",
+      "czimlyanskoe-beloe-bryut",
+      "abrau-dyurso-udelnoe-vedomstvo-imperatorskoe-beloe-bryut",
+      "abrau-dyurso-fizz-beloe-bryut",
+      "fanagoriya-ona-skazala-da-beloe-bryut",
+      "monte-garu-beloe-bryut"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "color",
+      "strategy": "meta"
+    },
+    {
+      "field": "sugar_category",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes_from_title",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "grapes",
+      "strategy": "dom"
+    },
+    {
+      "field": "serving_temp_c",
+      "strategy": "dom"
+    },
+    {
+      "field": "abv_percent",
+      "strategy": "dom"
+    },
+    {
+      "field": "public_rating",
+      "strategy": "dom"
+    },
+    {
+      "field": "color_in_glass",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery",
+      "strategy": "dom"
+    },
+    {
+      "field": "winery_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "similar_wine_slugs",
+      "strategy": "dom"
+    },
+    {
+      "field": "food_pairings",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wines/lesnaya-proseka",
+    "fetched_at": "2026-08-25T17:03:23+0300",
+    "content_hash": "50f55a14af274071976599e93a275bd27d4b393265543aab64ffc843cc27bd00",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "stillness": "игристое",
+    "style_tags": [
+      "бочковое"
+    ],
+    "grape_slugs": [
+      "aligote",
+      "pino-blan",
+      "shardone"
+    ],
+    "aroma_descriptors": [],
+    "sensory": {
+      "sweetness": 0.08,
+      "acidity": 0.683,
+      "tannin": 0.05,
+      "body": 0.517,
+      "oak": 0.6,
+      "aromatic_intensity": 0.4,
+      "bubbles": 0.6,
+      "confidence": 1.0,
+      "method": "rules"
+    },
+    "price_tier": null,
+    "reference_style_matches": []
+  }
+}

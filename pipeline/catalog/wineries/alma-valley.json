@@ -1,0 +1,87 @@
+{
+  "slug": "alma-valley",
+  "source": {
+    "name": "Alma Valley",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": "Виноградники находятся вблизи сел Вилино и Песчаное",
+    "climate": "мягкий, близкий к средиземноморскому",
+    "vineyard_area_ha": 600.0,
+    "vineyard_area_raw": "600 га",
+    "founded_year": null,
+    "description": "Alma Valley — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Alma Valley — гравитационная винодельня: виноград и вино перемещаются между уровнями самотёком, что снижает механическое воздействие и помогает бережно сохранить ароматический и вкусовой потенциал ягоды. Производственные мощности оценивают до 3 млн бутылок в год; хозяйство регулярно обновляет парк оборудования. Парк бочек насчитывает около 1500 единиц: дуб от разных производителей из разных стран. Отдельный цех - для игристой классики на 150 тысяч бутылок оснащен четырьмя установками жиропалет и линией дегоржажа.\n\nВ подвалах вина выдерживают в стали и дубе, часть партий — под классическую музыку, что также стало визитной карточкой винодельни. В Alma Valley придерживаются концепции sustainable — снижают воздействие на окружающую среду и экономят ресурсы. Фруктовые сады растут по соседству с виноградниками, здесь стараются минимизировать даже органические удобрения, вода с производства после очистки идет на орошение, а жмых перерабатывают в компост.\n\nПроект Alma Valley стартовал в середине 2000‑х: в 2005–2008 годах в Альминской долине, на месте старых виноградников, заложили новые плантации европейских сортов, предварительно проведя масштабные исследования почв и микроклимата с участием иностранных консультантов. В 2012 году завершили строительство современной гравитационной винодельни с лабораторией, цехами переработки, погребами, дегустационными залами и двумя вертолётными площадками, а в 2013‑м переработали первый урожай собственного винограда в полном цикле. В 2024 году на винодельне было проведено серьезное обновление всего оборудования\n\nГрупповые и индивидуальные туры доступны по предварительной записи; региональные центры винного туризма и туроператоры продвигают Alma Valley как одну из флагманских виноделен Крыма, обязательную к посещению для тех, кто хочет увидеть «новое большое крымское вино» в действии.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/alma_foto_cd77e3af34.webp",
+    "wine_slugs": [
+      "locantita-sauvignon-blanc-chardonnay",
+      "alma-valley-locantita-merlot-cabernet-franc",
+      "alma-valley-sovinon-blan-beloe-suhoe-14",
+      "alma-valley-petit-arvin-beloe-suhoe-13",
+      "alma-valley-tba-sovinon-sovinon-blan-beloe-sladkoe-75",
+      "alma-valley-tempranilo-krasnoe-suhoe-13",
+      "alma-valley-kaberne-fran-krasnoe-suhoe-145",
+      "alma-valley-shiraz-krasnoe-suhoe-13",
+      "alma-valley-pino-nuar-krasnoe-suhoe-13",
+      "alma-valley-merlo-krasnoe-suhoe-13",
+      "alma-valley-traminer-beloe-suhoe-125",
+      "alma-valley-kolombar-beloe-polusuhoe-135"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master",
+      "chateau-cachalot"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/alma-valley",
+    "fetched_at": "2026-08-25T21:23:29+0300",
+    "content_hash": "0aed10956088800e515641853c11bdafc47abfadd6b245260117cf6fd9e051f0",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

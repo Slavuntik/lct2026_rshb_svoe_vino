@@ -1,0 +1,73 @@
+{
+  "slug": "bokal-ritm-tanczpol-vecherinka-v-av-drinks-i-alma-valley",
+  "source": {
+    "title": "Бокал, ритм, танцпол: вечеринка в AVDrinks и Alma Valley",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"color:#0F1115;font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><span style=\"line-height:107%;\">Когда праздники заканчиваются, всегда наступает немного грустное «а что дальше?». Но как же здорово знать, что уже в ближайшую пятницу не нужно ничего придумывать — всё уже случится само собой. В пространстве винотеки <strong>AVDrinks</strong> на Ямском Поле, где стены словно созданы для тёплых вечеринок, <strong>19 июня</strong> снова зажгутся огни.</span></span></p><p>&nbsp;</p><p><span style=\"color:#0F1115;font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><span style=\"line-height:107%;\">С <strong>19:00</strong> здесь уже не просто винотека. Это будет танцевальная площадка с атмосферной музыкой, мягким светом и полным ощущением, что пятницу придумали именно для таких вечеров. За вино отвечает <strong>Alma Valley</strong> — ровно столько, сколько нужно для хорошего ритма и лёгкости.</span></span></p><p>&nbsp;</p><p><span style=\"color:#0F1115;font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><span style=\"line-height:107%;\">Бронируйте места заранее: ссылка на сайте AVDrinks. Зовите друзей, с которыми давно хотели просто расслабиться и потанцевать.</span></span></p><p>&nbsp;</p><p><span style=\"color:#0F1115;font-family:system-ui, -apple-system, sans-serif;font-size:18px;\"><span style=\"line-height:107%;\">До встречи 19 июня.&nbsp;Пусть этот вечер напомнит, что праздник всегда можно продолжить.</span></span></p>",
+    "body": "Когда праздники заканчиваются, всегда наступает немного грустное «а что\nдальше?». Но как же здорово знать, что уже в ближайшую пятницу не нужно ничего\nпридумывать — всё уже случится само собой. В пространстве винотеки AVDrinks на\nЯмском Поле, где стены словно созданы для тёплых вечеринок, 19 июня снова\nзажгутся огни.\n\n \n\nС 19:00 здесь уже не просто винотека. Это будет танцевальная площадка с\nатмосферной музыкой, мягким светом и полным ощущением, что пятницу придумали\nименно для таких вечеров. За вино отвечает Alma Valley — ровно столько, сколько\nнужно для хорошего ритма и лёгкости.\n\n \n\nБронируйте места заранее: ссылка на сайте AVDrinks. Зовите друзей, с которыми\nдавно хотели просто расслабиться и потанцевать.\n\n \n\nДо встречи 19 июня. Пусть этот вечер напомнит, что праздник всегда можно\nпродолжить.",
+    "body_chars": 807,
+    "headings": [],
+    "rubric": "События",
+    "author": "Маргарита Собещанская",
+    "photo_credit": "соцсети винодельня Alma Valley",
+    "published_at": "2026-06-14T08:00:05.075Z",
+    "published_date": "2026-06-14",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/Alma_Velli_jpg_c49c518583.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    },
+    {
+      "field": "photo_credit",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/bokal-ritm-tanczpol-vecherinka-v-av-drinks-i-alma-valley",
+    "fetched_at": "2026-08-25T21:25:36+0300",
+    "content_hash": "28fb0099ca31af50f9165006b7cb677bb4676e6e5b894430f827a93e0554cea0",
+    "parser_version": "0.4.0"
+  }
+}

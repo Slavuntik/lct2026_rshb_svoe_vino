@@ -1,0 +1,79 @@
+{
+  "slug": "zmv-koktebel",
+  "source": {
+    "name": "ЗМВ Коктебель",
+    "region": "krym",
+    "region_name": "Крым",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 1100.0,
+    "vineyard_area_raw": "1100 га",
+    "founded_year": null,
+    "description": "ЗМВ Коктебель — винодельня в регионе Крым. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Коктебель расположен на побережье Чёрного моря, в 20 км к юго-западу от Феодосии на берегу Коктебельского залива. Лежит к северо-востоку от подножия вулканического массива Кара-Даг.\n\n1. Собственными виноградниками, расположенными на площади около 1 070 га, в уникальной климатическо-географической зоне Восточного Крыма у подножия вулкана Кара Даг - Коктебеле.\n\n2. Емкостным парком не менее 5 млн литров для производства тихих вин, а также бочковым парком для выдержки марочных тихих вин, десертных (ликерных и специальных) вин и портвейнов в количестве не менее 6 млн литров.\n\nТерруар Коктебеля формируется близостью Черного моря, подножием вулканического массива Кара-Даг и сочетанием морских, горных и степных ветров. Известняковые и вулканические почвы, которые влияют на стиль местных вин.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/koktebel_a77200b327.webp",
+    "wine_slugs": [
+      "koktebel-casa-belyj-kupazh",
+      "zmv-koktebel-madera-albilo-beloe-sladkoe-19",
+      "zmv-koktebel-muskat-yantarnyy-desertnyy-beloe-sladkoe-16",
+      "zmv-koktebel-rkatsiteli-desertnoe-beloe-sladkoe-16",
+      "zmv-koktebel-muskat-desertnyy-rozovoe-sladkoe-16",
+      "zmv-koktebel-portveyn-krasnoe-kreplyonoe-kaberne-sovinon-sladkoe-17",
+      "zmv-koktebel-portveyn-beloe-kreplyonoe-aligote-sladkoe-17",
+      "zmv-koktebel-traminer-desertnoe-beloe-sladkoe-16",
+      "zmv-koktebel-atmosfera-shardone-merlo-rkatsiteli-muskat-rozovyy-muskat-gamburgskiy-rozovoe-polusuhoe-12",
+      "zmv-koktebel-atmosfera-kaberne-sovinon-kaberne-fran-merlo-bastardo-magarachskiy-krasnoe-suhoe-13",
+      "zmv-koktebel-grand-kupazh-kaberne-sovinon-krasnoe-suhoe-13",
+      "zmv-koktebel-blan-aligote-beloe-suhoe-12"
+    ],
+    "nearby_winery_slugs": [
+      "agora-winery",
+      "alma-valley",
+      "andryus-yutsis",
+      "aya-organic-wine-vineyards",
+      "bakla-vines",
+      "belmas-winery",
+      "bogovich-wine-vineyard",
+      "cellar-master"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/zmv-koktebel",
+    "fetched_at": "2026-08-25T21:24:54+0300",
+    "content_hash": "a551a41f1d9bd6c18a42246ced8ded0648a099468ef3e299ff8f7818f67ce2ae",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

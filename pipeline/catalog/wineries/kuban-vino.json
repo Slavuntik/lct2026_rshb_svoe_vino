@@ -1,0 +1,79 @@
+{
+  "slug": "kuban-vino",
+  "source": {
+    "name": "Кубань-Вино",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 12127.0,
+    "vineyard_area_raw": "12127 га",
+    "founded_year": null,
+    "description": "Кубань-Вино — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "«Кубань-Вино» — одна из крупнейших виноделен России с производством полного цикла: от собственных виноградников и переработки сырья до розлива вина. Компания делает тихие и игристые вина, опираясь на современные европейские технологии, и работает с брендами Chateau Tamagne, ARISTOV, «Кубань-Вино» и «Высокий Берег».\n\nТерруар винодельни связан прежде всего с Таманским полуостровом и частично с Анапским районом Краснодарского края. Это один из самых солнечных регионов России, расположенный между Азовским и Чёрным морями, здесь тёплый климат, долгий вегетационный сезон и почвы, которые позволяют выращивать виноград высокого качества для вин с выраженным местным характером.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/psbockuh2z9jjvmsooudei0bugadc76q_8737319289.webp",
+    "wine_slugs": [
+      "lesnaya-proseka",
+      "makitra-selection",
+      "chateau-tamagne-eno-traminer-i-shardone",
+      "chateau-tamagne-eno-amber",
+      "chateau-tamagne-grand-dessert-nectar",
+      "aristov-anima-millesimato-beloe-bryut",
+      "chateau-tamagne-grand-dessert-muscat",
+      "vysokij-bereg-czvajgelt",
+      "chateau-tamagne-select-blanc-brut",
+      "chateau-tamagne-select-blanc",
+      "aristov-anima-millesimato",
+      "aristov-anima-pinot-grigio-blush"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/kuban-vino",
+    "fetched_at": "2026-08-25T21:23:55+0300",
+    "content_hash": "185abd2f0fd67066b1f39007aed2cb8686fb9eb1f92f7533c58fdca8d469a68f",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

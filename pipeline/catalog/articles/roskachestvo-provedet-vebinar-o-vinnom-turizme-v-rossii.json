@@ -1,0 +1,69 @@
+{
+  "slug": "roskachestvo-provedet-vebinar-o-vinnom-turizme-v-rossii",
+  "source": {
+    "title": "Роскачество проведет вебинар на тему винного туризма в России",
+    "schema_type": "Article",
+    "lead": "<p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">19 июня Академия Роскачество проведет бесплатный вебинар «Винные туры — куда поехать в отпуск» в рамках проекта «Устойчивая пятница».</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Участникам расскажут о возможностях винного туризма в России, особенностях посещения винодельческих хозяйств и маршрутах для путешествий по винодельческим регионам страны. Отдельное внимание организаторы обещают уделить одному из самых северных винодельческих регионов России, где слушатели смогут узнать о выращивании винограда и производстве вина в непростых климатических условиях.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Во время эфира участники смогут задать вопросы спикеру в прямом эфире или направить их заранее организаторам.</span></p><p>&nbsp;</p><p><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Вебинар пройдет 19 июня в 12:00 по московскому времени. Для участия необходима предварительная регистрация на сайте&nbsp;</span><a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://academy-rsk.ru/friday1906?utm_source=chatgpt.com#form\"><span style=\"font-family:system-ui, -apple-system, sans-serif;\">Академии Роскачества</span></a><span style=\"font-family:system-ui, -apple-system, sans-serif;\">.</span></p>",
+    "body": "19 июня Академия Роскачество проведет бесплатный вебинар «Винные туры — куда\nпоехать в отпуск» в рамках проекта «Устойчивая пятница».\n\n \n\nУчастникам расскажут о возможностях винного туризма в России, особенностях\nпосещения винодельческих хозяйств и маршрутах для путешествий по винодельческим\nрегионам страны. Отдельное внимание организаторы обещают уделить одному из самых\nсеверных винодельческих регионов России, где слушатели смогут узнать о\nвыращивании винограда и производстве вина в непростых климатических условиях.\n\n \n\nВо время эфира участники смогут задать вопросы спикеру в прямом эфире или\nнаправить их заранее организаторам.\n\n \n\nВебинар пройдет 19 июня в 12:00 по московскому времени. Для участия необходима\nпредварительная регистрация на сайте Академии Роскачества\n[https://academy-rsk.ru/friday1906?utm_source=chatgpt.com#form].",
+    "body_chars": 842,
+    "headings": [],
+    "rubric": "События",
+    "author": "РЕДАКЦИЯ «СВОЁ ВИНО»",
+    "photo_credit": null,
+    "published_at": "2026-06-04T21:11:50.382Z",
+    "published_date": "2026-06-04",
+    "published_year": 2026,
+    "modified_at": null,
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/675/resize/uploads/image_03_06_26_12_32_f1c51acb46.webp",
+    "wine_slugs": [],
+    "winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "schema_type",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "title",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "lead",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "body",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_at",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_date",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "published_year",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "author",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "image_url",
+      "strategy": "jsonld"
+    },
+    {
+      "field": "rubric",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/articles/roskachestvo-provedet-vebinar-o-vinnom-turizme-v-rossii",
+    "fetched_at": "2026-08-25T21:29:02+0300",
+    "content_hash": "b79c1ab58b7eda40c38ab9c1e70a191694cda3a1135802bd2d3e4e355010fcc4",
+    "parser_version": "0.4.0"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "slug": "andrey_orlov",
+  "source": {
+    "name": "Винодельня Орлова",
+    "region": "kuban",
+    "region_name": "Кубань",
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": 6.0,
+    "vineyard_area_raw": "6 га",
+    "founded_year": null,
+    "description": "Винодельня Орлова — винодельня в регионе Кубань. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "История. В 2014 году Андрей Орлов построил винодельню прямо на территории своего дома. Несмотря на небольшие масштабы, хозяйство оснастили современным оборудованием и оборудовали собственным погребом для выдержки вин.\n\nПроцесс производства. Для разных вин применяют разные техники. Например, при изготовлении «Мерло» делают ручную сортировку гроздей и ягод, проводят холодную мацерацию (на двое суток), брожение при контролируемой температуре, а затем выдерживают вино 14 месяцев в кавказском дубе, после чего ещё 6 месяцев — в бутылке. Для «Совиньон Блан» характерна ферментация при контролируемой температуре в ёмкостях из нержавеющей стали.\n\nДостижения. Одно из вин («Совиньон Блан» 2017 года) получило диплом «Выбор потребителей» / «Лучшее белое вино» на конкурсе Wine School 2018 в Краснодаре.",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/580437_6001_8716ee68b7.webp",
+    "wine_slugs": [
+      "orlov_sauvignon_blan",
+      "orlov_merlo"
+    ],
+    "nearby_winery_slugs": [
+      "chateau-andre",
+      "chateau-de-talu",
+      "chateau-le-grand-vostock",
+      "chateau-semiray",
+      "dubinin-winery",
+      "golubitskoe-estate",
+      "gunko-winery",
+      "jd_winery"
+    ]
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "region_name",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/andrey_orlov",
+    "fetched_at": "2026-08-25T21:51:59+0300",
+    "content_hash": "79765c59ae92a3e93ad57851d9707b183ca99c2ecb4dac35f52705e842ce7933",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 2
+  }
+}

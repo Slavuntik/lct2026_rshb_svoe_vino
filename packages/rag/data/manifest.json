@@ -1,0 +1,33 @@
+{
+  "version": "20260828.1",
+  "created_at": "2026-08-27T22:31:38.956025+00:00",
+  "dense_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "dense_dim": 384,
+  "reranker": "jinaai/jina-reranker-v2-base-multilingual",
+  "counts": {
+    "wines": 1978,
+    "wineries": 138,
+    "knowledge": 5592
+  },
+  "timings": {
+    "read_source_s": 0.28463400015607476,
+    "embed_s": 120.82812166726217,
+    "upsert_s": 3.9137007906101644,
+    "calibrate_refusal_s": 41.818708250066265,
+    "total_s": 177.91627458413132
+  },
+  "refusal_threshold": -1.0532,
+  "refusal_calibration": {
+    "threshold": -1.0532,
+    "legit_min": -2.4883,
+    "legit_max": 1.9963,
+    "refusal_min": -2.6973,
+    "refusal_max": -0.301,
+    "n_legit": 53,
+    "n_refusal": 11,
+    "n_legit_wrongly_refused": 2,
+    "n_refusal_wrongly_passed": 4,
+    "overlap": true,
+    "goldset_path": "/Users/vyacheslavfokin/ClaudeWorkspace/vines/svoy-somelye/packages/rag/eval/goldset.jsonl"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "slug": "usadba-mezyb",
+  "source": {
+    "name": "Усадьба Мезыбь",
+    "region": null,
+    "region_name": null,
+    "locality": "Недалеко от впадающей в море реки Мезыбь, между Дивноморским и Джанхотом",
+    "climate": "Мягкий средиземноморский",
+    "vineyard_area_ha": 70.0,
+    "vineyard_area_raw": "70 га",
+    "founded_year": null,
+    "description": "Усадьба Мезыбь — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": "Усадьба «Мезыбь» — винодельческое хозяйство полного цикла на скалистом берегу Черного моря под Геленджиком, создающее терруарные вина из собственных виноградников площадью 70 гектаров.\n\nУсадьба «Мезыбь» — винодельческое предприятие полного цикла, расположенное в селе Дивноморское под Геленджиком, в уникальной прибрежной зоне Черного моря.\n\nХозяйство обрабатывает около 70 гектаров виноградников и выпускает до 200 тысяч бутылок терруарных вин в год, при проектной мощности винодельни около 500 тысяч бутылок.\n\nПроект запущен в 2015 году; лицензия на производство и продажу тихих и игристых вин с защищенным географическим указанием получена в 2019 году.\n\nСобственные виноградники, современное оборудование (французское и итальянское), собственная лаборатория; внимание к терруару и потенциальной мощности до 500 тыс. бутылок.\n\n2024–2026: участие в проектах Simple/«Большое Русское Вино», формирование «экосистемы Мезыби» и обсуждение планов развития энотуризма и инфраструктуры (второй корпус, дегустационная зона).",
+    "image_url": "https://api.vino-svoe.ru/v1/img/str-api/1200/630/resize/uploads/LDPH_8578_102_e1d538b57e.webp",
+    "wine_slugs": [
+      "usadba-mezyb-staraya-doroga-na-dzhanhot-kaberne-sovinon-kaberne-fran-krasnoe-suhoe-144",
+      "usadba-mezyb-shishka-kupazh-5-kaberne-sovinon-rozovoe-suhoe-133",
+      "usadba-mezyb-usadba-mezyb-merlo-krasnoe-suhoe-15",
+      "usadba-mezyb-shishka-merlo-vione-rozovoe-suhoe-125",
+      "usadba-mezyb-shishka-saperavi-krasnoe-suhoe-13",
+      "usadba-mezyb-shishka-oranzh-shardone-beloe-suhoe-127",
+      "usadba-mezyb-shishka-karbonika-kaberne-fran-krasnoe-suhoe-143",
+      "usadba-mezyb-shishka-shenen-blan-sovinon-blan-beloe-suhoe-126",
+      "usadba-mezyb-mezyb-kaberne-sovinon-kaberne-fran-krasnoe-suhoe-14",
+      "usadba-mezyb-mezyb-vione-beloe-suhoe-13",
+      "usadba-mezyb-mezyb-kaberne-sovinon-kaberne-fran-vione-rozovoe-suhoe-133",
+      "usadba-mezyb-shishka-pino-nuar-rozovoe-suhoe-115"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    },
+    {
+      "field": "locality",
+      "strategy": "dom"
+    },
+    {
+      "field": "climate",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_raw",
+      "strategy": "dom"
+    },
+    {
+      "field": "vineyard_area_ha",
+      "strategy": "dom"
+    },
+    {
+      "field": "about",
+      "strategy": "dom"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/usadba-mezyb",
+    "fetched_at": "2026-08-25T21:24:22+0300",
+    "content_hash": "aeb5e12164b45ea6e55b46e4f20a9df6b0b0b05794bde743ebc59316fe4ea64b",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}

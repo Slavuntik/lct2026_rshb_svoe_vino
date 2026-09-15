@@ -1,0 +1,54 @@
+{
+  "slug": "olymp-winery",
+  "source": {
+    "name": "Olymp Winery",
+    "region": null,
+    "region_name": null,
+    "locality": null,
+    "climate": null,
+    "vineyard_area_ha": null,
+    "vineyard_area_raw": null,
+    "founded_year": null,
+    "description": "Olymp Winery — винодельня. История хозяйства, виноградники, сорта и ключевые вина и лица винодельни.",
+    "about": null,
+    "image_url": "https://vino-svoe.ru/images/seo/banner.webp",
+    "wine_slugs": [
+      "good-steak-cabernet",
+      "good-steak-merlot",
+      "avtorskoe-risling",
+      "olymp-winery-olimp-avtorskoe-kaberne-sovinon-krasnoe-suhoe-11",
+      "olymp-winery-shato-belbek-kaberne-kaberne-sovinon-krasnoe-suhoe-11",
+      "olymp-winery-adagum-pinot-noir-pino-nuar-krasnoe-suhoe-11",
+      "olymp-winery-adagum-valley-saperavi-saperavi-krasnoe-suhoe-12",
+      "olymp-winery-adagum-valley-merlot-merlo-krasnoe-suhoe-11",
+      "olymp-winery-adagum-merlot-merlo-rozovoe-suhoe-10",
+      "olymp-winery-adagum-valley-rkatsiteli-rkatsiteli-beloe-suhoe-10",
+      "olymp-winery-adagum-pinot-noir-pino-nuar-rozovoe-suhoe-11",
+      "olymp-winery-adagum-sauvignon-sovinon-blan-beloe-suhoe-11"
+    ],
+    "nearby_winery_slugs": []
+  },
+  "_field_strategies": [
+    {
+      "field": "name",
+      "strategy": "meta"
+    },
+    {
+      "field": "description",
+      "strategy": "meta"
+    },
+    {
+      "field": "image_url",
+      "strategy": "meta"
+    }
+  ],
+  "provenance": {
+    "source_url": "https://vino-svoe.ru/wineries/olymp-winery",
+    "fetched_at": "2026-08-25T21:24:06+0300",
+    "content_hash": "17af09a398502771db9e7aa6e48217143f976bf97b61ac5f39b37744f2c219bb",
+    "parser_version": "0.4.0"
+  },
+  "derived": {
+    "wine_count": 12
+  }
+}
