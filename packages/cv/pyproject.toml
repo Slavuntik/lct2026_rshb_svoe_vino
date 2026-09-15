@@ -1,0 +1,32 @@
+[project]
+name = "cv"
+version = "0.1.0"
+description = "CV-ядро сканера «Свой Сомелье»: аугментация 3D-ракурсов, нормализация фото, SigLIP 2, ImageIndex"
+requires-python = ">=3.12"
+dependencies = [
+    "opencv-python-headless>=4.9",
+    "numpy>=1.26",
+    "pillow>=10.3",
+    "transformers>=4.49",
+    "torch>=2.3",
+    "qdrant-client>=1.9",
+    "sentencepiece>=0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+cv = "cv.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["cv*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

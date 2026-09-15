@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# дев-фикстуры (скачаны из pipeline/catalog/wines/*.json image_url) — не датасет кейса,
+# но и не наш контент; перекачиваются скриптом scripts/fetch_devfix.py
+devfix/*
+!devfix/.gitkeep
+
+# артефакты ImageIndex (Qdrant embedded storage, манифест, кэш эмбеддингов) — как rag/data
+data/
+.embed_cache/
+
+# локальный кэш весов HF (тестировался с HF_HOME здесь) — тяжёлый, перекачиваемый
+.hf_cache/
+
+# отчёт eval/bench прогонов
+bench_report.json
