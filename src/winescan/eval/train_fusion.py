@@ -1,0 +1,137 @@
+"""Обучение слияния сигналов и порога отказа по таблице кандидатов.
+
+Запуск: ``python -m winescan.eval.train_fusion --cache synth_v2 [--top 5] [--out configs/fusion_v1.json]``
+
+1. Запросы делятся пополам (fold 0 — подбор, fold 1 — проверка).
+2. Базовые линии на fold 1: только визуальный скор; прежнее ручное слияние (визуальный +
+   0,15 × бонус SIFT).
+3. Регуляризация C подбирается на внутреннем разбиении fold 0, модель обучается на всём fold 0.
+4. Порог отказа (минимальная вероятность лучшего кандидата) подбирается на fold 0 по
+   leave-one-out негативам — те же кандидаты без верного вина — и проверяется на fold 1.
+5. Модель и порог сохраняются в JSON (сервис: WINESCAN_FUSION), отчёт — рядом с кэшем.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+
+import numpy as np
+import pandas as pd
+
+from winescan.config import PROJECT_ROOT, get_paths
+from winescan.eval.metrics import auroc, open_set_at_threshold
+from winescan.search.fusion import FEATURES, FusionModel, train
+from winescan.search.rerank import local_bonus
+
+C_GRID = (0.03, 0.1, 0.3, 1.0, 3.0, 10.0)
+
+
+def group_queries(frame: pd.DataFrame) -> dict[str, list[dict]]:
+    queries: dict[str, list[dict]] = {}
+    for row in frame.itertuples(index=False):
+        record = row._asdict()
+        queries.setdefault(record["query_id"], []).append(
+            {"slug": record["slug"], "label": bool(record["label"]), "features": {n: float(record[n]) for n in FEATURES},
+             "inliers": int(record.get("inliers", 0)), "in_phash_group": bool(record["in_phash_group"]),
+             "shares_image": bool(record["shares_image"])}  # fmt: skip
+        )
+    return queries
+
+
+def split_queries(query_ids: list[str], seed: int = 0) -> tuple[list[str], list[str]]:
+    order = np.random.default_rng(seed).permutation(sorted(query_ids))
+    half = len(order) // 2
+    return sorted(order[:half].tolist()), sorted(order[half:].tolist())
+
+
+def rank_top1(candidates: list[dict], scorer) -> dict:
+    return max(candidates, key=scorer)
+
+
+def evaluate(queries: dict[str, list[dict]], ids: list[str], scorer) -> dict:
+    """top-1 по всем запросам (нет верного в top-K — промах) и по подвыборкам."""
+    parts = {"all": [], "in_phash_group": [], "shares_image": []}
+    for query_id in ids:
+        candidates = queries[query_id]
+        hit = rank_top1(candidates, scorer)["label"]
+        parts["all"].append(hit)
+        if candidates[0]["in_phash_group"]:
+            parts["in_phash_group"].append(hit)
+        if candidates[0]["shares_image"]:
+            parts["shares_image"].append(hit)
+    return {name: (float(np.mean(values)) if values else None) for name, values in parts.items()} | {"queries": len(ids)}
+
+
+def open_set(model: FusionModel, queries: dict[str, list[dict]], ids: list[str], threshold: float | None = None) -> dict:
+    positive_conf, positive_correct, negative_conf = [], [], []
+    for query_id in ids:
+        candidates = queries[query_id]
+        ranked = model.rank(candidates)
+        positive_conf.append(ranked[0][0])
+        positive_correct.append(ranked[0][1]["label"])
+        rest = [c for c in candidates if not c["label"]]
+        if len(rest) == len(candidates) or candidates[0]["shares_image"] or not rest:
+            continue  # верного нет в top-K или эталон общий — такой запрос не даёт честного негатива
+        negative_conf.append(model.rank(rest)[0][0])
+    positive_conf, positive_correct, negative_conf = map(np.asarray, (positive_conf, positive_correct, negative_conf))
+    if threshold is None:
+        grid = np.quantile(np.concatenate([positive_conf, negative_conf]), np.linspace(0, 1, 201))
+        threshold = float(max(grid, key=lambda t: open_set_at_threshold(positive_correct, positive_conf, negative_conf, float(t))["open_set_accuracy"]))
+    return {"auroc": auroc(positive_conf[positive_correct], negative_conf), "threshold_logit": threshold,
+            **open_set_at_threshold(positive_correct, positive_conf, negative_conf, threshold)}  # fmt: skip
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Обучение слияния сигналов")
+    parser.add_argument("--cache", required=True)
+    parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--out", default="configs/fusion_v1.json")
+    args = parser.parse_args(argv)
+
+    paths = get_paths()
+    frame = pd.read_parquet(paths.artifacts_dir / "cache" / args.cache / f"candidates_top{args.top}.parquet")
+    queries = group_queries(frame)
+    fit, check = split_queries(list(queries))
+    inner_fit, inner_check = split_queries(fit, seed=1)
+
+    def rows(ids):
+        return [candidate for query_id in ids for candidate in queries[query_id]]
+
+    selection = {c: evaluate(queries, inner_check, lambda cand, m=train(rows(inner_fit), c=c): m.logit(cand["features"]))["all"]
+                 for c in C_GRID}  # fmt: skip
+    best_c = max(selection, key=selection.get)
+    model = train(rows(fit), c=best_c)
+
+    report = {
+        "cache": args.cache,
+        "top": args.top,
+        "queries": {"fit": len(fit), "check": len(check)},
+        "c_selection_inner_top1": selection,
+        "best_c": best_c,
+        "check": {
+            "visual_only": evaluate(queries, check, lambda c: c["features"]["visual"]),
+            "legacy_sift_0.15": evaluate(queries, check, lambda c: c["features"]["visual"] + 0.15 * local_bonus(c["inliers"])),
+            "fusion": evaluate(queries, check, lambda c: model.logit(c["features"])),
+        },
+        "upper_bound_true_in_top_k": float(np.mean([any(c["label"] for c in queries[q]) for q in check])),
+    }
+    fit_open = open_set(model, queries, fit)
+    report["open_set"] = {"fit": fit_open, "check": open_set(model, queries, check, fit_open["threshold_logit"])}
+    model.meta.update({"cache": args.cache, "top": args.top, "reject_logit": fit_open["threshold_logit"],
+                       "reject_probability": 1 / (1 + math.exp(-fit_open["threshold_logit"])),
+                       "check_top1": report["check"]["fusion"]["all"]})  # fmt: skip
+
+    out = PROJECT_ROOT / args.out
+    model.save(out)
+    (paths.artifacts_dir / "cache" / args.cache / "fusion_report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    print("веса:", json.dumps(model.weights, ensure_ascii=False))
+    print("модель ->", out)
+
+
+if __name__ == "__main__":
+    main()
