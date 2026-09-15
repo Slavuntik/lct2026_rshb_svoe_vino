@@ -363,6 +363,19 @@ input:focus-visible {
   text-align: center;
   color: var(--muted);
   background: var(--mono-bg);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone--active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.dropzone__preview {
+  max-width: 160px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius);
 }
 
 .match-list {

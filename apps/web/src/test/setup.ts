@@ -15,7 +15,12 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   resetMockState();
-  window.localStorage.clear();
+  // setupFiles работает и для тестов с @vitest-environment node (без window/DOM вообще —
+  // например, apiClient.scanPhoto.node.test.ts, где нужен настоящий File/FormData Node,
+  // а не подмена jsdom), поэтому гард обязателен.
+  if (typeof window !== "undefined") {
+    window.localStorage.clear();
+  }
 });
 
 afterAll(() => {

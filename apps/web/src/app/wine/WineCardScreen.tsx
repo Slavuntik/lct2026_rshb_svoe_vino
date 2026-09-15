@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { SensoryVectorView } from "../../components/SensoryVectorView";
-import { WineImage } from "../../components/WineImage";
+import { WineCardContent } from "../../components/WineCardContent";
 import { useI18n } from "../../i18n";
 import { track, type EventPropsMap } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
@@ -49,10 +48,6 @@ export function WineCardScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wineId]);
 
-  function handleSourceLinkClick() {
-    if (wine) track("source_link_clicked", { wine_id: wine.wine_id });
-  }
-
   function handleSimilarClick(id: string) {
     navigate(`/app/wine/${encodeURIComponent(id)}`, { state: { from: "similar" } });
   }
@@ -83,76 +78,13 @@ export function WineCardScreen() {
     );
   }
 
-  const { source, derived } = wine;
-
   return (
     <div className="screen container stack">
       <button type="button" className="btn btn--ghost btn--sm" onClick={() => navigate("/app/scan")}>
         {t("wineCard.backToScan")}
       </button>
 
-      <div className="card stack">
-        <WineImage src={source.image_url} alt={source.name} width={96} className="wine-card-image" />
-        <h1 className="screen__title">{source.name}</h1>
-        <p className="screen__subtitle">
-          {source.winery_name} · {source.region_name}
-        </p>
-
-        <div className="row">
-          <span className="badge">{source.color}</span>
-          <span className="badge">{source.sugar_category}</span>
-          {source.vintage && <span className="badge text-mono">{source.vintage}</span>}
-        </div>
-
-        <p>{source.description}</p>
-
-        <dl className="stack stack--tight">
-          <div className="row row--between">
-            <dt className="text-small">{t("wineCard.grapesLabel")}</dt>
-            <dd>{source.grapes.join(", ")}</dd>
-          </div>
-          <div className="row row--between">
-            <dt className="text-small">{t("wineCard.regionLabel")}</dt>
-            <dd>{source.region_name}</dd>
-          </div>
-          <div className="row row--between">
-            <dt className="text-small">{t("wineCard.abvLabel")}</dt>
-            <dd className="text-mono">{source.abv_percent}%</dd>
-          </div>
-          <div className="row row--between">
-            <dt className="text-small">{t("wineCard.servingTempLabel")}</dt>
-            <dd className="text-mono">
-              {source.serving_temp_c[0]}–{source.serving_temp_c[1]}°C
-            </dd>
-          </div>
-        </dl>
-
-        <div>
-          <p className="field__label">{t("wineCard.foodPairingsLabel")}</p>
-          <div className="row">
-            {source.food_pairings.map((pairing) => (
-              <span key={pairing} className="chip">
-                {pairing}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <a
-          className="btn btn--ghost"
-          href={wine.source_url}
-          target="_blank"
-          rel="noreferrer noopener"
-          onClick={handleSourceLinkClick}
-        >
-          {t("wineCard.sourceLink")}
-        </a>
-      </div>
-
-      <div className="card stack">
-        <h2>{t("wineCard.sensoryTitle")}</h2>
-        <SensoryVectorView vector={derived.sensory} />
-      </div>
+      <WineCardContent wine={wine} titleAs="h1" />
 
       {wine.similar && wine.similar.length > 0 && (
         <div className="stack">

@@ -142,6 +142,31 @@ export interface WineCardResponse {
   similar?: string[];
 }
 
+/**
+ * v0.4 (contracts/image-scan.md, кейс ЛЦТ): POST /v1/scan/photo, rich-режим (без ?flat=1).
+ * Форма `card` контрактом не специфицирована явно — принимаю как у GET /wines/{id}
+ * (WineCardResponse), это самая естественная форма "карточки" в системе; зафиксировано
+ * как допущение в reports/c-report.md. confidence приходит для API/метрик (ТЗ кейса:
+ * "виден отрыв лидера — в API"), в UI НЕ показывается умышленно (тоже требование ТЗ).
+ */
+export interface ScanPhotoConfidence {
+  top1_score: number;
+  gap: number;
+  f1_top1: number;
+  f1_top5: number;
+}
+
+export interface ScanPhotoRichResponse {
+  slug: string;
+  card: WineCardResponse | null;
+  confidence: ScanPhotoConfidence;
+  ocr_verified: boolean;
+  timing_ms: number;
+  not_in_catalog: boolean;
+  similar: AnalogWine[];
+  analogs: AnalogWine[];
+}
+
 // budget_rub_max выпилен в v0.2 — цен в каталоге vines нет вовсе (ревью 01, блокер 4).
 export type ChatFilters = Partial<{
   color: string;

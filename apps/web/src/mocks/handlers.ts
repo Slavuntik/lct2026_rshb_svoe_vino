@@ -3,6 +3,7 @@ import { API_BASE_PATH } from "../lib/env";
 import { isAdult } from "../lib/age";
 import type {
   AnalogsPayload,
+  AnalogWine,
   ChatFeedbackPayload,
   ChatPayload,
   ChatStreamEvent,
@@ -11,6 +12,7 @@ import type {
   LoginPayload,
   PostConsentPayload,
   RegisterPayload,
+  ScanPhotoRichResponse,
   ScanResolvePayload,
   ScanResolveResponse,
   SwipePayload,
@@ -109,6 +111,15 @@ function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): Sca
   return { matches, low_confidence: lowConfidence };
 }
 
+function toAnalogWine(wine: WineFixture): AnalogWine {
+  return {
+    wine_id: wine.wine_id,
+    name: wine.source.name,
+    winery_name: wine.source.winery_name,
+    region_name: wine.source.region_name,
+  };
+}
+
 export const handlers: HttpHandler[] = [
   http.get(`${API}/healthz`, () => HttpResponse.json({ status: "ok", index_version: "mock-0.2.0" })),
 
@@ -204,6 +215,48 @@ export const handlers: HttpHandler[] = [
       "not_implemented",
       "Распознавание фото на сервере пока не реализовано — введите текст с этикетки.",
     );
+  }),
+
+  // v0.4 (кейс ЛЦТ, contracts/image-scan.md): визуальный поиск — rich по умолчанию,
+  // ?flat=1 — режим скрипта оценки (ровно {"slug": "..."}). Детерминировано для теста/демо:
+  // имя файла содержит "notfound"/"unknown" -> not_in_catalog, иначе — уверенный матч.
+  http.post(`${API}/scan/photo`, async ({ request }) => {
+    const url = new URL(request.url);
+    const form = await request.formData();
+    const image = form.get("image");
+    const filename = image instanceof File ? image.name.toLowerCase() : "";
+    const notInCatalog = filename.includes("notfound") || filename.includes("unknown");
+
+    if (url.searchParams.get("flat") === "1") {
+      // flat ВСЕГДА отдаёт лучший доступный slug, даже при низкой уверенности (контракт).
+      return HttpResponse.json({ slug: wines[0].wine_id });
+    }
+
+    if (notInCatalog) {
+      return HttpResponse.json({
+        slug: "",
+        card: null,
+        confidence: { top1_score: 0.21, gap: 0.02, f1_top1: 0.87, f1_top5: 0.95 },
+        ocr_verified: false,
+        timing_ms: 640,
+        not_in_catalog: true,
+        similar: wines.slice(0, 2).map(toAnalogWine),
+        analogs: wines.slice(2, 4).map(toAnalogWine),
+      } satisfies ScanPhotoRichResponse);
+    }
+
+    const demoWine = wines[0];
+    const { searchTerms: _searchTerms, ...card } = demoWine;
+    return HttpResponse.json({
+      slug: demoWine.wine_id,
+      card,
+      confidence: { top1_score: 0.94, gap: 0.31, f1_top1: 0.87, f1_top5: 0.95 },
+      ocr_verified: true,
+      timing_ms: 780,
+      not_in_catalog: false,
+      similar: wines.slice(1, 3).map(toAnalogWine),
+      analogs: wines.slice(3, 5).map(toAnalogWine),
+    } satisfies ScanPhotoRichResponse);
   }),
 
   // --- wines ---

@@ -17,6 +17,7 @@ import {
   type LoginPayload,
   type PostConsentPayload,
   type RegisterPayload,
+  type ScanPhotoRichResponse,
   type ScanResolvePayload,
   type ScanResolveResponse,
   type SwipePayload,
@@ -34,6 +35,13 @@ import {
 // на инъекцию текущей локали.
 function tr(path: Parameters<typeof translate>[1]): string {
   return translate("ru", path);
+}
+
+/** Реальное имя файла, если это File, иначе честная заглушка (Blob его не несёт). */
+function photoFileName(image: Blob): string {
+  return "name" in image && typeof (image as File).name === "string" && (image as File).name
+    ? (image as File).name
+    : "label.jpg";
 }
 
 /** Абсолютный URL нужен и в браузере, и под jsdom в тестах (relative fetch там не резолвится). */
@@ -120,9 +128,20 @@ export const apiClient = {
 
   scanOcr(image: Blob, explicitConsent: boolean): Promise<ScanResolveResponse> {
     const form = new FormData();
-    form.set("image", image, "label.jpg");
+    form.set("image", image, photoFileName(image));
     form.set("explicit_consent", String(explicitConsent));
     return request("/scan/ocr", { method: "POST", body: form });
+  },
+
+  /**
+   * v0.4 (кейс ЛЦТ, contracts/image-scan.md): визуальный поиск по фото — rich-режим
+   * (без ?flat=1, тот — только для скрипта оценки). Фото не требует чекбокса согласия:
+   * контракт не несёт explicit_consent вообще (честная тихая подпись — на экране, не тут).
+   */
+  scanPhoto(image: Blob): Promise<ScanPhotoRichResponse> {
+    const form = new FormData();
+    form.set("image", image, photoFileName(image));
+    return request("/scan/photo", { method: "POST", body: form });
   },
 
   getWine(wineId: string): Promise<WineCardResponse> {
