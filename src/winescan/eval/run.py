@@ -32,9 +32,8 @@ from PIL import Image, ImageOps
 from winescan.config import PROJECT_ROOT, get_paths
 from winescan.eval.metrics import best_threshold, retrieval_summary
 from winescan.logging_setup import setup_logging
-from winescan.search.index import VectorIndex, top_k
-from winescan.vision.embedder import ImageEmbedder
-from winescan.vision.preprocess import crop_box, query_view
+from winescan.search.multi import MultiIndexSearcher
+from winescan.vision.preprocess import crop_box
 
 log = logging.getLogger("winescan.eval.run")
 
@@ -88,36 +87,6 @@ def markdown_table(metrics: dict) -> str:
         lines.append(f"| {part} | {s['queries']} | {s['top1_accuracy']:.3f} | {s['top5_accuracy']:.3f} | "
                      f"{s['f1_at_1_best']['f1']:.3f} |")  # fmt: skip
     return "\n".join(lines)
-
-
-class MultiIndexSearcher:
-    """Сумма скоров вин по нескольким индексам (модели и виды могут различаться)."""
-
-    def __init__(self, index_names: list[str], weights: list[float], device: str | None):
-        paths = get_paths()
-        self.indexes = [VectorIndex.load(paths.artifacts_dir / "index" / name) for name in index_names]
-        self.weights = weights
-        self.wine_slugs = self.indexes[0].wine_slugs
-        if any(index.wine_slugs != self.wine_slugs for index in self.indexes):
-            raise ValueError("индексы построены по разным наборам вин — пересоберите их")
-        self.embedders: dict[str, ImageEmbedder] = {}
-        for index in self.indexes:
-            model_id = index.meta["model_id"]
-            if model_id not in self.embedders:
-                self.embedders[model_id] = ImageEmbedder(model_id, device=device)
-
-    @property
-    def device(self) -> str:
-        return next(iter(self.embedders.values())).device
-
-    def search(self, images: list[Image.Image], boxes: list, k: int) -> tuple[list[list[str]], np.ndarray]:
-        total = np.zeros((len(images), len(self.wine_slugs)), dtype=np.float32)
-        for index, weight in zip(self.indexes, self.weights):
-            view = index.meta.get("view_name", "full")
-            views = [query_view(image, box, view) for image, box in zip(images, boxes)]
-            vectors = self.embedders[index.meta["model_id"]].embed(views, batch_size=len(views))
-            total += weight * index.wine_scores(vectors)
-        return top_k(total, self.wine_slugs, k)
 
 
 def run(
