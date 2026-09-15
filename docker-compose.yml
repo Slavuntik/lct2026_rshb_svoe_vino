@@ -1,7 +1,8 @@
 # WineScan: сервис распознавания. Перед первым запуском соберите артефакты (README.md, «Docker»):
 #   docker compose run --rm api make PY=python catalog index features GPU=0
-# Запуск: docker compose up api        (GPU, нужен NVIDIA Container Toolkit)
-#         docker compose --profile cpu up api-cpu
+# Запуск: docker compose up api web    (GPU, нужен NVIDIA Container Toolkit; интерфейс на :3000)
+#         docker compose --profile cpu up api-cpu web   (для CPU: NUXT_API_BASE=http://api-cpu:8080)
+#         NUXT_PUBLIC_MOCK=1 docker compose up web       (интерфейс на демо-данных без сервиса)
 services:
   api:
     build:
@@ -42,6 +43,21 @@ services:
       WINESCAN_DEVICE: cpu
       # на CPU OCR заметно медленнее; SIFT и детектор остаются
       WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-0}
+
+  # мобильный интерфейс; проксирует /api/** на сервис распознавания
+  web:
+    build:
+      context: ./web
+    image: winescan-web:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data:ro   # эталонные фото для режима демо-данных
+    environment:
+      NUXT_API_BASE: ${NUXT_API_BASE:-http://api:8080}
+      NUXT_PUBLIC_MOCK: ${NUXT_PUBLIC_MOCK:-}
+      NUXT_MOCK_UPLOADS_DIR: /data/raw/prod-svoe-vino-strapi/prod-svoe-vino/strapi/uploads
+    restart: unless-stopped
 
 volumes:
   hf-cache:

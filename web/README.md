@@ -52,6 +52,13 @@ PORT=3000 NUXT_PUBLIC_MOCK=1 node .output/server/index.mjs
 затем `http://<ip-компьютера>:3000`. Для `<input capture>` HTTPS не нужен — камера открывается
 системным диалогом выбора файла.
 
+**Docker** (из корня репозитория, вместе с сервисом распознавания):
+
+```bash
+docker compose up api web                  # интерфейс на :3000, API — http://api:8080
+NUXT_PUBLIC_MOCK=1 docker compose up web   # только интерфейс на демо-данных
+```
+
 **Проверки:**
 
 ```bash

@@ -112,10 +112,34 @@ python -m winescan.catalog.build
 # синтетическая валидация -> artifacts/validation/synth_v1/ (~4 мин)
 python -m winescan.validation.build_synth --name synth_v1 --seed 1
 
-# индексы эталонов -> artifacts/index/ (~3 мин и ~2,5 мин)
+# индексы эталонов сервиса -> artifacts/index/: 5 поворотов эталона (~12 и ~9 мин; make index GPU=3)
+CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --yaws=-30,-15,0,15,30 --batch-size 32
+CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --view label --yaws=-30,-15,0,15,30 --batch-size 32
+# фронтальные индексы — базовая линия и кэши запросов (~3 и ~2,5 мин; make index-frontal GPU=3)
 CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --batch-size 16
 CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --view label --batch-size 16
+# SIFT-признаки и вырезки эталонов для проверки кандидатов (CPU)
+python -m winescan.search.local_features
 ```
+
+Модели выбора рамки и слияния (уже лежат в `configs/`; пересобрать — так):
+
+```bash
+python -m winescan.validation.build_synth --name synth_v2 --preset v2 --seed 2
+CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.query_cache --split synth_v1 --boxes 3   # ~50 мин на сплит
+CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.query_cache --split synth_v2 --boxes 3
+Y=siglip2-so400m-patch14-384__yaw-30_-15_0_15_30,siglip2-so400m-patch14-384__label__yaw-30_-15_0_15_30
+python -m winescan.eval.offline index-compare --cache synth_v2 --index-sets \
+    siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label $Y          # галереи за секунды
+python -m winescan.eval.train_box_ranker --indexes $Y --out configs/box_ranker_v2.joblib
+for c in synth_v1 synth_v2; do python -m winescan.eval.candidates --cache $c --indexes $Y \
+    --box-ranker configs/box_ranker_v2.joblib --name candidates_yaw_ranker2; done   # ~5 мин на сплит
+python -m winescan.eval.train_fusion --cache synth_v1,synth_v2 --table candidates_yaw_ranker2 --out configs/fusion_v2.json
+```
+
+Кэши `query_cache` строятся с индексами из конфига сервиса. Кэши в WORKLOG построены на
+фронтальных индексах; `--indexes` пересчитывает скоры по другой галерее, эмбеддинги запросов
+при этом не пересчитываются.
 
 Оценка:
 
@@ -126,6 +150,9 @@ CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.run --split synth_v1 \
 python -m winescan.eval.local_rerank_eval <папка прогона> --split synth_v1   # SIFT, подбор веса (CPU)
 python -m winescan.eval.rerank_sweep <папка прогона>                         # текст OCR, подбор веса
 CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.detector_eval --split synth_v1 --limit 400   # IoU детектора
+# сквозной прогон сервисного Scanner (конфиг из WINESCAN_*): решение «не найдено», p50/p95;
+# --holdout — только запросы, которые не видели при обучении выбора рамки и слияния
+CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.scanner_eval --split synth_v2 --tag default --holdout
 python -m winescan.eval.report                                               # -> docs/RESULTS.md
 ```
 
@@ -185,10 +212,11 @@ NUXT_PUBLIC_MOCK=1 npm run dev                      # без сервиса, н�
 томами, веса моделей кэшируются в томе `hf-cache`.
 
 ```bash
-docker compose build api
+docker compose build api web
 docker compose run --rm api make PY=python catalog index features GPU=0   # артефакты внутри контейнера
-docker compose up api                                                      # GPU
-docker compose --profile cpu up api-cpu                                    # CPU
+docker compose up api web                                                  # GPU; интерфейс на :3000
+NUXT_API_BASE=http://api-cpu:8080 docker compose --profile cpu up api-cpu web   # CPU
+NUXT_PUBLIC_MOCK=1 docker compose up web                                   # интерфейс на демо-данных
 ```
 
 ## Тесты
