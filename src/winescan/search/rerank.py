@@ -62,14 +62,21 @@ class Decision:
     reason: str
 
 
-def decide(candidates: list[Candidate], min_visual_score: float | None = None, min_margin: float | None = None) -> Decision:
-    """«Не найдено», если лучший кандидат визуально слишком далёк (вина, вероятно, нет в каталоге)
-    или отрыв от второго слишком мал, чтобы показывать одну карточку."""
+def decide(
+    candidates: list[Candidate],
+    min_visual_score: float | None = None,
+    min_margin: float | None = None,
+    min_score: float | None = None,
+) -> Decision:
+    """«Не найдено», если лучший кандидат визуально слишком далёк, его итоговый скор (например,
+    логит обученного слияния) ниже порога или отрыв от второго слишком мал."""
     if not candidates:
         return Decision("not_found", "нет кандидатов")
     best = candidates[0]
     if min_visual_score is not None and best.visual_score < min_visual_score:
         return Decision("not_found", f"визуальный скор {best.visual_score:.3f} < {min_visual_score}")
+    if min_score is not None and best.score < min_score:
+        return Decision("not_found", f"уверенность {best.score:.3f} < {min_score:.3f}")
     margin = best.score - candidates[1].score if len(candidates) > 1 else math.inf
     if min_margin is not None and margin < min_margin:
         return Decision("not_found", f"отрыв {margin:.4f} < {min_margin}")

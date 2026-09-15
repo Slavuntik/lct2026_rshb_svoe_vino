@@ -56,6 +56,8 @@ class ScannerConfig:
     text_weight: float = 0.02
     # обученное слияние (search.fusion); если задано — заменяет local_weight / text_weight
     fusion_path: str | None = None
+    # отказ по порогу логита слияния (meta.reject_logit): на synth_v1 AUROC 0,953 против 0,776 у визуального скора
+    fusion_reject: bool = True
     # поля этикетки VLM только когда отрыв лучшего кандидата (в логитах слияния) меньше порога
     use_vlm: bool = False
     vlm_margin: float = 1.0
@@ -79,6 +81,7 @@ class ScannerConfig:
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",
             text_weight=_env_float("WINESCAN_TEXT_WEIGHT", base.text_weight),
             fusion_path=os.environ.get("WINESCAN_FUSION") or base.fusion_path,
+            fusion_reject=os.environ.get("WINESCAN_FUSION_REJECT", "1") != "0",
             use_vlm=os.environ.get("WINESCAN_USE_VLM", "0") == "1",
             vlm_margin=_env_float("WINESCAN_VLM_MARGIN", base.vlm_margin),
             min_visual_score=_env_float("WINESCAN_MIN_VISUAL_SCORE", base.min_visual_score),
@@ -210,7 +213,10 @@ class Scanner:
             else:
                 ranked, details, ocr_text = self._legacy(package, slugs, visual, timings)
 
-        decision = decide(ranked, config.min_visual_score, config.min_margin)
+        # с обученным слиянием отказ — по порогу его логита (подобран на leave-one-out негативах);
+        # визуальный порог при этом тоже действует, если задан
+        reject = self.fusion.meta.get("reject_logit") if self.fusion is not None and config.fusion_reject else None
+        decision = decide(ranked, config.min_visual_score, config.min_margin, reject)
         timings["total"] = (time.perf_counter() - began) * 1000
         best = ranked[0]
         found = decision.status == "found"

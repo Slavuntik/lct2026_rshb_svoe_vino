@@ -30,6 +30,8 @@ def test_decide_thresholds():
     assert decide(candidates).status == "found"
     assert decide(candidates, min_visual_score=0.75).status == "not_found"
     assert decide(candidates, min_margin=0.02).status == "not_found"
+    assert decide(candidates, min_score=0.9).status == "not_found"
+    assert decide(candidates, min_score=0.5).status == "found"
     assert decide([]).status == "not_found"
 
 
