@@ -7,11 +7,16 @@ from PIL import Image
 from winescan.service.app import create_app
 from winescan.service.pipeline import ScanResult
 
-CARD = {"slug": "kokur-suhoe-2025", "name": "Кокур Сухое, 2025", "image": {"file": ""}}
+CARD = {"slug": "kokur-suhoe-2025", "name": "Кокур Сухое, 2025", "winery": "Мельниковы", "category": "Белое",
+        "region": "Крым", "grapes": ["Кокур"], "description": "свежий цитрусовый аромат",
+        "attributes": {"sweetness": "dry", "sparkling": False}, "image": {"file": ""}}  # fmt: skip
+ANALOG = {**CARD, "slug": "kokur-winepark", "name": "Кокур", "winery": "WINEPARK"}
+RED = {**CARD, "slug": "saperavi", "name": "Саперави", "winery": "Фанагория", "category": "Красное",
+       "grapes": ["Саперави"], "description": "выдержка в дубовых бочках"}  # fmt: skip
 
 
 class FakeScanner:
-    cards = {CARD["slug"]: CARD}
+    cards = {c["slug"]: c for c in (CARD, ANALOG, RED)}
 
     def scan(self, image):
         return ScanResult(
@@ -62,4 +67,21 @@ def test_broken_image_is_400(client):
 def test_wine_card_and_404(client):
     assert client.get("/v1/wines/kokur-suhoe-2025").json()["slug"] == "kokur-suhoe-2025"
     assert client.get("/v1/wines/unknown").status_code == 404
-    assert client.get("/health").json() == {"status": "ok", "wines": 1}
+    assert client.get("/health").json() == {"status": "ok", "wines": 3}
+
+
+def test_analogs_endpoint(client):
+    body = client.get("/v1/wines/kokur-suhoe-2025/analogs").json()
+
+    assert [a["slug"] for a in body["analogs"]] == ["kokur-winepark"]
+    assert "сорт: Кокур" in body["analogs"][0]["reasons"]
+    assert client.get("/v1/wines/unknown/analogs").status_code == 404
+
+
+def test_sommelier_endpoints(client):
+    questions = client.get("/v1/sommelier/questions").json()["questions"]
+    assert questions[0]["id"] == "dish"
+
+    body = client.post("/v1/sommelier/suggest", json={"dish": "meat", "exclude_slugs": []}).json()
+    assert body["suggestions"][0]["slug"] == "saperavi" and "18+" in body["disclaimer"]
+    assert client.post("/v1/sommelier/suggest", json={"dish": "unknown"}).status_code == 400
