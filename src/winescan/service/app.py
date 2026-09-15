@@ -88,6 +88,29 @@ def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
             state["analogs"] = AnalogFinder(scanner.cards)
         return {"slug": slug, "analogs": [a.as_dict() for a in state["analogs"].find(slug, limit=max(1, min(limit, 20)))]}
 
+    @app.get("/v1/sommelier/questions")
+    def sommelier_questions() -> dict:
+        from winescan.product.sommelier import questions
+
+        return {"questions": questions()}
+
+    @app.post("/v1/sommelier/suggest")
+    def sommelier_suggest(request: dict) -> dict:
+        """Подбор 3 вин по ответам на вопросы: {"dish", "category", "sweetness", "body", "region", "exclude_slugs"}."""
+        from winescan.product.sommelier import Sommelier, SommelierRequest
+
+        if "sommelier" not in state:
+            state["sommelier"] = Sommelier(state["scanner"].cards)
+        allowed = {"dish", "category", "sweetness", "body", "region"}
+        params = {k: v for k, v in request.items() if k in allowed and isinstance(v, str) and v}
+        params["exclude_slugs"] = tuple(s for s in request.get("exclude_slugs", []) if isinstance(s, str))
+        try:
+            suggestions = state["sommelier"].suggest(SommelierRequest(**params), limit=3)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {"suggestions": [s.as_dict() for s in suggestions],
+                "disclaimer": "Информация о винах каталога. 18+. Чрезмерное употребление алкоголя вредит вашему здоровью."}  # fmt: skip
+
     @app.get("/v1/wines/{slug}/image")
     def wine_image(slug: str) -> FileResponse:
         card = state["scanner"].cards.get(slug)

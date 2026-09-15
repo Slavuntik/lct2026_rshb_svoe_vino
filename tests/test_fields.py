@@ -18,6 +18,18 @@ def test_parse_fields_from_fenced_json_with_nulls():
     assert fields.grapes == ()
 
 
+def test_parse_truncated_json_salvages_fields():
+    # реальный случай: ответ модели упёрся в лимит токенов посреди поля text
+    raw = ('{\n  "winery": "Собственное виноградники",\n  "name": "МУСКАТЕЛЬ МАССАНДРА БЕЛЫЙ",\n  "grapes": [\n'
+           '    "Массандра"\n  ],\n  "year": 2023,\n  "color": "белое",\n  "sweetness": "сухое",\n  "sparkling": false,\n'
+           '  "text": "ГОД ОСНОВАНИЯ 1894 ВИНО РОССИИ МУСКАТЕЛЬ МАССАНДРА БЕЛЫЙ ГОД УРОЖАЯ 2023 Собственное виногр')  # fmt: skip
+    fields = parse_fields(raw)
+
+    assert fields.name == "МУСКАТЕЛЬ МАССАНДРА БЕЛЫЙ" and fields.year == 2023 and fields.color == "Белое"
+    assert fields.grapes == ("Массандра",) and fields.sparkling is False
+    assert fields.text.startswith("ГОД ОСНОВАНИЯ 1894")
+
+
 def test_parse_fields_garbage_keeps_text_only():
     fields = parse_fields("не могу прочитать")
 

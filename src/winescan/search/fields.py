@@ -39,14 +39,37 @@ class LabelFields:
         return " ".join([self.winery, self.name, " ".join(self.grapes), self.text])
 
 
+_PAIR = re.compile(r'"(winery|name|year|color|sweetness|sparkling|text)"\s*:\s*("(?:[^"\\]|\\.)*"?|-?\d+|true|false|null)')
+_GRAPES = re.compile(r'"grapes"\s*:\s*\[([^\]]*)\]?', flags=re.DOTALL)
+
+
+def _salvage(raw: str) -> dict:
+    """Пары ключ-значение из обрезанного JSON (ответ модели упёрся в лимит токенов)."""
+    data: dict = {}
+    for key, value in _PAIR.findall(raw):
+        if value.startswith('"'):
+            data[key] = value.strip('"')
+        elif value in ("true", "false"):
+            data[key] = value == "true"
+        elif value != "null":
+            data[key] = int(value)
+    grapes = _GRAPES.search(raw)
+    if grapes:
+        data["grapes"] = re.findall(r'"([^"]+)"', grapes.group(1))
+    return data
+
+
 def parse_fields(raw: str) -> LabelFields:
-    """Разбор ответа модели: берём первый JSON-объект, неизвестные значения игнорируем."""
-    match = re.search(r"\{.*\}", raw, flags=re.DOTALL)
-    if not match:
+    """Разбор ответа модели: JSON-объект; обрезанный JSON — по парам ключ-значение."""
+    start = raw.find("{")
+    if start < 0:
         return LabelFields(text=raw.strip()[:300])
+    match = re.search(r"\{.*\}", raw, flags=re.DOTALL)
     try:
-        data = json.loads(match.group(0))
+        data = json.loads(match.group(0)) if match else _salvage(raw[start:])
     except json.JSONDecodeError:
+        data = _salvage(raw[start:])
+    if not data:
         return LabelFields(text=raw.strip()[:300])
 
     def text_value(key: str) -> str:

@@ -19,17 +19,19 @@ DEFAULT_VLM = "Qwen/Qwen3-VL-4B-Instruct"
 MAX_IMAGE_SIDE = 768
 
 PROMPT = (
-    "На фото бутылка вина. Прочитай этикетку этой бутылки и верни только JSON без пояснений:\n"
+    "На фото бутылка вина. Прочитай этикетку этой бутылки и верни только JSON в одну строку, без пояснений:\n"
     '{"winery": "производитель", "name": "название вина", "grapes": ["сорт"], "year": 2023, '
     '"color": "белое|красное|розовое|оранжевое", '
     '"sweetness": "брют натюр|экстра брют|брют|сухое|полусухое|полусладкое|сладкое", '
-    '"sparkling": false, "text": "крупные надписи этикетки через пробел"}\n'
-    "Пиши только то, что видно на этикетке. Если поле не видно — null. Ничего не придумывай."
+    '"sparkling": false, "text": "до 12 самых крупных слов этикетки"}\n'
+    "Пиши только то, что написано на этикетке. Цвет и сладость — только если они написаны. "
+    "Если поле не видно — null. Ничего не придумывай."
 )
 
 
 class LabelFieldReader:
-    def __init__(self, model_id: str = DEFAULT_VLM, device: str | None = None, max_new_tokens: int = 160):
+    # 160 токенов не хватало: у фото Массандры JSON обрезался посреди поля text
+    def __init__(self, model_id: str = DEFAULT_VLM, device: str | None = None, max_new_tokens: int = 256):
         from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
         self.device = device or default_device()
