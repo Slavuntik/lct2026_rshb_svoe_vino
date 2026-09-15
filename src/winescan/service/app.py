@@ -26,10 +26,16 @@ class ScannerLike(Protocol):
     def top1_slug(self, image: Image.Image) -> str: ...
 
 
+DECODE_MIN_SIDE = 1024
+
+
 def _read_image(upload: UploadFile) -> Image.Image:
     data = upload.file.read()
     try:
         image = Image.open(io.BytesIO(data))
+        # JPEG 3024×4032 декодируется сразу с уменьшением (не меньше 1024 по каждой стороне):
+        # пайплайн всё равно уменьшает кадр до 1600, а полное декодирование — сотни мс
+        image.draft("RGB", (DECODE_MIN_SIDE, DECODE_MIN_SIDE))
         image.load()
         return image
     except (UnidentifiedImageError, OSError) as exc:
