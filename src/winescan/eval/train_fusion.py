@@ -1,6 +1,6 @@
 """Обучение слияния сигналов и порога отказа по таблице кандидатов.
 
-Запуск: ``python -m winescan.eval.train_fusion --cache synth_v1,synth_v2 [--top 5] [--table NAME] [--out configs/fusion_v1.json]``
+Запуск: ``python -m winescan.eval.train_fusion --cache synth_v1,synth_v2 [--top 5] [--table NAME] --out configs/fusion_v2.json``
 
 1. Запросы делятся пополам (fold 0 — подбор, fold 1 — проверка).
 2. Базовые линии на fold 1: только визуальный скор; прежнее ручное слияние (визуальный +
@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--cache", required=True, help="кэш или несколько через запятую (обучение на всех)")
     parser.add_argument("--top", type=int, default=5)
     parser.add_argument("--table", default=None, help="имя таблицы кандидатов вместо candidates_top<K>")
-    parser.add_argument("--out", default="configs/fusion_v1.json")
+    parser.add_argument("--out", required=True, help="куда сохранить модель, например configs/fusion_v3.json")
     parser.add_argument("--max-false-reject", type=float, default=0.02, help="доля ложных отказов для порога сервиса")
     args = parser.parse_args(argv)
 
