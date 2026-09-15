@@ -20,7 +20,7 @@ import os
 import random
 import time
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 import pandas as pd
@@ -28,7 +28,7 @@ from PIL import Image
 
 from winescan.config import get_paths
 from winescan.logging_setup import setup_logging
-from winescan.validation.synth import SynthConfig, render_sample
+from winescan.validation.synth import SYNTH_PRESETS, SynthConfig, render_sample
 
 log = logging.getLogger("winescan.validation.build_synth")
 
@@ -47,6 +47,7 @@ class RenderTask:
     seed: int
     out_path: str
     uploads_dir: str
+    preset: str = "v1"
 
 
 def select_backgrounds(uploads: pd.DataFrame, linked_files: set[str], uploads_dir: Path) -> list[str]:
@@ -122,12 +123,12 @@ def _render(task: RenderTask) -> dict:
     target = _load(uploads_dir / task.target_file)
     neighbours = [_load(uploads_dir / f) for f in task.neighbour_files]
     background = _load(uploads_dir / task.background_file) if task.background_file else None
-    image, box = render_sample(target, neighbours, background, random.Random(task.seed))
+    image, box = render_sample(target, neighbours, background, random.Random(task.seed), SYNTH_PRESETS[task.preset])
     image.save(task.out_path, quality=92)
     return {"query_id": task.query_id, "bbox": ",".join(str(v) for v in box)}
 
 
-def build(name: str, seed: int, per_wine: int, limit: int | None, workers: int | None) -> Path:
+def build(name: str, seed: int, per_wine: int, limit: int | None, workers: int | None, preset: str = "v1") -> Path:
     started = time.monotonic()
     paths = get_paths()
     catalog_dir = paths.artifacts_dir / "catalog"
@@ -142,8 +143,9 @@ def build(name: str, seed: int, per_wine: int, limit: int | None, workers: int |
 
     backgrounds = select_backgrounds(uploads, set(catalog["image_file"].dropna()), paths.uploads_dir)
     log.info("фоновых фото: %s", len(backgrounds))
-    config = SynthConfig()
+    config = SYNTH_PRESETS[preset]
     tasks = plan_tasks(catalog, backgrounds, out_dir, paths.uploads_dir, seed, per_wine, limit, config)
+    tasks = [replace(task, preset=preset) for task in tasks]
 
     workers = workers or min(32, os.cpu_count() or 1)
     with ProcessPoolExecutor(max_workers=workers) as pool:
@@ -174,7 +176,7 @@ def build(name: str, seed: int, per_wine: int, limit: int | None, workers: int |
     manifest[["query_id", "image_path"]].to_csv(out_dir / "queries.tsv", sep="\t", index=False)
     (out_dir / "build_info.json").write_text(
         json.dumps(
-            {"name": name, "seed": seed, "per_wine": per_wine, "limit": limit, "samples": len(manifest),
+            {"name": name, "preset": preset, "seed": seed, "per_wine": per_wine, "limit": limit, "samples": len(manifest),
              "backgrounds": len(backgrounds), "config": asdict(config)},
             ensure_ascii=False, indent=2,
         ),
@@ -191,9 +193,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--per-wine", type=int, default=1, help="кадров на вино")
     parser.add_argument("--limit", type=int, default=None, help="взять случайные N вин")
     parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--preset", choices=sorted(SYNTH_PRESETS), default="v1", help="v2 — цилиндр, тесные соседи, ценники")
     args = parser.parse_args(argv)
     setup_logging()
-    build(args.name, args.seed, args.per_wine, args.limit, args.workers)
+    build(args.name, args.seed, args.per_wine, args.limit, args.workers, args.preset)
 
 
 if __name__ == "__main__":

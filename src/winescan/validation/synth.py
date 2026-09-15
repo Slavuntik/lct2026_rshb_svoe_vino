@@ -5,20 +5,26 @@
 рядом — соседние бутылки (часто той же винодельни), затем перспектива, наклон, свет,
 блики, размытие, шум и JPEG.
 
+Пресет ``v2`` добавляет то, чего не было в ``v1`` и что делает кадр ближе к реальному:
+поворот бутылки вокруг оси по цилиндрической модели (этикетка «уходит» за край, дуги строк,
+затенение, вертикальный блик стекла — winescan.vision.cylinder), тесные и перекрывающиеся
+соседи, полосу ценников у края полки и смаз от движения.
+
 Ограничение: в кадре те же пиксели, что в эталоне, поэтому метрики на синтетике
-оптимистичнее реальных. Реальные отличия (другой тираж этикетки, изгиб бутылки,
-отражения стекла) генератор не воспроизводит.
+оптимистичнее реальных. Другой тираж этикетки и отражения окружения генератор не воспроизводит.
 """
 
 from __future__ import annotations
 
 import io
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
+import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
+from winescan.vision.cylinder import rotate_cylinder
 from winescan.vision.preprocess import cutout
 
 
@@ -34,6 +40,32 @@ class SynthConfig:
     blur_prob: float = 0.5
     jpeg_quality: tuple[int, int] = (35, 90)
     synthetic_background_prob: float = 0.15
+    # v2: всё ниже выключено в v1, чтобы старая выборка воспроизводилась с тем же seed
+    yaw_deg: float = 0.0
+    arc_pitch: float = 0.0
+    cylinder_shading: float = 0.0
+    bottle_highlight_prob: float = 0.0
+    neighbour_overlap: float = 0.0  # доля ширины соседа, на которую он может заходить за целевую бутылку
+    price_strip_prob: float = 0.0
+    motion_blur_prob: float = 0.0
+
+
+SYNTH_PRESETS = {
+    "v1": SynthConfig(),
+    "v2": replace(
+        SynthConfig(),
+        target_height=(0.4, 0.95),
+        max_neighbours=4,
+        perspective=0.05,
+        yaw_deg=35.0,
+        arc_pitch=0.3,
+        cylinder_shading=0.35,
+        bottle_highlight_prob=0.6,
+        neighbour_overlap=0.25,
+        price_strip_prob=0.4,
+        motion_blur_prob=0.2,
+    ),
+}
 
 
 def perspective_coefficients(src: list[tuple[float, float]], dst: list[tuple[float, float]]) -> list[float]:
@@ -66,6 +98,22 @@ def _warp(sprite: Image.Image, rng: random.Random, strength: float) -> Image.Ima
                             Image.Resampling.BICUBIC)  # fmt: skip
 
 
+def _cylinder(sprite: Image.Image, rng: random.Random, config: SynthConfig) -> Image.Image:
+    # коробки, тетрапаки и банки невысокие и не цилиндры: их не поворачиваем (порог как у вида «этикетка»)
+    if not config.yaw_deg or sprite.height / max(sprite.width, 1) < 1.8:
+        return sprite
+    highlight = rng.uniform(-50, 50) if rng.random() < config.bottle_highlight_prob else None
+    return rotate_cylinder(
+        sprite,
+        yaw_deg=rng.uniform(-config.yaw_deg, config.yaw_deg),
+        pitch=rng.uniform(-config.arc_pitch, config.arc_pitch),
+        shading=rng.uniform(0, config.cylinder_shading),
+        highlight_angle_deg=highlight,
+        # на пробном листе блик 0,8 засвечивал бутылку почти целиком
+        highlight_strength=rng.uniform(0.25, 0.6),
+    )
+
+
 def _background(photo: Image.Image | None, size: tuple[int, int], rng: random.Random) -> Image.Image:
     w, h = size
     if photo is None:
@@ -88,6 +136,20 @@ def _background(photo: Image.Image | None, size: tuple[int, int], rng: random.Ra
     return photo.crop((x, y, x + w, y + h))
 
 
+def _price_strip(canvas: Image.Image, top: int, rng: random.Random) -> None:
+    """Полоса края полки с ценниками: светлые прямоугольники с цифрами."""
+    draw = ImageDraw.Draw(canvas)
+    strip_h = rng.randint(40, 90)
+    draw.rectangle([0, top, canvas.width, top + strip_h], fill=tuple(rng.randint(30, 90) for _ in range(3)))
+    x = rng.randint(-60, 20)
+    while x < canvas.width:
+        tag_w = rng.randint(120, 220)
+        color = rng.choice([(250, 250, 245), (255, 230, 60), (255, 255, 255), (240, 60, 60)])
+        draw.rectangle([x, top + 5, x + tag_w, top + strip_h - 5], fill=color)
+        draw.text((x + 10, top + strip_h // 3), f"{rng.randint(390, 4990)},99", fill=(20, 20, 20))
+        x += tag_w + rng.randint(40, 200)
+
+
 def _glare(canvas: Image.Image, box: tuple[int, int, int, int], rng: random.Random) -> Image.Image:
     x0, y0, x1, y1 = box
     mask = Image.new("L", canvas.size, 0)
@@ -98,6 +160,16 @@ def _glare(canvas: Image.Image, box: tuple[int, int, int, int], rng: random.Rand
         draw.ellipse([cx - rx, cy - ry, cx + rx, cy + ry], fill=rng.randint(120, 230))
     mask = mask.filter(ImageFilter.GaussianBlur(radius=rng.uniform(8, 30)))
     return Image.composite(Image.new("RGB", canvas.size, (255, 252, 240)), canvas, mask)
+
+
+def _motion_blur(canvas: Image.Image, rng: random.Random) -> Image.Image:
+    length = rng.randint(5, 17)
+    kernel = np.zeros((length, length), dtype=np.float32)
+    kernel[length // 2, :] = 1.0 / length
+    rotation = cv2.getRotationMatrix2D((length / 2 - 0.5, length / 2 - 0.5), rng.uniform(0, 180), 1.0)
+    kernel = cv2.warpAffine(kernel, rotation, (length, length))
+    kernel /= max(kernel.sum(), 1e-6)
+    return Image.fromarray(cv2.filter2D(np.asarray(canvas), -1, kernel))
 
 
 def _photometric(canvas: Image.Image, box, rng: random.Random, config: SynthConfig) -> Image.Image:
@@ -111,7 +183,9 @@ def _photometric(canvas: Image.Image, box, rng: random.Random, config: SynthConf
         array = np.asarray(canvas, dtype=np.float32)
     array += np.random.default_rng(rng.randrange(2**32)).normal(0, rng.uniform(0, 8), array.shape)
     canvas = Image.fromarray(np.clip(array, 0, 255).astype(np.uint8))
-    if rng.random() < config.blur_prob:
+    if config.motion_blur_prob and rng.random() < config.motion_blur_prob:
+        canvas = _motion_blur(canvas, rng)
+    elif rng.random() < config.blur_prob:
         canvas = canvas.filter(ImageFilter.GaussianBlur(radius=rng.uniform(0.5, 2.5)))
     buffer = io.BytesIO()
     canvas.save(buffer, format="JPEG", quality=rng.randint(*config.jpeg_quality))
@@ -130,23 +204,35 @@ def render_sample(
     canvas = _background(None if rng.random() < config.synthetic_background_prob else background, (w, h), rng)
 
     target_h = round(h * rng.uniform(*config.target_height))
-    sprite = _warp(_scale_to_height(cutout(target), target_h), rng, config.perspective)
+    sprite = _cylinder(_scale_to_height(cutout(target), target_h), rng, config)
+    sprite = _warp(sprite, rng, config.perspective)
     sprite = sprite.rotate(rng.uniform(-config.rotation_deg, config.rotation_deg), expand=True,
                            resample=Image.Resampling.BICUBIC)  # fmt: skip
     x0 = round(w * rng.uniform(0.35, 0.65)) - sprite.width // 2
     y0 = rng.randint(round(-0.08 * sprite.height), max(0, h - round(0.92 * sprite.height)))
 
     left, right = x0, x0 + sprite.width
+    in_front = []
     for index, neighbour in enumerate(neighbours):
-        other = _scale_to_height(cutout(neighbour), round(target_h * rng.uniform(0.85, 1.1)))
-        gap = rng.randint(-other.width // 5, other.width // 4)
+        other = _cylinder(_scale_to_height(cutout(neighbour), round(target_h * rng.uniform(0.85, 1.1))), rng, config)
+        overlap = round(other.width * config.neighbour_overlap)
+        gap = rng.randint(-other.width // 5 - overlap, other.width // 4)
         if index % 2 == 0:
             nx, left = left - other.width - gap, left - other.width - gap
         else:
             nx, right = right + gap, right + gap + other.width
-        canvas.paste(other, (nx, y0 + rng.randint(-target_h // 20, target_h // 20)), other)
+        position = (nx, y0 + rng.randint(-target_h // 20, target_h // 20))
+        # при перекрытии часть соседей стоит перед целевой бутылкой, как на тесной полке
+        if overlap and rng.random() < 0.3:
+            in_front.append((other, position))
+        else:
+            canvas.paste(other, position, other)
 
     canvas.paste(sprite, (x0, y0), sprite)
+    for other, position in in_front:
+        canvas.paste(other, position, other)
     sx0, sy0, sx1, sy1 = sprite.getchannel("A").getbbox() or (0, 0, sprite.width, sprite.height)
     box = (max(0, x0 + sx0), max(0, y0 + sy0), min(w, x0 + sx1), min(h, y0 + sy1))
+    if config.price_strip_prob and rng.random() < config.price_strip_prob and box[3] < h - 40:
+        _price_strip(canvas, min(h - 40, box[3] - rng.randint(0, 30)), rng)
     return _photometric(canvas, box, rng, config), box
