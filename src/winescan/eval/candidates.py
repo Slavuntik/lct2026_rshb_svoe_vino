@@ -1,0 +1,113 @@
+"""Таблица признаков кандидатов по кэшу запросов — для обучения слияния и порогов отказа.
+
+Запуск: ``python -m winescan.eval.candidates --cache synth_v2 [--top 5] [--limit N] [--workers 16]``
+
+Для каждого запроса берётся рамка (правило из offline.box_selection или первая по весу),
+визуальный top-K из кэша и для каждого кандидата — признаки проверки (search.verify) против
+его эталона. Результат: artifacts/cache/<cache>/candidates_top<K>.parquet, строка на пару
+«запрос × кандидат» с меткой «это верное вино». Негативы «вина нет в каталоге» получаются из
+тех же строк без верного кандидата (leave-one-out) — отдельно считать не нужно.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from concurrent.futures import ProcessPoolExecutor
+from functools import lru_cache
+
+import numpy as np
+import pandas as pd
+from PIL import Image
+
+from winescan.config import get_paths
+from winescan.eval.offline import QueryCache, choose_slot
+from winescan.eval.run import _load_query, load_split
+from winescan.logging_setup import setup_logging
+from winescan.search.fusion import candidate_features
+from winescan.search.local_features import REFERENCE_SIDE, STORE_NAME, LocalFeatureStore
+from winescan.search.local_match import extract, prepare
+from winescan.search.verify import verify
+from winescan.vision.preprocess import crop_box, cutout
+
+_state: dict = {}
+
+
+def _init(images_dir: str, image_of: dict[str, str]) -> None:
+    paths = get_paths()
+    _state.update(images_dir=images_dir, image_of=image_of, uploads=paths.uploads_dir,
+                  store=LocalFeatureStore(paths.artifacts_dir / "index" / STORE_NAME))  # fmt: skip
+
+
+@lru_cache(maxsize=2048)
+def _reference(slug: str):
+    with Image.open(_state["uploads"] / _state["image_of"][slug]) as image:
+        image.load()
+        image = image.copy()
+    image.thumbnail((REFERENCE_SIDE, REFERENCE_SIDE))
+    return prepare(cutout(image)), _state["store"].get(slug)
+
+
+def _task(task: dict) -> list[dict]:
+    image, scale = _load_query(os.path.join(_state["images_dir"], task["image_path"]))
+    box = task["box"]
+    query_image = prepare(crop_box(image, box) if box else image)
+    query_features = extract(query_image)
+    rows = []
+    best_visual = task["candidates"][0][1]
+    for rank, (slug, visual) in enumerate(task["candidates"], start=1):
+        reference_image, reference_features = _reference(slug)
+        verification = verify(query_image, query_features, reference_image, reference_features).as_dict()
+        rows.append({"query_id": task["query_id"], "slug": slug, "rank": rank, "label": slug == task["expected"],
+                     **candidate_features(visual, best_visual, verification), "inliers": verification["inliers"]})  # fmt: skip
+    return rows
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Признаки кандидатов для обучения слияния")
+    parser.add_argument("--cache", required=True)
+    parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--workers", type=int, default=None)
+    parser.add_argument("--rule", default=None, help="JSON правила выбора рамки; по умолчанию из box-selection.json или первая рамка")
+    args = parser.parse_args(argv)
+    setup_logging()
+
+    paths = get_paths()
+    cache = QueryCache.load(args.cache)
+    rule_path = paths.artifacts_dir / "cache" / args.cache / "box-selection.json"
+    rule = json.loads(args.rule) if args.rule else (
+        json.loads(rule_path.read_text())["best_rule"] if rule_path.exists() else {"prior": 1.0, "top1": 0.0, "margin": 0.0})
+    split = json.loads((paths.artifacts_dir / "cache" / args.cache / "meta.json").read_text())["split"]
+    _, images_dir = load_split(split)
+    catalog = pd.read_parquet(paths.artifacts_dir / "catalog" / "catalog.parquet")
+    image_of = dict(zip(catalog["slug"], catalog["image_file"]))
+
+    tasks = []
+    for query_index, record in enumerate(cache.records[: args.limit] if args.limit else cache.records):
+        slot = choose_slot(cache, query_index, rule)
+        scores = cache.scores[query_index, slot]
+        order = np.argsort(-scores)[: args.top]
+        tasks.append({
+            "query_id": record["query_id"], "image_path": record["image_path"], "expected": record["expected_slug"],
+            "box": record["slots"][slot]["box"],
+            "candidates": [(cache.wine_slugs[i], float(scores[i])) for i in order],
+        })  # fmt: skip
+
+    workers = args.workers or min(16, os.cpu_count() or 1)
+    with ProcessPoolExecutor(max_workers=workers, initializer=_init, initargs=(str(images_dir), image_of)) as pool:
+        rows = [row for chunk in pool.map(_task, tasks, chunksize=4) for row in chunk]
+
+    flags = {r["query_id"]: (r["in_phash_group"], r["shares_image"]) for r in cache.records}
+    frame = pd.DataFrame(rows)
+    frame["in_phash_group"] = frame["query_id"].map(lambda q: flags[q][0])
+    frame["shares_image"] = frame["query_id"].map(lambda q: flags[q][1])
+    out = paths.artifacts_dir / "cache" / args.cache / f"candidates_top{args.top}.parquet"
+    frame.to_parquet(out, index=False)
+    print(f"{len(frame)} строк, {frame['query_id'].nunique()} запросов, верный в top-{args.top}: "
+          f"{frame.groupby('query_id')['label'].any().mean():.3f} -> {out}")  # fmt: skip
+
+
+if __name__ == "__main__":
+    main()
