@@ -39,17 +39,30 @@ def _env_float(name: str, default: float | None) -> float | None:
     return float(value) if value not in (None, "") else default
 
 
+def _env_path(name: str, default: str | None) -> str | None:
+    """Путь к модели: пусто — значение по умолчанию, ``0`` или ``none`` — модель выключена."""
+    value = os.environ.get(name)
+    if value in (None, ""):
+        return default
+    return None if value.lower() in ("0", "none") else value
+
+
 @dataclass(frozen=True)
 class ScannerConfig:
-    indexes: tuple[str, ...] = ("siglip2-so400m-patch14-384", "siglip2-so400m-patch14-384__label")
+    # мультиракурсная галерея (повороты эталона −30…+30°): synth_v2 top-1 0,618 → 0,642 на первой рамке
+    indexes: tuple[str, ...] = (
+        "siglip2-so400m-patch14-384__yaw-30_-15_0_15_30",
+        "siglip2-so400m-patch14-384__label__yaw-30_-15_0_15_30",
+    )
     index_weights: tuple[float, ...] = (0.5, 0.5)
     device: str | None = None
     use_detector: bool = True
-    # выбор рамки по поиску: 1 — первая рамка по априорному весу (прежнее поведение)
-    box_candidates: int = 1
+    # выбор из K рамок детектора; 1 — первая рамка по априорному весу
+    box_candidates: int = 3
     box_rule: dict = field(default_factory=lambda: dict(PRIOR_ONLY))
-    # обучаемый выбор рамки (search.box_ranker); если задан и box_candidates > 1 — заменяет box_rule
-    box_ranker_path: str | None = None
+    # обучаемый выбор рамки (search.box_ranker), заменяет box_rule при box_candidates > 1;
+    # обучен на скорах той же галереи: synth_v2 top-1 0,642 → 0,661
+    box_ranker_path: str | None = "configs/box_ranker_v2.joblib"
     local_top: int = 5
     # прежнее ручное слияние: на синтетике top-1 выходит на плато с 0,2, но на реальном фото серии
     # Массандры вес > 0,24 переставляет неверное вино вперёд (ARCHITECTURE.md, D10)
@@ -78,7 +91,7 @@ class ScannerConfig:
             use_detector=os.environ.get("WINESCAN_USE_DETECTOR", "1") != "0",
             box_candidates=int(os.environ.get("WINESCAN_BOX_CANDIDATES", base.box_candidates)),
             box_rule=json.loads(rule) if rule else base.box_rule,
-            box_ranker_path=os.environ.get("WINESCAN_BOX_RANKER") or base.box_ranker_path,
+            box_ranker_path=_env_path("WINESCAN_BOX_RANKER", base.box_ranker_path),
             local_top=int(os.environ.get("WINESCAN_LOCAL_TOP", base.local_top)),
             local_weight=_env_float("WINESCAN_LOCAL_WEIGHT", base.local_weight),
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",

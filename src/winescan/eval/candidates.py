@@ -16,6 +16,7 @@ import json
 import os
 from concurrent.futures import ProcessPoolExecutor
 from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -24,7 +25,9 @@ from PIL import Image
 from winescan.config import get_paths
 from winescan.eval.offline import QueryCache, choose_slot
 from winescan.eval.run import _load_query, load_split
+from winescan.eval.train_box_ranker import query_rows
 from winescan.logging_setup import setup_logging
+from winescan.search.box_ranker import BoxRanker
 from winescan.eval.vlm_cache import load_fields
 from winescan.search.fields import LabelFields, field_score
 from winescan.search.fusion import candidate_features
@@ -71,14 +74,18 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--workers", type=int, default=None)
     parser.add_argument("--rule", default=None, help="JSON правила выбора рамки; по умолчанию из box-selection.json или первая рамка")
+    parser.add_argument("--box-ranker", default=None, help="обученный выбор рамки вместо правила (как в сервисе)")
+    parser.add_argument("--indexes", default=None, help="другие индексы тех же моделей и видов через запятую")
+    parser.add_argument("--name", default=None, help="имя таблицы вместо candidates_top<K>")
     args = parser.parse_args(argv)
     setup_logging()
 
     paths = get_paths()
-    cache = QueryCache.load(args.cache)
+    cache = QueryCache.load(args.cache, indexes=args.indexes.split(",") if args.indexes else None)
     rule_path = paths.artifacts_dir / "cache" / args.cache / "box-selection.json"
     rule = json.loads(args.rule) if args.rule else (
         json.loads(rule_path.read_text())["best_rule"] if rule_path.exists() else {"prior": 1.0, "top1": 0.0, "margin": 0.0})
+    ranker = BoxRanker.load(Path(args.box_ranker)) if args.box_ranker else None
     split = json.loads((paths.artifacts_dir / "cache" / args.cache / "meta.json").read_text())["split"]
     _, images_dir = load_split(split)
     catalog = pd.read_parquet(paths.artifacts_dir / "catalog" / "catalog.parquet")
@@ -87,6 +94,9 @@ def main(argv: list[str] | None = None) -> None:
     tasks = []
     for query_index, record in enumerate(cache.records[: args.limit] if args.limit else cache.records):
         slot = choose_slot(cache, query_index, rule)
+        if ranker is not None:
+            slots, rows, _ = query_rows(cache, query_index)
+            slot = slots[ranker.choose(rows)] if slots else slot
         scores = cache.scores[query_index, slot]
         order = np.argsort(-scores)[: args.top]
         tasks.append({
@@ -112,7 +122,7 @@ def main(argv: list[str] | None = None) -> None:
     frame = pd.DataFrame(rows)
     frame["in_phash_group"] = frame["query_id"].map(lambda q: flags[q][0])
     frame["shares_image"] = frame["query_id"].map(lambda q: flags[q][1])
-    out = paths.artifacts_dir / "cache" / args.cache / f"candidates_top{args.top}.parquet"
+    out = paths.artifacts_dir / "cache" / args.cache / f"{args.name or f'candidates_top{args.top}'}.parquet"
     frame.to_parquet(out, index=False)
     print(f"{len(frame)} строк, {frame['query_id'].nunique()} запросов, верный в top-{args.top}: "
           f"{frame.groupby('query_id')['label'].any().mean():.3f} -> {out}")  # fmt: skip

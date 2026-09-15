@@ -1,6 +1,6 @@
 """Обучение выбора рамки по кэшам запросов синтетики.
 
-Запуск: ``python -m winescan.eval.train_box_ranker --caches synth_v1,synth_v2 [--out configs/box_ranker_v1.joblib]``
+Запуск: ``python -m winescan.eval.train_box_ranker --caches synth_v1,synth_v2 [--indexes A,B] [--out configs/box_ranker_v1.joblib]``
 
 Метка рамки — IoU с настоящей рамкой ≥ 0,5. Обучение на fold 0 всех кэшей, отчёт на fold 1 каждого:
 доля верных рамок, top-1 и top-5 поиска по выбранной рамке против первой рамки по весу.
@@ -58,9 +58,11 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Обучение выбора рамки")
     parser.add_argument("--caches", default="synth_v1,synth_v2")
     parser.add_argument("--out", default="configs/box_ranker_v1.joblib")
+    parser.add_argument("--indexes", default=None, help="другие индексы тех же моделей и видов через запятую")
     args = parser.parse_args(argv)
 
-    caches = {name: QueryCache.load(name) for name in args.caches.split(",")}
+    indexes = args.indexes.split(",") if args.indexes else None
+    caches = {name: QueryCache.load(name, indexes=indexes) for name in args.caches.split(",")}
     rows, labels = [], []
     for cache in caches.values():
         fit, _ = folds(cache)
@@ -68,7 +70,7 @@ def main(argv: list[str] | None = None) -> None:
             _, query_rows_, query_labels = query_rows(cache, query_index)
             rows += query_rows_
             labels += query_labels
-    ranker = BoxRanker(train_box_ranker(rows, labels), meta={"caches": list(caches), "train_boxes": len(rows)})
+    ranker = BoxRanker(train_box_ranker(rows, labels), meta={"caches": list(caches), "indexes": indexes, "train_boxes": len(rows)})
 
     report = {}
     for name, cache in caches.items():
@@ -77,7 +79,7 @@ def main(argv: list[str] | None = None) -> None:
     ranker.meta["check"] = report
     out = PROJECT_ROOT / args.out
     ranker.save(out)
-    (get_paths().artifacts_dir / "cache" / "box_ranker_report.json").write_text(
+    (get_paths().artifacts_dir / "cache" / f"box_ranker_report_{out.stem}.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     for name, parts in report.items():

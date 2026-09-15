@@ -1,6 +1,6 @@
 """Обучение слияния сигналов и порога отказа по таблице кандидатов.
 
-Запуск: ``python -m winescan.eval.train_fusion --cache synth_v2 [--top 5] [--out configs/fusion_v1.json]``
+Запуск: ``python -m winescan.eval.train_fusion --cache synth_v1,synth_v2 [--top 5] [--table NAME] [--out configs/fusion_v1.json]``
 
 1. Запросы делятся пополам (fold 0 — подбор, fold 1 — проверка).
 2. Базовые линии на fold 1: только визуальный скор; прежнее ручное слияние (визуальный +
@@ -64,7 +64,16 @@ def evaluate(queries: dict[str, list[dict]], ids: list[str], scorer) -> dict:
     return {name: (float(np.mean(values)) if values else None) for name, values in parts.items()} | {"queries": len(ids)}
 
 
-def open_set(model: FusionModel, queries: dict[str, list[dict]], ids: list[str], threshold: float | None = None) -> dict:
+def open_set(
+    model: FusionModel,
+    queries: dict[str, list[dict]],
+    ids: list[str],
+    threshold: float | None = None,
+    max_false_reject: float | None = None,
+) -> dict:
+    """Порог отказа по логиту лучшего кандидата. Без явного порога — максимум точности на
+    открытом множестве или (``max_false_reject``) наибольший порог, при котором вина из
+    каталога отклоняются не чаще заданной доли."""
     positive_conf, positive_correct, negative_conf = [], [], []
     for query_id in ids:
         candidates = queries[query_id]
@@ -76,7 +85,9 @@ def open_set(model: FusionModel, queries: dict[str, list[dict]], ids: list[str],
             continue  # верного нет в top-K или эталон общий — такой запрос не даёт честного негатива
         negative_conf.append(model.rank(rest)[0][0])
     positive_conf, positive_correct, negative_conf = map(np.asarray, (positive_conf, positive_correct, negative_conf))
-    if threshold is None:
+    if threshold is None and max_false_reject is not None:
+        threshold = float(np.quantile(positive_conf, max_false_reject))
+    elif threshold is None:
         grid = np.quantile(np.concatenate([positive_conf, negative_conf]), np.linspace(0, 1, 201))
         threshold = float(max(grid, key=lambda t: open_set_at_threshold(positive_correct, positive_conf, negative_conf, float(t))["open_set_accuracy"]))
     return {"auroc": auroc(positive_conf[positive_correct], negative_conf), "threshold_logit": threshold,
@@ -85,14 +96,22 @@ def open_set(model: FusionModel, queries: dict[str, list[dict]], ids: list[str],
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Обучение слияния сигналов")
-    parser.add_argument("--cache", required=True)
+    parser.add_argument("--cache", required=True, help="кэш или несколько через запятую (обучение на всех)")
     parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--table", default=None, help="имя таблицы кандидатов вместо candidates_top<K>")
     parser.add_argument("--out", default="configs/fusion_v1.json")
+    parser.add_argument("--max-false-reject", type=float, default=0.02, help="доля ложных отказов для порога сервиса")
     args = parser.parse_args(argv)
 
     paths = get_paths()
-    frame = pd.read_parquet(paths.artifacts_dir / "cache" / args.cache / f"candidates_top{args.top}.parquet")
-    queries = group_queries(frame)
+    caches = args.cache.split(",")
+    queries, members = {}, {}
+    for cache in caches:
+        frame = pd.read_parquet(paths.artifacts_dir / "cache" / cache / f"{args.table or f'candidates_top{args.top}'}.parquet")
+        frame["query_id"] = cache + "/" + frame["query_id"].astype(str)  # номера запросов разных кэшей совпадают
+        part = group_queries(frame)
+        queries |= part
+        members[cache] = set(part)
     fit, check = split_queries(list(queries))
     inner_fit, inner_check = split_queries(fit, seed=1)
 
@@ -117,15 +136,34 @@ def main(argv: list[str] | None = None) -> None:
         },
         "upper_bound_true_in_top_k": float(np.mean([any(c["label"] for c in queries[q]) for q in check])),
     }
+    if len(caches) > 1:
+        report["check_by_cache"] = {
+            cache: {"fusion": evaluate(queries, ids, lambda c: model.logit(c["features"])),
+                    "legacy_sift_0.15": evaluate(queries, ids, lambda c: c["features"]["visual"] + 0.15 * local_bonus(c["inliers"]))}
+            for cache in caches
+            for ids in [[q for q in check if q in members[cache]]]
+        }  # fmt: skip
     fit_open = open_set(model, queries, fit)
-    report["open_set"] = {"fit": fit_open, "check": open_set(model, queries, check, fit_open["threshold_logit"])}
-    model.meta.update({"cache": args.cache, "top": args.top, "reject_logit": fit_open["threshold_logit"],
-                       "reject_probability": 1 / (1 + math.exp(-fit_open["threshold_logit"])),
+    # на реальном фото Массандры порог «максимум точности» с синтетики (0,74) отклонил верный ответ
+    # (логит 0,50): признаки проверки на реальных фото слабее. Поэтому в сервис идёт осторожный порог —
+    # не больше args.max_false_reject ложных отказов винам из каталога на синтетике
+    fit_conservative = open_set(model, queries, fit, max_false_reject=args.max_false_reject)
+    report["open_set"] = {
+        "max_accuracy": {"fit": fit_open, "check": open_set(model, queries, check, fit_open["threshold_logit"])},
+        f"false_reject_le_{args.max_false_reject}": {
+            "fit": fit_conservative,
+            "check": open_set(model, queries, check, fit_conservative["threshold_logit"]),
+        },
+    }
+    model.meta.update({"cache": args.cache, "table": args.table, "top": args.top, "reject_logit": fit_conservative["threshold_logit"],
+                       "reject_rule": f"доля ложных отказов винам из каталога на синтетике ≤ {args.max_false_reject}",
+                       "reject_logit_max_accuracy": fit_open["threshold_logit"],
                        "check_top1": report["check"]["fusion"]["all"]})  # fmt: skip
 
     out = PROJECT_ROOT / args.out
     model.save(out)
-    (paths.artifacts_dir / "cache" / args.cache / "fusion_report.json").write_text(
+    report_dir = paths.artifacts_dir / "cache" / (caches[0] if len(caches) == 1 else "")
+    (report_dir / f"fusion_report_{out.stem}.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     print(json.dumps(report, ensure_ascii=False, indent=2))

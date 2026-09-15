@@ -4,14 +4,18 @@
 PY ?= .venv/bin/python
 GPU ?= 0
 MODEL ?= google/siglip2-so400m-patch14-384
+YAWS ?= -30,-15,0,15,30
+# индексы сервиса: мультиракурсная галерея (WORKLOG, «Мультиракурсная галерея эталонов»)
+INDEXES ?= siglip2-so400m-patch14-384__yaw-30_-15_0_15_30,siglip2-so400m-patch14-384__label__yaw-30_-15_0_15_30
 RUN_GPU = CUDA_VISIBLE_DEVICES=$(GPU)
 
-.PHONY: help install data catalog index features artifacts synth cache eval report serve participant test clean-eval
+.PHONY: help install data catalog index index-frontal features artifacts synth cache eval report serve participant test clean-eval
 
 help:
 	@echo "install     — .venv, torch (CUDA 12.6) и пакет с зависимостями ml, dev"
 	@echo "data        — распаковать дамп Strapi и eval.zip (нужен unrar)"
-	@echo "artifacts   — каталог, индексы SigLIP 2 (full, label), SIFT-признаки эталонов"
+	@echo "artifacts   — каталог, индексы SigLIP 2 (full, label, повороты $(YAWS)), SIFT-признаки эталонов"
+	@echo "index-frontal — фронтальные индексы (нужны кэшам запросов cache)"
 	@echo "synth       — синтетические выборки synth_v1 и synth_v2"
 	@echo "cache       — кэш детекций и эмбеддингов запросов для офлайн-экспериментов"
 	@echo "eval        — сквозной прогон на synth_v2 и публичных фото + docs/RESULTS.md"
@@ -33,6 +37,11 @@ catalog:
 	$(PY) -m winescan.catalog.build --no-review
 
 index:
+	$(RUN_GPU) $(PY) -m winescan.search.build_index --model $(MODEL) --yaws=$(YAWS) --batch-size 32
+	$(RUN_GPU) $(PY) -m winescan.search.build_index --model $(MODEL) --view label --yaws=$(YAWS) --batch-size 32
+
+# фронтальные индексы: базовая линия; на них построены кэши synth_v1 / synth_v2 из WORKLOG
+index-frontal:
 	$(RUN_GPU) $(PY) -m winescan.search.build_index --model $(MODEL) --batch-size 16
 	$(RUN_GPU) $(PY) -m winescan.search.build_index --model $(MODEL) --view label --batch-size 16
 
@@ -49,8 +58,8 @@ cache:
 	$(RUN_GPU) $(PY) -m winescan.eval.query_cache --split synth_v2 --boxes 3
 
 eval:
-	$(RUN_GPU) $(PY) -m winescan.eval.run --split synth_v2 --index siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label --crop detector --ocr --batch-size 16
-	$(RUN_GPU) $(PY) -m winescan.eval.run --split public --index siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label --crop detector --ocr
+	$(RUN_GPU) $(PY) -m winescan.eval.run --split synth_v2 --index $(INDEXES) --crop detector --ocr --batch-size 16
+	$(RUN_GPU) $(PY) -m winescan.eval.run --split public --index $(INDEXES) --crop detector --ocr
 	$(MAKE) report
 
 report:

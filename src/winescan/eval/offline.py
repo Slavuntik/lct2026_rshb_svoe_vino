@@ -2,6 +2,7 @@
 
 Запуск: ``python -m winescan.eval.offline box-selection --cache synth_v1``
         ``python -m winescan.eval.offline open-set --cache synth_v1``
+        ``python -m winescan.eval.offline index-compare --cache synth_v2 --index-sets A,B C,D [--box-ranker ...]``
 
 Скоры вин считаются из сохранённых эмбеддингов и индексов за секунды, поэтому правила можно
 перебирать. Параметры подбираются на половине запросов (fold 0), проверяются на другой (fold 1).
@@ -25,6 +26,10 @@ from winescan.search.index import VectorIndex
 KINDS = ("det", "full", "gt")
 
 
+def _signature(index_meta: dict) -> tuple[str, str]:
+    return index_meta["model_id"], index_meta.get("view_name", "full")
+
+
 @dataclass
 class QueryCache:
     records: list[dict]
@@ -33,15 +38,22 @@ class QueryCache:
     slot_valid: np.ndarray  # bool (запросы, слоты)
 
     @classmethod
-    def load(cls, name: str) -> QueryCache:
+    def load(cls, name: str, indexes: list[str] | None = None, weights: list[float] | None = None) -> QueryCache:
+        """Кэш со скорами по индексам кэша или по другим индексам тех же моделей и видов в том же
+        порядке (например, мультиракурсная галерея): эмбеддинги запросов не зависят от галереи."""
         paths = get_paths()
         directory = paths.artifacts_dir / "cache" / name
         meta = json.loads((directory / "meta.json").read_text(encoding="utf-8"))
         with (directory / "queries.jsonl").open(encoding="utf-8") as fh:
             records = [json.loads(line) for line in fh]
         vectors = np.load(directory / "vectors.npy")
-        indexes = [VectorIndex.load(paths.artifacts_dir / "index" / n) for n in meta["indexes"]]
-        return cls.from_arrays(records, vectors, indexes, meta["index_weights"])
+        loaded = [VectorIndex.load(paths.artifacts_dir / "index" / n) for n in indexes or meta["indexes"]]
+        if indexes:
+            for original, replacement in zip(meta["indexes"], loaded):
+                source = VectorIndex.load(paths.artifacts_dir / "index" / original).meta
+                if _signature(source) != _signature(replacement.meta):
+                    raise ValueError(f"индекс {replacement.meta} не совпадает с {original} по модели и виду")
+        return cls.from_arrays(records, vectors, loaded, weights or meta["index_weights"])
 
     @classmethod
     def from_arrays(cls, records, vectors, indexes, weights) -> QueryCache:
@@ -166,11 +178,38 @@ def open_set(cache: QueryCache, rule: dict | str = "det0") -> dict:
     }
 
 
+def index_compare(cache_name: str, index_sets: list[list[str]], box_ranker_path: str | None) -> dict:
+    """top-1 / top-5 на fold 1 для первой рамки, рамки обучаемого выбора и настоящей рамки по разным галереям."""
+    from winescan.eval.train_box_ranker import evaluate as evaluate_ranker  # импорт здесь: модуль сам импортирует offline
+    from winescan.search.box_ranker import BoxRanker
+
+    ranker = BoxRanker.load(Path(box_ranker_path)) if box_ranker_path else None
+    result = {}
+    for names in index_sets:
+        cache = QueryCache.load(cache_name, indexes=names)
+        _, check = folds(cache)
+        row = {"first_box": evaluate_rule(cache, check, "det0"), "true_box": evaluate_rule(cache, check, "gt")}
+        if ranker is not None:
+            row["box_ranker"] = evaluate_ranker(cache, check, ranker)
+        result["+".join(names)] = row
+    return result
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Офлайн-эксперименты по кэшу запросов")
-    parser.add_argument("experiment", choices=("box-selection", "open-set"))
+    parser.add_argument("experiment", choices=("box-selection", "open-set", "index-compare"))
     parser.add_argument("--cache", required=True, help="папка в artifacts/cache")
+    parser.add_argument("--index-sets", nargs="*", default=None,
+                        help="для index-compare: наборы индексов через запятую, по одному на вариант")  # fmt: skip
+    parser.add_argument("--box-ranker", default=None, help="для index-compare: модель выбора рамки")
     args = parser.parse_args(argv)
+    if args.experiment == "index-compare":
+        result = index_compare(args.cache, [s.split(",") for s in args.index_sets], args.box_ranker)
+        for name, row in result.items():
+            print(name)
+            for variant, metrics in row.items():
+                print(f"   {variant:11} top-1 {metrics['top1']:.3f}  top-5 {metrics['top5']:.3f}")
+        return
     cache = QueryCache.load(args.cache)
     result = box_selection(cache) if args.experiment == "box-selection" else open_set(cache)
     out = get_paths().artifacts_dir / "cache" / args.cache / f"{args.experiment}.json"

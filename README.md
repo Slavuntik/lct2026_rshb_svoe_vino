@@ -22,9 +22,10 @@
 | 3. Поиск: сумма индексов, SIFT- и текстовое переранжирование, решение «не найдено» | готово |
 | 4. API: `POST /v1/eval/predict`, `POST /v1/scan`, карточки | готово, проверено `participant_test.sh` |
 | 5. Функция после поиска: аналоги и «Цифровой сомелье» (бэкенд, без LLM) | готово |
-| 5. Мобильный интерфейс (Nuxt, `web/`) | в работе |
-| Выбор рамки по поиску, обученное слияние, VLM в полосе сомнения | механизмы готовы, параметры подбираются |
-| Docker, Makefile | готово, образ собирается |
+| 5. Мобильный интерфейс (Nuxt 4, `web/`) | готово: сборка и typecheck проходят; на реальном телефоне не проверялся |
+| Обучаемый выбор рамки, обученное слияние и отказ по его логиту | готово, измерено на синтетике |
+| VLM (Qwen3-VL-4B) в полосе сомнения | реализовано, выключено: 10–14 с на фото |
+| Docker, Makefile | готово, образ собирается, smoke-тест пройден |
 
 Ключевые результаты (подробно — docs/RESULTS.md и ARCHITECTURE.md, раздел 4):
 
@@ -43,17 +44,25 @@
 configs/
   photo_overrides.csv       ручные решения «вино -> файл эталона» (с причинами)
   eval_public_labels.csv    неофициальная разметка 3 публичных фото
+  box_ranker_v1.joblib      обученный выбор рамки
+  fusion_*.json             обученное слияние признаков и порог отказа
 data/                       данные кейса, в git не кладутся
-docs/                       DATA.md, RESULTS.md, WORKLOG.md
+docs/                       DATA.md, RESULTS.md, WORKLOG.md, RESEARCH.md, PLAN.md
+docker/, docker-compose.yml образ сервиса (GPU и CPU)
 scripts/extract_dump.sh     распаковка RAR-дампа Strapi
 src/winescan/
   config.py, logging_setup.py
   catalog/                  слой 0: CSV, имена Strapi, привязка фото, отчёт
-  vision/                   слои 1–2: preprocess, detector (OWLv2), embedder (SigLIP 2), ocr (EasyOCR)
-  search/                   слой 3: index, build_index, multi, local_match (SIFT), text_match, rerank
+  vision/                   слои 1–2: preprocess, detector (OWLv2), embedder (SigLIP 2), ocr (EasyOCR),
+                            vlm (Qwen3-VL), cylinder (поворот цилиндра)
+  search/                   слой 3: index, build_index, multi, box_selection, box_ranker, local_match и
+                            local_features (SIFT), verify, text_match, fields, fusion, rerank
   service/                  слой 4: pipeline (Scanner), app (FastAPI)
-  validation/               синтетические «полевые» кадры
-  eval/                     метрики, прогоны, подбор весов, IoU детектора, сводная таблица
+  product/                  слой 5: analogs, sommelier
+  validation/               синтетические «полевые» кадры (пресеты v1, v2)
+  eval/                     метрики, прогоны, кэши запросов, офлайн-эксперименты, обучение выбора рамки
+                            и слияния, IoU детектора, сводная таблица
+web/                        мобильный интерфейс на Nuxt 4 (свой README)
 tests/                      pytest (без GPU и данных кейса)
 artifacts/                  результаты сборок и прогонов, в git не кладутся
 ```
@@ -104,26 +113,26 @@ python -m winescan.catalog.build
 python -m winescan.validation.build_synth --name synth_v1 --seed 1
 
 # индексы эталонов -> artifacts/index/ (~3 мин и ~2,5 мин)
-CUDA_VISIBLE_DEVICES=2 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --batch-size 16
-CUDA_VISIBLE_DEVICES=2 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --view label --batch-size 16
+CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --batch-size 16
+CUDA_VISIBLE_DEVICES=3 python -m winescan.search.build_index --model google/siglip2-so400m-patch14-384 --view label --batch-size 16
 ```
 
 Оценка:
 
 ```bash
 # прогон: --crop gt|detector|none, --ocr сохраняет текст этикетки
-CUDA_VISIBLE_DEVICES=2 python -m winescan.eval.run --split synth_v1 \
+CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.run --split synth_v1 \
     --index siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label --crop detector --ocr --batch-size 16
 python -m winescan.eval.local_rerank_eval <папка прогона> --split synth_v1   # SIFT, подбор веса (CPU)
 python -m winescan.eval.rerank_sweep <папка прогона>                         # текст OCR, подбор веса
-CUDA_VISIBLE_DEVICES=2 python -m winescan.eval.detector_eval --split synth_v1 --limit 400   # IoU детектора
+CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.detector_eval --split synth_v1 --limit 400   # IoU детектора
 python -m winescan.eval.report                                               # -> docs/RESULTS.md
 ```
 
 ## Сервис
 
 ```bash
-CUDA_VISIBLE_DEVICES=2 .venv/bin/uvicorn winescan.service.app:app --host 0.0.0.0 --port 8080
+CUDA_VISIBLE_DEVICES=3 .venv/bin/uvicorn winescan.service.app:app --host 0.0.0.0 --port 8080
 ```
 
 Старт с загрузкой и прогревом моделей — около 40 с (готовность — `GET /health`). Остановка —
@@ -152,6 +161,17 @@ curl -F image=@data/eval/queries/02eef911.webp http://127.0.0.1:8080/v1/scan
 | `GET /v1/wines/{slug}/analogs?limit=6` | аналоги других виноделен с объяснением по совпавшим полям |
 | `GET /v1/sommelier/questions`, `POST /v1/sommelier/suggest` | «Цифровой сомелье»: вопросы-кнопки и 3 вина из каталога с объяснением |
 | `GET /health` | готовность |
+
+## Интерфейс
+
+Мобильный интерфейс в `web/` (Nuxt 4, Node.js 22+) ходит в сервис через свой прокси `/api/**`.
+Подробности, экраны и режим демо-данных без Python — [web/README.md](web/README.md).
+
+```bash
+cd web && npm ci
+NUXT_API_BASE=http://127.0.0.1:8080 npm run dev     # http://localhost:3000
+NUXT_PUBLIC_MOCK=1 npm run dev                      # без сервиса, на фикстурах
+```
 
 ## Makefile
 
@@ -188,15 +208,17 @@ docker compose --profile cpu up api-cpu                                    # CPU
 | `WINESCAN_UPLOADS_DIR` | `$WINESCAN_DATA_DIR/raw/prod-svoe-vino-strapi/prod-svoe-vino/strapi/uploads` | файлы Strapi |
 | `WINESCAN_ARTIFACTS_DIR` | `artifacts` | результаты сборок и прогонов |
 | `WINESCAN_PHOTO_OVERRIDES` | `configs/photo_overrides.csv` | ручные решения по фото |
-| `WINESCAN_INDEXES` | `siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label` | индексы сервиса |
+| `WINESCAN_INDEXES` | `siglip2-so400m-patch14-384__yaw-30_-15_0_15_30,siglip2-so400m-patch14-384__label__yaw-30_-15_0_15_30` | индексы сервиса: вся упаковка и этикетка, по 5 поворотов эталона |
 | `WINESCAN_INDEX_WEIGHTS` | `0.5,0.5` | веса индексов |
 | `WINESCAN_DEVICE` | `cuda`, если доступна, иначе `cpu` | устройство моделей |
 | `WINESCAN_USE_DETECTOR` | `1` | `0` — искать по всему кадру |
 | `WINESCAN_LOCAL_TOP`, `WINESCAN_LOCAL_WEIGHT` | `5`, `0.15` | SIFT-переранжирование (вес `0` — выключено) |
 | `WINESCAN_USE_OCR`, `WINESCAN_TEXT_WEIGHT` | `1`, `0.02` | текстовое переранжирование |
 | `WINESCAN_MIN_VISUAL_SCORE` | `0.74` | ниже — `/v1/scan` отвечает «не найдено» |
-| `WINESCAN_BOX_CANDIDATES`, `WINESCAN_BOX_RULE` | `1`, `{"prior": 1, "top1": 0, "margin": 0}` | выбор рамки по поиску из K рамок детектора (JSON-веса правила) |
+| `WINESCAN_BOX_CANDIDATES`, `WINESCAN_BOX_RULE` | `3`, `{"prior": 1, "top1": 0, "margin": 0}` | сколько рамок детектора рассматривать; правило выбора (JSON), если нет обученного |
+| `WINESCAN_BOX_RANKER` | `configs/box_ranker_v2.joblib` | обученный выбор рамки (обучен на скорах галереи с поворотами); `0` — выбор по правилу |
 | `WINESCAN_FUSION` | не задан | путь к обученному слиянию (`configs/fusion_*.json`); заменяет ручные веса SIFT и OCR |
+| `WINESCAN_FUSION_REJECT` | `1` | «не найдено», если логит лучшего кандидата ниже `reject_logit` модели слияния |
 | `WINESCAN_USE_VLM`, `WINESCAN_VLM_MARGIN` | `0`, `1.0` | поля этикетки Qwen3-VL-4B, если отрыв лучшего кандидата меньше порога (нужно слияние) |
 | `WINESCAN_MIN_MARGIN` | не задан | минимальный отрыв top-1 от top-2 |
 | `CUDA_VISIBLE_DEVICES` | — | на общем сервере GPU 0 и 1 заняты |
@@ -217,5 +239,7 @@ docker compose --profile cpu up api-cpu                                    # CPU
   только цветом, сладостью или годом; дубли карточек не различит никакой метод.
 - SIFT не видит цвета, OCR на стилизованных этикетках шумный.
 - Задержки измерены на общем сервере под нагрузкой (load average до 800).
-- Интерфейс, «Цифровой сомелье» и Docker пока не сделаны.
+- «Цифровой сомелье» работает на правилах без LLM; интерфейс не проверялся на реальном телефоне.
+- Модели выбора рамки и слияния обучены только на синтетике; порог отказа выбран осторожным,
+  потому что порог «максимум точности» с синтетики отклонял верный ответ на реальном фото.
 - Предоставленный LLM-шлюз не использовался: запрос к нему заблокирован настройками прав.
