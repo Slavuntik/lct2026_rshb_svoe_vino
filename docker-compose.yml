@@ -1,0 +1,47 @@
+# WineScan: сервис распознавания. Перед первым запуском соберите артефакты (README.md, «Docker»):
+#   docker compose run --rm api make PY=python catalog index features GPU=0
+# Запуск: docker compose up api        (GPU, нужен NVIDIA Container Toolkit)
+#         docker compose --profile cpu up api-cpu
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    image: winescan-api:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./artifacts:/artifacts
+      - hf-cache:/models/hf
+    environment:
+      WINESCAN_DEVICE: ${WINESCAN_DEVICE:-}
+      WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-1}
+      WINESCAN_LOCAL_WEIGHT: ${WINESCAN_LOCAL_WEIGHT:-0.15}
+      WINESCAN_TEXT_WEIGHT: ${WINESCAN_TEXT_WEIGHT:-0.02}
+      WINESCAN_MIN_VISUAL_SCORE: ${WINESCAN_MIN_VISUAL_SCORE:-0.74}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  api-cpu:
+    profiles: ["cpu"]
+    image: winescan-api:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./artifacts:/artifacts
+      - hf-cache:/models/hf
+    environment:
+      WINESCAN_DEVICE: cpu
+      # на CPU OCR заметно медленнее; SIFT и детектор остаются
+      WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-0}
+
+volumes:
+  hf-cache:
