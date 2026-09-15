@@ -1,0 +1,374 @@
+/*
+ * Токены и базовые стили интерфейса.
+ * Палитра, шрифты, скругления, вид кнопок и чипов взяты из CSS портала vino-svoe.ru
+ * (entry.css, UiButton.css, UiChip.css, WineItem.css) — подробности в web/README.md.
+ */
+:root {
+  color-scheme: light;
+
+  /* фон и поверхности */
+  --c-bg: #fefdfa; /* фон страницы портала (.page) */
+  --c-surface: #fdf9ed; /* фон карточки вина (.wine-item) */
+  --c-surface-accent: #f8ecc9; /* плашка «Народного рейтинга» — у нас акцентные плашки */
+  --c-surface-shimmer: #f6efdc;
+
+  /* текст */
+  --c-text: #2c2a28;
+  --c-text-secondary: #857e79;
+  --c-text-muted: #aea9a5; /* производитель в карточке портала; только для второстепенного текста */
+
+  /* винный акцент: основная кнопка портала и её состояния */
+  --c-primary: #8f3d42;
+  --c-primary-hover: #ab494f;
+  --c-primary-active: #723135;
+  --c-primary-soft: #f9f1f1; /* вторичная кнопка */
+  --c-primary-soft-hover: #edd4d6;
+  --c-primary-soft-active: #e0b8ba;
+  --c-brown: #7b3528;
+
+  --c-border: #d7d4d2; /* рамка чипа */
+  --c-border-soft: #2c2a2812;
+  --shadow-soft: 0 6px 12px #2c2a2812, 0 0 6px #2c2a280f, 0 0 2px #2c2a280f;
+
+  --radius-s: 12px;
+  --radius-m: 16px;
+  --radius-l: 32px;
+  --radius-pill: 999px;
+
+  /* Playfair Display — заголовки портала; не встраиваем, используем, если шрифт есть в системе */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+
+  --gutter: 20px;
+  --content-max: 640px;
+  --header-h: 56px;
+  --nav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 359px) {
+  :root {
+    --gutter: 16px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--c-text);
+  font-variant-numeric: lining-nums proportional-nums;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 30px;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+p {
+  margin: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ссылки как .link портала */
+.link {
+  color: var(--c-primary);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 15%;
+  transition: color 0.15s ease-in-out, text-decoration-color 0.15s ease-in-out;
+}
+
+.link:hover {
+  color: var(--c-primary-hover);
+  text-decoration-color: currentColor;
+}
+
+.link:active {
+  color: var(--c-primary-active);
+}
+
+.muted {
+  color: var(--c-text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.eyebrow {
+  color: var(--c-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+/* Кнопки: размеры, скругления и цвета как у ui-button портала (large 56/16, medium 44/12) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-s);
+  background: transparent;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease-in, border-color 0.2s ease-in, color 0.2s ease-in, transform 0.2s linear;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn--large {
+  min-height: 56px;
+  border-radius: var(--radius-m);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--primary {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--c-primary-hover);
+  border-color: var(--c-primary-hover);
+}
+
+.btn--primary:active {
+  background: var(--c-primary-active);
+  border-color: var(--c-primary-active);
+}
+
+.btn--secondary {
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--c-primary-soft-hover);
+}
+
+.btn--secondary:active {
+  background: var(--c-primary-soft-active);
+}
+
+.btn--ghost {
+  color: var(--c-primary);
+  padding-inline: 8px;
+}
+
+.btn--ghost:hover {
+  color: var(--c-primary-hover);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* кнопка-обёртка для <input type="file">: фокус с клавиатуры на скрытом поле подсвечивает кнопку */
+label.btn:has(input:focus-visible) {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* Чипы как ui-chip портала */
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-m);
+  background: transparent;
+  color: var(--c-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in, color 0.3s ease-in, border-color 0.3s ease-in;
+}
+
+.chip:hover {
+  border-color: var(--c-primary);
+}
+
+.chip--selected {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+
+.chip--static {
+  cursor: default;
+  border-color: transparent;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* Сообщения */
+.alert {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--c-primary-soft-hover);
+  border-radius: var(--radius-m);
+  background: var(--c-primary-soft);
+}
+
+.alert__title {
+  margin-bottom: 4px;
+  color: var(--c-primary-active);
+  font-weight: 700;
+}
+
+.alert__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.notice {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: var(--c-surface);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.spinner {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--c-primary-soft-hover);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.skeleton {
+  border-radius: 24px;
+  background: linear-gradient(90deg, var(--c-surface) 0%, var(--c-surface-shimmer) 50%, var(--c-surface) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

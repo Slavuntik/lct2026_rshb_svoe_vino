@@ -1,0 +1,112 @@
+{
+ "questions": [
+  {
+   "id": "dish",
+   "title": "К чему подбираем вино?",
+   "options": [
+    {
+     "id": "meat",
+     "title": "мясо и стейки"
+    },
+    {
+     "id": "poultry",
+     "title": "птица"
+    },
+    {
+     "id": "fish",
+     "title": "рыба и морепродукты"
+    },
+    {
+     "id": "cheese",
+     "title": "сыры"
+    },
+    {
+     "id": "dessert",
+     "title": "десерты"
+    },
+    {
+     "id": "vegetables",
+     "title": "овощи и салаты"
+    },
+    {
+     "id": "spicy",
+     "title": "острые и азиатские блюда"
+    },
+    {
+     "id": "celebration",
+     "title": "аперитив и праздник"
+    }
+   ]
+  },
+  {
+   "id": "category",
+   "title": "Цвет",
+   "options": [
+    {
+     "id": "Белое",
+     "title": "белое"
+    },
+    {
+     "id": "Красное",
+     "title": "красное"
+    },
+    {
+     "id": "Розовое",
+     "title": "розовое"
+    },
+    {
+     "id": "Оранжевое",
+     "title": "оранжевое"
+    }
+   ]
+  },
+  {
+   "id": "sweetness",
+   "title": "Сладость",
+   "options": [
+    {
+     "id": "brut_nature",
+     "title": "брют натюр"
+    },
+    {
+     "id": "extra_brut",
+     "title": "экстра брют"
+    },
+    {
+     "id": "brut",
+     "title": "брют"
+    },
+    {
+     "id": "dry",
+     "title": "сухое"
+    },
+    {
+     "id": "semi_dry",
+     "title": "полусухое"
+    },
+    {
+     "id": "semi_sweet",
+     "title": "полусладкое"
+    },
+    {
+     "id": "sweet",
+     "title": "сладкое"
+    }
+   ]
+  },
+  {
+   "id": "body",
+   "title": "Какое вино по ощущению?",
+   "options": [
+    {
+     "id": "light",
+     "title": "лёгкое"
+    },
+    {
+     "id": "full",
+     "title": "насыщенное"
+    }
+   ]
+  }
+ ]
+}
