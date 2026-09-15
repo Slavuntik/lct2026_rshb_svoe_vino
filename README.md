@@ -245,8 +245,9 @@ NUXT_PUBLIC_MOCK=1 docker compose up web                                   # и�
 | `WINESCAN_MIN_VISUAL_SCORE` | `0.74` | ниже — `/v1/scan` отвечает «не найдено» |
 | `WINESCAN_BOX_CANDIDATES`, `WINESCAN_BOX_RULE` | `3`, `{"prior": 1, "top1": 0, "margin": 0}` | сколько рамок детектора рассматривать; правило выбора (JSON), если нет обученного |
 | `WINESCAN_BOX_RANKER` | `configs/box_ranker_v2.joblib` | обученный выбор рамки (обучен на скорах галереи с поворотами); `0` — выбор по правилу |
-| `WINESCAN_FUSION` | не задан | путь к обученному слиянию (`configs/fusion_*.json`); заменяет ручные веса SIFT и OCR |
-| `WINESCAN_FUSION_REJECT` | `1` | «не найдено», если логит лучшего кандидата ниже `reject_logit` модели слияния |
+| `WINESCAN_FUSION` | `configs/fusion_v2.json` | обученное слияние: признаки проверки кандидатов и логит в деталях ответа; `0` — прежний путь (SIFT на исходном кропе) |
+| `WINESCAN_FUSION_RANK` | `0` | `0` — гибрид: порядок по ручным весам SIFT и OCR на inliers проверки (лучше на `synth_v2`); `1` — порядок по логиту слияния |
+| `WINESCAN_FUSION_REJECT` | `0` | `1` — «не найдено» и при логите лучшего кандидата ниже `reject_logit` модели (слабый сигнал, см. WORKLOG) |
 | `WINESCAN_USE_VLM`, `WINESCAN_VLM_MARGIN` | `0`, `1.0` | поля этикетки Qwen3-VL-4B, если отрыв лучшего кандидата меньше порога (нужно слияние) |
 | `WINESCAN_MIN_MARGIN` | не задан | минимальный отрыв top-1 от top-2 |
 | `CUDA_VISIBLE_DEVICES` | — | на общем сервере GPU 0 и 1 заняты |

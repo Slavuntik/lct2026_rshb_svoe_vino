@@ -70,14 +70,16 @@ class ScannerConfig:
     use_ocr: bool = True
     text_weight: float = 0.02
     # обученное слияние (search.fusion): признаки проверки и логит для отказа
-    fusion_path: str | None = None
+    fusion_path: str | None = "configs/fusion_v2.json"
     # True — порядок кандидатов по логиту слияния; False — гибрид: порядок по ручному слиянию
-    # (local_weight, text_weight) на inliers проверки, логит — только уверенность для отказа.
-    # Гибрид на проверочной половине v1+v2: top-1 0,822 против 0,813, ложных отказов 1,5% против 2,5%
-    fusion_rank: bool = True
+    # (local_weight, text_weight) на inliers проверки, логит — в деталях ответа и для отказа.
+    # Гибрид на общих отложенных запросах synth_v2: top-1 0,702 против 0,690 у прежних умолчаний
+    # (6:0 по несовпадающим ответам) и 0,687 у ранжирования слиянием
+    fusion_rank: bool = False
     # отказ по порогу логита слияния (meta.reject_logit): AUROC 0,815 против 0,777 у визуального скора (v1+v2);
-    # при 2% ложных отказов отклоняет лишь ~3% вин вне каталога (WORKLOG, «Утечка в негативах»)
-    fusion_reject: bool = True
+    # при 2% ложных отказов отклоняет лишь ~3% вин вне каталога (WORKLOG, «Утечка в негативах»), а порог
+    # попадает в скопление логитов кандидатов без совпадений SIFT — поэтому по умолчанию выключен
+    fusion_reject: bool = False
     # поля этикетки VLM только когда отрыв лучшего кандидата (в логитах слияния) меньше порога
     use_vlm: bool = False
     vlm_margin: float = 1.0
@@ -101,9 +103,9 @@ class ScannerConfig:
             local_weight=_env_float("WINESCAN_LOCAL_WEIGHT", base.local_weight),
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",
             text_weight=_env_float("WINESCAN_TEXT_WEIGHT", base.text_weight),
-            fusion_path=os.environ.get("WINESCAN_FUSION") or base.fusion_path,
+            fusion_path=_env_path("WINESCAN_FUSION", base.fusion_path),
             fusion_rank=os.environ.get("WINESCAN_FUSION_RANK", "1" if base.fusion_rank else "0") != "0",
-            fusion_reject=os.environ.get("WINESCAN_FUSION_REJECT", "1") != "0",
+            fusion_reject=os.environ.get("WINESCAN_FUSION_REJECT", "1" if base.fusion_reject else "0") != "0",
             use_vlm=os.environ.get("WINESCAN_USE_VLM", "0") == "1",
             vlm_margin=_env_float("WINESCAN_VLM_MARGIN", base.vlm_margin),
             min_visual_score=_env_float("WINESCAN_MIN_VISUAL_SCORE", base.min_visual_score),

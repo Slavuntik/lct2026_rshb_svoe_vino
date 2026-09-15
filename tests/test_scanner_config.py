@@ -4,7 +4,8 @@ from winescan.service.pipeline import ScannerConfig
 def test_defaults_match_documented_service_settings(monkeypatch):
     for name in ("WINESCAN_INDEXES", "WINESCAN_INDEX_WEIGHTS", "WINESCAN_LOCAL_WEIGHT", "WINESCAN_USE_OCR",
                  "WINESCAN_TEXT_WEIGHT", "WINESCAN_MIN_VISUAL_SCORE", "WINESCAN_MIN_MARGIN", "WINESCAN_DEVICE",
-                 "WINESCAN_BOX_CANDIDATES", "WINESCAN_BOX_RULE", "WINESCAN_BOX_RANKER", "WINESCAN_FUSION", "WINESCAN_USE_VLM"):
+                 "WINESCAN_BOX_CANDIDATES", "WINESCAN_BOX_RULE", "WINESCAN_BOX_RANKER", "WINESCAN_FUSION", "WINESCAN_USE_VLM",
+                 "WINESCAN_FUSION_RANK", "WINESCAN_FUSION_REJECT"):
         monkeypatch.delenv(name, raising=False)  # fmt: skip
 
     config = ScannerConfig.from_env()
@@ -14,13 +15,24 @@ def test_defaults_match_documented_service_settings(monkeypatch):
     assert (config.local_weight, config.use_ocr, config.text_weight, config.min_visual_score) == (0.15, True, 0.02, 0.74)
     assert config.min_margin is None and config.device is None
     assert config.box_candidates == 3 and config.box_ranker_path == "configs/box_ranker_v2.joblib"
-    assert config.fusion_path is None and config.use_vlm is False
+    assert config.fusion_path == "configs/fusion_v2.json" and config.use_vlm is False
+    assert config.fusion_rank is False and config.fusion_reject is False
 
 
-def test_default_box_ranker_is_committed():
+def test_default_models_are_committed():
     from winescan.config import PROJECT_ROOT
 
     assert (PROJECT_ROOT / ScannerConfig().box_ranker_path).is_file()
+    assert (PROJECT_ROOT / ScannerConfig().fusion_path).is_file()
+
+
+def test_fusion_can_be_disabled(monkeypatch):
+    monkeypatch.setenv("WINESCAN_FUSION", "0")
+    monkeypatch.setenv("WINESCAN_FUSION_REJECT", "1")
+
+    config = ScannerConfig.from_env()
+
+    assert config.fusion_path is None and config.fusion_reject is True
 
 
 def test_env_new_pipeline_options(monkeypatch):
