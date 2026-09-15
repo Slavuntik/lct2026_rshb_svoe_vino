@@ -12,7 +12,8 @@ WINERY ?= abrau-dyurso
 PYTHON := qa/.venv/bin/python
 
 .PHONY: qa-venv demo-pack demo-pack-abrau demo-pack-second demo-pack-all \
-        qa-test qa-test-network e2e-install qa-e2e qa-e2e-real qa-test-all qa-clean
+        qa-test qa-test-network e2e-install qa-e2e qa-e2e-real qa-test-all qa-clean \
+        scan-eval-mock scan-mock-server case-script-rehearse
 
 ## Однократная установка окружения qa/ (Python 3.12 через uv, см. qa/requirements.txt).
 ## Идемпотентна: повторный запуск не ломает уже готовое окружение.
@@ -36,16 +37,19 @@ demo-pack-second: qa-venv
 
 demo-pack-all: demo-pack-abrau demo-pack-second
 
-## pytest на demo_pack.py: генерация паков, автопроверка, сломанная карточка-фикстура.
-## Сеть НЕ используется (network-тест исключён отдельно, см. qa-test-network) — быстрый
-## прогон, детерминированный, годится для частого локального запуска.
+## pytest на demo_pack.py (генерация паков, автопроверка, сломанная карточка-фикстура) и на
+## scan_eval.py (метрики/сплит/загрузчик кейса-сканера, qa/test_scan_eval.py — свои тесты
+## HTTP гоняют против localhost-мока qa/mock_scan_server.py, реальную сеть не трогают, так
+## что живут в том же "быстром" таргете, что и demo_pack). Сеть НЕ используется (network-тест
+## исключён отдельно, см. qa-test-network) — быстрый прогон, детерминированный, годится для
+## частого локального запуска.
 qa-test: qa-venv
-	$(PYTHON) -m pytest -q qa/test_demo_pack.py -m "not network"
+	$(PYTHON) -m pytest -q qa/test_demo_pack.py qa/test_scan_eval.py -m "not network"
 
-## Тот же файл, но включая один тест с реальными вежливыми HEAD на vino-svoe.ru
+## Те же файлы, но включая один тест с реальными вежливыми HEAD на vino-svoe.ru
 ## (разрешено брифом агента F явно, см. "Не делать").
 qa-test-network: qa-venv
-	$(PYTHON) -m pytest -q qa/test_demo_pack.py
+	$(PYTHON) -m pytest -q qa/test_demo_pack.py qa/test_scan_eval.py
 
 ## Playwright ставит бинарник Chromium один раз (~250 МБ, нужна сеть) — отдельная цель,
 ## чтобы qa-test не тянул это за собой на каждый прогон.
@@ -70,6 +74,32 @@ qa-e2e-real: e2e-install
 ## режимах (mock и real).
 qa-test-all: qa-test-network qa-e2e qa-e2e-real
 
+## --- Кейс ЛЦТ — сканер (qa/scan_eval.py, contracts/image-scan.md) --------------------
+## Датасет и скрипт оценки кейсодержателя приезжают локально в CASE_DATA_DIR (не в git,
+## см. .gitignore) — до тех пор эти цели работают на синтетике qa/tests/fixtures/scan_mini.
+## Против настоящих данных: PHOTOS_DIR=$$CASE_DATA_DIR/public make scan-eval-mock (или свой
+## --api-url/--mode, см. qa/scan_eval.py --help).
+
+PHOTOS_DIR ?= qa/tests/fixtures/scan_mini
+
+## Без сети и без сервера: MockPredictor (по умолчанию — идеальный оракул) на фикстуре —
+## быстрый смоук-прогон механики loader -> метрики -> отчёт (JSON+MD в qa/scan-eval-runs/).
+scan-eval-mock: qa-venv
+	$(PYTHON) qa/scan_eval.py --photos-dir $(PHOTOS_DIR) --mode mock --split all
+
+## Свой HTTP-мок POST /v1/scan/photo (без CV, отвечает по имени файла — см. докстринг
+## qa/mock_scan_server.py) — для рехёрсала qa/mock_case_script.sh или qa/scan_eval.py
+## --mode flat|rich --api-url http://localhost:8100. Foreground — Ctrl-C, чтобы остановить.
+scan-mock-server: qa-venv
+	$(PYTHON) qa/mock_scan_server.py --port 8100 --map qa/tests/fixtures/scan_mini/mock_map.json
+
+## Рехёрсал скрипта оценки кейсодержателя (case.md, п.6) — требует, чтобы scan-mock-server
+## (или настоящий apps/api) уже был поднят в отдельном терминале; см. докстринг
+## qa/mock_case_script.sh про переменную API_URL (по умолчанию тут — localhost:8100, порт
+## scan-mock-server; для настоящего API: API_URL=http://localhost:8000 make case-script-rehearse).
+case-script-rehearse:
+	API_URL=$${API_URL:-http://localhost:8100} qa/mock_case_script.sh $(PHOTOS_DIR)
+
 ## Генерированные паки — не исходники: чистая пересборка перед показом.
 qa-clean:
-	rm -rf qa/packs
+	rm -rf qa/packs qa/scan-eval-runs

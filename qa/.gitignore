@@ -6,3 +6,9 @@ e2e/.api-server.log
 e2e/.qa-real-run.db
 test-results/
 playwright-report/
+
+# Отчёты scan_eval.py — журнал прогона над ЧЕМ-ТО-ЛИБО (мок, дев-фикстура, датасет кейса из
+# CASE_DATA_DIR), не деликт: как test-results/ выше, пересобирается на каждый прогон. Ключевые
+# цифры конкретных прогонов — в reports/f-report.md и qa/acceptance.md (цитатой), не сырым
+# JSON/MD файлом — тот же принцип, что и остальная документация агента F.
+scan-eval-runs/
