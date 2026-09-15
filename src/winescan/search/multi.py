@@ -32,11 +32,21 @@ class MultiIndexSearcher:
     def device(self) -> str:
         return next(iter(self.embedders.values())).device
 
-    def search(self, images: list[Image.Image], boxes: list[Box | None], k: int) -> tuple[list[list[str]], np.ndarray]:
-        total = np.zeros((len(images), len(self.wine_slugs)), dtype=np.float32)
-        for index, weight in zip(self.indexes, self.weights):
+    def embed_views(self, images: list[Image.Image], boxes: list[Box | None], batch_size: int = 32) -> list[np.ndarray]:
+        """Эмбеддинги кропов для каждого индекса (его модель и вид): список массивов (n, dim)."""
+        vectors = []
+        for index in self.indexes:
             view = index.meta.get("view_name", "full")
             views = [query_view(image, box, view) for image, box in zip(images, boxes)]
-            vectors = self.embedders[index.meta["model_id"]].embed(views, batch_size=len(views))
-            total += weight * index.wine_scores(vectors)
-        return top_k(total, self.wine_slugs, k)
+            vectors.append(self.embedders[index.meta["model_id"]].embed(views, batch_size=batch_size))
+        return vectors
+
+    def wine_scores(self, vectors: list[np.ndarray]) -> np.ndarray:
+        """Взвешенная сумма скоров вин по индексам: (n, число вин)."""
+        total = np.zeros((len(vectors[0]), len(self.wine_slugs)), dtype=np.float32)
+        for index, weight, index_vectors in zip(self.indexes, self.weights, vectors):
+            total += weight * index.wine_scores(index_vectors.astype(np.float32))
+        return total
+
+    def search(self, images: list[Image.Image], boxes: list[Box | None], k: int) -> tuple[list[list[str]], np.ndarray]:
+        return top_k(self.wine_scores(self.embed_views(images, boxes)), self.wine_slugs, k)

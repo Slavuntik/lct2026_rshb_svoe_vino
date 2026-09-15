@@ -78,7 +78,40 @@ def choose_main_package(
     centrality_floor: float = 0.1,
     group_penalty: float = 0.5,
 ) -> Detection | None:
-    """Главная упаковка кадра: уверенная, достаточно крупная и ближе к центру по горизонтали.
+    """Главная упаковка кадра — первая по весу из :func:`rank_packages`."""
+    ranked = rank_packages(detections, image_size, min_score, area_cap, centrality_floor, group_penalty)
+    return ranked[0][0] if ranked else None
+
+
+def box_iou(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
+    x0, y0, x1, y1 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
+    intersection = max(0.0, x1 - x0) * max(0.0, y1 - y0)
+    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - intersection
+    return intersection / union if union > 0 else 0.0
+
+
+def select_candidates(
+    ranked: list[tuple[Detection, float]], k: int, max_iou: float = 0.6
+) -> list[tuple[Detection, float]]:
+    """До k рамок-кандидатов по весу, без почти совпадающих (IoU > max_iou) — для выбора по поиску."""
+    chosen: list[tuple[Detection, float]] = []
+    for detection, weight in ranked:
+        if all(box_iou(detection.box, other.box) <= max_iou for other, _ in chosen):
+            chosen.append((detection, weight))
+        if len(chosen) == k:
+            break
+    return chosen
+
+
+def rank_packages(
+    detections: list[Detection],
+    image_size: tuple[int, int],
+    min_score: float = 0.15,
+    area_cap: float = 0.1,
+    centrality_floor: float = 0.1,
+    group_penalty: float = 0.5,
+) -> list[tuple[Detection, float]]:
+    """Упаковки кадра по убыванию априорного веса: уверенная, достаточно крупная, ближе к центру.
 
     Площадь учитывается с потолком ``area_cap``, а рамка, внутри которой лежат ещё две и
     больше уверенных рамок, штрафуется: это группа бутылок, а не одна (фото Массандры
@@ -91,7 +124,7 @@ def choose_main_package(
     но штраф оставлен ради реального фото группы бутылок).
     """
     if not detections:
-        return None
+        return []
     width, height = image_size
     confident = [d for d in detections if d.score >= min_score] or detections
 
@@ -108,4 +141,4 @@ def choose_main_package(
         penalty = group_penalty if contained >= 2 else 1.0
         return detection.score * area_share**0.5 * (centrality_floor + (1 - centrality_floor) * centrality) * penalty
 
-    return max(confident, key=weight)
+    return sorted(((d, weight(d)) for d in confident), key=lambda pair: pair[1], reverse=True)
