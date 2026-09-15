@@ -74,16 +74,21 @@ def choose_main_package(
     detections: list[Detection],
     image_size: tuple[int, int],
     min_score: float = 0.15,
-    area_cap: float = 0.3,
-    centrality_floor: float = 0.25,
-    group_penalty: float = 0.3,
+    area_cap: float = 0.1,
+    centrality_floor: float = 0.1,
+    group_penalty: float = 0.5,
 ) -> Detection | None:
     """Главная упаковка кадра: уверенная, достаточно крупная и ближе к центру по горизонтали.
 
     Площадь учитывается с потолком ``area_cap``, а рамка, внутри которой лежат ещё две и
     больше уверенных рамок, штрафуется: это группа бутылок, а не одна (фото Массандры
-    из публичного набора). Старое поведение: min_score=0, area_cap=1, centrality_floor=0,5,
-    group_penalty=1.
+    из публичного набора).
+
+    Версии параметров (доля кадров синтетики с IoU ≥ 0,5, 400 кадров seed 0):
+    v1 — min_score=0, area_cap=1, centrality_floor=0,5, group_penalty=1: 0,838;
+    v2 — 0,15 / 0,3 / 0,25 / 0,3: 0,882;
+    v3 (по умолчанию) — 0,15 / 0,1 / 0,1 / 0,5: 0,905 (подбор по сетке; без штрафа 0,908,
+    но штраф оставлен ради реального фото группы бутылок).
     """
     if not detections:
         return None

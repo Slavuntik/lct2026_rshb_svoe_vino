@@ -22,7 +22,8 @@ from winescan.vision.detector import Detection, PackageDetector, choose_main_pac
 
 STRATEGIES = {
     "v1_area_centrality": {"min_score": 0.0, "area_cap": 1.0, "centrality_floor": 0.5, "group_penalty": 1.0},
-    "v2_capped_group_penalty": {},
+    "v2_capped_group_penalty": {"min_score": 0.15, "area_cap": 0.3, "centrality_floor": 0.25, "group_penalty": 0.3},
+    "v3_default": {},
     "top_score": None,
 }
 
@@ -39,14 +40,16 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--split", default="synth_v1")
     parser.add_argument("--limit", type=int, default=400)
     parser.add_argument("--device", default=None)
+    parser.add_argument("--seed", type=int, default=0, help="какие кадры взять (параметры подбирать на одном seed, проверять на другом)")
     args = parser.parse_args(argv)
     setup_logging()
 
     paths = get_paths()
     manifest, images_dir = load_split(args.split)
-    manifest = manifest.sample(n=min(args.limit, len(manifest)), random_state=0)
+    manifest = manifest.sample(n=min(args.limit, len(manifest)), random_state=args.seed)
     detector = PackageDetector(device=args.device)
-    out_dir = paths.artifacts_dir / "eval" / f"detector__{args.split}__limit{args.limit}"
+    seed_tag = f"__seed{args.seed}" if args.seed else ""
+    out_dir = paths.artifacts_dir / "eval" / f"detector__{args.split}__limit{args.limit}{seed_tag}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     rows, latencies = [], []
