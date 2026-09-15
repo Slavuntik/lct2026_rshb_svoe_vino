@@ -64,6 +64,16 @@ def evaluate(queries: dict[str, list[dict]], ids: list[str], scorer) -> dict:
     return {name: (float(np.mean(values)) if values else None) for name, values in parts.items()} | {"queries": len(ids)}
 
 
+def without_true_wine(rest: list[dict]) -> list[dict]:
+    """Кандидаты leave-one-out негатива с признаками, какими они были бы без верного вина в индексе.
+
+    ``gap`` — отставание от лучшего визуального скора. Если оставить его посчитанным с верным вином,
+    у негатива gap < 0, и модель отличает его по подсказке, которой у настоящего вина вне каталога
+    нет. До исправления это завышало AUROC отказа с 0,815 до 0,95 (WORKLOG, «Утечка в негативах»)."""
+    best = max(c["features"]["visual"] for c in rest)
+    return [{**c, "features": {**c["features"], "gap": c["features"]["visual"] - best}} for c in rest]
+
+
 def open_set(
     model: FusionModel,
     queries: dict[str, list[dict]],
@@ -83,7 +93,7 @@ def open_set(
         rest = [c for c in candidates if not c["label"]]
         if len(rest) == len(candidates) or candidates[0]["shares_image"] or not rest:
             continue  # верного нет в top-K или эталон общий — такой запрос не даёт честного негатива
-        negative_conf.append(model.rank(rest)[0][0])
+        negative_conf.append(model.rank(without_true_wine(rest))[0][0])
     positive_conf, positive_correct, negative_conf = map(np.asarray, (positive_conf, positive_correct, negative_conf))
     if threshold is None and max_false_reject is not None:
         threshold = float(np.quantile(positive_conf, max_false_reject))

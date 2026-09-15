@@ -42,7 +42,7 @@
     "top": 5,
     "reject_logit": -0.9781339137991631,
     "reject_rule": "доля ложных отказов винам из каталога на синтетике ≤ 0.02",
-    "reject_logit_max_accuracy": 1.0633155952332793,
+    "reject_logit_max_accuracy": 1.9546383205998767,
     "check_top1": 0.8126485972420352
   }
 }
