@@ -19,6 +19,7 @@ import numpy as np
 
 from winescan.config import get_paths
 from winescan.eval.metrics import auroc, open_set_at_threshold
+from winescan.search.box_selection import choose_box
 from winescan.search.index import VectorIndex
 
 KINDS = ("det", "full", "gt")
@@ -86,18 +87,13 @@ def slot_features(cache: QueryCache, query_index: int, slot_index: int) -> dict:
 
 
 def choose_slot(cache: QueryCache, query_index: int, rule: dict) -> int:
-    """Выбор рамки: max по log(prior/prior_max)·a + top1·b + margin·c среди рамок детектора;
-    без рамок детектора — весь кадр."""
+    """Выбор рамки по search.box_selection среди рамок детектора; без рамок детектора — весь кадр."""
     det_slots = [i for i, s in enumerate(cache.records[query_index]["slots"]) if s["kind"] == "det"]
     if not det_slots:
         return cache.slot_of_kind(query_index, "full")
     features = [slot_features(cache, query_index, i) for i in det_slots]
-    prior_max = max(f["prior"] for f in features) or 1.0
-    values = [
-        rule["prior"] * np.log(max(f["prior"], 1e-9) / prior_max) + rule["top1"] * f["top1"] + rule["margin"] * f["margin"]
-        for f in features
-    ]
-    return det_slots[int(np.argmax(values))]
+    best = choose_box([f["prior"] for f in features], [f["top1"] for f in features], [f["margin"] for f in features], rule)
+    return det_slots[best]
 
 
 def evaluate_rule(cache: QueryCache, query_indices: list[int], rule: dict | str) -> dict:

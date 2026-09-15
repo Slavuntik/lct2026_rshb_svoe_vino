@@ -1,13 +1,15 @@
 """Пайплайн распознавания одного фото.
 
-детекция упаковки -> нормализация -> эмбеддинги (несколько индексов) -> top-K
--> SIFT по top-N -> (OCR) -> слияние скоров -> решение -> карточка.
+детекция упаковки -> до K рамок -> эмбеддинги (несколько индексов) -> выбор рамки по поиску
+-> top-K вин -> проверка кандидатов (SIFT, покрытие, NCC, цвет) -> слияние (обученная модель
+или прежние ручные веса) -> [поля этикетки VLM, если кандидаты близки] -> решение -> карточка.
 Все параметры — ScannerConfig, переопределяются переменными окружения (README.md).
 """
 
 from __future__ import annotations
 
 import json
+import math
 import os
 import threading
 import time
@@ -18,7 +20,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
-from winescan.config import get_paths
+from winescan.config import PROJECT_ROOT, get_paths
+from winescan.search.box_selection import PRIOR_ONLY, choose_box
 from winescan.search.rerank import decide, fuse
 from winescan.vision.preprocess import crop_box
 
@@ -42,13 +45,20 @@ class ScannerConfig:
     index_weights: tuple[float, ...] = (0.5, 0.5)
     device: str | None = None
     use_detector: bool = True
+    # выбор рамки по поиску: 1 — первая рамка по априорному весу (прежнее поведение)
+    box_candidates: int = 1
+    box_rule: dict = field(default_factory=lambda: dict(PRIOR_ONLY))
     local_top: int = 5
-    # на синтетике top-1 выходит на плато с 0,2 (0,937 при 0,1; 0,942 при 0,2), но на реальном
-    # фото серии Массандры вес > 0,24 переставляет неверное вино вперёд (ARCHITECTURE.md, D10)
+    # прежнее ручное слияние: на синтетике top-1 выходит на плато с 0,2, но на реальном фото серии
+    # Массандры вес > 0,24 переставляет неверное вино вперёд (ARCHITECTURE.md, D10)
     local_weight: float = 0.15
     use_ocr: bool = True
-    # текст исправляет реальное фото Массандры уже при 0,02; на синтетике больший вес вредит
     text_weight: float = 0.02
+    # обученное слияние (search.fusion); если задано — заменяет local_weight / text_weight
+    fusion_path: str | None = None
+    # поля этикетки VLM только когда отрыв лучшего кандидата (в логитах слияния) меньше порога
+    use_vlm: bool = False
+    vlm_margin: float = 1.0
     # на синтетике отсекает 2,6% запросов из каталога; реальные вина вне каталога — 0,66 и 0,70
     min_visual_score: float | None = 0.74
     min_margin: float | None = None
@@ -56,15 +66,21 @@ class ScannerConfig:
     @classmethod
     def from_env(cls) -> ScannerConfig:
         base = cls()
+        rule = os.environ.get("WINESCAN_BOX_RULE")
         return cls(
             indexes=_env_list("WINESCAN_INDEXES", base.indexes),
             index_weights=_env_list("WINESCAN_INDEX_WEIGHTS", base.index_weights, float),
             device=os.environ.get("WINESCAN_DEVICE") or None,
             use_detector=os.environ.get("WINESCAN_USE_DETECTOR", "1") != "0",
+            box_candidates=int(os.environ.get("WINESCAN_BOX_CANDIDATES", base.box_candidates)),
+            box_rule=json.loads(rule) if rule else base.box_rule,
             local_top=int(os.environ.get("WINESCAN_LOCAL_TOP", base.local_top)),
             local_weight=_env_float("WINESCAN_LOCAL_WEIGHT", base.local_weight),
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",
             text_weight=_env_float("WINESCAN_TEXT_WEIGHT", base.text_weight),
+            fusion_path=os.environ.get("WINESCAN_FUSION") or base.fusion_path,
+            use_vlm=os.environ.get("WINESCAN_USE_VLM", "0") == "1",
+            vlm_margin=_env_float("WINESCAN_VLM_MARGIN", base.vlm_margin),
             min_visual_score=_env_float("WINESCAN_MIN_VISUAL_SCORE", base.min_visual_score),
             min_margin=_env_float("WINESCAN_MIN_MARGIN", base.min_margin),
         )
@@ -99,6 +115,7 @@ def load_cards(path: Path) -> dict[str, dict]:
 
 class Scanner:
     def __init__(self, config: ScannerConfig = ScannerConfig()):
+        from winescan.search.local_features import STORE_NAME, LocalFeatureStore
         from winescan.search.multi import MultiIndexSearcher
 
         paths = get_paths()
@@ -106,29 +123,38 @@ class Scanner:
         self.uploads_dir = paths.uploads_dir
         self.cards = load_cards(paths.artifacts_dir / "catalog" / "catalog.jsonl")
         self.searcher = MultiIndexSearcher(list(config.indexes), list(config.index_weights), config.device)
-        self.detector = self.reader = None
+        self.detector = self.reader = self.vlm = self.fusion = None
         if config.use_detector:
             from winescan.vision.detector import PackageDetector
 
             self.detector = PackageDetector(device=config.device)
-        if config.use_ocr and config.text_weight > 0:
+        if config.fusion_path:
+            from winescan.search.fusion import FusionModel
+
+            path = Path(config.fusion_path)
+            self.fusion = FusionModel.load(path if path.is_absolute() else PROJECT_ROOT / path)
+        elif config.use_ocr and config.text_weight > 0:
             from winescan.vision.ocr import LabelReader
 
             self.reader = LabelReader(gpu=self.searcher.device.startswith("cuda"))
-        from winescan.search.local_features import STORE_NAME, LocalFeatureStore
+        if config.use_vlm:
+            from winescan.vision.vlm import LabelFieldReader
 
+            self.vlm = LabelFieldReader(device=config.device)
         store_dir = paths.artifacts_dir / "index" / STORE_NAME
         # без хранилища признаки эталонов считаются на лету: первый запрос с новым кандидатом дольше
         self.local_store = LocalFeatureStore(store_dir) if store_dir.exists() else None
-        self._reference_features = lru_cache(maxsize=4096)(self._load_reference_features)
+        self._reference = lru_cache(maxsize=4096)(self._load_reference)
         self._lock = threading.Lock()  # модели на одном GPU: запросы обрабатываются по очереди
 
-    def _load_reference_features(self, slug: str):
-        from winescan.search.local_features import reference_features
+    def _load_reference(self, slug: str):
+        """(вырезка эталона в масштабе признаков, SIFT-признаки)."""
+        from winescan.search.local_features import load_reference_view, reference_features, reference_view
 
-        if self.local_store is not None and slug in self.local_store:
-            return self.local_store.get(slug)
-        return reference_features(self.uploads_dir / self.cards[slug]["image"]["file"])
+        path = self.uploads_dir / self.cards[slug]["image"]["file"]
+        view = load_reference_view(slug) or reference_view(path)
+        features = self.local_store.get(slug) if self.local_store is not None and slug in self.local_store else reference_features(path)
+        return view, features
 
     def warmup(self) -> None:
         """Прогрев на кадре с текстурой и текстом: инициализирует детектор, OCR, SIFT и CUDA-ядра
@@ -143,11 +169,18 @@ class Scanner:
         for _ in range(2):
             self.scan(image)
 
-    def scan(self, image: Image.Image) -> ScanResult:
-        from winescan.search.local_match import extract, inliers
-        from winescan.search.text_match import LabelText, text_score
-        from winescan.vision.detector import choose_main_package
+    def _boxes(self, image: Image.Image, timings: dict) -> list[tuple[tuple | None, float]]:
+        from winescan.vision.detector import rank_packages, select_candidates
 
+        if self.detector is None:
+            return [(None, 1.0)]
+        step = time.perf_counter()
+        ranked = rank_packages(self.detector.detect(image), image.size)
+        timings["detect"] = (time.perf_counter() - step) * 1000
+        chosen = select_candidates(ranked, max(1, self.config.box_candidates))
+        return [(detection.box, weight) for detection, weight in chosen] or [(None, 1.0)]
+
+    def scan(self, image: Image.Image) -> ScanResult:
         config = self.config
         timings: dict[str, float] = {}
         began = time.perf_counter()
@@ -155,39 +188,33 @@ class Scanner:
         image.thumbnail((MAX_QUERY_SIDE, MAX_QUERY_SIDE))
 
         with self._lock:
-            box = None
-            if self.detector is not None:
-                step = time.perf_counter()
-                main = choose_main_package(self.detector.detect(image), image.size)
-                box = main.box if main is not None else None
-                timings["detect"] = (time.perf_counter() - step) * 1000
+            boxes = self._boxes(image, timings)
             step = time.perf_counter()
-            slugs, scores = self.searcher.search([image], [box], SEARCH_TOP_K)
-            slugs, scores = slugs[0], [float(s) for s in scores[0]]
+            vectors = self.searcher.embed_views([image] * len(boxes), [box for box, _ in boxes])
+            scores = self.searcher.wine_scores(vectors)
+            if len(boxes) > 1:
+                sorted_scores = -np.sort(-scores, axis=1)[:, :2]
+                chosen = choose_box([w for _, w in boxes], sorted_scores[:, 0].tolist(),
+                                    (sorted_scores[:, 0] - sorted_scores[:, 1]).tolist(), config.box_rule)  # fmt: skip
+            else:
+                chosen = 0
+            box = boxes[chosen][0]
+            order = np.argsort(-scores[chosen])[:SEARCH_TOP_K]
+            slugs = [self.searcher.wine_slugs[i] for i in order]
+            visual = [float(scores[chosen, i]) for i in order]
             timings["embed_search"] = (time.perf_counter() - step) * 1000
             package = crop_box(image, box) if box else image
 
-            local = None
-            if config.local_weight > 0 and config.local_top > 0:
-                step = time.perf_counter()
-                query_features = extract(package)
-                local = {s: inliers(query_features, self._reference_features(s)) for s in slugs[: config.local_top]
-                         if self.cards.get(s, {}).get("image", {}).get("file")}  # fmt: skip
-                timings["local_match"] = (time.perf_counter() - step) * 1000
+            if self.fusion is not None:
+                ranked, details, ocr_text = self._fused(package, slugs, visual, timings)
+            else:
+                ranked, details, ocr_text = self._legacy(package, slugs, visual, timings)
 
-            texts, ocr_text = None, None
-            if self.reader is not None:
-                step = time.perf_counter()
-                ocr_text = self.reader.read(package)
-                label = LabelText.from_ocr(ocr_text)
-                texts = {s: text_score(self.cards[s], label) for s in slugs if s in self.cards}
-                timings["ocr"] = (time.perf_counter() - step) * 1000
-
-        candidates = fuse(slugs, scores, local, texts, config.local_weight, config.text_weight)
-        decision = decide(candidates, config.min_visual_score, config.min_margin)
+        decision = decide(ranked, config.min_visual_score, config.min_margin)
         timings["total"] = (time.perf_counter() - began) * 1000
-        best = candidates[0]
+        best = ranked[0]
         found = decision.status == "found"
+        margin = best.score - ranked[1].score if len(ranked) > 1 else None
         return ScanResult(
             status=decision.status,
             slug=best.slug if found else None,
@@ -195,19 +222,97 @@ class Scanner:
             top5=[
                 {"slug": c.slug, "name": self.cards.get(c.slug, {}).get("name"), "score": round(c.score, 4),
                  "visual_score": round(c.visual_score, 4), "local_inliers": c.local_inliers,
-                 "text_score": round(c.text_score, 3)}
-                for c in candidates[:5]
+                 "text_score": round(c.text_score, 3), **details.get(c.slug, {})}
+                for c in ranked[:5]
             ],  # fmt: skip
             confidence={
                 "score_top1": round(best.score, 4),
                 "visual_score_top1": round(best.visual_score, 4),
-                "margin_top1_top2": round(best.score - candidates[1].score, 4) if len(candidates) > 1 else None,
+                "margin_top1_top2": round(margin, 4) if margin is not None else None,
+                "band": "low" if not found else ("high" if margin is None or margin >= self._band_margin() else "medium"),
                 "decision_reason": decision.reason,
                 "ocr_text": ocr_text,
+                "boxes_considered": len(boxes),
             },
             box=[round(v, 1) for v in box] if box is not None else None,
             timings_ms={k: round(v, 1) for k, v in timings.items()},
         )
+
+    def _band_margin(self) -> float:
+        # отрыв в логитах обученного слияния или в скорах ручного слияния
+        return self.config.vlm_margin if self.fusion is not None else 0.02
+
+    def _legacy(self, package: Image.Image, slugs: list[str], visual: list[float], timings: dict):
+        from winescan.search.local_match import extract, inliers
+        from winescan.search.text_match import LabelText, text_score
+
+        config = self.config
+        local = None
+        if config.local_weight > 0 and config.local_top > 0:
+            step = time.perf_counter()
+            query_features = extract(package)
+            local = {s: inliers(query_features, self._reference(s)[1]) for s in slugs[: config.local_top]
+                     if self.cards.get(s, {}).get("image", {}).get("file")}  # fmt: skip
+            timings["local_match"] = (time.perf_counter() - step) * 1000
+        texts, ocr_text = None, None
+        if self.reader is not None:
+            step = time.perf_counter()
+            ocr_text = self.reader.read(package)
+            label = LabelText.from_ocr(ocr_text)
+            texts = {s: text_score(self.cards[s], label) for s in slugs if s in self.cards}
+            timings["ocr"] = (time.perf_counter() - step) * 1000
+        return fuse(slugs, visual, local, texts, config.local_weight, config.text_weight), {}, ocr_text
+
+    def _fused(self, package: Image.Image, slugs: list[str], visual: list[float], timings: dict):
+        from winescan.search.fields import field_score
+        from winescan.search.fusion import candidate_features
+        from winescan.search.local_match import extract, prepare
+        from winescan.search.rerank import Candidate
+        from winescan.search.verify import verify
+
+        config = self.config
+        step = time.perf_counter()
+        query_image = prepare(package)
+        query_features = extract(query_image)
+        top = slugs[: config.local_top]
+        verifications = {}
+        for slug in top:
+            if self.cards.get(slug, {}).get("image", {}).get("file"):
+                reference_image, reference_features = self._reference(slug)
+                verifications[slug] = verify(query_image, query_features, reference_image, reference_features).as_dict()
+        timings["verify"] = (time.perf_counter() - step) * 1000
+
+        def ranking(fields=None):
+            candidates = []
+            for slug, score in zip(top, visual):
+                score_fields = field_score(self.cards[slug], fields) if fields is not None else 0.0
+                features = candidate_features(score, visual[0], verifications.get(slug), score_fields)
+                candidates.append({"slug": slug, "features": features, "visual": score, "field_score": score_fields})
+            return self.fusion.rank(candidates)
+
+        ranked = ranking()
+        ocr_text = None
+        if self.vlm is not None and len(ranked) > 1 and ranked[0][0] - ranked[1][0] < config.vlm_margin:
+            step = time.perf_counter()
+            fields = self.vlm.read(package)
+            ranked = ranking(fields)
+            ocr_text = fields.all_text().strip() or None
+            timings["vlm"] = (time.perf_counter() - step) * 1000
+
+        details = {
+            c["slug"]: {"logit": round(logit, 3), "probability": round(1 / (1 + math.exp(-logit)), 3),
+                        **{k: round(v, 3) for k, v in (verifications.get(c["slug"]) or {}).items()},
+                        "field_score": round(c["field_score"], 3)}
+            for logit, c in ranked
+        }  # fmt: skip
+        candidates = [
+            Candidate(c["slug"], logit, c["visual"], int((verifications.get(c["slug"]) or {}).get("inliers", 0)), c["field_score"])
+            for logit, c in ranked
+        ]
+        # хвост визуального top-K без проверки — после проверенных, по визуальному скору
+        tail_score = min(logit for logit, _ in ranked) - 1.0
+        candidates += [Candidate(s, tail_score - (visual[0] - v), v) for s, v in zip(slugs[len(top):], visual[len(top):])]
+        return candidates, details, ocr_text
 
     def top1_slug(self, image: Image.Image) -> str:
         """Для скрипта оценки: всегда лучший кандидат, даже при низкой уверенности."""
