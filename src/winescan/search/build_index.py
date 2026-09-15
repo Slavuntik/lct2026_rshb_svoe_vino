@@ -20,8 +20,9 @@ from PIL import Image
 from winescan.config import get_paths
 from winescan.logging_setup import setup_logging
 from winescan.search.index import VectorIndex
+from winescan.vision.cylinder import rotate_cylinder
 from winescan.vision.embedder import DEFAULT_EMBEDDER, ImageEmbedder
-from winescan.vision.preprocess import reference_view
+from winescan.vision.preprocess import cutout, fit_on_square, label_region, reference_view
 
 log = logging.getLogger("winescan.search.build_index")
 
@@ -36,14 +37,44 @@ def load_reference_view(path: Path, view: str = "full") -> Image.Image:
     return reference_view(image, view)
 
 
-def build(model_id: str, name: str | None, batch_size: int, device: str | None, view: str = "full") -> Path:
+def load_reference_views(path: Path, view: str, yaws: tuple[float, ...]) -> list[Image.Image]:
+    """Виды эталона под разными поворотами бутылки вокруг оси (цилиндрическая модель, vision.cylinder).
+
+    Мультиракурсная галерея: на синтетике с поворотами (synth_v2) визуальный top-5 падает до 0,76,
+    а фронтальный эталон не похож на повёрнутую этикетку. Невысокие упаковки не поворачиваются.
+    """
+    if yaws == (0.0,):
+        return [load_reference_view(path, view)]
+    with Image.open(path) as image:
+        image.load()
+        image = image.copy()
+    image.thumbnail((MAX_REFERENCE_SIDE, MAX_REFERENCE_SIDE))
+    package = cutout(image)
+    tall = package.height / max(package.width, 1) >= 1.8
+    views = []
+    for yaw in yaws if tall else (0.0,):
+        rotated = rotate_cylinder(package, yaw_deg=yaw) if yaw else package
+        views.append(fit_on_square(label_region(rotated) if view == "label" else rotated))
+    return views
+
+
+def build(
+    model_id: str,
+    name: str | None,
+    batch_size: int,
+    device: str | None,
+    view: str = "full",
+    yaws: tuple[float, ...] = (0.0,),
+) -> Path:
     paths = get_paths()
     catalog = pd.read_parquet(paths.artifacts_dir / "catalog" / "catalog.parquet")
     wines = catalog.dropna(subset=["image_file"]).sort_values("slug").reset_index(drop=True)
 
     started = time.monotonic()
     with ThreadPoolExecutor(max_workers=16) as pool:
-        views = list(pool.map(lambda f: load_reference_view(paths.uploads_dir / f, view), wines["image_file"]))
+        per_wine = list(pool.map(lambda f: load_reference_views(paths.uploads_dir / f, view, yaws), wines["image_file"]))
+    views = [image for images in per_wine for image in images]
+    slugs = [slug for slug, images in zip(wines["slug"], per_wine) for _ in images]
     prepared = time.monotonic()
 
     embedder = ImageEmbedder(model_id, device=device)
@@ -51,12 +82,14 @@ def build(model_id: str, name: str | None, batch_size: int, device: str | None, 
     embedded = time.monotonic()
 
     index = VectorIndex(
-        slugs=wines["slug"].tolist(),
+        slugs=slugs,
         vectors=vectors,
         meta={
             "model_id": model_id,
             "view_name": view,
             "view": "reference_view: cutout -> " + ("этикетка -> " if view == "label" else "") + "белый квадрат",
+            "yaws": list(yaws),
+            "vectors": len(slugs),
             "wines": len(wines),
             "dim": int(vectors.shape[1]),
             "device": embedder.device,
@@ -65,7 +98,8 @@ def build(model_id: str, name: str | None, batch_size: int, device: str | None, 
             "built_at": datetime.now().isoformat(timespec="seconds"),
         },
     )
-    out_dir = paths.artifacts_dir / "index" / (name or model_id.split("/")[-1] + ("" if view == "full" else f"__{view}"))
+    suffix = ("" if view == "full" else f"__{view}") + ("" if yaws == (0.0,) else "__yaw" + "_".join(f"{y:g}" for y in yaws))
+    out_dir = paths.artifacts_dir / "index" / (name or model_id.split("/")[-1] + suffix)
     index.save(out_dir)
     log.info("индекс %s: %s вин, dim %s, подготовка %.0f с, эмбеддинги %.0f с",
              out_dir, len(wines), vectors.shape[1], prepared - started, embedded - prepared)  # fmt: skip
@@ -79,9 +113,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--device", default=None)
     parser.add_argument("--view", choices=("full", "label"), default="full", help="вся упаковка или зона этикетки")
+    parser.add_argument("--yaws", default="0", help="углы поворота бутылки через запятую, например -30,-15,0,15,30")
     args = parser.parse_args(argv)
     setup_logging()
-    build(args.model, args.name, args.batch_size, args.device, args.view)
+    yaws = tuple(float(v) for v in args.yaws.split(","))
+    build(args.model, args.name, args.batch_size, args.device, args.view, yaws)
 
 
 if __name__ == "__main__":
