@@ -24,6 +24,20 @@ def test_analogs_exclude_same_winery_other_color_and_other_sparkling():
     assert slugs == ["close", "other-grape"]
 
 
+def test_one_analog_per_winery_and_generic_grapes_ignored():
+    cards = {c["slug"]: c for c in [
+        _card("base", "A", grapes=("Белые сорта винограда",)),
+        _card("bulk-1", "B", grapes=("Белые сорта винограда",), description="простое вино"),
+        _card("bulk-2", "B", grapes=("Белые сорта винограда",), description="простое вино"),
+        _card("other", "C", grapes=("Алиготе",), description="простое вино"),
+    ]}  # fmt: skip
+
+    analogs = AnalogFinder(cards).find("base")
+
+    assert [a.winery for a in analogs] == ["B", "C"] or [a.winery for a in analogs] == ["C", "B"]
+    assert all(not reason.startswith("сорт") for a in analogs for reason in a.reasons)
+
+
 def test_closest_analog_first_with_neutral_reasons():
     analogs = AnalogFinder(CARDS).find("base")
 

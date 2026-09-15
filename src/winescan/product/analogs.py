@@ -15,6 +15,10 @@ from dataclasses import dataclass
 from winescan.search.text_match import STOP_TOKENS, tokens
 
 SWEETNESS_ORDER = ["brut_nature", "extra_brut", "brut", "dry", "semi_dry", "semi_sweet", "sweet"]
+# обобщённые записи в поле «сорт» не говорят о вкусе: на реальном каталоге «Белые сорта винограда»
+# у «Мускателя белого» Массандры давали в аналоги только бюджетные купажи одного производителя
+GENERIC_GRAPES = frozenset({"белые сорта винограда", "красные сорта винограда", "розовые сорта винограда",
+                            "купаж", "белые сорта", "красные сорта"})  # fmt: skip
 SWEETNESS_RU = {
     "brut_nature": "брют натюр", "extra_brut": "экстра брют", "brut": "брют", "dry": "сухое",
     "semi_dry": "полусухое", "semi_sweet": "полусладкое", "sweet": "сладкое",
@@ -56,7 +60,7 @@ class AnalogFinder:
     def find(self, slug: str, limit: int = 6) -> list[Analog]:
         base = self.cards[slug]
         base_attrs = base.get("attributes", {})
-        base_grapes = {g.lower() for g in base.get("grapes", [])}
+        base_grapes = {g.lower() for g in base.get("grapes", [])} - GENERIC_GRAPES
         results = []
         for other in self.cards.values():
             if other["slug"] == slug or other["winery"] == base["winery"] or other["category"] != base["category"]:
@@ -68,7 +72,7 @@ class AnalogFinder:
                 continue
             score, reasons = 1.0, [f"тот же цвет: {base['category'].lower()}"]
 
-            grapes = {g.lower() for g in other.get("grapes", [])}
+            grapes = {g.lower() for g in other.get("grapes", [])} - GENERIC_GRAPES
             if base_grapes and grapes:
                 overlap = len(base_grapes & grapes) / len(base_grapes | grapes)
                 if overlap:
@@ -97,4 +101,13 @@ class AnalogFinder:
 
             results.append(Analog(other["slug"], other["name"], other["winery"], score, reasons))
         results.sort(key=lambda analog: analog.score, reverse=True)
-        return results[:limit]
+        # не больше одного аналога от винодельни: иначе выдачу занимают дубли карточек одного
+        # производителя («Кубанское Традиционное» и оно же 0,7 л)
+        chosen, wineries = [], set()
+        for analog in results:
+            if analog.winery not in wineries:
+                chosen.append(analog)
+                wineries.add(analog.winery)
+            if len(chosen) == limit:
+                break
+        return chosen
