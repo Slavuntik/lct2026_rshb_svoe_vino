@@ -48,6 +48,8 @@ class ScannerConfig:
     # выбор рамки по поиску: 1 — первая рамка по априорному весу (прежнее поведение)
     box_candidates: int = 1
     box_rule: dict = field(default_factory=lambda: dict(PRIOR_ONLY))
+    # обучаемый выбор рамки (search.box_ranker); если задан и box_candidates > 1 — заменяет box_rule
+    box_ranker_path: str | None = None
     local_top: int = 5
     # прежнее ручное слияние: на синтетике top-1 выходит на плато с 0,2, но на реальном фото серии
     # Массандры вес > 0,24 переставляет неверное вино вперёд (ARCHITECTURE.md, D10)
@@ -76,6 +78,7 @@ class ScannerConfig:
             use_detector=os.environ.get("WINESCAN_USE_DETECTOR", "1") != "0",
             box_candidates=int(os.environ.get("WINESCAN_BOX_CANDIDATES", base.box_candidates)),
             box_rule=json.loads(rule) if rule else base.box_rule,
+            box_ranker_path=os.environ.get("WINESCAN_BOX_RANKER") or base.box_ranker_path,
             local_top=int(os.environ.get("WINESCAN_LOCAL_TOP", base.local_top)),
             local_weight=_env_float("WINESCAN_LOCAL_WEIGHT", base.local_weight),
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",
@@ -144,6 +147,13 @@ class Scanner:
             from winescan.vision.vlm import LabelFieldReader
 
             self.vlm = LabelFieldReader(device=config.device)
+        self.box_ranker = None
+        if config.box_ranker_path:
+            from winescan.search.box_ranker import BoxRanker
+
+            path = Path(config.box_ranker_path)
+            self.box_ranker = BoxRanker.load(path if path.is_absolute() else PROJECT_ROOT / path)
+        self._det_scores: list[float] = [1.0]
         store_dir = paths.artifacts_dir / "index" / STORE_NAME
         # без хранилища признаки эталонов считаются на лету: первый запрос с новым кандидатом дольше
         self.local_store = LocalFeatureStore(store_dir) if store_dir.exists() else None
@@ -175,13 +185,17 @@ class Scanner:
     def _boxes(self, image: Image.Image, timings: dict) -> list[tuple[tuple | None, float]]:
         from winescan.vision.detector import rank_packages, select_candidates
 
+        self._det_scores = [1.0]
         if self.detector is None:
             return [(None, 1.0)]
         step = time.perf_counter()
         ranked = rank_packages(self.detector.detect(image), image.size)
         timings["detect"] = (time.perf_counter() - step) * 1000
         chosen = select_candidates(ranked, max(1, self.config.box_candidates))
-        return [(detection.box, weight) for detection, weight in chosen] or [(None, 1.0)]
+        if not chosen:
+            return [(None, 1.0)]
+        self._det_scores = [detection.score for detection, _ in chosen]
+        return [(detection.box, weight) for detection, weight in chosen]
 
     def scan(self, image: Image.Image) -> ScanResult:
         config = self.config
@@ -197,8 +211,15 @@ class Scanner:
             scores = self.searcher.wine_scores(vectors)
             if len(boxes) > 1:
                 sorted_scores = -np.sort(-scores, axis=1)[:, :2]
-                chosen = choose_box([w for _, w in boxes], sorted_scores[:, 0].tolist(),
-                                    (sorted_scores[:, 0] - sorted_scores[:, 1]).tolist(), config.box_rule)  # fmt: skip
+                top1s, margins = sorted_scores[:, 0].tolist(), (sorted_scores[:, 0] - sorted_scores[:, 1]).tolist()
+                if self.box_ranker is not None:
+                    from winescan.search.box_ranker import box_features
+
+                    rows = box_features([box for box, _ in boxes], [d for d in self._det_scores],
+                                        [w for _, w in boxes], image.size, top1s, margins)  # fmt: skip
+                    chosen = self.box_ranker.choose(rows)
+                else:
+                    chosen = choose_box([w for _, w in boxes], top1s, margins, config.box_rule)
             else:
                 chosen = 0
             box = boxes[chosen][0]

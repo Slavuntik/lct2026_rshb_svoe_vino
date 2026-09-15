@@ -4,9 +4,11 @@ from PIL import Image
 from winescan.search.build_index import load_reference_views
 
 
-def _save(tmp_path, width, height, name):
+def _save(tmp_path, width, height, name, fill_share=0.5):
+    """Упаковка по центру; fill_share — доля ширины кадра (после вырезки фона важны её пропорции)."""
     image = np.zeros((height, width, 4), dtype=np.uint8)
-    image[:, width // 4 : 3 * width // 4] = (150, 30, 40, 255)
+    left = round(width * (1 - fill_share) / 2)
+    image[:, left : width - left] = (150, 30, 40, 255)
     image[height // 2 : height // 2 + 20, width // 4 : 3 * width // 4, :3] = 255
     path = tmp_path / name
     Image.fromarray(image, "RGBA").save(path)
@@ -24,7 +26,8 @@ def test_tall_bottle_gets_one_view_per_yaw(tmp_path):
 
 
 def test_box_package_is_not_rotated(tmp_path):
-    box = _save(tmp_path, 600, 600, "box.png")
+    # коробка во всю ширину кадра: после вырезки фона 600×600, не «высокая» упаковка
+    box = _save(tmp_path, 600, 600, "box.png", fill_share=1.0)
 
     assert len(load_reference_views(box, "full", (-30.0, 0.0, 30.0))) == 1
 
