@@ -39,6 +39,36 @@ class Settings:
     rag_index_version: str = field(
         default_factory=lambda: os.environ.get("RAG_INDEX_VERSION", "mock-fixtures-0.1")
     )
+    # --- Кейс ЛЦТ: сканер по фото (contracts/image-scan.md v0.4) --------
+    cv_provider: str = field(
+        default_factory=lambda: os.environ.get("CV_PROVIDER", "mock").strip().lower()
+    )
+    label_verifier_provider: str = field(
+        default_factory=lambda: os.environ.get("LABEL_VERIFIER_PROVIDER", "mock").strip().lower()
+    )
+    cv_index_version: str = field(
+        default_factory=lambda: os.environ.get("CV_INDEX_VERSION", "mock-cv-fixtures-0.1")
+    )
+    cv_eval_report_path: str = field(
+        # Дефолт — относительно cwd процесса; проект уже предполагает запуск
+        # `uvicorn` из apps/api (см. DATABASE_URL=sqlite:///./... выше), так
+        # что "../../packages/cv/eval/report.json" резолвится в корень репо.
+        # Файла там пока нет (packages/cv не создан) — read_eval_report()
+        # честно отдаёт None, см. app/cv/eval_report.py.
+        default_factory=lambda: os.environ.get(
+            "CV_EVAL_REPORT_PATH", "../../packages/cv/eval/report.json"
+        )
+    )
+    cv_near_dup_gap_threshold: float = field(
+        # Плейсхолдер до калибровки на датасете кейса (пересчитать вместе с
+        # agents/G-cv.md, когда появится честный gap на реальном индексе).
+        default_factory=lambda: float(os.environ.get("CV_NEAR_DUP_GAP_THRESHOLD", "0.05"))
+    )
+    cv_confident_score_threshold: float = field(
+        # Тоже плейсхолдер — case.md не даёт числа, только "отрыв 1-го от
+        # 2-го ощутимый и стабильный". Пересчитать по приезду датасета.
+        default_factory=lambda: float(os.environ.get("CV_CONFIDENT_SCORE_THRESHOLD", "0.55"))
+    )
     low_confidence_threshold: float = field(
         default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
     )

@@ -162,3 +162,40 @@ class WaitlistRequest(BaseModel):
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     index_version: str
+
+
+# --- Кейс ЛЦТ: сканер по фото (contracts/image-scan.md v0.4) --------------
+
+class ScanPhotoFlatResponse(BaseModel):
+    """Режим скрипта оценки: РОВНО {"slug": "..."}, ничего лишнего."""
+    slug: str
+
+
+class ScanConfidence(BaseModel):
+    top1_score: float | None = None
+    gap: float | None = None
+    f1_top1: float | None = None
+    f1_top5: float | None = None
+    # Честное поле по заданию оркестратора: пока нет eval-отчёта (датасет
+    # кейса не приехал) — f1_* приходят null, а не притворяются нулевым F1.
+    eval_missing: bool = False
+
+
+class ScanPhotoRichResponse(BaseModel):
+    slug: str | None
+    card: dict | None = None
+    confidence: ScanConfidence
+    ocr_verified: bool
+    timing_ms: int
+    not_in_catalog: bool
+    similar: list[AnalogsWineItem] = Field(default_factory=list)
+    analogs: list[AnalogsWineItem] = Field(default_factory=list)
+
+
+class ScanMetricsResponse(BaseModel):
+    index_version: str | None = None
+    f1_top1: float | None = None
+    f1_top5: float | None = None
+    match_rate: float | None = None
+    eval_set: str | None = None
+    measured_at: str | None = None

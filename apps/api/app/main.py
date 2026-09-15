@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from llm.base import get_llm
 
 from .config import get_settings
+from .cv.factory import get_image_index, get_label_verifier
 from .db import make_engine, make_session_factory
 from .errors import register_error_handlers
 from .models import Base
@@ -20,6 +21,7 @@ from .routers import (
     consents,
     events,
     health,
+    metrics,
     profile,
     scan,
     taste,
@@ -43,6 +45,8 @@ def create_app() -> FastAPI:
 
     app.state.retriever = get_retriever(settings)
     app.state.llm = get_llm()
+    app.state.image_index = get_image_index(settings)
+    app.state.label_verifier = get_label_verifier(settings)
 
     # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
     # существовало, но никто его не читал. Bearer-токены в Authorization,
@@ -70,6 +74,7 @@ def create_app() -> FastAPI:
         taste.router,
         waitlist.router,
         profile.router,
+        metrics.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
 
