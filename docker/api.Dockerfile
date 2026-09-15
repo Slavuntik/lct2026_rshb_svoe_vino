@@ -21,9 +21,12 @@ ENV PATH=/opt/venv/bin:$PATH
 RUN pip install torch==2.14.0 torchvision==0.29.0 --index-url https://download.pytorch.org/whl/cu126
 
 WORKDIR /app
+# зависимости отдельным слоем по pyproject и заглушке пакета: правка кода не переустанавливает
+# transformers, easyocr и остальное (первая сборка шла 18 мин, пересборка кода — минуты)
 COPY pyproject.toml README.md ./
+RUN mkdir -p src/winescan && touch src/winescan/__init__.py && pip install ".[ml]" && pip uninstall -y winescan
 COPY src ./src
-RUN pip install ".[ml]"
+RUN pip install --no-deps .
 COPY configs ./configs
 COPY scripts ./scripts
 COPY Makefile ./
