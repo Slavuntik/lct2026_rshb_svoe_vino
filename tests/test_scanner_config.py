@@ -44,10 +44,11 @@ def test_env_overrides(monkeypatch):
     monkeypatch.setenv("WINESCAN_MIN_VISUAL_SCORE", "")
     monkeypatch.setenv("WINESCAN_USE_DETECTOR", "0")
     monkeypatch.setenv("WINESCAN_BOX_RANKER", "0")
+    monkeypatch.setenv("WINESCAN_FUSION_RANK", "0")
 
     config = ScannerConfig.from_env()
 
-    assert config.box_ranker_path is None
+    assert config.box_ranker_path is None and config.fusion_rank is False
     assert config.indexes == ("a", "b") and config.index_weights == (0.3, 0.7)
     assert config.use_ocr is False and config.local_weight == 0.0 and config.use_detector is False
     assert config.min_visual_score == 0.74  # пустое значение = значение по умолчанию

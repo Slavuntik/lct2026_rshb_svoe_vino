@@ -35,6 +35,17 @@ def test_decide_thresholds():
     assert decide([]).status == "not_found"
 
 
+def test_decide_uses_explicit_confidence_for_score_threshold():
+    from winescan.search.rerank import Candidate
+
+    # гибрид: порядок по ручному скору (≈0,9), а порог отказа сравнивается с логитом слияния
+    candidates = [Candidate("a", 0.92, 0.85), Candidate("b", 0.80, 0.84)]
+
+    assert decide(candidates, min_score=-1.0, confidence=-2.1).status == "not_found"
+    assert decide(candidates, min_score=-1.0, confidence=0.5).status == "found"
+    assert decide(candidates, min_score=-1.0).status == "found"
+
+
 def test_zero_weight_keeps_visual_order():
     label = LabelText.from_ocr("Алиготе Баррель 2025")
 

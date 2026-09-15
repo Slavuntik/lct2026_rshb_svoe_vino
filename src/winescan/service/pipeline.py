@@ -69,8 +69,12 @@ class ScannerConfig:
     local_weight: float = 0.15
     use_ocr: bool = True
     text_weight: float = 0.02
-    # обученное слияние (search.fusion); если задано — заменяет local_weight / text_weight
+    # обученное слияние (search.fusion): признаки проверки и логит для отказа
     fusion_path: str | None = None
+    # True — порядок кандидатов по логиту слияния; False — гибрид: порядок по ручному слиянию
+    # (local_weight, text_weight) на inliers проверки, логит — только уверенность для отказа.
+    # Гибрид на проверочной половине v1+v2: top-1 0,822 против 0,813, ложных отказов 1,5% против 2,5%
+    fusion_rank: bool = True
     # отказ по порогу логита слияния (meta.reject_logit): на synth_v1 AUROC 0,953 против 0,776 у визуального скора
     fusion_reject: bool = True
     # поля этикетки VLM только когда отрыв лучшего кандидата (в логитах слияния) меньше порога
@@ -97,6 +101,7 @@ class ScannerConfig:
             use_ocr=os.environ.get("WINESCAN_USE_OCR", "1") != "0",
             text_weight=_env_float("WINESCAN_TEXT_WEIGHT", base.text_weight),
             fusion_path=os.environ.get("WINESCAN_FUSION") or base.fusion_path,
+            fusion_rank=os.environ.get("WINESCAN_FUSION_RANK", "1" if base.fusion_rank else "0") != "0",
             fusion_reject=os.environ.get("WINESCAN_FUSION_REJECT", "1") != "0",
             use_vlm=os.environ.get("WINESCAN_USE_VLM", "0") == "1",
             vlm_margin=_env_float("WINESCAN_VLM_MARGIN", base.vlm_margin),
@@ -152,7 +157,7 @@ class Scanner:
 
             path = Path(config.fusion_path)
             self.fusion = FusionModel.load(path if path.is_absolute() else PROJECT_ROOT / path)
-        elif config.use_ocr and config.text_weight > 0:
+        if config.use_ocr and config.text_weight > 0 and not (config.fusion_path and config.fusion_rank):
             from winescan.vision.ocr import LabelReader
 
             self.reader = LabelReader(gpu=self.searcher.device.startswith("cuda"))
@@ -250,7 +255,9 @@ class Scanner:
         # с обученным слиянием отказ — по порогу его логита (подобран на leave-one-out негативах);
         # визуальный порог при этом тоже действует, если задан
         reject = self.fusion.meta.get("reject_logit") if self.fusion is not None and config.fusion_reject else None
-        decision = decide(ranked, config.min_visual_score, config.min_margin, reject)
+        # в гибриде порядок ручной, а уверенность — логит слияния для лучшего кандидата
+        confidence = details.get(ranked[0].slug, {}).get("logit") if self.fusion is not None and not config.fusion_rank else None
+        decision = decide(ranked, config.min_visual_score, config.min_margin, reject, confidence)
         timings["total"] = (time.perf_counter() - began) * 1000
         best = ranked[0]
         found = decision.status == "found"
@@ -279,12 +286,11 @@ class Scanner:
         )
 
     def _band_margin(self) -> float:
-        # отрыв в логитах обученного слияния или в скорах ручного слияния
-        return self.config.vlm_margin if self.fusion is not None else 0.02
+        # отрыв в логитах обученного слияния или в скорах ручного слияния (в том числе в гибриде)
+        return self.config.vlm_margin if self.fusion is not None and self.config.fusion_rank else 0.02
 
     def _legacy(self, package: Image.Image, slugs: list[str], visual: list[float], timings: dict):
         from winescan.search.local_match import extract, inliers
-        from winescan.search.text_match import LabelText, text_score
 
         config = self.config
         local = None
@@ -294,14 +300,21 @@ class Scanner:
             local = {s: inliers(query_features, self._reference(s)[1]) for s in slugs[: config.local_top]
                      if self.cards.get(s, {}).get("image", {}).get("file")}  # fmt: skip
             timings["local_match"] = (time.perf_counter() - step) * 1000
-        texts, ocr_text = None, None
-        if self.reader is not None:
-            step = time.perf_counter()
-            ocr_text = self.reader.read(package)
-            label = LabelText.from_ocr(ocr_text)
-            texts = {s: text_score(self.cards[s], label) for s in slugs if s in self.cards}
-            timings["ocr"] = (time.perf_counter() - step) * 1000
+        texts, ocr_text = self._read_text(package, slugs, timings)
         return fuse(slugs, visual, local, texts, config.local_weight, config.text_weight), {}, ocr_text
+
+    def _read_text(self, package: Image.Image, slugs: list[str], timings: dict) -> tuple[dict | None, str | None]:
+        """Сходство текста этикетки (OCR) с карточками кандидатов; без OCR — (None, None)."""
+        from winescan.search.text_match import LabelText, text_score
+
+        if self.reader is None:
+            return None, None
+        step = time.perf_counter()
+        ocr_text = self.reader.read(package)
+        label = LabelText.from_ocr(ocr_text)
+        texts = {s: text_score(self.cards[s], label) for s in slugs if s in self.cards}
+        timings["ocr"] = (time.perf_counter() - step) * 1000
+        return texts, ocr_text
 
     def _fused(self, package: Image.Image, slugs: list[str], visual: list[float], timings: dict):
         from winescan.search.fields import field_score
@@ -345,6 +358,11 @@ class Scanner:
                         "field_score": round(c["field_score"], 3)}
             for logit, c in ranked
         }  # fmt: skip
+        if not config.fusion_rank:
+            # гибрид: порядок — ручное слияние (как _legacy) на inliers той же проверки
+            local = {slug: int(v.get("inliers", 0)) for slug, v in verifications.items()}
+            texts, text = self._read_text(package, slugs, timings)
+            return fuse(slugs, visual, local, texts, config.local_weight, config.text_weight), details, ocr_text or text
         candidates = [
             Candidate(c["slug"], logit, c["visual"], int((verifications.get(c["slug"]) or {}).get("inliers", 0)), c["field_score"])
             for logit, c in ranked

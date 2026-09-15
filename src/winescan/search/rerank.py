@@ -67,16 +67,19 @@ def decide(
     min_visual_score: float | None = None,
     min_margin: float | None = None,
     min_score: float | None = None,
+    confidence: float | None = None,
 ) -> Decision:
-    """«Не найдено», если лучший кандидат визуально слишком далёк, его итоговый скор (например,
-    логит обученного слияния) ниже порога или отрыв от второго слишком мал."""
+    """«Не найдено», если лучший кандидат визуально слишком далёк, его уверенность ниже порога
+    ``min_score`` или отрыв от второго слишком мал. Уверенность — ``confidence``, если задана
+    (например, логит обученного слияния при ручном порядке кандидатов), иначе итоговый скор."""
     if not candidates:
         return Decision("not_found", "нет кандидатов")
     best = candidates[0]
     if min_visual_score is not None and best.visual_score < min_visual_score:
         return Decision("not_found", f"визуальный скор {best.visual_score:.3f} < {min_visual_score}")
-    if min_score is not None and best.score < min_score:
-        return Decision("not_found", f"уверенность {best.score:.3f} < {min_score:.3f}")
+    value = best.score if confidence is None else confidence
+    if min_score is not None and value < min_score:
+        return Decision("not_found", f"уверенность {value:.3f} < {min_score:.3f}")
     margin = best.score - candidates[1].score if len(candidates) > 1 else math.inf
     if min_margin is not None and margin < min_margin:
         return Decision("not_found", f"отрыв {margin:.4f} < {min_margin}")
