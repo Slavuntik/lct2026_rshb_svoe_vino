@@ -25,11 +25,14 @@ from winescan.config import get_paths
 from winescan.eval.offline import QueryCache, choose_slot
 from winescan.eval.run import _load_query, load_split
 from winescan.logging_setup import setup_logging
+from winescan.eval.vlm_cache import load_fields
+from winescan.search.fields import LabelFields, field_score
 from winescan.search.fusion import candidate_features
-from winescan.search.local_features import REFERENCE_SIDE, STORE_NAME, LocalFeatureStore
+from winescan.search.local_features import STORE_NAME, LocalFeatureStore, load_reference_view, reference_view
 from winescan.search.local_match import extract, prepare
 from winescan.search.verify import verify
-from winescan.vision.preprocess import crop_box, cutout
+from winescan.service.pipeline import load_cards
+from winescan.vision.preprocess import crop_box
 
 _state: dict = {}
 
@@ -42,11 +45,8 @@ def _init(images_dir: str, image_of: dict[str, str]) -> None:
 
 @lru_cache(maxsize=2048)
 def _reference(slug: str):
-    with Image.open(_state["uploads"] / _state["image_of"][slug]) as image:
-        image.load()
-        image = image.copy()
-    image.thumbnail((REFERENCE_SIDE, REFERENCE_SIDE))
-    return prepare(cutout(image)), _state["store"].get(slug)
+    view = load_reference_view(slug) or reference_view(_state["uploads"] / _state["image_of"][slug])
+    return view, _state["store"].get(slug)
 
 
 def _task(task: dict) -> list[dict]:
@@ -98,6 +98,15 @@ def main(argv: list[str] | None = None) -> None:
     workers = args.workers or min(16, os.cpu_count() or 1)
     with ProcessPoolExecutor(max_workers=workers, initializer=_init, initargs=(str(images_dir), image_of)) as pool:
         rows = [row for chunk in pool.map(_task, tasks, chunksize=4) for row in chunk]
+
+    # согласие полей этикетки, если есть кэш VLM (eval.vlm_cache)
+    vlm_fields = load_fields(args.cache)
+    if vlm_fields:
+        cards = load_cards(paths.artifacts_dir / "catalog" / "catalog.jsonl")
+        for row in rows:
+            fields = vlm_fields.get(row["query_id"])
+            if fields:
+                row["field_score"] = field_score(cards[row["slug"]], LabelFields(**{**fields, "grapes": tuple(fields["grapes"])}))
 
     flags = {r["query_id"]: (r["in_phash_group"], r["shares_image"]) for r in cache.records}
     frame = pd.DataFrame(rows)

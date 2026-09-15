@@ -1,4 +1,4 @@
-"""Слой 3: хранилище SIFT-признаков эталонов, чтобы сервис не считал их на лету.
+"""Слой 3: хранилище SIFT-признаков и подготовленных вырезок эталонов, чтобы сервис не считал их на лету.
 
 Запуск: ``python -m winescan.search.local_features [--workers 16]``
 
@@ -6,7 +6,10 @@ artifacts/index/local_features/:
     descriptors.npy  uint8 (все дескрипторы подряд; квантование float32 -> uint8, ошибка ≤ 0,5)
     keypoints.npy    float32 (x, y)
     index.json       slug -> [начало, конец]
-Файлы открываются через memory map: в память попадают только нужные кандидаты.
+artifacts/index/reference_views/<slug>.png
+    вырезка упаковки (RGBA) в масштабе признаков: нужна search.verify для сравнения пикселей
+    после выравнивания; декодировать исходные WEBP до 9506 px на каждый запрос слишком долго.
+Файлы признаков открываются через memory map: в память попадают только нужные кандидаты.
 """
 
 from __future__ import annotations
@@ -25,22 +28,41 @@ from PIL import Image
 
 from winescan.config import get_paths
 from winescan.logging_setup import setup_logging
-from winescan.search.local_match import Features, extract
+from winescan.search.local_match import Features, extract, prepare
 from winescan.vision.preprocess import cutout
 
 log = logging.getLogger("winescan.search.local_features")
 
 REFERENCE_SIDE = 1024
 STORE_NAME = "local_features"
+VIEWS_NAME = "reference_views"
 
 
-def reference_features(path: Path) -> Features:
-    """SIFT эталона: уменьшить до 1024, вырезать упаковку, извлечь признаки."""
+def _reference_cutout(path: Path) -> Image.Image:
     with Image.open(path) as image:
         image.load()
         image = image.copy()
     image.thumbnail((REFERENCE_SIDE, REFERENCE_SIDE))
-    return extract(cutout(image).convert("RGB"))
+    return cutout(image)
+
+
+def reference_features(path: Path) -> Features:
+    """SIFT эталона: уменьшить до 1024, вырезать упаковку, извлечь признаки."""
+    return extract(_reference_cutout(path).convert("RGB"))
+
+
+def reference_view(path: Path) -> Image.Image:
+    """Вырезка эталона (RGBA) в масштабе признаков — для search.verify."""
+    return prepare(_reference_cutout(path))
+
+
+def load_reference_view(slug: str, views_dir: Path | None = None) -> Image.Image | None:
+    path = (views_dir or get_paths().artifacts_dir / "index" / VIEWS_NAME) / f"{slug}.png"
+    if not path.exists():
+        return None
+    with Image.open(path) as image:
+        image.load()
+        return image.copy()
 
 
 class LocalFeatureStore:
@@ -73,13 +95,15 @@ class LocalFeatureStore:
         (directory / "index.json").write_text(json.dumps(ranges, ensure_ascii=False), encoding="utf-8")
 
 
-def _task(item: tuple[str, str]) -> tuple[str, Features]:
-    slug, path = item
-    return slug, reference_features(Path(path))
+def _task(item: tuple[str, str, str]) -> tuple[str, Features]:
+    slug, path, views_dir = item
+    package = _reference_cutout(Path(path))
+    prepare(package).save(Path(views_dir) / f"{slug}.png")
+    return slug, extract(package.convert("RGB"))
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Посчитать SIFT-признаки всех эталонов")
+    parser = argparse.ArgumentParser(description="SIFT-признаки и вырезки всех эталонов")
     parser.add_argument("--workers", type=int, default=None)
     args = parser.parse_args(argv)
     setup_logging()
@@ -87,7 +111,9 @@ def main(argv: list[str] | None = None) -> None:
     paths = get_paths()
     catalog = pd.read_parquet(paths.artifacts_dir / "catalog" / "catalog.parquet")
     wines = catalog.dropna(subset=["image_file"]).sort_values("slug")
-    items = [(slug, str(paths.uploads_dir / f)) for slug, f in zip(wines["slug"], wines["image_file"])]
+    views_dir = paths.artifacts_dir / "index" / VIEWS_NAME
+    views_dir.mkdir(parents=True, exist_ok=True)
+    items = [(slug, str(paths.uploads_dir / f), str(views_dir)) for slug, f in zip(wines["slug"], wines["image_file"])]
 
     started = time.monotonic()
     with ProcessPoolExecutor(max_workers=args.workers or min(16, os.cpu_count() or 1)) as pool:
@@ -95,7 +121,9 @@ def main(argv: list[str] | None = None) -> None:
     out_dir = paths.artifacts_dir / "index" / STORE_NAME
     LocalFeatureStore.save(out_dir, results)
     size_mb = sum(f.stat().st_size for f in out_dir.iterdir()) / 2**20
-    log.info("SIFT-признаки %s эталонов за %.0f с, %.0f МБ -> %s", len(results), time.monotonic() - started, size_mb, out_dir)
+    views_mb = sum(f.stat().st_size for f in views_dir.iterdir()) / 2**20
+    log.info("SIFT-признаки %s эталонов за %.0f с: %.0f МБ признаков, %.0f МБ вырезок -> %s",
+             len(results), time.monotonic() - started, size_mb, views_mb, out_dir)  # fmt: skip
 
 
 if __name__ == "__main__":
