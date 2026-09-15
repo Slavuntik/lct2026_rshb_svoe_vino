@@ -116,7 +116,15 @@ python -m winescan.eval.report                                               # -
 CUDA_VISIBLE_DEVICES=2 .venv/bin/uvicorn winescan.service.app:app --host 0.0.0.0 --port 8080
 ```
 
-Старт с загрузкой и прогревом моделей — до минуты. Проверка скриптом кейсодержателя и ручной запрос:
+Старт с загрузкой и прогревом моделей — около 40 с (готовность — `GET /health`). Остановка —
+Ctrl+C; если сервис запущен в фоне, завершите процесс, который слушает порт (у `pkill -f`
+шаблон совпадает и с запускающей оболочкой):
+
+```bash
+kill "$(ss -ltnp | grep ':8080 ' | grep -o 'pid=[0-9]*' | cut -d= -f2)"
+```
+
+Проверка скриптом кейсодержателя и ручной запрос:
 
 ```bash
 mkdir -p artifacts/eval/participant_public
