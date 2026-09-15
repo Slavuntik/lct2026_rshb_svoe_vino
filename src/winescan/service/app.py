@@ -76,6 +76,18 @@ def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
             raise HTTPException(status_code=404, detail="вино не найдено")
         return card
 
+    @app.get("/v1/wines/{slug}/analogs")
+    def wine_analogs(slug: str, limit: int = 6) -> dict:
+        """Аналоги других виноделен с объяснением по совпавшим полям (без LLM)."""
+        from winescan.product.analogs import AnalogFinder
+
+        scanner = state["scanner"]
+        if slug not in scanner.cards:
+            raise HTTPException(status_code=404, detail="вино не найдено")
+        if "analogs" not in state:
+            state["analogs"] = AnalogFinder(scanner.cards)
+        return {"slug": slug, "analogs": [a.as_dict() for a in state["analogs"].find(slug, limit=max(1, min(limit, 20)))]}
+
     @app.get("/v1/wines/{slug}/image")
     def wine_image(slug: str) -> FileResponse:
         card = state["scanner"].cards.get(slug)

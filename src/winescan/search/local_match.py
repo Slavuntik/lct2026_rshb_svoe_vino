@@ -49,21 +49,45 @@ def extract(image: Image.Image, side: int = MATCH_SIDE) -> Features:
     return Features(points, descriptors)
 
 
-def inliers(query: Features, reference: Features, ratio: float = 0.75) -> int:
-    """Число совпадений, согласованных гомографией (0 — совпадений нет)."""
+@dataclass(frozen=True)
+class MatchResult:
+    inliers: int
+    good_matches: int  # после ratio test, до RANSAC
+    homography: np.ndarray | None  # 3×3: координаты запроса -> координаты эталона (в масштабе extract)
+    reference_points: np.ndarray  # (inliers, 2) точки эталона, согласованные гомографией
+
+
+def match(query: Features, reference: Features, ratio: float = 0.75) -> MatchResult:
+    """Сопоставление SIFT: ratio test + гомография MAGSAC."""
+    empty = MatchResult(0, 0, None, np.zeros((0, 2), np.float32))
     if query.descriptors is None or reference.descriptors is None:
-        return 0
+        return empty
     if len(query.descriptors) < 2 or len(reference.descriptors) < 2:
-        return 0
+        return empty
     matcher = cv2.BFMatcher(cv2.NORM_L2)
     pairs = matcher.knnMatch(query.descriptors, reference.descriptors, k=2)
     good = [m for m, n in (p for p in pairs if len(p) == 2) if m.distance < ratio * n.distance]
     if len(good) < MIN_MATCHES_FOR_RANSAC:
-        return 0
+        return MatchResult(0, len(good), None, empty.reference_points)
     src = query.keypoints[[m.queryIdx for m in good]]
     dst = reference.keypoints[[m.trainIdx for m in good]]
-    _, mask = cv2.findHomography(src, dst, cv2.USAC_MAGSAC, 8.0)
-    return int(mask.sum()) if mask is not None else 0
+    homography, mask = cv2.findHomography(src, dst, cv2.USAC_MAGSAC, 8.0)
+    if mask is None:
+        return MatchResult(0, len(good), None, empty.reference_points)
+    keep = mask.ravel().astype(bool)
+    return MatchResult(int(keep.sum()), len(good), homography, dst[keep])
 
 
-__all__ = ["Features", "extract", "inliers", "local_bonus"]
+def inliers(query: Features, reference: Features, ratio: float = 0.75) -> int:
+    """Число совпадений, согласованных гомографией (0 — совпадений нет)."""
+    return match(query, reference, ratio).inliers
+
+
+__all__ = ["Features", "MatchResult", "extract", "inliers", "local_bonus", "match", "prepare"]
+
+
+def prepare(image: Image.Image, side: int = MATCH_SIDE) -> Image.Image:
+    """Копия в масштабе, в котором считаются признаки (координаты точек и гомографии)."""
+    image = image.copy()
+    image.thumbnail((side, side))
+    return image
