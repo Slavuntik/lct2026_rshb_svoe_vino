@@ -43,6 +43,7 @@ from winescan.catalog.matching import (
 from winescan.catalog.report import render_report
 from winescan.catalog.review import Cell, SheetRow, render_sheets
 from winescan.config import Paths, get_paths
+from winescan.logging_setup import setup_logging
 
 log = logging.getLogger("winescan.catalog.build")
 
@@ -284,7 +285,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--workers", type=int, default=None, help="процессов для чтения изображений")
     parser.add_argument("--no-review", action="store_true", help="не рисовать контактные листы")
     args = parser.parse_args(argv)
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    setup_logging()
     build(get_paths(), workers=args.workers, review=not args.no_review)
 
 

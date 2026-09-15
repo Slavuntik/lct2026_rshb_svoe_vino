@@ -47,7 +47,12 @@ def token_similarity(a: str, b: str) -> float:
         return 0.0
     direct = SequenceMatcher(None, a, b).ratio()
     sa, sb = skeleton(a), skeleton(b)
-    shape = SequenceMatcher(None, sa, sb).ratio() if len(sa) >= 2 and len(sb) >= 2 else 0.0
+    if min(len(sa), len(sb)) >= 3:
+        shape = SequenceMatcher(None, sa, sb).ratio()
+    else:
+        # короткие скелеты сравниваем только на точное равенство: noir/nuar -> «nr»,
+        # но rozovyj («rsv») не должен совпасть с rossii («rs»)
+        shape = 0.85 if sa == sb and len(sa) >= 2 else 0.0
     return max(direct, shape)
 
 
@@ -59,7 +64,7 @@ class LabelText:
 
     @classmethod
     def from_ocr(cls, text: str) -> LabelText:
-        found = tokens(text)
+        found = [t for t in tokens(text) if t not in STOP_TOKENS]
         years = _YEAR.findall(text)
         return cls(tuple(found), int(years[0]) if years else None, parse_attributes(text, "").sweetness)
 

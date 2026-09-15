@@ -3,7 +3,7 @@ import pytest
 from PIL import Image
 
 from winescan.search.index import VectorIndex
-from winescan.vision.preprocess import crop_box, fit_on_square, query_view, reference_view
+from winescan.vision.preprocess import crop_box, fit_on_square, label_region, query_view, reference_view
 
 
 def _unit(*values):
@@ -35,6 +35,14 @@ def test_fit_on_square_centers_with_margin():
 
     assert square.size == (600, 600)
     assert square.getpixel((5, 5)) == (255, 255, 255) and square.getpixel((300, 300)) == (0, 0, 0)
+
+
+def test_label_region_crops_only_tall_packages():
+    bottle = Image.new("RGB", (100, 400))
+    box = Image.new("RGB", (300, 300))
+
+    assert label_region(bottle).size == (100, 228)  # 0,40–0,97 высоты
+    assert label_region(box).size == (300, 300)
 
 
 def test_reference_view_is_square_and_query_view_crops_box():

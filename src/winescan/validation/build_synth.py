@@ -27,6 +27,7 @@ import pandas as pd
 from PIL import Image
 
 from winescan.config import get_paths
+from winescan.logging_setup import setup_logging
 from winescan.validation.synth import SynthConfig, render_sample
 
 log = logging.getLogger("winescan.validation.build_synth")
@@ -191,7 +192,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--limit", type=int, default=None, help="взять случайные N вин")
     parser.add_argument("--workers", type=int, default=None)
     args = parser.parse_args(argv)
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    setup_logging()
     build(args.name, args.seed, args.per_wine, args.limit, args.workers)
 
 

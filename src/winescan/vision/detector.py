@@ -63,16 +63,44 @@ class PackageDetector:
         return detections
 
 
-def choose_main_package(detections: list[Detection], image_size: tuple[int, int]) -> Detection | None:
-    """Главная упаковка кадра: уверенная, крупная и ближе к центру по горизонтали."""
+def _inside_share(inner: tuple[float, float, float, float], outer: tuple[float, float, float, float]) -> float:
+    x0, y0 = max(inner[0], outer[0]), max(inner[1], outer[1])
+    x1, y1 = min(inner[2], outer[2]), min(inner[3], outer[3])
+    area = (inner[2] - inner[0]) * (inner[3] - inner[1])
+    return max(0.0, x1 - x0) * max(0.0, y1 - y0) / area if area > 0 else 0.0
+
+
+def choose_main_package(
+    detections: list[Detection],
+    image_size: tuple[int, int],
+    min_score: float = 0.15,
+    area_cap: float = 0.3,
+    centrality_floor: float = 0.25,
+    group_penalty: float = 0.3,
+) -> Detection | None:
+    """Главная упаковка кадра: уверенная, достаточно крупная и ближе к центру по горизонтали.
+
+    Площадь учитывается с потолком ``area_cap``, а рамка, внутри которой лежат ещё две и
+    больше уверенных рамок, штрафуется: это группа бутылок, а не одна (фото Массандры
+    из публичного набора). Старое поведение: min_score=0, area_cap=1, centrality_floor=0,5,
+    group_penalty=1.
+    """
     if not detections:
         return None
     width, height = image_size
+    confident = [d for d in detections if d.score >= min_score] or detections
 
     def weight(detection: Detection) -> float:
         x0, y0, x1, y1 = detection.box
-        area_share = (x1 - x0) * (y1 - y0) / (width * height)
+        area_share = min(area_cap, (x1 - x0) * (y1 - y0) / (width * height))
         centrality = 1.0 - min(1.0, abs((x0 + x1) / 2 / width - 0.5) * 2)
-        return detection.score * area_share**0.5 * (0.5 + 0.5 * centrality)
+        contained = sum(
+            other is not detection
+            and other.score >= 0.5 * detection.score
+            and _inside_share(other.box, detection.box) >= 0.8
+            for other in confident
+        )
+        penalty = group_penalty if contained >= 2 else 1.0
+        return detection.score * area_share**0.5 * (centrality_floor + (1 - centrality_floor) * centrality) * penalty
 
-    return max(detections, key=weight)
+    return max(confident, key=weight)

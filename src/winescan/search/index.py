@@ -14,6 +14,13 @@ from pathlib import Path
 import numpy as np
 
 
+def top_k(scores: np.ndarray, wine_slugs: list[str], k: int) -> tuple[list[list[str]], np.ndarray]:
+    """Лучшие k вин по матрице скоров (запросы × вина)."""
+    k = min(k, scores.shape[1])
+    order = np.argsort(-scores, axis=1)[:, :k]
+    return [[wine_slugs[i] for i in row] for row in order], np.take_along_axis(scores, order, axis=1)
+
+
 @dataclass
 class VectorIndex:
     slugs: list[str]  # по строке на вектор, строки одного вина идут подряд
@@ -34,10 +41,7 @@ class VectorIndex:
         return np.maximum.reduceat(queries @ self.vectors.T, self._starts, axis=1)
 
     def search(self, queries: np.ndarray, k: int = 5) -> tuple[list[list[str]], np.ndarray]:
-        scores = self.wine_scores(queries)
-        k = min(k, scores.shape[1])
-        order = np.argsort(-scores, axis=1)[:, :k]
-        return [[self.wine_slugs[i] for i in row] for row in order], np.take_along_axis(scores, order, axis=1)
+        return top_k(self.wine_scores(queries), self.wine_slugs, k)
 
     def save(self, directory: Path) -> None:
         directory.mkdir(parents=True, exist_ok=True)

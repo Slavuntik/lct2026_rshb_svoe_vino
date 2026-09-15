@@ -55,12 +55,34 @@ def crop_box(image: Image.Image, box: Box, margin: float = 0.03) -> Image.Image:
     )
 
 
-def reference_view(image: Image.Image) -> Image.Image:
-    """Эталон каталога -> упаковка в белом квадрате."""
-    return fit_on_square(cutout(image))
+VIEWS = ("full", "label")
+LABEL_REGION = (0.40, 0.97)  # доля высоты высокой упаковки, где обычно основная этикетка
 
 
-def query_view(image: Image.Image, box: Box | None = None) -> Image.Image:
-    """Фото пользователя -> (кроп по рамке) -> белый квадрат. Учитывает EXIF-поворот телефона."""
+def label_region(image: Image.Image) -> Image.Image:
+    """Нижняя часть высокой упаковки (бутылки), где обычно основная этикетка.
+
+    У вин одной серии отличается именно этикетка; на эмбеддинге всей бутылки эта разница
+    размывается горлышком и стеклом. Невысокие упаковки (коробки, банки) не режем.
+    """
+    width, height = image.size
+    if height / max(width, 1) < 1.8:
+        return image
+    return image.crop((0, round(height * LABEL_REGION[0]), width, round(height * LABEL_REGION[1])))
+
+
+def _view(package: Image.Image, view: str) -> Image.Image:
+    if view not in VIEWS:
+        raise ValueError(f"неизвестный вид {view!r}, ожидается один из {VIEWS}")
+    return fit_on_square(label_region(package) if view == "label" else package)
+
+
+def reference_view(image: Image.Image, view: str = "full") -> Image.Image:
+    """Эталон каталога -> упаковка (или её этикетка) в белом квадрате."""
+    return _view(cutout(image), view)
+
+
+def query_view(image: Image.Image, box: Box | None = None, view: str = "full") -> Image.Image:
+    """Фото пользователя -> (кроп по рамке) -> (этикетка) -> белый квадрат. Учитывает EXIF-поворот."""
     image = ImageOps.exif_transpose(image).convert("RGB")
-    return fit_on_square(crop_box(image, box) if box else image)
+    return _view(crop_box(image, box) if box else image, view)

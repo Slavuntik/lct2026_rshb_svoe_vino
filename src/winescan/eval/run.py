@@ -3,8 +3,12 @@
 Запуск::
 
     python -m winescan.eval.run --split synth_v1 --index siglip2-base-patch16-224 --crop gt
-    python -m winescan.eval.run --split public   --index siglip2-base-patch16-224 --crop detector --ocr
+    python -m winescan.eval.run --split synth_v1 --index siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label \
+        --index-weights 0.5,0.5 --crop gt
+    python -m winescan.eval.run --split public --index siglip2-so400m-patch14-384 --crop detector --ocr
 
+``--index`` — одна или несколько папок в artifacts/index; скоры вин складываются с весами
+``--index-weights``. Вид запроса (вся упаковка / этикетка) берётся из meta индекса.
 ``--crop``: ``gt`` — рамка из манифеста синтетики (верхняя граница для слоя 1),
 ``detector`` — рамка OWLv2, ``none`` — весь кадр.
 ``--ocr`` — дополнительно прочитать текст кропа и сохранить в predictions.csv; вес текста
@@ -27,7 +31,8 @@ from PIL import Image, ImageOps
 
 from winescan.config import PROJECT_ROOT, get_paths
 from winescan.eval.metrics import best_threshold, retrieval_summary
-from winescan.search.index import VectorIndex
+from winescan.logging_setup import setup_logging
+from winescan.search.index import VectorIndex, top_k
 from winescan.vision.embedder import ImageEmbedder
 from winescan.vision.preprocess import crop_box, query_view
 
@@ -85,7 +90,46 @@ def markdown_table(metrics: dict) -> str:
     return "\n".join(lines)
 
 
-def run(split: str, index_name: str, crop: str, limit: int | None, device: str | None, batch_size: int, ocr: bool) -> Path:
+class MultiIndexSearcher:
+    """Сумма скоров вин по нескольким индексам (модели и виды могут различаться)."""
+
+    def __init__(self, index_names: list[str], weights: list[float], device: str | None):
+        paths = get_paths()
+        self.indexes = [VectorIndex.load(paths.artifacts_dir / "index" / name) for name in index_names]
+        self.weights = weights
+        self.wine_slugs = self.indexes[0].wine_slugs
+        if any(index.wine_slugs != self.wine_slugs for index in self.indexes):
+            raise ValueError("индексы построены по разным наборам вин — пересоберите их")
+        self.embedders: dict[str, ImageEmbedder] = {}
+        for index in self.indexes:
+            model_id = index.meta["model_id"]
+            if model_id not in self.embedders:
+                self.embedders[model_id] = ImageEmbedder(model_id, device=device)
+
+    @property
+    def device(self) -> str:
+        return next(iter(self.embedders.values())).device
+
+    def search(self, images: list[Image.Image], boxes: list, k: int) -> tuple[list[list[str]], np.ndarray]:
+        total = np.zeros((len(images), len(self.wine_slugs)), dtype=np.float32)
+        for index, weight in zip(self.indexes, self.weights):
+            view = index.meta.get("view_name", "full")
+            views = [query_view(image, box, view) for image, box in zip(images, boxes)]
+            vectors = self.embedders[index.meta["model_id"]].embed(views, batch_size=len(views))
+            total += weight * index.wine_scores(vectors)
+        return top_k(total, self.wine_slugs, k)
+
+
+def run(
+    split: str,
+    index_names: list[str],
+    weights: list[float],
+    crop: str,
+    limit: int | None,
+    device: str | None,
+    batch_size: int,
+    ocr: bool,
+) -> Path:
     paths = get_paths()
     manifest, images_dir = load_split(split)
     for flag in ("in_phash_group", "shares_image"):
@@ -93,10 +137,9 @@ def run(split: str, index_name: str, crop: str, limit: int | None, device: str |
     if limit:
         manifest = manifest.sample(n=min(limit, len(manifest)), random_state=0)
 
-    index = VectorIndex.load(paths.artifacts_dir / "index" / index_name)
+    searcher = MultiIndexSearcher(index_names, weights, device)
     catalog = pd.read_parquet(paths.artifacts_dir / "catalog" / "catalog.parquet")
     sha_of = dict(zip(catalog["slug"], catalog["image_sha256"]))
-    embedder = ImageEmbedder(index.meta["model_id"], device=device)
     detector = reader = None
     if crop == "detector":
         from winescan.vision.detector import PackageDetector, choose_main_package
@@ -105,7 +148,7 @@ def run(split: str, index_name: str, crop: str, limit: int | None, device: str |
     if ocr:
         from winescan.vision.ocr import LabelReader
 
-        reader = LabelReader(gpu=(device or embedder.device).startswith("cuda"))
+        reader = LabelReader(gpu=searcher.device.startswith("cuda"))
 
     records = []
     rows = list(manifest.itertuples(index=False))
@@ -129,12 +172,11 @@ def run(split: str, index_name: str, crop: str, limit: int | None, device: str |
                 began = time.perf_counter()
                 ocr_text = reader.read(crop_box(image, box) if box else image)
                 ocr_ms = (time.perf_counter() - began) * 1000
-            prepared.append((query_view(image, box), box, detector_score, detect_ms, ocr_text, ocr_ms))
+            prepared.append((image, box, detector_score, detect_ms, ocr_text, ocr_ms))
 
         began = time.perf_counter()
-        vectors = embedder.embed([item[0] for item in prepared], batch_size=len(prepared))
+        top_slugs, top_scores = searcher.search([p[0] for p in prepared], [p[1] for p in prepared], TOP_K)
         embed_ms = (time.perf_counter() - began) * 1000 / len(prepared)
-        top_slugs, top_scores = index.search(vectors, k=TOP_K)
 
         for row, (_, box, detector_score, detect_ms, ocr_text, ocr_ms), slugs, scores in zip(
             batch, prepared, top_slugs, top_scores
@@ -167,16 +209,18 @@ def run(split: str, index_name: str, crop: str, limit: int | None, device: str |
 
     predictions = pd.DataFrame(records)
     out_of_catalog = predictions[predictions["expected_slug"] == ""]
+    in_catalog = predictions[predictions["expected_slug"] != ""]
     metrics = {
         "split": split,
-        "index": index_name,
-        "model_id": index.meta["model_id"],
+        "indexes": index_names,
+        "index_weights": weights,
+        "models": [index.meta["model_id"] for index in searcher.indexes],
         "crop": crop,
         "ocr": ocr,
         "queries": len(predictions),
         "seconds": round(time.monotonic() - started, 1),
         **summarize(predictions),
-        "same_image_top1": float(predictions.loc[predictions["expected_slug"] != "", "same_image_top1"].mean() or 0),
+        "same_image_top1": float(in_catalog["same_image_top1"].mean()) if len(in_catalog) else 0.0,
         "latency_ms": {
             "detect_mean": float(predictions["detect_ms"].mean()),
             "ocr_mean": float(predictions["ocr_ms"].mean()),
@@ -184,33 +228,40 @@ def run(split: str, index_name: str, crop: str, limit: int | None, device: str |
         },
         "out_of_catalog": out_of_catalog[["query_id", "predicted_slug", "score_top1", "margin"]].to_dict("records"),
     }
-    run_name = f"{split}__{index_name}__{crop}" + ("__ocr" if ocr else "") + (f"__limit{limit}" if limit else "")
+    weights_tag = "" if len(index_names) == 1 else "@" + ",".join(f"{w:g}" for w in weights)
+    run_name = (f"{split}__{'+'.join(index_names)}{weights_tag}__{crop}" + ("__ocr" if ocr else "")
+                + (f"__limit{limit}" if limit else ""))  # fmt: skip
     out_dir = paths.artifacts_dir / "eval" / run_name
     out_dir.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(out_dir / "predictions.csv", index=False)
     (out_dir / "metrics.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    print(f"\n{run_name}: {len(predictions) - len(out_of_catalog)} запросов из каталога, {len(out_of_catalog)} вне каталога")
+    print(f"\n{run_name}: {len(in_catalog)} запросов из каталога, {len(out_of_catalog)} вне каталога")
     print(markdown_table(metrics))
     print(f"top-1 с тем же изображением, что у верного вина: {metrics['same_image_top1']:.3f}")
     latency = metrics["latency_ms"]
     print(f"задержка, мс: детекция {latency['detect_mean']:.0f}, OCR {latency['ocr_mean']:.0f}, "
-          f"эмбеддинг {latency['embed_mean_in_batch']:.0f} (в батче)")  # fmt: skip
+          f"эмбеддинги {latency['embed_mean_in_batch']:.0f} (в батче)")  # fmt: skip
     return out_dir
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Прогон поиска на валидационной выборке")
     parser.add_argument("--split", required=True, help="synth_v1, public, ...")
-    parser.add_argument("--index", required=True, help="папка в artifacts/index")
+    parser.add_argument("--index", required=True, help="папки в artifacts/index через запятую")
+    parser.add_argument("--index-weights", default=None, help="веса индексов через запятую (по умолчанию поровну)")
     parser.add_argument("--crop", choices=("gt", "detector", "none"), default="detector")
     parser.add_argument("--ocr", action="store_true", help="читать текст этикетки для переранжирования")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--batch-size", type=int, default=32)
     args = parser.parse_args(argv)
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    run(args.split, args.index, args.crop, args.limit, args.device, args.batch_size, args.ocr)
+    setup_logging()
+    names = [name.strip() for name in args.index.split(",") if name.strip()]
+    weights = [float(w) for w in args.index_weights.split(",")] if args.index_weights else [1 / len(names)] * len(names)
+    if len(weights) != len(names):
+        parser.error("число весов не совпадает с числом индексов")
+    run(args.split, names, weights, args.crop, args.limit, args.device, args.batch_size, args.ocr)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,8 @@ def test_latin_and_cyrillic_spellings_are_similar(latin, cyrillic_translit):
 
 def test_different_grapes_are_not_similar():
     assert token_similarity("riesling", "merlo") < 0.8
+    # регрессия с фото Массандры: «розовый» совпадал с «России» по короткому скелету
+    assert token_similarity("rozovyj", "rossii") < 0.8
     assert skeleton("chardonnay") == skeleton("shardone") == "shrdn"
 
 

@@ -20,7 +20,7 @@ class ImageEmbedder:
         self.device = device or default_device()
         self.dtype = torch.float16 if self.device.startswith("cuda") else torch.float32
         self.processor = AutoImageProcessor.from_pretrained(model_id)
-        self.model = AutoModel.from_pretrained(model_id, torch_dtype=self.dtype).to(self.device).eval()
+        self.model = AutoModel.from_pretrained(model_id, dtype=self.dtype).to(self.device).eval()
 
     @torch.inference_mode()
     def embed(self, images: list[Image.Image], batch_size: int = 32) -> np.ndarray:
