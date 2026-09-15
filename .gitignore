@@ -7,3 +7,8 @@ dist/
 .DS_Store
 ios/App/Pods/
 *.db
+
+# данные портала не редистрибутируются: пайплайн собирает их локально
+pipeline/raw/
+pipeline/catalog/
+pipeline/build/

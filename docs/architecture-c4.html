@@ -1,0 +1,262 @@
+<title>Архитектура сканера вина</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #FBF9F7; --ink: #2B2226; --muted: #6F6167;
+    --accent: #7D2A3C; --accent-soft: #F3E6E9; --line: #E6DDDA;
+    --card: #FFFFFF; --mono-bg: #F2EDEB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1C1518; --ink: #EDE5E2; --muted: #9C8E93;
+      --accent: #CE7A88; --accent-soft: #33222A; --line: #3A3034;
+      --card: #241C20; --mono-bg: #2A2226;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1C1518; --ink: #EDE5E2; --muted: #9C8E93;
+    --accent: #CE7A88; --accent-soft: #33222A; --line: #3A3034;
+    --card: #241C20; --mono-bg: #2A2226;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px; line-height: 1.6; margin: 0; padding: 0 20px;
+  }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 52px 0 80px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Cormorant", Georgia, serif; font-weight: 700;
+    font-size: clamp(34px, 6vw, 48px); line-height: 1.06; margin: 0 0 10px; text-wrap: balance;
+  }
+  .lede { font-size: 17px; color: var(--muted); max-width: 47rem; margin: 0; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+  section { margin-top: 54px; }
+  h2 {
+    font-family: "Cormorant", Georgia, serif; font-weight: 600;
+    font-size: 28px; line-height: 1.15; margin: 0 0 6px; text-wrap: balance;
+  }
+  .sec-sub { color: var(--muted); margin: 0 0 16px; max-width: 47rem; }
+  p { margin: 0 0 14px; max-width: 47rem; }
+  ul { margin: 0 0 14px; padding-left: 22px; max-width: 47rem; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--accent); }
+  code {
+    font-family: "IBM Plex Mono", monospace; font-size: 13.5px;
+    background: var(--mono-bg); border-radius: 4px; padding: 1px 5px;
+  }
+  figure { margin: 18px 0 8px; }
+  figure svg { display: block; max-width: 100%; height: auto; }
+  figure svg text { font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 10px; max-width: 47rem; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center;
+    font-size: 13px; color: var(--muted); margin: 4px 0 14px;
+  }
+  .legend .sw { display: inline-block; width: 26px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 7px; }
+  .legend .sw.core { border: 1.6px solid var(--ink); }
+  .legend .sw.ext { border: 1.6px dashed var(--muted); }
+  .footer { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">кейс «Своё Вино» · ЛЦТ · C4-модель · 13.09.2026</p>
+  <h1>Архитектура сканера вина</h1>
+  <p class="lede">Сервис «фото → карточка вина» на массиве платформы. Три уровня C4: контекст, контейнеры, компоненты сопоставления. Сквозной принцип: <strong>сопоставление важнее распознавания</strong> — снимок в магазине всегда несовершенен, точность добирается каталогом, синонимами и калиброванным порогом уверенности.</p>
+
+  <div class="legend" style="margin-top:22px">
+    <span><span class="sw core"></span>наш сервис</span>
+    <span><span class="sw ext"></span>внешнее / офлайн-контур данных</span>
+  </div>
+
+  <!-- ================= C1 ================= -->
+  <section>
+    <h2>C1 — контекст</h2>
+    <p class="sec-sub">Один пользователь, один сервис, один источник данных. Персональных данных нет по построению: ни аккаунтов, ни хранения фото.</p>
+    <figure>
+      <svg viewBox="0 0 1120 300" role="img" aria-label="Контекст: покупатель отправляет фото в сервис сканирования, сервис работает на массиве платформы Своё Вино и возвращает карточку со ссылкой на первоисточник">
+        <defs>
+          <marker id="c1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect x="30" y="100" width="210" height="90" rx="14" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="135" y="132" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Покупатель 18+</text>
+        <text x="135" y="152" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">в точке продажи</text>
+        <text x="135" y="170" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">фото бутылки с телефона</text>
+
+        <rect x="430" y="90" width="300" height="110" rx="10" fill="var(--card)" stroke="currentColor" stroke-width="1.7"/>
+        <text x="580" y="124" text-anchor="middle" font-size="13.5" font-weight="600" fill="currentColor">Сервис сканирования вина</text>
+        <text x="580" y="146" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">фото → карточка с описанием</text>
+        <text x="580" y="164" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">ответ ≤ 3 секунд</text>
+        <text x="580" y="184" text-anchor="middle" font-size="10.5" fill="var(--accent)">фото обрабатывается в памяти, не сохраняется</text>
+
+        <rect x="880" y="90" width="210" height="110" rx="10" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="985" y="124" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Платформа «Своё Вино»</text>
+        <text x="985" y="146" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">массив данных кейса</text>
+        <text x="985" y="164" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">карточки-первоисточники</text>
+
+        <line x1="240" y1="120" x2="426" y2="120" stroke="currentColor" stroke-width="1.4" marker-end="url(#c1a)"/>
+        <text x="333" y="108" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">фото · HTTPS</text>
+        <line x1="430" y1="170" x2="244" y2="170" stroke="currentColor" stroke-width="1.4" marker-end="url(#c1a)"/>
+        <text x="333" y="192" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">карточка · кандидаты · «не найдено»</text>
+
+        <line x1="880" y1="120" x2="734" y2="120" stroke="currentColor" stroke-width="1.4" marker-end="url(#c1a)"/>
+        <text x="807" y="108" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">массив вин · офлайн</text>
+        <line x1="730" y1="170" x2="876" y2="170" stroke="currentColor" stroke-width="1.4" marker-end="url(#c1a)"/>
+        <text x="807" y="192" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">ссылка на первоисточник</text>
+      </svg>
+      <figcaption>C1: сервис стоит между покупателем и массивом платформы. Данные приходят офлайн-контуром, а каждая выданная карточка ведёт обратно на страницу портала — сервис ничего не пересочиняет.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= C2 ================= -->
+  <section>
+    <h2>C2 — контейнеры</h2>
+    <p class="sec-sub">Онлайн-путь из трёх контейнеров и офлайн-контур данных. Состояния у сервиса нет: всё знание живёт в версионируемом индексе.</p>
+    <figure>
+      <svg viewBox="0 0 1120 560" role="img" aria-label="Контейнеры: веб-демо, API-сервис с OCR и матчером, поисковое ядро с Qdrant и индекс-артефактами; офлайн-пайплайн готовит каталог из массива и публикует версии индекса">
+        <defs>
+          <marker id="c2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect x="30" y="90" width="200" height="100" rx="10" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="130" y="122" text-anchor="middle" font-size="13" font-weight="600" fill="currentColor">Веб-демо</text>
+        <text x="130" y="142" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">камера / загрузка фото</text>
+        <text x="130" y="160" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">выбор из кандидатов</text>
+
+        <rect x="320" y="60" width="360" height="240" rx="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="336" y="88" font-size="12.5" font-weight="600" fill="currentColor">API-сервис · FastAPI</text>
+        <rect x="340" y="110" width="150" height="60" rx="6" fill="var(--card)" stroke="currentColor" stroke-opacity="0.6"/>
+        <text x="415" y="134" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">OCR</text>
+        <text x="415" y="152" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">кириллица + латиница</text>
+        <rect x="510" y="110" width="150" height="60" rx="6" fill="var(--card)" stroke="currentColor" stroke-opacity="0.6"/>
+        <text x="585" y="134" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">Матчер</text>
+        <text x="585" y="152" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">две ступени · см. C3</text>
+        <line x1="490" y1="140" x2="506" y2="140" stroke="currentColor" stroke-width="1.3" marker-end="url(#c2a)"/>
+        <rect x="340" y="196" width="320" height="76" rx="6" fill="var(--mono-bg)" stroke="currentColor" stroke-opacity="0.35"/>
+        <text x="500" y="218" text-anchor="middle" font-size="11" fill="currentColor">POST /scan · GET /wines/{id}</text>
+        <text x="500" y="236" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.7">без аккаунтов и БД пользователей</text>
+        <text x="500" y="254" text-anchor="middle" font-size="10.5" fill="var(--accent)">фото — только в памяти запроса</text>
+
+        <rect x="760" y="60" width="330" height="240" rx="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="776" y="88" font-size="12.5" font-weight="600" fill="currentColor">Поисковое ядро</text>
+        <rect x="780" y="110" width="140" height="72" rx="6" fill="var(--card)" stroke="currentColor" stroke-opacity="0.6"/>
+        <text x="850" y="136" text-anchor="middle" font-size="11.5" font-weight="600" fill="currentColor">Qdrant</text>
+        <text x="850" y="154" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">вектора + payload</text>
+        <rect x="936" y="110" width="136" height="72" rx="6" fill="var(--card)" stroke="currentColor" stroke-opacity="0.6"/>
+        <text x="1004" y="132" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Индекс-артефакты</text>
+        <text x="1004" y="150" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">BM25 · синонимы</text>
+        <text x="1004" y="166" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">манифест + порог</text>
+        <text x="925" y="220" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">версия индекса · атомарное переключение</text>
+
+        <line x1="230" y1="140" x2="316" y2="140" stroke="currentColor" stroke-width="1.4" marker-end="url(#c2a)"/>
+        <text x="272" y="128" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">HTTPS</text>
+        <line x1="680" y1="140" x2="756" y2="140" stroke="currentColor" stroke-width="1.4" marker-end="url(#c2a)"/>
+        <text x="718" y="128" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">поиск top-k</text>
+
+        <rect x="30" y="400" width="200" height="100" rx="10" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="130" y="432" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Массив «Своё Вино»</text>
+        <text x="130" y="452" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.65">данные кейса</text>
+
+        <rect x="320" y="390" width="360" height="120" rx="10" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="500" y="418" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Пайплайн данных · офлайн</text>
+        <text x="500" y="440" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">обработка → каталог с провенансом</text>
+        <text x="500" y="456" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">(source_url · fetched_at · content_hash)</text>
+        <text x="500" y="476" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">индексация · голд-сет · eval-гейт</text>
+
+        <line x1="230" y1="450" x2="316" y2="450" stroke="currentColor" stroke-width="1.4" marker-end="url(#c2a)"/>
+        <text x="272" y="438" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">идемпотентно</text>
+        <polyline points="680,450 925,450 925,304" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#c2a)"/>
+        <text x="938" y="380" font-size="10.5" fill="currentColor" opacity="0.65">публикация версии индекса</text>
+      </svg>
+      <figcaption>C2: онлайн-путь (веб-демо → API → ядро) отделён от офлайн-контура данных. Просевшие на eval-гейте метрики не пускают новую версию индекса в работу — качество меряется до публикации, а не после жалоб.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= C3 ================= -->
+  <section>
+    <h2>C3 — компоненты сопоставления</h2>
+    <p class="sec-sub">Сердце сервиса. Быстрая точная ступень закрывает типовые случаи, гибридная — трудные снимки; калиброванный порог даёт три честных исхода вместо ложной уверенности.</p>
+    <figure>
+      <svg viewBox="0 0 1120 400" role="img" aria-label="Поток сопоставления: фото проходит OCR и нормализацию, ступень один — нечёткое совпадение, при слабом скоре ступень два — гибридный поиск с реранкером; исходы: одна карточка, список кандидатов или честное не найдено">
+        <defs>
+          <marker id="c3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <rect x="30" y="75" width="120" height="56" rx="28" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="90" y="99" text-anchor="middle" font-size="12.5" font-weight="600" fill="currentColor">Фото</text>
+        <text x="90" y="117" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">или текст с этикетки</text>
+
+        <rect x="190" y="60" width="170" height="86" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.4"/>
+        <text x="275" y="88" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">OCR</text>
+        <text x="275" y="108" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">кириллица + латиница</text>
+        <text x="275" y="126" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">PaddleOCR</text>
+
+        <rect x="400" y="60" width="180" height="86" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.4"/>
+        <text x="490" y="88" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Нормализация</text>
+        <text x="490" y="108" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">словарь синонимов</text>
+        <text x="490" y="126" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">сортов и виноделен</text>
+
+        <rect x="620" y="60" width="190" height="86" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.4"/>
+        <text x="715" y="86" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Ступень 1</text>
+        <text x="715" y="106" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">rapidfuzz: название</text>
+        <text x="715" y="124" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">+ винодельня</text>
+
+        <rect x="620" y="216" width="190" height="96" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.4"/>
+        <text x="715" y="242" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Ступень 2</text>
+        <text x="715" y="262" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">BM25 + вектора · RRF</text>
+        <text x="715" y="280" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">реранкер top-50 → top-8</text>
+        <text x="715" y="298" text-anchor="middle" font-size="10.5" fill="var(--accent)">порог — из манифеста индекса</text>
+
+        <rect x="880" y="60" width="210" height="56" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="985" y="84" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Одна карточка</text>
+        <text x="985" y="102" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">скор высокий</text>
+
+        <rect x="880" y="140" width="210" height="56" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="985" y="164" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">3–5 кандидатов</text>
+        <text x="985" y="182" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">скор средний — выбирает человек</text>
+
+        <rect x="880" y="220" width="210" height="56" rx="8" fill="var(--card)" stroke="currentColor" stroke-width="1.5"/>
+        <text x="985" y="244" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">«Не найдено»</text>
+        <text x="985" y="262" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">ниже порога — без фантазий</text>
+
+        <line x1="150" y1="103" x2="186" y2="103" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <line x1="360" y1="103" x2="396" y2="103" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <line x1="580" y1="103" x2="616" y2="103" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <line x1="715" y1="146" x2="715" y2="212" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <text x="723" y="184" font-size="10.5" fill="currentColor" opacity="0.65">скор ниже уверенного</text>
+
+        <line x1="810" y1="88" x2="843" y2="88" stroke="currentColor" stroke-width="1.4"/>
+        <text x="826" y="76" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.65">уверенно</text>
+        <line x1="810" y1="264" x2="843" y2="264" stroke="currentColor" stroke-width="1.4"/>
+        <line x1="843" y1="88" x2="843" y2="264" stroke="currentColor" stroke-width="1.4"/>
+        <line x1="843" y1="88" x2="876" y2="88" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <line x1="843" y1="168" x2="876" y2="168" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+        <line x1="843" y1="248" x2="876" y2="248" stroke="currentColor" stroke-width="1.4" marker-end="url(#c3a)"/>
+      </svg>
+      <figcaption>C3: ступень 1 закрывает чистые случаи за миллисекунды; ступень 2 подхватывает трудные снимки. Порог отсечки не подбирается на глаз — он калибруется на голд-сете при сборке индекса и хранится в его манифесте, поэтому «не найдено» — это измеренное решение, а не таймаут.</figcaption>
+    </figure>
+
+    <ul style="margin-top:16px">
+      <li><b>Почему две ступени:</b> точное нечёткое совпадение дёшево и объяснимо — оно первым; тяжёлый гибрид с реранкером включается только когда нужен.</li>
+      <li><b>Почему порог в манифесте:</b> порог зависит от версии индекса; храня его рядом с данными, нельзя случайно применить старый порог к новому индексу.</li>
+      <li><b>Почему «не найдено» — фича:</b> ложная уверенность в точке продажи хуже отказа; проверочный набор содержит и посторонние снимки/запросы с ожиданием отказа.</li>
+    </ul>
+  </section>
+
+  <div class="footer">
+    <p>C4: контекст → контейнеры → компоненты. Сервис по кейсу «Своё Вино» (ЛЦТ); карточки ссылаются на первоисточник.</p>
+    <p>18+ · Чрезмерное употребление алкоголя вредит вашему здоровью.</p>
+  </div>
+</div>

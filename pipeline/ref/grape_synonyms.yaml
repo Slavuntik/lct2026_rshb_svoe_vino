@@ -1,0 +1,766 @@
+# Справочник сортов винограда.
+# Наш IP: нормализация написаний + мост «российский сорт <-> мировая классика».
+# Мост используется в задаче F3 (подбор российского аналога импортному вину).
+#
+# Поля:
+#   synonyms   — варианты написания, встречающиеся на портале и в статьях
+#   role       — как ведёт себя в купаже/моносорте
+#   equivalent — мировые сорта близкого профиля (для обратного матчинга)
+#   profile    — грубая опорная точка сенсорики, уточняется по описанию вина
+#
+# СТАТУС: покрывает все 118 неопознанных написаний с портала (прогон
+# 2026-08-25, 1978 вин). profile проставлен там, где сортовой профиль
+# описан в литературе. У малоизученных советских гибридов profile
+# намеренно отсутствует — по правилу «ничего не досочинять»: сорт
+# опознаётся, но сенсорика остаётся невыведенной и confidence не растёт.
+
+# Служебные значения портала: в поле сорта, но сортами не являются.
+# normalize пропускает их молча, не засоряя список неопознанных.
+non_grapes:
+  - Белые сорта винограда
+  - Красные сорта винограда
+
+autochthonous:
+
+  - slug: krasnostop-zolotovsky
+    name: Красностоп Золотовский
+    color: красный
+    synonyms: [Красностоп, Красностоп золотовский]
+    region_core: [dolina-dona, kuban]
+    equivalent: [Санджовезе, Сира, Мурведр]
+    profile: {body: 0.75, tannin: 0.75, acidity: 0.65, aromatic_intensity: 0.7}
+    note: плотный, пряный, с тёмной ягодой и травяной горчинкой
+
+  - slug: krasnostop-anapsky
+    name: Красностоп Анапский
+    color: красный
+    region_core: [kuban]
+    equivalent: [Сира, Мурведр]
+    profile: {body: 0.7, tannin: 0.7, acidity: 0.65}
+    note: анапская популяция, отличается от золотовского — не синоним
+
+  - slug: tsimlyansky-chorny
+    name: Цимлянский чёрный
+    color: красный
+    synonyms: [Цимлянский черный]
+    region_core: [dolina-dona]
+    equivalent: [Гренаш, Барбера]
+    profile: {body: 0.6, tannin: 0.55, acidity: 0.7}
+
+  - slug: sibirkovy
+    name: Сибирьковый
+    color: белый
+    synonyms: [Сибирьковый, Сибирковый]
+    region_core: [dolina-dona]
+    equivalent: [Верментино, Ассиртико]
+    profile: {body: 0.45, acidity: 0.8, aromatic_intensity: 0.6}
+    note: травяной, полынный, высокая кислотность
+
+  - slug: puhlyakovsky
+    name: Пухляковский
+    color: белый
+    region_core: [dolina-dona]
+    equivalent: [Гарганега]
+    profile: {body: 0.5, acidity: 0.6}
+
+  - slug: kumshatsky
+    name: Кумшацкий
+    color: белый
+    synonyms: [Кумшацкий белый]
+    region_core: [dolina-dona]
+    profile: {body: 0.5, acidity: 0.65}
+
+  - slug: plechistik
+    name: Плечистик
+    color: красный
+    region_core: [dolina-dona]
+    profile: {body: 0.6, tannin: 0.6, acidity: 0.7}
+    note: традиционный партнёр цимлянского чёрного в донских купажах
+
+  - slug: kokur
+    name: Кокур
+    color: белый
+    synonyms: [Кокур белый, Кокур]
+    region_core: [krym]
+    equivalent: [Гарганега, Треббьяно]
+    profile: {body: 0.5, acidity: 0.6}
+
+  - slug: kefesiya
+    name: Кефесия
+    color: красный
+    region_core: [krym]
+    equivalent: [Ксиномавро, Неббиоло]
+    profile: {body: 0.6, tannin: 0.7, acidity: 0.75}
+
+  - slug: dzhevat-kara
+    name: Джеват Кара
+    color: красный
+    synonyms: [Джеват кара, Кара джеват]
+    region_core: [krym]
+    equivalent: [Мурведр]
+
+  - slug: ekim-kara
+    name: Эким-Кара
+    color: красный
+    synonyms: [Эким Кара, Экимкара]
+    region_core: [krym]
+    profile: {body: 0.75, tannin: 0.7, acidity: 0.6}
+    note: «чёрный доктор», основа десертных вин Солнечной Долины
+
+  - slug: sary-pandas
+    name: Сары Пандас
+    color: белый
+    synonyms: [Сары пандас]
+    region_core: [krym]
+    profile: {body: 0.5, acidity: 0.6}
+
+  - slug: shabash
+    name: Шабаш
+    color: белый
+    region_core: [krym]
+    profile: {body: 0.45, acidity: 0.55}
+
+  - slug: narma
+    name: Нарма
+    color: белый
+    region_core: [dagestan]
+
+  - slug: gimra
+    name: Гимра
+    color: красный
+    region_core: [dagestan]
+
+  - slug: odessky-chorny
+    name: Одесский чёрный
+    color: красный
+    synonyms: [Одесский черный, Алиберне]
+    equivalent: [Аликант Буше]
+    profile: {body: 0.7, tannin: 0.7, acidity: 0.65}
+    note: интенсивно окрашенный, одесской селекции
+
+  # --- Кавказ и Закавказье: автохтоны своих стран, широко посажены у нас ---
+
+  - slug: rkatsiteli
+    name: Ркацители
+    color: белый
+    synonyms: [Ркацители Оранж, Ркацители оранж]
+    equivalent: [Ассиртико, Треббьяно]
+    profile: {body: 0.55, acidity: 0.75, aromatic_intensity: 0.5}
+    note: «Ркацители Оранж» — стиль вина, не отдельный сорт
+
+  - slug: mtsvane
+    name: Мцване
+    color: белый
+    synonyms: [Мцване Кахетинский, Мцване кахетинский]
+    equivalent: [Верментино]
+    profile: {body: 0.6, acidity: 0.65, aromatic_intensity: 0.7}
+
+  - slug: hihvi
+    name: Хихви
+    color: белый
+    profile: {body: 0.6, acidity: 0.6, aromatic_intensity: 0.6}
+
+  - slug: tavkveri
+    name: Тавквери
+    color: красный
+    profile: {body: 0.6, tannin: 0.6, acidity: 0.8}
+
+  - slug: kangun
+    name: Кангун
+    color: белый
+    profile: {body: 0.5, acidity: 0.6}
+    note: армянская селекция
+
+  - slug: areni
+    name: Арени
+    color: красный
+    equivalent: [Пино Нуар, Санджовезе]
+    profile: {body: 0.6, tannin: 0.55, acidity: 0.7}
+    note: армянский автохтон
+
+  - slug: bayanshira
+    name: Баяншира
+    color: белый
+    profile: {body: 0.5, acidity: 0.6}
+    note: азербайджанский автохтон
+
+  - slug: madrasa
+    name: Мадраса
+    color: красный
+    synonyms: [мадраса]
+    profile: {body: 0.65, tannin: 0.6, acidity: 0.6}
+    note: азербайджанский автохтон
+
+hybrid_and_soviet:
+
+  - slug: antey-magarachsky
+    name: Антей магарачский
+    color: красный
+    region_core: [krym]
+  - slug: aleatiko
+    name: Алеатико
+    color: красный
+    equivalent: [Алеатико]
+    profile: {body: 0.6, tannin: 0.5, acidity: 0.55, aromatic_intensity: 0.85}
+    note: итальянского происхождения, укоренён в Крыму; ароматика мускатного типа
+  - slug: avgustin
+    name: Августин
+    color: белый
+  - slug: amursky-potapenko
+    name: Амурский Потапенко
+    color: красный
+    note: морозостойкий, север и Дальний Восток
+
+  - slug: citronny-magaracha
+    name: Цитронный Магарача
+    color: белый
+    synonyms: [Цитронный магарача]
+    region_core: [krym, kuban]
+    profile: {body: 0.55, acidity: 0.6, aromatic_intensity: 0.75}
+    note: мускатно-цитронная ароматика, магарачская селекция
+
+  - slug: pervenec-magaracha
+    name: Первенец Магарача
+    color: белый
+    synonyms: [Первенец магарача]
+    region_core: [krym]
+    profile: {body: 0.55, acidity: 0.6}
+
+  - slug: bastardo-magarachsky
+    name: Бастардо Магарачский
+    color: красный
+    synonyms: [Бастардо магарачский]
+    region_core: [krym]
+    profile: {body: 0.7, tannin: 0.65, acidity: 0.55}
+    note: гибрид Бастардо × Саперави, отдельный сорт — не синоним Бастардо
+
+  - slug: rubin-golodrigi
+    name: Рубин Голодриги
+    color: красный
+    synonyms: [Рубин голодриги]
+    region_core: [krym]
+    profile: {body: 0.75, tannin: 0.7, acidity: 0.6}
+
+  - slug: rubinovy-magaracha
+    name: Рубиновый Магарача
+    color: красный
+    synonyms: [Рубиновый магарача]
+    region_core: [krym]
+    profile: {body: 0.7, tannin: 0.7, acidity: 0.6}
+
+  - slug: podarok-magaracha
+    name: Подарок Магарача
+    color: белый
+    synonyms: [Подарок магарача]
+    region_core: [krym]
+    profile: {body: 0.5, acidity: 0.6}
+
+  - slug: rubin-azos
+    name: Рубин АЗОС
+    color: красный
+    region_core: [kuban]
+    profile: {body: 0.75, tannin: 0.7, acidity: 0.6}
+    note: селекция Анапской зональной опытной станции
+
+  - slug: kaberne-azos
+    name: Каберне АЗОС
+    color: красный
+    region_core: [kuban]
+    profile: {body: 0.75, tannin: 0.75, acidity: 0.6}
+    note: селекция Анапской зональной опытной станции
+
+  - slug: saperavi-severny
+    name: Саперави Северный
+    color: красный
+    synonyms: [Саперави северный]
+    profile: {body: 0.7, tannin: 0.7, acidity: 0.7}
+    note: морозостойкий гибрид саперави, отдельный сорт
+
+  - slug: golubok
+    name: Голубок
+    color: красный
+    profile: {body: 0.7, tannin: 0.65, acidity: 0.65}
+    note: сильно окрашенный, используется как красящий в купажах
+
+  - slug: cvetochny
+    name: Цветочный
+    color: белый
+    profile: {body: 0.55, acidity: 0.5, aromatic_intensity: 0.8}
+    note: мускатная ароматика, гибрид с участием мускатов
+
+  - slug: bianka
+    name: Бианка
+    color: белый
+    synonyms: [Бьянка, Bianca]
+    profile: {body: 0.5, acidity: 0.6}
+    note: венгерский гибрид, широко посажен на Кубани и Дону
+
+  - slug: moldova
+    name: Молдова
+    color: красный
+    profile: {body: 0.5, tannin: 0.45, acidity: 0.55}
+    note: столовый по происхождению, встречается в недорогих винах
+
+  - slug: izabella
+    name: Изабелла
+    color: красный
+    synonyms: [Isabella]
+    profile: {body: 0.5, tannin: 0.35, acidity: 0.6, aromatic_intensity: 0.9}
+    note: лабруска, характерный «фокси»-тон
+
+  - slug: cvaigelt-tamansky
+    name: Цвайгельт Таманский
+    color: красный
+    synonyms: [Цвайгельт таманский]
+    region_core: [kuban]
+    profile: {body: 0.55, tannin: 0.5, acidity: 0.65}
+    note: таманская популяция цвайгельта
+
+  - slug: kaberne-kortis
+    name: Каберне Кортис
+    color: красный
+    synonyms: [Каберне кортис, Cabernet Cortis]
+    profile: {body: 0.7, tannin: 0.7, acidity: 0.65}
+    note: немецкий PIWI-гибрид
+
+  - slug: solyaris
+    name: Солярис
+    color: белый
+    synonyms: [Solaris]
+    profile: {body: 0.5, acidity: 0.55, aromatic_intensity: 0.6}
+    note: немецкий PIWI-гибрид
+
+  - slug: rebo
+    name: Ребо
+    color: красный
+    synonyms: [Rebo]
+    profile: {body: 0.65, tannin: 0.6, acidity: 0.6}
+    note: итальянский гибрид (Мерло × Теролдего)
+
+  - slug: gechei-zamatosh
+    name: Гечеи Заматош
+    color: белый
+    synonyms: [Гечеи заматош]
+    profile: {aromatic_intensity: 0.7, acidity: 0.6}
+    note: венгерский ароматичный сорт
+
+  # Малоизученные советские селекции: сорт опознаём, сенсорику не выводим.
+  - slug: dostojny
+    name: Достойный
+    color: красный
+  - slug: vostorg
+    name: Восторг
+    color: белый
+  - slug: marinovsky
+    name: Мариновский
+    color: красный
+  - slug: risus
+    name: Рисус
+    color: белый
+  - slug: stanichny
+    name: Станичный
+    color: красный
+  - slug: platovsky
+    name: Платовский
+    color: белый
+  - slug: levokumsky
+    name: Левокумский
+    color: красный
+  - slug: dekabrsky
+    name: Декабрьский
+    color: красный
+  - slug: bukovinka
+    name: Буковинка
+    color: белый
+  - slug: oleg
+    name: Олег
+    note: написание с портала, сортовая принадлежность не уточнена
+
+international:
+
+  - slug: shardone
+    name: Шардоне
+    color: белый
+    synonyms: [Chardonnay, Шардонэ]
+    equivalent: [Шардоне]
+    profile: {body: 0.6, acidity: 0.6}
+    styles:
+      - {tag: без дуба, equivalent_appellation: chablis}
+      - {tag: бочковое, equivalent_appellation: meursault}
+
+  - slug: aligote
+    name: Алиготе
+    color: белый
+    synonyms: [Aligote, Алиготэ]
+    equivalent: [Алиготе, Мюскаде]
+    profile: {body: 0.4, acidity: 0.8}
+
+  - slug: risling
+    name: Рислинг
+    color: белый
+    synonyms: [Riesling, Рислинг Рейнский, Рислинг рейнский]
+    equivalent: [Рислинг]
+    profile: {acidity: 0.85, aromatic_intensity: 0.8}
+
+  - slug: rislaner
+    name: Рисланер
+    color: белый
+    synonyms: [Rieslaner]
+    profile: {body: 0.55, acidity: 0.8, aromatic_intensity: 0.7}
+    note: скрещивание рислинга и сильванера
+
+  - slug: silvaner
+    name: Сильванер
+    color: белый
+    synonyms: [Silvaner]
+    profile: {body: 0.45, acidity: 0.65, aromatic_intensity: 0.4}
+
+  - slug: myuller-turgau
+    name: Мюллер-Тургау
+    color: белый
+    synonyms: [Мюллер тургау, Мюллер Тургау, Müller-Thurgau]
+    profile: {body: 0.4, acidity: 0.5, aromatic_intensity: 0.55}
+
+  - slug: glera
+    name: Глера
+    color: белый
+    synonyms: [Glera]
+    equivalent: [Глера]
+    profile: {body: 0.45, acidity: 0.7, aromatic_intensity: 0.55}
+    note: сорт просекко; на портале встречается в игристых Кубани и Крыма
+
+  - slug: pino-blan
+    name: Пино Блан
+    color: белый
+    synonyms: [Pinot Blanc, Пино блан]
+    profile: {body: 0.55, acidity: 0.65, aromatic_intensity: 0.4}
+
+  - slug: pino-gri
+    name: Пино Гри
+    color: белый
+    synonyms: [Пино гри, Пино Гриджио, Пино гриджио, Pinot Gris, Pinot Grigio]
+    profile: {body: 0.55, acidity: 0.55, aromatic_intensity: 0.5}
+
+  - slug: pino-nuar
+    name: Пино Нуар
+    color: красный
+    synonyms: [Pinot Noir, Пино нуар, Пино чёрный, Пино черный, Пино фран]
+    profile: {body: 0.45, tannin: 0.4, acidity: 0.7}
+    note: «Пино фран» и «Пино чёрный» — русские написания пино нуара
+
+  - slug: menye
+    name: Менье
+    color: красный
+    synonyms: [Пино Менье, Пино менье, Meunier, Pinot Meunier]
+    profile: {body: 0.5, tannin: 0.4, acidity: 0.7}
+    note: третий сорт шампанского трио
+
+  - slug: kaberne-sovinon
+    name: Каберне Совиньон
+    color: красный
+    synonyms: [Cabernet Sauvignon, Каберне совиньон]
+    profile: {body: 0.8, tannin: 0.8, acidity: 0.6}
+
+  - slug: kaberne-fran
+    name: Каберне Фран
+    color: красный
+    synonyms: [Каберне фран, Cabernet Franc]
+    profile: {body: 0.6, tannin: 0.6, acidity: 0.7, aromatic_intensity: 0.7}
+    note: травяная пиразиновая нота, легче каберне совиньона
+
+  - slug: merlo
+    name: Мерло
+    color: красный
+    synonyms: [Merlot]
+    profile: {body: 0.65, tannin: 0.55, acidity: 0.5}
+
+  - slug: pti-verdo
+    name: Пти Вердо
+    color: красный
+    synonyms: [Пти вердо, Petit Verdot]
+    profile: {body: 0.85, tannin: 0.85, acidity: 0.65, aromatic_intensity: 0.7}
+
+  - slug: karmener
+    name: Карменер
+    color: красный
+    synonyms: [Carmenere, Карменере]
+    profile: {body: 0.7, tannin: 0.6, acidity: 0.55, aromatic_intensity: 0.7}
+
+  - slug: malbek
+    name: Мальбек
+    color: красный
+    synonyms: [Malbec, Мальбэк]
+    profile: {body: 0.75, tannin: 0.7, acidity: 0.55}
+
+  - slug: sovinon-blan
+    name: Совиньон Блан
+    color: белый
+    synonyms: [Sauvignon Blanc, Совиньон, Совиньон блан]
+    profile: {acidity: 0.8, aromatic_intensity: 0.85}
+
+  - slug: sovinon-zeleny
+    name: Совиньон Зелёный
+    color: белый
+    synonyms: [Совиньон Зеленый, Совиньон зеленый]
+    note: >-
+      написание с портала; в российской практике так называют и совиньон блан,
+      и фриулано — профиль не выводим до уточнения у заказчика
+
+  - slug: semilion
+    name: Семильон
+    color: белый
+    synonyms: [Semillon, Семийон]
+    profile: {body: 0.65, acidity: 0.5, aromatic_intensity: 0.45}
+
+  - slug: shenen-blan
+    name: Шенен Блан
+    color: белый
+    synonyms: [Шенен блан, Chenin Blanc]
+    profile: {body: 0.55, acidity: 0.8, aromatic_intensity: 0.6}
+
+  - slug: sapervi
+    name: Саперави
+    color: красный
+    synonyms: [Саперави]
+    equivalent: [Сира, Санджовезе]
+    profile: {body: 0.8, tannin: 0.8, acidity: 0.75}
+    note: грузинского происхождения, широко посажен на Кубани и Дону
+
+  - slug: sira
+    name: Сира
+    color: красный
+    synonyms: [Шираз, Сира (Шираз), Syrah, Shiraz]
+    profile: {body: 0.8, tannin: 0.75, acidity: 0.6, aromatic_intensity: 0.75}
+
+  - slug: vione
+    name: Вионье
+    color: белый
+    synonyms: [Viognier, Вионье]
+    profile: {body: 0.7, acidity: 0.45, aromatic_intensity: 0.9}
+
+  - slug: rusan
+    name: Русан
+    color: белый
+    synonyms: [Roussanne, Руссан]
+    profile: {body: 0.7, acidity: 0.5, aromatic_intensity: 0.65}
+
+  - slug: marsan
+    name: Марсан
+    color: белый
+    synonyms: [Marsanne]
+    profile: {body: 0.75, acidity: 0.45, aromatic_intensity: 0.55}
+
+  - slug: grenash
+    name: Гренаш
+    color: красный
+    synonyms: [Grenache, Гарнача]
+    profile: {body: 0.7, tannin: 0.5, acidity: 0.45, aromatic_intensity: 0.6}
+
+  - slug: murvedr
+    name: Мурведр
+    color: красный
+    synonyms: [Mourvedre, Монастрель]
+    profile: {body: 0.8, tannin: 0.8, acidity: 0.55}
+
+  - slug: senso
+    name: Сенсо
+    color: красный
+    synonyms: [Cinsault, Сенсо]
+    profile: {body: 0.45, tannin: 0.35, acidity: 0.55}
+
+  - slug: sandzhoveze
+    name: Санджовезе
+    color: красный
+    synonyms: [Sangiovese]
+    profile: {body: 0.65, tannin: 0.75, acidity: 0.8}
+
+  - slug: nebbiolo
+    name: Неббиоло
+    color: красный
+    synonyms: [Nebbiolo]
+    profile: {body: 0.7, tannin: 0.9, acidity: 0.8}
+
+  - slug: montepulchano
+    name: Монтепульчано
+    color: красный
+    synonyms: [Montepulciano]
+    profile: {body: 0.7, tannin: 0.6, acidity: 0.55}
+
+  - slug: korvina
+    name: Корвина
+    color: красный
+    synonyms: [Corvina]
+    profile: {body: 0.55, tannin: 0.5, acidity: 0.7}
+
+  - slug: primitivo
+    name: Примитиво
+    color: красный
+    synonyms: [Зинфандель, Primitivo, Zinfandel]
+    profile: {body: 0.8, tannin: 0.6, acidity: 0.55, aromatic_intensity: 0.7}
+    note: примитиво и зинфандель — один сорт, на портале оба написания
+
+  - slug: tempranilo
+    name: Темпранильо
+    color: красный
+    synonyms: [Tempranillo]
+    profile: {body: 0.7, tannin: 0.65, acidity: 0.55}
+
+  - slug: blaufrankish
+    name: Блауфранкиш
+    color: красный
+    synonyms: [Blaufrankisch, Лембергер]
+    profile: {body: 0.65, tannin: 0.65, acidity: 0.75}
+
+  - slug: cvaigelt
+    name: Цвайгельт
+    color: красный
+    synonyms: [Zweigelt]
+    profile: {body: 0.55, tannin: 0.5, acidity: 0.65}
+
+  - slug: marselan
+    name: Марселан
+    color: красный
+    synonyms: [Marselan]
+    profile: {body: 0.7, tannin: 0.65, acidity: 0.55}
+    note: скрещивание каберне совиньона и гренаша
+
+  - slug: bastardo
+    name: Бастардо
+    color: красный
+    synonyms: [Труссо, Trousseau]
+    profile: {body: 0.6, tannin: 0.5, acidity: 0.6}
+    note: португальское/юрское происхождение; не путать с бастардо магарачским
+
+  - slug: gevyurctraminer
+    name: Гевюрцтраминер
+    color: белый
+    synonyms: [Gewurztraminer, Гевюрцтраминер]
+    profile: {body: 0.7, acidity: 0.4, aromatic_intensity: 0.95}
+
+  - slug: traminer
+    name: Траминер
+    color: белый
+    synonyms: [Траминер Розовый, Траминер розовый, Traminer]
+    profile: {body: 0.65, acidity: 0.5, aromatic_intensity: 0.85}
+
+  - slug: gryuner-veltliner
+    name: Грюнер Вельтлинер
+    color: белый
+    synonyms: [Грюнер, Gruner Veltliner]
+    profile: {body: 0.5, acidity: 0.75, aromatic_intensity: 0.6}
+
+  - slug: vermentino
+    name: Верментино
+    color: белый
+    synonyms: [Vermentino]
+    profile: {body: 0.5, acidity: 0.7, aromatic_intensity: 0.6}
+
+  - slug: albilo
+    name: Альбильо
+    color: белый
+    synonyms: [Albillo]
+    profile: {body: 0.5, acidity: 0.6}
+
+  - slug: verdelo
+    name: Вердельо
+    color: белый
+    synonyms: [Verdelho]
+    profile: {body: 0.6, acidity: 0.7}
+
+  - slug: sersial
+    name: Серсиаль
+    color: белый
+    synonyms: [Sercial]
+    profile: {body: 0.5, acidity: 0.85}
+
+  - slug: malvaziya
+    name: Мальвазия
+    color: белый
+    synonyms: [Malvasia]
+    profile: {body: 0.6, acidity: 0.5, aromatic_intensity: 0.7}
+
+  - slug: kolombar
+    name: Коломбар
+    color: белый
+    synonyms: [Colombard]
+    profile: {body: 0.4, acidity: 0.75}
+
+  - slug: uni-blan
+    name: Уньи Блан
+    color: белый
+    synonyms: [Уньи блан, Ugni Blanc, Треббьяно]
+    profile: {body: 0.35, acidity: 0.85}
+
+  - slug: pedro-himenes
+    name: Педро Хименес
+    color: белый
+    synonyms: [Педро хименес, Pedro Ximenez]
+    profile: {body: 0.7, acidity: 0.35, aromatic_intensity: 0.6}
+
+  - slug: petit-arvin
+    name: Петит Арвин
+    color: белый
+    synonyms: [Петит арвин, Petite Arvine]
+    profile: {body: 0.6, acidity: 0.8, aromatic_intensity: 0.7}
+
+  - slug: pti-mansen
+    name: Пти Мансен
+    color: белый
+    synonyms: [Пти мансен, Petit Manseng]
+    profile: {body: 0.6, acidity: 0.85, aromatic_intensity: 0.75}
+
+  # --- мускатная группа ---
+
+  - slug: muskat-bely
+    name: Мускат Белый
+    color: белый
+    synonyms: [Мускат белый, Мускат Блан, Мускат блан, Мускат Мелкозернистый,
+               Мускат мелкозернистый, Muscat Blanc]
+    profile: {body: 0.6, acidity: 0.55, aromatic_intensity: 0.9}
+    note: Muscat Blanc à Petits Grains
+
+  - slug: muskat
+    name: Мускат
+    color: белый
+    profile: {body: 0.6, acidity: 0.5, aromatic_intensity: 0.85}
+    note: >-
+      родовое написание портала без уточнения разновидности; профиль дан
+      по мускату белому как самому распространённому
+
+  - slug: muskat-ottonel
+    name: Мускат Оттонель
+    color: белый
+    synonyms: [Мускат оттонель, Muscat Ottonel]
+    profile: {body: 0.55, acidity: 0.5, aromatic_intensity: 0.85}
+
+  - slug: muskat-rozovy
+    name: Мускат Розовый
+    color: белый
+    synonyms: [Мускат розовый]
+    profile: {body: 0.6, acidity: 0.5, aromatic_intensity: 0.85}
+
+  - slug: muskat-yantarny
+    name: Мускат Янтарный
+    color: белый
+    synonyms: [Мускат янтарный]
+    profile: {body: 0.6, acidity: 0.45, aromatic_intensity: 0.8}
+    note: советская селекция мускатной группы
+
+  - slug: muskat-gamburgsky
+    name: Мускат Гамбургский
+    color: красный
+    synonyms: [Мускат гамбургский, Muscat Hamburg]
+    profile: {body: 0.55, tannin: 0.3, acidity: 0.5, aromatic_intensity: 0.8}
+
+  - slug: muskat-aleksandrijsky
+    name: Мускат Александрийский
+    color: белый
+    synonyms: [Мускат александрийский, Muscat of Alexandria]
+    profile: {body: 0.6, acidity: 0.45, aromatic_intensity: 0.85}
+
+  - slug: moskato-jallo
+    name: Москато Джалло
+    color: белый
+    synonyms: [Москато-джалло, Мускат Джалло, Мускат джалло, Мускат Желтый,
+               Мускат жёлтый, Moscato Giallo]
+    profile: {body: 0.6, acidity: 0.5, aromatic_intensity: 0.85}

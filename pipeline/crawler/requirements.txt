@@ -1,0 +1,4 @@
+httpx[http2]>=0.27
+selectolax>=0.3.21
+PyYAML>=6.0
+pydantic>=2.6

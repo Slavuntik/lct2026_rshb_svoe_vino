@@ -1,0 +1,1448 @@
+# Эталонные импортные стили — ядро задачи F3 «российский аналог».
+#
+# Логика: пользователь называет знакомое импортное вино или аппелласьон
+# («люблю Шабли», «нравится Кьянти»). Мы сводим его к эталонному стилю,
+# получаем сенсорный вектор + сортовой профиль, и ищем ближайшее российское
+# в каталоге по вектору с жёсткими фильтрами (цвет, категория, игристость).
+#
+# ЖЁСТКИЕ ФИЛЬТРЫ (матчер отсеивает стиль, если не совпало):
+#   color      — цвет вина; обязателен у всех стилей, кроме заведомо мультицветных
+#   stillness  — тихое | игристое; обязателен у всех
+#   sugar      — допустимые категории по сахару; пустой список = любая
+# Держать эти три поля заполненными важно: без stillness тихое вино
+# матчилось с пет-натом и Moscato d'Asti (223 случая на прогоне 2026-08-25).
+#
+# match_hints.must — свободный текст, для человека. Матчер его НЕ читает,
+# все машинные ограничения живут в color/stillness/sugar/avoid_grapes.
+#
+# sensory: sweetness, acidity, tannin, body, oak, aromatic_intensity, bubbles.
+# Задавать минимум 4 измерения — матчер требует не менее 3 общих с вином,
+# иначе стиль в сравнении не участвует.
+
+# СТАТУС: 146 стилей. Прогон 2026-08-25 по 1978 винам при пороге 0.80:
+# аналог нашёлся у 95% вин, задействован 121 стиль из 146. 25 стилей
+# остались без российского аналога (херес, чаколи, пинотаж, неро д'Авола,
+# шатонёф-дю-пап) — это valid-ответ «аналога нет», а не пробел в данных.
+
+version: 0.2
+target_count: 200
+
+styles:
+
+  # ======================= ИГРИСТЫЕ =======================
+
+  - slug: prosecco
+    name: Просекко
+    country: Италия
+    color: белое
+    sugar: [брют, экстра брют, сухое]
+    stillness: игристое
+    grapes: [Глера]
+    method: резервуарный
+    sensory: {acidity: 0.65, body: 0.4, sweetness: 0.25, bubbles: 0.7, oak: 0.0, aromatic_intensity: 0.6}
+    match_hints:
+      must: [игристое, белое]
+      prefer_grapes: [Глера, Алиготе, Шардоне, Пино Блан]
+      avoid: [бочковая выдержка, классический метод с долгой выдержкой]
+    ru_anchor_note: >
+      Прямой аналог существует буквально — Глера посажена на Кубани и в Крыму.
+      Вторичный вариант: резервуарные брюты на Алиготе/Шардоне.
+
+  - slug: prosecco-rose
+    name: Просекко розе
+    country: Италия
+    color: розовое
+    sugar: [брют, экстра брют, сухое]
+    stillness: игристое
+    grapes: [Глера, Пино Нуар]
+    sensory: {acidity: 0.65, body: 0.42, sweetness: 0.25, bubbles: 0.7, oak: 0.0, aromatic_intensity: 0.6}
+
+  - slug: champagne-brut-nv
+    name: Шампанское брют без года
+    country: Франция
+    color: белое
+    sugar: [брют, экстра брют]
+    stillness: игристое
+    grapes: [Шардоне, Пино Нуар, Пино Менье]
+    method: классический
+    sensory: {acidity: 0.8, body: 0.55, sweetness: 0.15, bubbles: 0.85, oak: 0.15, aromatic_intensity: 0.65}
+    match_hints:
+      must: [игристое, классический метод]
+      prefer_grapes: [Шардоне, Пино Нуар, Менье]
+    ru_anchor_note: классические брюты Абрау-Дюрсо и Нового Света — ближайший ориентир
+
+  - slug: champagne-blanc-de-blancs
+    name: Шампанское блан де блан
+    country: Франция
+    color: белое
+    sugar: [брют, экстра брют]
+    stillness: игристое
+    grapes: [Шардоне]
+    method: классический
+    sensory: {acidity: 0.85, body: 0.5, sweetness: 0.12, bubbles: 0.85, oak: 0.12, aromatic_intensity: 0.6}
+    match_hints:
+      prefer_grapes: [Шардоне]
+
+  - slug: champagne-rose
+    name: Шампанское розе
+    country: Франция
+    color: розовое
+    sugar: [брют, экстра брют]
+    stillness: игристое
+    grapes: [Пино Нуар, Шардоне, Менье]
+    method: классический
+    sensory: {acidity: 0.78, body: 0.55, sweetness: 0.15, bubbles: 0.85, oak: 0.15, aromatic_intensity: 0.7}
+
+  - slug: cava
+    name: Кава
+    country: Испания
+    color: белое
+    sugar: [брют, экстра брют, сухое]
+    stillness: игристое
+    method: классический
+    sensory: {acidity: 0.7, body: 0.5, sweetness: 0.15, bubbles: 0.8, oak: 0.1, aromatic_intensity: 0.55}
+
+  - slug: franciacorta
+    name: Франчакорта
+    country: Италия
+    color: белое
+    sugar: [брют, экстра брют]
+    stillness: игристое
+    grapes: [Шардоне, Пино Нуар, Пино Блан]
+    method: классический
+    sensory: {acidity: 0.75, body: 0.55, sweetness: 0.13, bubbles: 0.85, oak: 0.2, aromatic_intensity: 0.6}
+
+  - slug: cremant
+    name: Креман
+    country: Франция
+    color: белое
+    sugar: [брют, экстра брют, сухое]
+    stillness: игристое
+    method: классический
+    sensory: {acidity: 0.75, body: 0.5, sweetness: 0.15, bubbles: 0.8, oak: 0.1, aromatic_intensity: 0.6}
+
+  - slug: sekt-trocken
+    name: Зект сухой
+    country: Германия
+    color: белое
+    sugar: [брют, сухое, полусухое]
+    stillness: игристое
+    grapes: [Рислинг]
+    sensory: {acidity: 0.8, body: 0.45, sweetness: 0.25, bubbles: 0.75, oak: 0.05, aromatic_intensity: 0.7}
+
+  - slug: lambrusco-secco
+    name: Ламбруско сухое
+    country: Италия
+    color: красное
+    sugar: [сухое, брют]
+    stillness: игристое
+    sensory: {acidity: 0.65, body: 0.45, tannin: 0.35, sweetness: 0.1, bubbles: 0.65, oak: 0.05}
+
+  - slug: lambrusco-amabile
+    name: Ламбруско полусладкое
+    country: Италия
+    color: красное
+    sugar: [полусухое, полусладкое]
+    stillness: игристое
+    sensory: {acidity: 0.6, body: 0.45, tannin: 0.3, sweetness: 0.5, bubbles: 0.65, oak: 0.0}
+
+  - slug: moscato-dasti
+    name: Москато д'Асти
+    country: Италия
+    color: белое
+    sugar: [сладкое, полусладкое]
+    stillness: игристое
+    grapes: [Мускат Белый]
+    sensory: {acidity: 0.55, body: 0.5, sweetness: 0.8, bubbles: 0.5, oak: 0.0, aromatic_intensity: 0.9}
+    match_hints:
+      prefer_grapes: [Мускат Белый, Мускат, Мускат Оттонель]
+    ru_anchor_note: крымские и кубанские мускатные полусладкие игристые
+
+  - slug: asti-spumante
+    name: Асти спуманте
+    country: Италия
+    color: белое
+    sugar: [сладкое, полусладкое]
+    stillness: игристое
+    grapes: [Мускат Белый]
+    sensory: {acidity: 0.55, body: 0.5, sweetness: 0.75, bubbles: 0.7, oak: 0.0, aromatic_intensity: 0.9}
+
+  - slug: pet-nat
+    name: Пет-нат
+    country: разные
+    color: белое
+    sugar: [сухое, брют, полусухое]
+    stillness: игристое
+    sensory: {acidity: 0.7, body: 0.45, sweetness: 0.15, bubbles: 0.5, oak: 0.05, aromatic_intensity: 0.7}
+    match_hints:
+      must: [игристое]
+      prefer_style_tags: [пет-нат]
+    ru_anchor_note: на портале пет-наты есть напрямую, матч тривиальный
+
+  - slug: sparkling-shiraz
+    name: Игристый шираз
+    country: Австралия
+    color: красное
+    sugar: [сухое, полусухое]
+    stillness: игристое
+    grapes: [Сира]
+    sensory: {acidity: 0.55, body: 0.75, tannin: 0.5, sweetness: 0.2, bubbles: 0.7, oak: 0.4}
+
+  # ======================= БЕЛЫЕ СУХИЕ =======================
+
+  - slug: chablis
+    name: Шабли
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.8, body: 0.5, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.55, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Шардоне]
+      avoid: [бочковая выдержка]
+    ru_anchor_note: небочковые Шардоне Кубани с высокой кислотностью
+
+  - slug: meursault
+    name: Мерсо
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.6, body: 0.75, sweetness: 0.05, oak: 0.65, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Шардоне]
+      prefer_style_tags: [бочковое]
+
+  - slug: puligny-montrachet
+    name: Пюлиньи-Монраше
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.7, body: 0.7, sweetness: 0.05, oak: 0.55, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: pouilly-fuisse
+    name: Пуйи-Фюиссе
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.65, body: 0.65, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  - slug: bourgogne-aligote
+    name: Бургонь Алиготе
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Алиготе]
+    sensory: {acidity: 0.8, body: 0.42, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.5, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Алиготе]
+    ru_anchor_note: прямой аналог — крымское и донское Алиготе без бочки
+
+  - slug: chardonnay-oaked-new-world
+    name: Шардоне Нового Света бочковое
+    country: разные
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.5, body: 0.8, sweetness: 0.08, oak: 0.75, aromatic_intensity: 0.75, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Шардоне]
+      prefer_style_tags: [бочковое]
+
+  - slug: chardonnay-unoaked
+    name: Шардоне без дуба
+    country: разные
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шардоне]
+    sensory: {acidity: 0.62, body: 0.55, sweetness: 0.06, oak: 0.05, aromatic_intensity: 0.55, bubbles: 0.0}
+
+  - slug: sancerre
+    name: Сансер
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Совиньон Блан]
+    sensory: {acidity: 0.82, body: 0.45, sweetness: 0.04, oak: 0.05, aromatic_intensity: 0.8, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Совиньон Блан]
+
+  - slug: pouilly-fume
+    name: Пуйи-Фюме
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Совиньон Блан]
+    sensory: {acidity: 0.8, body: 0.5, sweetness: 0.04, oak: 0.1, aromatic_intensity: 0.8, bubbles: 0.0}
+
+  - slug: marlborough-sb
+    name: Совиньон Блан Марлборо
+    country: Новая Зеландия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Совиньон Блан]
+    sensory: {acidity: 0.85, body: 0.45, sweetness: 0.06, oak: 0.0, aromatic_intensity: 0.95, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Совиньон Блан]
+    ru_anchor_note: кубанские Совиньоны в свежем ароматичном стиле
+
+  - slug: muscadet
+    name: Мюскаде
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.82, body: 0.38, sweetness: 0.04, oak: 0.03, aromatic_intensity: 0.4, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Алиготе, Кокур]
+
+  - slug: pinot-grigio
+    name: Пино Гриджо
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Пино Гри]
+    sensory: {acidity: 0.6, body: 0.45, sweetness: 0.06, oak: 0.03, aromatic_intensity: 0.45, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Пино Гри]
+
+  - slug: pinot-gris-alsace
+    name: Пино Гри Эльзас
+    country: Франция
+    color: белое
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    grapes: [Пино Гри]
+    sensory: {acidity: 0.55, body: 0.7, sweetness: 0.2, oak: 0.1, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: soave
+    name: Соаве
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.65, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.55, bubbles: 0.0}
+
+  - slug: gavi
+    name: Гави
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.75, body: 0.45, sweetness: 0.04, oak: 0.03, aromatic_intensity: 0.5, bubbles: 0.0}
+
+  - slug: verdicchio
+    name: Вердиккио
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.72, body: 0.52, sweetness: 0.05, oak: 0.08, aromatic_intensity: 0.55, bubbles: 0.0}
+
+  - slug: fiano
+    name: Фиано
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.65, sweetness: 0.06, oak: 0.15, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: greco-di-tufo
+    name: Греко ди Туфо
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.7, body: 0.6, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  - slug: vermentino
+    name: Верментино
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Верментино]
+    sensory: {acidity: 0.7, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.6, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Верментино, Сибирьковый]
+
+  - slug: orvieto
+    name: Орвието
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.62, body: 0.48, sweetness: 0.06, oak: 0.03, aromatic_intensity: 0.5, bubbles: 0.0}
+
+  - slug: frascati
+    name: Фраскати
+    country: Италия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.45, sweetness: 0.06, oak: 0.03, aromatic_intensity: 0.5, bubbles: 0.0}
+
+  - slug: albarino
+    name: Альбариньо
+    country: Испания
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.8, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: rueda-verdejo
+    name: Руэда Вердехо
+    country: Испания
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.75, body: 0.48, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: txakoli
+    name: Чаколи
+    country: Испания
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.88, body: 0.35, sweetness: 0.04, oak: 0.0, aromatic_intensity: 0.55, bubbles: 0.1}
+
+  - slug: assyrtiko
+    name: Ассиртико Санторини
+    country: Греция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.88, body: 0.55, sweetness: 0.04, oak: 0.1, aromatic_intensity: 0.6, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Сибирьковый, Ркацители, Кокур]
+    ru_anchor_note: донской Сибирьковый — самый близкий по кислотности и минеральности
+
+  - slug: moschofilero
+    name: Мосхофилеро
+    country: Греция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.75, body: 0.45, sweetness: 0.06, oak: 0.0, aromatic_intensity: 0.8, bubbles: 0.0}
+
+  - slug: gruner-veltliner
+    name: Грюнер Вельтлинер
+    country: Австрия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Грюнер Вельтлинер]
+    sensory: {acidity: 0.78, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.6, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Грюнер Вельтлинер, Рислинг]
+
+  - slug: riesling-trocken
+    name: Рислинг сухой
+    country: Германия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Рислинг]
+    sensory: {acidity: 0.85, body: 0.45, sweetness: 0.06, oak: 0.03, aromatic_intensity: 0.8, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Рислинг]
+    ru_anchor_note: крымские и кубанские сухие Рислинги
+
+  - slug: riesling-kabinett
+    name: Рислинг кабинет
+    country: Германия
+    color: белое
+    sugar: [полусухое, полусладкое]
+    stillness: тихое
+    grapes: [Рислинг]
+    sensory: {acidity: 0.85, body: 0.45, sweetness: 0.4, oak: 0.0, aromatic_intensity: 0.85, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Рислинг]
+
+  - slug: riesling-alsace
+    name: Рислинг Эльзас
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Рислинг]
+    sensory: {acidity: 0.82, body: 0.55, sweetness: 0.08, oak: 0.05, aromatic_intensity: 0.8, bubbles: 0.0}
+
+  - slug: gewurztraminer-alsace
+    name: Гевюрцтраминер Эльзас
+    country: Франция
+    color: белое
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    grapes: [Гевюрцтраминер]
+    sensory: {acidity: 0.42, body: 0.72, sweetness: 0.22, oak: 0.05, aromatic_intensity: 0.95, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Гевюрцтраминер, Траминер]
+
+  - slug: pinot-blanc-alsace
+    name: Пино Блан Эльзас
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Пино Блан]
+    sensory: {acidity: 0.62, body: 0.55, sweetness: 0.07, oak: 0.05, aromatic_intensity: 0.45, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Пино Блан]
+
+  - slug: silvaner-franken
+    name: Сильванер Франкония
+    country: Германия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Сильванер]
+    sensory: {acidity: 0.65, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.42, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Сильванер]
+
+  - slug: muller-thurgau
+    name: Мюллер-Тургау
+    country: Германия
+    color: белое
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    grapes: [Мюллер-Тургау]
+    sensory: {acidity: 0.5, body: 0.42, sweetness: 0.18, oak: 0.0, aromatic_intensity: 0.55, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мюллер-Тургау]
+
+  - slug: vinho-verde
+    name: Винью Верде
+    country: Португалия
+    color: белое
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.85, body: 0.35, sweetness: 0.15, oak: 0.0, aromatic_intensity: 0.55, bubbles: 0.15}
+
+  - slug: vouvray-sec
+    name: Вувре сухое
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шенен Блан]
+    sensory: {acidity: 0.8, body: 0.55, sweetness: 0.08, oak: 0.1, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Шенен Блан]
+
+  - slug: chenin-south-africa
+    name: Шенен Блан ЮАР
+    country: ЮАР
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Шенен Блан]
+    sensory: {acidity: 0.72, body: 0.6, sweetness: 0.07, oak: 0.25, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  - slug: condrieu-viognier
+    name: Кондрие Вионье
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Вионье]
+    sensory: {acidity: 0.45, body: 0.75, sweetness: 0.08, oak: 0.3, aromatic_intensity: 0.9, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Вионье]
+
+  - slug: white-rhone-blend
+    name: Белый бленд Роны
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Русан, Марсан]
+    sensory: {acidity: 0.5, body: 0.72, sweetness: 0.06, oak: 0.3, aromatic_intensity: 0.6, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Русан, Марсан, Вионье]
+
+  - slug: semillon-hunter
+    name: Семильон Хантер-Вэлли
+    country: Австралия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Семильон]
+    sensory: {acidity: 0.8, body: 0.5, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.5, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Семильон]
+
+  - slug: torrontes
+    name: Торронтес
+    country: Аргентина
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.5, sweetness: 0.08, oak: 0.0, aromatic_intensity: 0.9, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мускат Белый, Мускат Оттонель, Цветочный]
+
+  - slug: furmint-dry
+    name: Фурминт сухой
+    country: Венгрия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.82, body: 0.55, sweetness: 0.06, oak: 0.2, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  - slug: rkatsiteli-dry
+    name: Ркацители сухое
+    country: Грузия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Ркацители]
+    sensory: {acidity: 0.75, body: 0.55, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.5, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Ркацители]
+    ru_anchor_note: Ркацители широко посажен на Кубани и в Дагестане — прямой аналог
+
+  - slug: mtsvane-dry
+    name: Мцване сухое
+    country: Грузия
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мцване]
+    sensory: {acidity: 0.65, body: 0.6, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мцване]
+
+  - slug: picpoul
+    name: Пикпуль де Пине
+    country: Франция
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.82, body: 0.42, sweetness: 0.04, oak: 0.0, aromatic_intensity: 0.5, bubbles: 0.0}
+
+  # ======================= ОРАНЖЕВЫЕ =======================
+
+  - slug: georgian-qvevri-amber
+    name: Грузинское квеври оранжевое
+    country: Грузия
+    color: оранжевое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Ркацители]
+    sensory: {acidity: 0.7, body: 0.7, tannin: 0.5, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Ркацители, Кокур, Мцване]
+    ru_anchor_note: крымские и кубанские оранжи на Ркацители и Кокуре
+
+  - slug: friuli-orange
+    name: Фриульское оранжевое
+    country: Италия
+    color: оранжевое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.68, body: 0.68, tannin: 0.45, sweetness: 0.05, oak: 0.25, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: skin-contact-light
+    name: Оранжевое лёгкой мацерации
+    country: разные
+    color: оранжевое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.7, body: 0.55, tannin: 0.3, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  # ======================= РОЗОВЫЕ =======================
+
+  - slug: provence-rose
+    name: Прованское розе
+    country: Франция
+    color: розовое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.7, body: 0.4, tannin: 0.1, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.55, bubbles: 0.0}
+    ru_anchor_note: кубанские сухие розе в бледном провансальском стиле
+
+  - slug: tavel-rose
+    name: Тавель
+    country: Франция
+    color: розовое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш]
+    sensory: {acidity: 0.6, body: 0.6, tannin: 0.25, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  - slug: bandol-rose
+    name: Бандоль розе
+    country: Франция
+    color: розовое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мурведр]
+    sensory: {acidity: 0.65, body: 0.55, tannin: 0.2, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  - slug: rosado-spain
+    name: Испанское розадо
+    country: Испания
+    color: розовое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш]
+    sensory: {acidity: 0.62, body: 0.5, tannin: 0.15, sweetness: 0.06, oak: 0.05, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  - slug: cerasuolo-dabruzzo
+    name: Черазуоло д'Абруццо
+    country: Италия
+    color: розовое
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Монтепульчано]
+    sensory: {acidity: 0.62, body: 0.55, tannin: 0.2, sweetness: 0.05, oak: 0.05, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  - slug: rose-semisweet
+    name: Розовое полусладкое
+    country: разные
+    color: розовое
+    sugar: [полусладкое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.45, tannin: 0.1, sweetness: 0.5, oak: 0.0, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  # ======================= КРАСНЫЕ =======================
+
+  - slug: chianti-classico
+    name: Кьянти Классико
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Санджовезе]
+    sensory: {acidity: 0.8, body: 0.62, tannin: 0.7, sweetness: 0.05, oak: 0.35, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Санджовезе, Красностоп Золотовский, Цимлянский чёрный]
+    ru_anchor_note: донской Красностоп даёт схожую связку высокой кислотности и плотных танинов
+
+  - slug: brunello
+    name: Брунелло ди Монтальчино
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Санджовезе]
+    sensory: {acidity: 0.75, body: 0.78, tannin: 0.8, sweetness: 0.05, oak: 0.55, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: vino-nobile
+    name: Вино Нобиле ди Монтепульчано
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Санджовезе]
+    sensory: {acidity: 0.75, body: 0.7, tannin: 0.72, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: barolo
+    name: Бароло
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Неббиоло]
+    sensory: {acidity: 0.8, body: 0.72, tannin: 0.9, sweetness: 0.05, oak: 0.5, aromatic_intensity: 0.8, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Неббиоло, Кефесия]
+
+  - slug: barbaresco
+    name: Барбареско
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Неббиоло]
+    sensory: {acidity: 0.78, body: 0.7, tannin: 0.85, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.78, bubbles: 0.0}
+
+  - slug: barbera-dalba
+    name: Барбера д'Альба
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.82, body: 0.6, tannin: 0.45, sweetness: 0.05, oak: 0.25, aromatic_intensity: 0.65, bubbles: 0.0}
+
+  - slug: dolcetto
+    name: Дольчетто
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.55, tannin: 0.55, sweetness: 0.05, oak: 0.15, aromatic_intensity: 0.6, bubbles: 0.0}
+
+  - slug: valpolicella
+    name: Вальполичелла
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Корвина]
+    sensory: {acidity: 0.7, body: 0.55, tannin: 0.45, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Корвина]
+
+  - slug: valpolicella-ripasso
+    name: Вальполичелла Рипассо
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.65, body: 0.7, tannin: 0.6, sweetness: 0.12, oak: 0.4, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: amarone
+    name: Амароне
+    country: Италия
+    color: красное
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.92, tannin: 0.72, sweetness: 0.2, oak: 0.6, aromatic_intensity: 0.9, bubbles: 0.0}
+
+  - slug: primitivo
+    name: Примитиво
+    country: Италия
+    color: красное
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    grapes: [Примитиво]
+    sensory: {acidity: 0.55, body: 0.8, tannin: 0.6, sweetness: 0.15, oak: 0.45, aromatic_intensity: 0.75, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Примитиво]
+
+  - slug: negroamaro
+    name: Негроамаро
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.72, tannin: 0.6, sweetness: 0.07, oak: 0.35, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: nero-davola
+    name: Неро д'Авола
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.75, tannin: 0.62, sweetness: 0.07, oak: 0.35, aromatic_intensity: 0.72, bubbles: 0.0}
+
+  - slug: aglianico
+    name: Альянико
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.78, body: 0.78, tannin: 0.85, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: montepulciano-dabruzzo
+    name: Монтепульчано д'Абруццо
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Монтепульчано]
+    sensory: {acidity: 0.58, body: 0.7, tannin: 0.6, sweetness: 0.06, oak: 0.25, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Монтепульчано]
+
+  - slug: sangiovese-romagna
+    name: Санджовезе ди Романья
+    country: Италия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Санджовезе]
+    sensory: {acidity: 0.75, body: 0.58, tannin: 0.6, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.62, bubbles: 0.0}
+
+  - slug: rioja-crianza
+    name: Риоха Крианса
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Темпранильо]
+    sensory: {acidity: 0.6, body: 0.65, tannin: 0.6, sweetness: 0.05, oak: 0.5, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Темпранильо]
+
+  - slug: rioja-reserva
+    name: Риоха Резерва
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Темпранильо]
+    sensory: {acidity: 0.62, body: 0.7, tannin: 0.65, sweetness: 0.05, oak: 0.65, aromatic_intensity: 0.78, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Темпранильо]
+      prefer_style_tags: [бочковое]
+
+  - slug: rioja-gran-reserva
+    name: Риоха Гран Резерва
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.72, tannin: 0.62, sweetness: 0.05, oak: 0.75, aromatic_intensity: 0.82, bubbles: 0.0}
+
+  - slug: ribera-del-duero
+    name: Рибера дель Дуэро
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Темпранильо]
+    sensory: {acidity: 0.62, body: 0.8, tannin: 0.75, sweetness: 0.05, oak: 0.6, aromatic_intensity: 0.78, bubbles: 0.0}
+
+  - slug: priorat
+    name: Приорат
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш, Карменер]
+    sensory: {acidity: 0.6, body: 0.88, tannin: 0.8, sweetness: 0.05, oak: 0.6, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: toro-tinta
+    name: Торо
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.85, tannin: 0.78, sweetness: 0.05, oak: 0.55, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: bierzo-mencia
+    name: Бьерсо Менсия
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.72, body: 0.6, tannin: 0.5, sweetness: 0.05, oak: 0.25, aromatic_intensity: 0.72, bubbles: 0.0}
+
+  - slug: garnacha-spain
+    name: Гарнача
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш]
+    sensory: {acidity: 0.5, body: 0.72, tannin: 0.5, sweetness: 0.08, oak: 0.3, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Гренаш, Цимлянский чёрный]
+
+  - slug: tempranillo-joven
+    name: Темпранильо молодое
+    country: Испания
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Темпранильо]
+    sensory: {acidity: 0.58, body: 0.6, tannin: 0.5, sweetness: 0.05, oak: 0.1, aromatic_intensity: 0.62, bubbles: 0.0}
+
+  - slug: douro-red
+    name: Красное Дору
+    country: Португалия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.62, body: 0.78, tannin: 0.72, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: dao-red
+    name: Дау
+    country: Португалия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.68, body: 0.65, tannin: 0.65, sweetness: 0.05, oak: 0.35, aromatic_intensity: 0.68, bubbles: 0.0}
+
+  - slug: alentejo-red
+    name: Алентежу
+    country: Португалия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.75, tannin: 0.6, sweetness: 0.07, oak: 0.4, aromatic_intensity: 0.72, bubbles: 0.0}
+
+  - slug: bordeaux-left-bank
+    name: Бордо левый берег
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Каберне Совиньон, Мерло]
+    sensory: {acidity: 0.62, body: 0.78, tannin: 0.8, sweetness: 0.05, oak: 0.55, aromatic_intensity: 0.72, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Каберне Совиньон, Пти Вердо, Каберне Фран]
+    ru_anchor_note: кубанские бордоские бленды с выдержкой — самая населённая категория портала
+
+  - slug: bordeaux-right-bank
+    name: Бордо правый берег
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мерло, Каберне Фран]
+    sensory: {acidity: 0.55, body: 0.75, tannin: 0.65, sweetness: 0.05, oak: 0.55, aromatic_intensity: 0.72, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мерло, Каберне Фран]
+
+  - slug: cru-bourgeois
+    name: Крю Буржуа
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.72, tannin: 0.72, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.68, bubbles: 0.0}
+
+  - slug: cahors-malbec
+    name: Каор Мальбек
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мальбек]
+    sensory: {acidity: 0.6, body: 0.8, tannin: 0.78, sweetness: 0.05, oak: 0.4, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мальбек]
+
+  - slug: malbec-mendoza
+    name: Мальбек Мендоса
+    country: Аргентина
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мальбек]
+    sensory: {acidity: 0.55, body: 0.8, tannin: 0.68, sweetness: 0.1, oak: 0.5, aromatic_intensity: 0.78, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мальбек]
+
+  - slug: carmenere-chile
+    name: Карменер Чили
+    country: Чили
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Карменер]
+    sensory: {acidity: 0.55, body: 0.72, tannin: 0.6, sweetness: 0.08, oak: 0.45, aromatic_intensity: 0.75, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Карменер, Каберне Фран]
+
+  - slug: merlot-chile
+    name: Мерло Чили
+    country: Чили
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Мерло]
+    sensory: {acidity: 0.52, body: 0.68, tannin: 0.55, sweetness: 0.08, oak: 0.35, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мерло]
+
+  - slug: cabernet-napa
+    name: Каберне Совиньон Напа
+    country: США
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Каберне Совиньон]
+    sensory: {acidity: 0.55, body: 0.88, tannin: 0.8, sweetness: 0.1, oak: 0.7, aromatic_intensity: 0.82, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Каберне Совиньон]
+
+  - slug: zinfandel-california
+    name: Зинфандель Калифорния
+    country: США
+    color: красное
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    grapes: [Примитиво]
+    sensory: {acidity: 0.52, body: 0.85, tannin: 0.6, sweetness: 0.15, oak: 0.55, aromatic_intensity: 0.8, bubbles: 0.0}
+
+  - slug: burgundy-pinot
+    name: Бургундское Пино Нуар
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Пино Нуар]
+    sensory: {acidity: 0.72, body: 0.5, tannin: 0.42, sweetness: 0.05, oak: 0.35, aromatic_intensity: 0.72, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Пино Нуар]
+
+  - slug: pinot-noir-oregon
+    name: Пино Нуар Орегон
+    country: США
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Пино Нуар]
+    sensory: {acidity: 0.68, body: 0.55, tannin: 0.45, sweetness: 0.06, oak: 0.35, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: pinot-noir-nz
+    name: Пино Нуар Новая Зеландия
+    country: Новая Зеландия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Пино Нуар]
+    sensory: {acidity: 0.7, body: 0.58, tannin: 0.45, sweetness: 0.06, oak: 0.35, aromatic_intensity: 0.8, bubbles: 0.0}
+
+  - slug: beaujolais
+    name: Божоле
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.72, body: 0.42, tannin: 0.28, sweetness: 0.05, oak: 0.08, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: cru-beaujolais
+    name: Крю Божоле
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.72, body: 0.55, tannin: 0.42, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.72, bubbles: 0.0}
+
+  - slug: cotes-du-rhone
+    name: Кот дю Рон
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш, Сира, Мурведр]
+    sensory: {acidity: 0.58, body: 0.68, tannin: 0.55, sweetness: 0.05, oak: 0.25, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Гренаш, Сира, Мурведр]
+
+  - slug: chateauneuf-du-pape
+    name: Шатонёф-дю-Пап
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Гренаш, Сира, Мурведр]
+    sensory: {acidity: 0.55, body: 0.85, tannin: 0.68, sweetness: 0.06, oak: 0.45, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: gigondas
+    name: Жигондас
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.58, body: 0.8, tannin: 0.68, sweetness: 0.05, oak: 0.4, aromatic_intensity: 0.78, bubbles: 0.0}
+
+  - slug: northern-rhone-syrah
+    name: Сира Северной Роны
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Сира]
+    sensory: {acidity: 0.65, body: 0.78, tannin: 0.72, sweetness: 0.05, oak: 0.45, aromatic_intensity: 0.82, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Сира, Красностоп Золотовский]
+    ru_anchor_note: кубанские Сира и донской Красностоп — обе линии работают
+
+  - slug: shiraz-barossa
+    name: Шираз Баросса
+    country: Австралия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Сира]
+    sensory: {acidity: 0.5, body: 0.92, tannin: 0.7, sweetness: 0.15, oak: 0.65, aromatic_intensity: 0.85, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Сира]
+
+  - slug: gsm-blend
+    name: Бленд GSM
+    country: разные
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.75, tannin: 0.6, sweetness: 0.07, oak: 0.35, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: cabernet-franc-loire
+    name: Каберне Фран Луары
+    country: Франция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Каберне Фран]
+    sensory: {acidity: 0.72, body: 0.58, tannin: 0.55, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.72, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Каберне Фран]
+    ru_anchor_note: Каберне Фран — самый частый «неопознанный» сорт портала, аналог прямой
+
+  - slug: blaufrankisch
+    name: Блауфранкиш
+    country: Австрия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Блауфранкиш]
+    sensory: {acidity: 0.75, body: 0.65, tannin: 0.65, sweetness: 0.05, oak: 0.3, aromatic_intensity: 0.7, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Блауфранкиш]
+
+  - slug: zweigelt
+    name: Цвайгельт
+    country: Австрия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Цвайгельт]
+    sensory: {acidity: 0.65, body: 0.55, tannin: 0.5, sweetness: 0.05, oak: 0.2, aromatic_intensity: 0.65, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Цвайгельт]
+
+  - slug: saperavi-georgia
+    name: Саперави Грузия
+    country: Грузия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    grapes: [Саперави]
+    sensory: {acidity: 0.75, body: 0.8, tannin: 0.8, sweetness: 0.05, oak: 0.3, aromatic_intensity: 0.75, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Саперави, Саперави Северный]
+    ru_anchor_note: Саперави широко посажен на Кубани и Дону — аналог буквальный
+
+  - slug: kindzmarauli
+    name: Киндзмараули
+    country: Грузия
+    color: красное
+    sugar: [полусладкое]
+    stillness: тихое
+    grapes: [Саперави]
+    sensory: {acidity: 0.65, body: 0.7, tannin: 0.55, sweetness: 0.55, oak: 0.05, aromatic_intensity: 0.75, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Саперави]
+    ru_anchor_note: крымские и кубанские полусладкие на Саперави
+
+  - slug: xinomavro
+    name: Ксиномавро
+    country: Греция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.82, body: 0.65, tannin: 0.85, sweetness: 0.05, oak: 0.35, aromatic_intensity: 0.72, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Кефесия]
+
+  - slug: agiorgitiko
+    name: Агиоргитико
+    country: Греция
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.68, tannin: 0.55, sweetness: 0.06, oak: 0.3, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  - slug: plavac-mali
+    name: Плавац Мали
+    country: Хорватия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.58, body: 0.82, tannin: 0.72, sweetness: 0.07, oak: 0.35, aromatic_intensity: 0.75, bubbles: 0.0}
+
+  - slug: kadarka
+    name: Кадарка
+    country: Венгрия
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.65, body: 0.55, tannin: 0.45, sweetness: 0.06, oak: 0.2, aromatic_intensity: 0.72, bubbles: 0.0}
+
+  - slug: pinotage
+    name: Пинотаж
+    country: ЮАР
+    color: красное
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.78, tannin: 0.68, sweetness: 0.07, oak: 0.45, aromatic_intensity: 0.78, bubbles: 0.0}
+
+  - slug: red-semisweet
+    name: Красное полусладкое
+    country: разные
+    color: красное
+    sugar: [полусладкое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.5, body: 0.6, tannin: 0.4, sweetness: 0.5, oak: 0.05, aromatic_intensity: 0.65, bubbles: 0.0}
+    ru_anchor_note: самая массовая полка; аналогов на портале много, различать по сорту
+
+  - slug: white-semisweet
+    name: Белое полусладкое
+    country: разные
+    color: белое
+    sugar: [полусладкое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.48, sweetness: 0.5, oak: 0.03, aromatic_intensity: 0.7, bubbles: 0.0}
+
+  # ======================= КРЕПЛЁНЫЕ И ДЕСЕРТНЫЕ =======================
+
+  - slug: port-ruby
+    name: Портвейн руби
+    country: Португалия
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.5, body: 0.88, tannin: 0.6, sweetness: 0.85, oak: 0.25, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: port-tawny
+    name: Портвейн тони
+    country: Португалия
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.5, body: 0.85, tannin: 0.4, sweetness: 0.85, oak: 0.7, aromatic_intensity: 0.9, bubbles: 0.0}
+    ru_anchor_note: крымские десертные и портвейны Массандры — ближайший ориентир
+
+  - slug: port-lbv
+    name: Портвейн LBV
+    country: Португалия
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.52, body: 0.88, tannin: 0.6, sweetness: 0.82, oak: 0.4, aromatic_intensity: 0.88, bubbles: 0.0}
+
+  - slug: sherry-fino
+    name: Херес фино
+    country: Испания
+    color: белое
+    sugar: [сухое]
+    stillness: тихое
+    sensory: {acidity: 0.65, body: 0.6, sweetness: 0.04, oak: 0.3, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: sherry-oloroso
+    name: Херес олоросо
+    country: Испания
+    color: белое
+    sugar: [сухое, полусухое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.85, sweetness: 0.15, oak: 0.6, aromatic_intensity: 0.9, bubbles: 0.0}
+
+  - slug: sherry-px
+    name: Херес Педро Хименес
+    country: Испания
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    grapes: [Педро Хименес]
+    sensory: {acidity: 0.35, body: 0.95, sweetness: 0.95, oak: 0.55, aromatic_intensity: 0.92, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Педро Хименес]
+
+  - slug: madeira
+    name: Мадера
+    country: Португалия
+    color: белое
+    sugar: [полусладкое, сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.75, body: 0.8, sweetness: 0.6, oak: 0.6, aromatic_intensity: 0.9, bubbles: 0.0}
+    ru_anchor_note: крымская мадера Массандры — прямая линия преемственности
+
+  - slug: marsala
+    name: Марсала
+    country: Италия
+    color: белое
+    sugar: [полусладкое, сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.82, sweetness: 0.65, oak: 0.6, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: sauternes
+    name: Сотерн
+    country: Франция
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    grapes: [Семильон]
+    sensory: {acidity: 0.65, body: 0.85, sweetness: 0.9, oak: 0.45, aromatic_intensity: 0.9, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Семильон]
+
+  - slug: tokaji-aszu
+    name: Токай Асу
+    country: Венгрия
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.8, body: 0.8, sweetness: 0.9, oak: 0.35, aromatic_intensity: 0.9, bubbles: 0.0}
+
+  - slug: ice-wine
+    name: Айсвайн
+    country: разные
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.85, body: 0.7, sweetness: 0.92, oak: 0.05, aromatic_intensity: 0.88, bubbles: 0.0}
+
+  - slug: vin-santo
+    name: Вин Санто
+    country: Италия
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.8, sweetness: 0.82, oak: 0.55, aromatic_intensity: 0.85, bubbles: 0.0}
+
+  - slug: passito
+    name: Пассито
+    country: Италия
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.55, body: 0.8, sweetness: 0.85, oak: 0.25, aromatic_intensity: 0.88, bubbles: 0.0}
+
+  - slug: recioto-della-valpolicella
+    name: Речото делла Вальполичелла
+    country: Италия
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.6, body: 0.85, tannin: 0.55, sweetness: 0.85, oak: 0.35, aromatic_intensity: 0.88, bubbles: 0.0}
+
+  - slug: muscat-beaumes-de-venise
+    name: Мускат Бом-де-Вениз
+    country: Франция
+    color: белое
+    sugar: [сладкое]
+    stillness: тихое
+    grapes: [Мускат Белый]
+    sensory: {acidity: 0.5, body: 0.75, sweetness: 0.85, oak: 0.05, aromatic_intensity: 0.95, bubbles: 0.0}
+    match_hints:
+      prefer_grapes: [Мускат Белый, Мускат, Мускат Розовый, Мускат Янтарный]
+    ru_anchor_note: крымские десертные мускаты Массандры и Солнечной Долины
+
+  - slug: banyuls
+    name: Баньюльс
+    country: Франция
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    grapes: [Гренаш]
+    sensory: {acidity: 0.5, body: 0.85, tannin: 0.5, sweetness: 0.85, oak: 0.4, aromatic_intensity: 0.88, bubbles: 0.0}
+
+  - slug: cahors-dessert-kagor
+    name: Кагор
+    country: разные
+    color: красное
+    sugar: [сладкое]
+    stillness: тихое
+    sensory: {acidity: 0.45, body: 0.85, tannin: 0.5, sweetness: 0.8, oak: 0.2, aromatic_intensity: 0.8, bubbles: 0.0}
+    ru_anchor_note: массовая категория на портале, аналогов много

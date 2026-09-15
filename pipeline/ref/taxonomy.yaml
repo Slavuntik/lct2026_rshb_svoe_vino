@@ -1,0 +1,130 @@
+# Таксономия портала «Своё Вино».
+# Снято с фильтров /wines и главной страницы 25.08.2026.
+# Списки сортов и производителей на портале свёрнуты («Все сорта…») —
+# полные версии дозаполняются шагом `run.py discover`.
+
+source: https://vino-svoe.ru/wines
+captured_at: 2026-08-25
+completeness:
+  colors: full
+  sugar_categories: full
+  regions: full
+  food_pairings: partial      # видно 6 из N, остальное за «Все гастросочетания»
+  grapes: partial             # видно 6 из N
+  producers: partial          # видно 6 из 200+
+
+colors:
+  - белое
+  - красное
+  - оранжевое
+  - розовое
+
+sugar_categories:
+  - экстра брют
+  - брют
+  - сухое
+  - полусухое
+  - полусладкое
+  - сладкое
+
+regions:
+  - slug: krym
+    name: Крым
+    wineries: 59
+    wines: 754
+    note: лидер по креплёным винам, свыше 80% производства РФ
+  - slug: kuban
+    name: Кубань
+  - slug: dolina-dona
+    name: Долина Дона
+  - slug: stavropole
+    name: Ставрополье
+  - slug: nizhnyaya-volga
+    name: Нижняя Волга
+  - slug: dagestan
+    name: Дагестан
+  - slug: dalnevostochnaya-zona
+    name: Дальневосточная зона
+  - slug: voronezh
+    name: Воронеж
+  - slug: moskovskaya-oblast
+    name: Московская область
+  - slug: samara
+    name: Самара
+  - slug: severnaya-osetiya
+    name: Северная Осетия — Алания
+
+# Категории гастросочетаний — ключевой справочник для F2 (гастропары).
+# Портал использует их как теги на карточке вина.
+food_pairings_seen:
+  - BBQ
+  - Азиатская кухня
+  - Блюда из птицы
+  - Блюда из рыбы
+  - Брускетты
+  - Выпечка и десерты
+  - Салаты
+  - Сыры
+  - Устрицы
+
+grapes_seen:
+  - Августин
+  - Алеатико
+  - Алиготе
+  - Альбильо
+  - Амурский Потапенко
+  - Антей магарачский
+  - Глера
+  - Кокур
+  - Красностоп
+  - Пино Блан
+  - Пино Нуар
+  - Рислинг
+  - Шардоне
+
+producers_seen:
+  - AGORA WINERY
+  - Alma Valley
+  - Andryus Yutsis
+  - AYA Organic Wine & Vineyards
+  - Bakla Vines
+  - Belmas Winery
+  - Chateau de Talu
+  - Kalos Limen
+  - Абрау-Дюрсо
+  - Винодельня Братьев Мельниковых
+  - Дербент Вино
+  - Коммуналка
+  - Кубань-Вино
+  - Мысхако
+  - Солнечная долина
+  - Фанагория
+  - Цимлянские вина
+
+ratings:
+  public:
+    name: Народный рейтинг
+    scale: [1, 5]
+    filters: ["5", "4+", "3+"]
+  roskachestvo:
+    name: Рейтинг Роскачества
+    note: >
+      Совместный проект Роскачества и РСХБ «Свое вино. Винный гид России»,
+      публикуется на портале. Ценный источник экспертных оценок —
+      проверить наличие поля на карточках при выкачке.
+
+url_patterns:
+  wine: https://vino-svoe.ru/wines/{slug}
+  wine_list: https://vino-svoe.ru/wines?page={n}
+  wine_list_by_region: https://vino-svoe.ru/wines?regions={region_slug}
+  winery: https://vino-svoe.ru/wineries/{slug}
+  winery_list: https://vino-svoe.ru/wineries
+  winery_map: https://vino-svoe.ru/wineries/map?region={region_slug}
+  article: https://vino-svoe.ru/articles/{slug}
+  event: https://vino-svoe.ru/events/{slug}
+
+pagination:
+  wines:
+    pages: 126
+    per_page: 16
+    estimated_total: 2016
