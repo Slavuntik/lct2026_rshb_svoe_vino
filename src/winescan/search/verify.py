@@ -102,9 +102,13 @@ def verify(
     query_features: Features,
     reference_image: Image.Image,
     reference_features: Features,
+    matcher=match,
 ) -> Verification:
-    """Признаки проверки пары «кроп запроса ↔ вырезка эталона» (оба в масштабе local_match.prepare)."""
-    result: MatchResult = match(query_features, reference_features)
+    """Признаки проверки пары «кроп запроса ↔ вырезка эталона» (оба в масштабе local_match.prepare).
+
+    ``matcher`` — функция сопоставления: по умолчанию SIFT, может быть ``DeepMatcher.match``
+    (ALIKED + LightGlue). Признаки при этом считаются одинаково, поэтому сравнимы."""
+    result: MatchResult = matcher(query_features, reference_features)
     if result.homography is None or result.inliers == 0:
         return Verification(result.inliers, 0.0, 0.0, 0.0, 1.0, 0.0)
     _, reference_mask = _rgb_on_white(reference_image)

@@ -57,6 +57,19 @@ class MatchResult:
     reference_points: np.ndarray  # (inliers, 2) точки эталона, согласованные гомографией
 
 
+def homography_result(source: np.ndarray, target: np.ndarray, good_matches: int) -> MatchResult:
+    """Гомография MAGSAC по парам точек. Общая для SIFT и ALIKED + LightGlue (deep_match),
+    чтобы порог согласования был один и признаки проверки сравнивались честно."""
+    empty_points = np.zeros((0, 2), np.float32)
+    if len(source) < MIN_MATCHES_FOR_RANSAC:
+        return MatchResult(0, good_matches, None, empty_points)
+    homography, mask = cv2.findHomography(source, target, cv2.USAC_MAGSAC, 8.0)
+    if mask is None:
+        return MatchResult(0, good_matches, None, empty_points)
+    keep = mask.ravel().astype(bool)
+    return MatchResult(int(keep.sum()), good_matches, homography, target[keep])
+
+
 def match(query: Features, reference: Features, ratio: float = 0.75) -> MatchResult:
     """Сопоставление SIFT: ratio test + гомография MAGSAC."""
     empty = MatchResult(0, 0, None, np.zeros((0, 2), np.float32))
@@ -67,15 +80,9 @@ def match(query: Features, reference: Features, ratio: float = 0.75) -> MatchRes
     matcher = cv2.BFMatcher(cv2.NORM_L2)
     pairs = matcher.knnMatch(query.descriptors, reference.descriptors, k=2)
     good = [m for m, n in (p for p in pairs if len(p) == 2) if m.distance < ratio * n.distance]
-    if len(good) < MIN_MATCHES_FOR_RANSAC:
-        return MatchResult(0, len(good), None, empty.reference_points)
     src = query.keypoints[[m.queryIdx for m in good]]
     dst = reference.keypoints[[m.trainIdx for m in good]]
-    homography, mask = cv2.findHomography(src, dst, cv2.USAC_MAGSAC, 8.0)
-    if mask is None:
-        return MatchResult(0, len(good), None, empty.reference_points)
-    keep = mask.ravel().astype(bool)
-    return MatchResult(int(keep.sum()), len(good), homography, dst[keep])
+    return homography_result(src, dst, len(good))
 
 
 def inliers(query: Features, reference: Features, ratio: float = 0.75) -> int:

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 from concurrent.futures import ProcessPoolExecutor
 from functools import lru_cache
@@ -36,6 +37,8 @@ from winescan.search.local_match import extract, prepare
 from winescan.search.verify import verify
 from winescan.service.pipeline import load_cards
 from winescan.vision.preprocess import crop_box
+
+log = logging.getLogger("winescan.eval.candidates")
 
 _state: dict = {}
 
@@ -67,6 +70,34 @@ def _task(task: dict) -> list[dict]:
     return rows
 
 
+def _deep_rows(tasks: list[dict], images_dir: str, image_of: dict[str, str]) -> list[dict]:
+    """То же, что _task, но ALIKED + LightGlue на GPU: один процесс, модели грузятся один раз."""
+    from winescan.search.deep_match import DeepMatcher
+
+    _init(images_dir, image_of)
+    matcher = DeepMatcher()
+    references: dict[str, tuple] = {}
+    rows = []
+    for number, task in enumerate(tasks, start=1):
+        image, _ = _load_query(os.path.join(images_dir, task["image_path"]))
+        box = task["box"]
+        query_image = prepare(crop_box(image, box) if box else image)
+        query_features = matcher.extract(query_image)
+        best_visual = task["candidates"][0][1]
+        for rank, (slug, visual) in enumerate(task["candidates"], start=1):
+            if slug not in references:
+                view = load_reference_view(slug) or reference_view(_state["uploads"] / image_of[slug])
+                references[slug] = (view, matcher.extract(view))
+            reference_image, reference_features = references[slug]
+            verification = verify(query_image, query_features, reference_image, reference_features,
+                                  matcher=matcher.match).as_dict()  # fmt: skip
+            rows.append({"query_id": task["query_id"], "slug": slug, "rank": rank, "label": slug == task["expected"],
+                         **candidate_features(visual, best_visual, verification), "inliers": verification["inliers"]})  # fmt: skip
+        if number % 100 == 0:
+            log.info("%s / %s", number, len(tasks))
+    return rows
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Признаки кандидатов для обучения слияния")
     parser.add_argument("--cache", required=True)
@@ -77,6 +108,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--box-ranker", default=None, help="обученный выбор рамки вместо правила (как в сервисе)")
     parser.add_argument("--indexes", default=None, help="другие индексы тех же моделей и видов через запятую")
     parser.add_argument("--name", default=None, help="имя таблицы вместо candidates_top<K>")
+    parser.add_argument("--features", choices=("sift", "aliked"), default="sift",
+                        help="локальные признаки: SIFT на процессах CPU или ALIKED + LightGlue на GPU")  # fmt: skip
     args = parser.parse_args(argv)
     setup_logging()
 
@@ -105,9 +138,12 @@ def main(argv: list[str] | None = None) -> None:
             "candidates": [(cache.wine_slugs[i], float(scores[i])) for i in order],
         })  # fmt: skip
 
-    workers = args.workers or min(16, os.cpu_count() or 1)
-    with ProcessPoolExecutor(max_workers=workers, initializer=_init, initargs=(str(images_dir), image_of)) as pool:
-        rows = [row for chunk in pool.map(_task, tasks, chunksize=4) for row in chunk]
+    if args.features == "aliked":
+        rows = _deep_rows(tasks, str(images_dir), image_of)
+    else:
+        workers = args.workers or min(16, os.cpu_count() or 1)
+        with ProcessPoolExecutor(max_workers=workers, initializer=_init, initargs=(str(images_dir), image_of)) as pool:
+            rows = [row for chunk in pool.map(_task, tasks, chunksize=4) for row in chunk]
 
     # согласие полей этикетки, если есть кэш VLM (eval.vlm_cache)
     vlm_fields = load_fields(args.cache)
