@@ -17,10 +17,15 @@ export function useApi() {
   const winePath = (slug: string) => `/v1/wines/${encodeURIComponent(slug)}`
 
   return {
-    /** mockStatus учитывается только в режиме моков: выбирает ответ «найдено» или «нет в каталоге». */
-    scan(image: Blob, filename: string, mockStatus?: 'found' | 'not_found') {
+    /**
+     * mockStatus учитывается только в режиме моков: выбирает ответ «найдено» или «нет в каталоге».
+     * box — рамка, которую указал пользователь, в долях кадра [x1, y1, x2, y2]; с ней сервис не
+     * запускает детектор. Именно на автоматическом выборе бутылки теряется больше всего точности.
+     */
+    scan(image: Blob, filename: string, mockStatus?: 'found' | 'not_found', box?: [number, number, number, number]) {
       const form = new FormData()
       form.append('image', image, filename)
+      if (box) form.append('box', box.map((value) => value.toFixed(4)).join(','))
       return api<ScanResponse>('/v1/scan', {
         method: 'POST',
         body: form,

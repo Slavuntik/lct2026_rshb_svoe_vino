@@ -5,8 +5,13 @@ import type { UploadInfo } from '~/utils/image'
 
 useHead({ title: 'Распознать этикетку' })
 
-type Phase = 'idle' | 'uploading' | 'error' | 'not_found'
+type Phase = 'idle' | 'aim' | 'uploading' | 'error' | 'not_found'
 type MockStatus = 'found' | 'not_found'
+type Frame = { x1: number; y1: number; x2: number; y2: number }
+type Grip = 'move' | 'nw' | 'ne' | 'sw' | 'se'
+
+const DEFAULT_FRAME: Frame = { x1: 0.2, y1: 0.1, x2: 0.8, y2: 0.95 }
+const MIN_SIDE = 0.08
 
 const api = useApi()
 const mock = isMockEnabled(useRuntimeConfig().public.mock)
@@ -22,6 +27,81 @@ const mockStatus = ref<MockStatus>('found')
 
 const busy = computed(() => phase.value === 'uploading')
 
+// Рамка, которой пользователь указывает бутылку: доли кадра. Автоматический выбор бутылки —
+// самое слабое место (идеальная рамка даёт top-1 0,775 против 0,663), и рамкой он отменяется.
+const frame = ref<Frame>({ ...DEFAULT_FRAME })
+const aimImage = ref<HTMLImageElement | null>(null)
+const imageRect = ref({ left: 0, top: 0, width: 0, height: 0 })
+const lastBox = ref<[number, number, number, number] | undefined>()
+let dragging: { grip: Grip; startX: number; startY: number; frame: Frame } | null = null
+
+/** Прямоугольник самой фотографии внутри контейнера: она вписана целиком, поля не в счёт. */
+function measureImage() {
+  const element = aimImage.value
+  if (!element || !element.naturalWidth) return
+  const scale = Math.min(element.clientWidth / element.naturalWidth, element.clientHeight / element.naturalHeight)
+  const width = element.naturalWidth * scale
+  const height = element.naturalHeight * scale
+  imageRect.value = {
+    left: (element.clientWidth - width) / 2,
+    top: (element.clientHeight - height) / 2,
+    width,
+    height,
+  }
+}
+
+const frameStyle = computed(() => {
+  const { left, top, width, height } = imageRect.value
+  return {
+    left: `${left + frame.value.x1 * width}px`,
+    top: `${top + frame.value.y1 * height}px`,
+    width: `${(frame.value.x2 - frame.value.x1) * width}px`,
+    height: `${(frame.value.y2 - frame.value.y1) * height}px`,
+  }
+})
+
+const clamp = (value: number) => Math.min(Math.max(value, 0), 1)
+
+function startDrag(grip: Grip, event: PointerEvent) {
+  ;(event.target as HTMLElement).setPointerCapture?.(event.pointerId)
+  dragging = { grip, startX: event.clientX, startY: event.clientY, frame: { ...frame.value } }
+}
+
+function onDrag(event: PointerEvent) {
+  if (!dragging || !imageRect.value.width) return
+  const dx = (event.clientX - dragging.startX) / imageRect.value.width
+  const dy = (event.clientY - dragging.startY) / imageRect.value.height
+  const start = dragging.frame
+  const next = { ...start }
+  if (dragging.grip === 'move') {
+    const width = start.x2 - start.x1
+    const height = start.y2 - start.y1
+    next.x1 = clamp(Math.min(start.x1 + dx, 1 - width))
+    next.y1 = clamp(Math.min(start.y1 + dy, 1 - height))
+    next.x2 = next.x1 + width
+    next.y2 = next.y1 + height
+  } else {
+    if (dragging.grip.includes('w')) next.x1 = clamp(Math.min(start.x1 + dx, start.x2 - MIN_SIDE))
+    if (dragging.grip.includes('e')) next.x2 = clamp(Math.max(start.x2 + dx, start.x1 + MIN_SIDE))
+    if (dragging.grip.startsWith('n')) next.y1 = clamp(Math.min(start.y1 + dy, start.y2 - MIN_SIDE))
+    if (dragging.grip.startsWith('s')) next.y2 = clamp(Math.max(start.y2 + dy, start.y1 + MIN_SIDE))
+  }
+  frame.value = next
+}
+
+function endDrag() {
+  dragging = null
+}
+
+function scanWithFrame() {
+  const { x1, y1, x2, y2 } = frame.value
+  if (lastFile.value) void runScan(lastFile.value, [x1, y1, x2, y2])
+}
+
+function scanWholePhoto() {
+  if (lastFile.value) void runScan(lastFile.value)
+}
+
 function setPreview(file: File | null) {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
   previewUrl.value = file ? URL.createObjectURL(file) : null
@@ -33,11 +113,19 @@ function onFileChange(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
   input.value = '' // чтобы повторный выбор того же файла снова вызвал change
-  if (file) void runScan(file)
+  if (!file) return
+  // сначала даём указать бутылку рамкой и только потом распознаём
+  lastFile.value = file
+  setPreview(file)
+  frame.value = { ...DEFAULT_FRAME }
+  result.value = null
+  errorText.value = ''
+  phase.value = 'aim'
 }
 
-async function runScan(file: File) {
+async function runScan(file: File, box?: [number, number, number, number]) {
   lastFile.value = file
+  lastBox.value = box
   setPreview(file)
   result.value = null
   errorText.value = ''
@@ -51,7 +139,7 @@ async function runScan(file: File) {
     // отправляем исходное фото целиком (рамка на экране — только подсказка), большие кадры уменьшаются
     const upload = await prepareUpload(file)
     uploadInfo.value = upload.info
-    const response = await api.scan(upload.blob, upload.filename, mock ? mockStatus.value : undefined)
+    const response = await api.scan(upload.blob, upload.filename, mock ? mockStatus.value : undefined, box)
     result.value = response
 
     const nearest = response.top5[0] ?? null
@@ -88,7 +176,7 @@ async function runScan(file: File) {
 }
 
 function retry() {
-  if (lastFile.value) void runScan(lastFile.value)
+  if (lastFile.value) void runScan(lastFile.value, lastBox.value)
 }
 
 function reset() {
@@ -157,6 +245,56 @@ function reset() {
       />
     </section>
 
+    <!-- Наведение рамки: пользователь сам указывает бутылку -->
+    <section v-else-if="phase === 'aim'" class="aim" aria-labelledby="aim-title">
+      <header class="scanner__intro">
+        <h1 id="aim-title">Укажите бутылку</h1>
+        <p class="muted">
+          Потяните рамку за углы, чтобы в неё попала одна бутылка. Так сервис не перепутает её с соседней —
+          это самая частая причина ошибок.
+        </p>
+      </header>
+
+      <div class="aim__stage">
+        <img
+          ref="aimImage"
+          :src="previewUrl ?? ''"
+          alt="Выбранное фото: наведите рамку на бутылку"
+          class="aim__photo"
+          @load="measureImage"
+        >
+        <div
+          class="aim__frame"
+          :style="frameStyle"
+          @pointerdown.prevent="startDrag('move', $event)"
+          @pointermove="onDrag"
+          @pointerup="endDrag"
+          @pointercancel="endDrag"
+        >
+          <span
+            v-for="grip in (['nw', 'ne', 'sw', 'se'] as const)"
+            :key="grip"
+            :class="`aim__grip aim__grip--${grip}`"
+            @pointerdown.stop.prevent="startDrag(grip, $event)"
+            @pointermove.stop="onDrag"
+            @pointerup.stop="endDrag"
+            @pointercancel.stop="endDrag"
+          />
+        </div>
+      </div>
+
+      <div class="aim__actions">
+        <button type="button" class="btn btn--primary btn--large btn--block" @click="scanWithFrame">
+          <AppIcon name="camera" />
+          Распознать по рамке
+        </button>
+        <button type="button" class="btn btn--secondary btn--large btn--block" @click="scanWholePhoto">
+          Распознать всё фото
+        </button>
+        <button type="button" class="btn btn--ghost btn--block" @click="reset">Выбрать другое фото</button>
+      </div>
+    </section>
+
     <!-- Сканер -->
     <template v-else>
       <header class="scanner__intro">
@@ -176,7 +314,9 @@ function reset() {
         <div v-if="busy" class="viewfinder__scanline" aria-hidden="true" />
         <p class="viewfinder__hint">{{ busy ? 'Распознаём этикетку…' : 'Этикетка по центру, без бликов' }}</p>
       </div>
-      <p class="scanner__note muted">Рамка — только подсказка: на распознавание отправляется всё фото.</p>
+      <p class="scanner__note muted">
+        После снимка можно навести рамку на нужную бутылку — или распознать фото целиком.
+      </p>
 
       <div v-if="busy" class="scanner__status" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true" />
@@ -264,6 +404,77 @@ function reset() {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.aim__stage {
+  position: relative;
+  width: 100%;
+  height: min(60vh, 520px);
+  margin-top: 16px;
+  border-radius: var(--radius-l);
+  background: var(--c-surface);
+  touch-action: none; /* иначе жест перетаскивания прокручивает страницу */
+}
+
+/* фотография вписана целиком: доли рамки совпадают с долями кадра, который уходит в сервис */
+.aim__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.aim__frame {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px #2c2a2859;
+  cursor: move;
+}
+
+.aim__grip {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #fff;
+  background: #ffffff40;
+}
+
+.aim__grip--nw {
+  top: -14px;
+  left: -14px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 10px;
+}
+
+.aim__grip--ne {
+  top: -14px;
+  right: -14px;
+  border-bottom: 0;
+  border-left: 0;
+  border-top-right-radius: 10px;
+}
+
+.aim__grip--sw {
+  bottom: -14px;
+  left: -14px;
+  border-top: 0;
+  border-right: 0;
+  border-bottom-left-radius: 10px;
+}
+
+.aim__grip--se {
+  bottom: -14px;
+  right: -14px;
+  border-top: 0;
+  border-left: 0;
+  border-bottom-right-radius: 10px;
+}
+
+.aim__actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .viewfinder--busy .viewfinder__photo {
