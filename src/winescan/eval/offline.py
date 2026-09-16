@@ -50,7 +50,8 @@ class QueryCache:
         loaded = [VectorIndex.load(paths.artifacts_dir / "index" / n) for n in indexes or meta["indexes"]]
         if indexes:
             for original, replacement in zip(meta["indexes"], loaded):
-                source = VectorIndex.load(paths.artifacts_dir / "index" / original).meta
+                # читаем только meta.json: загружать векторы исходных индексов ради сверки незачем
+                source = json.loads((paths.artifacts_dir / "index" / original / "meta.json").read_text(encoding="utf-8"))
                 if _signature(source) != _signature(replacement.meta):
                     raise ValueError(f"индекс {replacement.meta} не совпадает с {original} по модели и виду")
         return cls.from_arrays(records, vectors, loaded, weights or meta["index_weights"])
