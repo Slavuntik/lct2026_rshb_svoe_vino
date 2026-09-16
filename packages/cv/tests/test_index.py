@@ -46,7 +46,12 @@ def sample_refs(devfix_dir) -> dict[str, "Path"]:  # noqa: F821 - строков
 def built_index(tmp_path_factory, shared_encoder, sample_refs):
     tmp_dir = tmp_path_factory.mktemp("cv_index")
     store = QdrantStore(path=tmp_dir / "qdrant")
-    index = ImageIndex(store=store, encoder=shared_encoder, collection="test_views")
+    # manifest_path явный (не config.MANIFEST_PATH по умолчанию) — иначе несколько
+    # ImageIndex в одном процессе (тут и в test_index_version_is_none_before_any_build)
+    # делили бы один файл манифеста в packages/cv/data/.
+    index = ImageIndex(
+        store=store, encoder=shared_encoder, collection="test_views", manifest_path=tmp_dir / "manifest.json"
+    )
 
     views_dir = tmp_dir / "views"
     refs = {}
@@ -64,6 +69,48 @@ def test_manifest_written_with_version(built_index):
     assert manifest["version"] == "pytest"
     assert manifest["positions"] == 8
     assert manifest["vectors"] == 8 * (SMALL_N_VIEWS + 1)
+
+
+def test_index_version_property_reads_manifest(built_index):
+    """Ревью 04, блокер 5: /v1/metrics/scan у B читает эту property, не env-плейсхолдер."""
+    assert built_index.index_version == "pytest"
+
+
+def test_index_version_is_none_before_any_build(tmp_path, shared_encoder):
+    fresh = ImageIndex(
+        store=QdrantStore(path=tmp_path / "qdrant"),
+        encoder=shared_encoder,
+        collection="never_built",
+        manifest_path=tmp_path / "manifest.json",
+    )
+    assert fresh.index_version is None
+
+
+def test_two_indices_in_one_process_have_independent_index_version(tmp_path_factory, shared_encoder, sample_refs):
+    """Регресс-тест (находка B при интеграции с packages/cv, ревью 04+): `config.MANIFEST_PATH`
+    резолвится как модульная константа, замороженная при ПЕРВОМ импорте `cv.config` — не видит
+    env/аргументы, выставленные позже. Раньше это было единственным дефолтом `manifest_path`,
+    так что второй `ImageIndex` в том же процессе (свой `store`, но БЕЗ явного `manifest_path`)
+    читал манифест ПЕРВОГО. Дефолт теперь выводится из `self.store.path` (см. `cv/index.py`,
+    `ImageIndex.__init__`) — у разных store разные манифесты сами по себе, без необходимости
+    явно передавать `manifest_path` каждый раз. Намеренно НЕ передаём `manifest_path` ниже —
+    именно дефолт и есть то, что чинили."""
+    slug, path = next(iter(sample_refs.items()))
+
+    def _build_one(version: str) -> ImageIndex:
+        tmp_dir = tmp_path_factory.mktemp("cv_index_two")
+        store = QdrantStore(path=tmp_dir / "qdrant")
+        index = ImageIndex(store=store, encoder=shared_encoder, collection="two_idx_test")
+        synth_paths = save_synthetic_views(path, tmp_dir / "views", slug, n=2, seed=0)
+        index.build({slug: [str(path)] + [str(p) for p in synth_paths]}, version=version)
+        return index
+
+    index_a = _build_one("version-a")
+    index_b = _build_one("version-b")
+
+    assert index_a._manifest_path != index_b._manifest_path
+    assert index_a.index_version == "version-a"
+    assert index_b.index_version == "version-b"
 
 
 def test_self_match_top1_rate_meets_dod(built_index, sample_refs):

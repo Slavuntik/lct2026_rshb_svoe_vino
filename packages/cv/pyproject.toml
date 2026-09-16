@@ -7,10 +7,13 @@ dependencies = [
     "opencv-python-headless>=4.9",
     "numpy>=1.26",
     "pillow>=10.3",
+    "pillow-heif>=0.18",
     "transformers>=4.49",
     "torch>=2.3",
     "qdrant-client>=1.9",
     "sentencepiece>=0.2",
+    "paddleocr>=3.0",
+    "paddlepaddle>=3.0",
 ]
 
 [project.optional-dependencies]

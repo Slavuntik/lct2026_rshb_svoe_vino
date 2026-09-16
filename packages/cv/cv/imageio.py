@@ -4,6 +4,12 @@
 обязан падать `ValueError`, не безымянным исключением PIL/cv2 и не 500-полуфабрикатом).
 Используется всеми слоями (`augment`, `normalize`, `encoder`, `index`), чтобы гарантия
 была одна на весь пакет, а не продублирована в каждом месте, где приходят внешние байты.
+
+Полевой приём (ревью 04, блокер 2): телефонные JPEG почти всегда пишут поворот в EXIF
+Orientation, а не в сами пиксели — без `ImageOps.exif_transpose()` фото "боком" декодируется
+как есть, детектор этикетки режет не ту ось (живой зонд ревью: score 1.000 -> 0.801 на
+Orientation=6, просадка того же масштаба, что вся шкала near-dup gap). HEIC (дефолт камеры
+iPhone) Pillow не открывает без плагина — регистрируем `pillow-heif` при импорте модуля.
 """
 from __future__ import annotations
 
@@ -12,26 +18,35 @@ import struct
 
 import cv2
 import numpy as np
-from PIL import Image, UnidentifiedImageError
+import pillow_heif
+from PIL import Image, ImageOps, UnidentifiedImageError
+
+pillow_heif.register_heif_opener()  # HEIC/HEIF (iPhone-дефолт) как обычный формат для Image.open
 
 # `Image.load()` на некоторых обрезанных/битых файлах бросает исключения за пределами
 # OSError/ValueError (напр. `struct.error` на обрезанном PNG-заголовке) — перечисляем
 # явно, чтобы decode_image() гарантированно нормализовал ЛЮБОЙ битый вход в ValueError.
+# pillow-heif 1.7.0 не экспортирует отдельный класс исключения — битый HEIC у него
+# заворачивается в обычный OSError/ValueError (проверено эмпирически, см. tests/test_imageio.py).
 _DECODE_ERRORS = (UnidentifiedImageError, OSError, ValueError, SyntaxError, struct.error)
 
 
 def decode_image(data: bytes) -> np.ndarray:
-    """bytes -> RGB uint8 ndarray (H, W, 3). ValueError на что угодно нечитаемое.
+    """bytes -> RGB uint8 ndarray (H, W, 3), с учётом EXIF Orientation. ValueError на
+    что угодно нечитаемое (пусто, битые байты, неподдерживаемый формат).
 
     `Image.open()` сам по себе часто НЕ бросает исключение на битые/обрезанные файлы —
     ошибка всплывает только при реальном чтении пикселей, поэтому здесь всегда
     `im.load()` (не `im.verify()`, который декодирует не полностью и пропускает часть
-    обрывов, см. документацию Pillow).
+    обрывов, см. документацию Pillow). `ImageOps.exif_transpose()` — до `.load()`/
+    `.convert()`: разворачивает по тегу Orientation, если он есть (обычные PNG/скриншоты
+    без EXIF проходят через него без изменений — no-op, не только телефонные JPEG).
     """
     if not data:
         raise ValueError("cv.imageio.decode_image: пустые байты изображения")
     try:
         with Image.open(io.BytesIO(data)) as im:
+            im = ImageOps.exif_transpose(im)
             im.load()
             rgb = im.convert("RGB")
     except _DECODE_ERRORS as e:

@@ -21,8 +21,7 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass
-
-import numpy as np
+from pathlib import Path
 
 from cv import config, imageio
 from cv.augment import prepare_reference, render_synthetic_views
@@ -73,11 +72,37 @@ class ImageIndex:
         store: QdrantStore | None = None,
         encoder: SiglipEncoder | None = None,
         collection: str | None = None,
+        manifest_path: Path | None = None,
     ):
         self.store = store or get_store()
         self.encoder = encoder or SiglipEncoder()
         self.collection = collection or config.COLLECTION_NAME
-        self._manifest_path = config.MANIFEST_PATH
+        # Манифест по умолчанию — РЯДОМ С ДАННЫМИ ЭТОГО КОНКРЕТНОГО store (self.store.path),
+        # не отдельная глобальная config.MANIFEST_PATH. Та резолвится как модульная константа
+        # ОДИН РАЗ при первом импорте cv.config — не видит env/аргументы, выставленные ПОСЛЕ
+        # импорта; в процессе с несколькими ImageIndex на разные store (изолированные тесты,
+        # инструмент, что угодно, создающее не один индекс за раз) это читало ЧУЖОЙ манифест
+        # (находка B при интеграции, ревью 04+). `self.store.path` резолвится лениво, в момент
+        # конструирования КОНКРЕТНОГО QdrantStore — существует всегда (даже в сетевом режиме,
+        # где физически не используется для хранения векторов), так что это безопасная и
+        # всегда доступная привязка "эта позиция на диске -> её манифест". Явный параметр
+        # `manifest_path` по-прежнему в приоритете, если передан.
+        self._manifest_path = manifest_path or (self.store.path / "manifest.json")
+
+    @property
+    def index_version(self) -> str | None:
+        """Версия последнего `build()` из манифеста (ревью 04, блокер 5: `/v1/metrics/scan`
+        у B обязан показывать настоящую версию индекса, не env-плейсхолдер). `None`, если
+        манифеста ещё нет (индекс не строился) — вызывающий код решает, как это показать,
+        не наша забота выдумывать значение по умолчанию."""
+        if not self._manifest_path.exists():
+            return None
+        try:
+            manifest = json.loads(self._manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        version = manifest.get("version")
+        return version if isinstance(version, str) else None
 
     # --- контракт ----------------------------------------------------------------
 
