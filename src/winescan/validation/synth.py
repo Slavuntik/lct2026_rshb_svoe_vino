@@ -10,8 +10,14 @@
 затенение, вертикальный блик стекла — winescan.vision.cylinder), тесные и перекрывающиеся
 соседи, полосу ценников у края полки и смаз от движения.
 
-Ограничение: в кадре те же пиксели, что в эталоне, поэтому метрики на синтетике
-оптимистичнее реальных. Другой тираж этикетки и отражения окружения генератор не воспроизводит.
+Пресет ``v3`` бьёт по главной поблажке: в кадре лежат пиксели самого эталона, и любой
+сопоставитель локальных признаков от этого выигрывает. Целевая упаковка (и только она) портится
+так, как её меняет другая партия печати и пересъёмка: сдвиг тона и насыщенности, гамма, растр,
+цикл «размытие — резкость», лишние пересжатия. Вёрстка и надписи остаются, попиксельное
+совпадение исчезает — это даёт защищаемую **нижнюю** границу точности.
+
+Ограничение: отражения окружения и другую геометрию съёмки генератор всё равно не воспроизводит,
+поэтому даже v3 не заменяет полевые фото.
 """
 
 from __future__ import annotations
@@ -48,6 +54,14 @@ class SynthConfig:
     neighbour_overlap: float = 0.0  # доля ширины соседа, на которую он может заходить за целевую бутылку
     price_strip_prob: float = 0.0
     motion_blur_prob: float = 0.0
+    # v3: «другой тираж» целевой упаковки; в v1 и v2 выключено, чтобы прежние выборки
+    # воспроизводились с тем же seed
+    reprint_hue: float = 0.0  # сдвиг тона, единицы HSV PIL (256 на круг)
+    reprint_saturation: float = 0.0  # относительный разброс насыщенности
+    reprint_gamma: float = 0.0  # относительный разброс гаммы
+    halftone_prob: float = 0.0
+    resharpen_prob: float = 0.0
+    recompress_rounds: int = 0
 
 
 SYNTH_PRESETS = {
@@ -66,6 +80,15 @@ SYNTH_PRESETS = {
         motion_blur_prob=0.2,
     ),
 }
+SYNTH_PRESETS["v3"] = replace(
+    SYNTH_PRESETS["v2"],
+    reprint_hue=6.0,
+    reprint_saturation=0.18,
+    reprint_gamma=0.22,
+    halftone_prob=0.7,
+    resharpen_prob=0.7,
+    recompress_rounds=2,
+)
 
 
 def perspective_coefficients(src: list[tuple[float, float]], dst: list[tuple[float, float]]) -> list[float]:
@@ -172,6 +195,44 @@ def _motion_blur(canvas: Image.Image, rng: random.Random) -> Image.Image:
     return Image.fromarray(cv2.filter2D(np.asarray(canvas), -1, kernel))
 
 
+def _reprint(sprite: Image.Image, rng: random.Random, config: SynthConfig) -> Image.Image:
+    """«Другой тираж» этикетки: портит только целевую упаковку, сохраняя вёрстку и надписи.
+
+    Нужен, чтобы убрать попиксельное совпадение запроса с эталоном — главную поблажку синтетики.
+    Прозрачность сохраняется: фон вырезки не должен появиться из-под искажений."""
+    if not any((config.reprint_hue, config.reprint_saturation, config.reprint_gamma,
+                config.halftone_prob, config.resharpen_prob, config.recompress_rounds)):  # fmt: skip
+        return sprite
+    alpha = sprite.getchannel("A")
+    rgb = sprite.convert("RGB")
+
+    if config.reprint_hue or config.reprint_saturation:
+        hsv = np.asarray(rgb.convert("HSV"), dtype=np.int16)
+        hsv[..., 0] = (hsv[..., 0] + round(rng.uniform(-config.reprint_hue, config.reprint_hue))) % 256
+        if config.reprint_saturation:
+            hsv[..., 1] = np.clip(hsv[..., 1] * (1 + rng.uniform(-config.reprint_saturation, config.reprint_saturation)), 0, 255)
+        rgb = Image.fromarray(hsv.astype(np.uint8), "HSV").convert("RGB")
+    if config.reprint_gamma:
+        gamma = 1 + rng.uniform(-config.reprint_gamma, config.reprint_gamma)
+        rgb = rgb.point([min(255, round(255 * (value / 255) ** gamma)) for value in range(256)] * 3)
+    if config.halftone_prob and rng.random() < config.halftone_prob:
+        # растр печати: слабая регулярная сетка, как на бумажной этикетке вблизи
+        raster = (np.indices((rgb.height, rgb.width)).sum(axis=0) % 2)[..., None] * 2 - 1
+        array = np.asarray(rgb, dtype=np.int16) + raster * rng.randint(3, 9)
+        rgb = Image.fromarray(np.clip(array, 0, 255).astype(np.uint8), "RGB")
+    if config.resharpen_prob and rng.random() < config.resharpen_prob:
+        rgb = rgb.filter(ImageFilter.GaussianBlur(rng.uniform(0.6, 1.4)))
+        rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=rng.randint(80, 170)))
+    for _ in range(config.recompress_rounds):
+        buffer = io.BytesIO()
+        rgb.save(buffer, format="JPEG", quality=rng.randint(55, 85))
+        rgb = Image.open(io.BytesIO(buffer.getvalue())).convert("RGB")
+
+    result = rgb.convert("RGBA")
+    result.putalpha(alpha)
+    return result
+
+
 def _photometric(canvas: Image.Image, box, rng: random.Random, config: SynthConfig) -> Image.Image:
     canvas = ImageEnhance.Brightness(canvas).enhance(rng.uniform(0.55, 1.3))
     canvas = ImageEnhance.Contrast(canvas).enhance(rng.uniform(0.7, 1.25))
@@ -204,7 +265,8 @@ def render_sample(
     canvas = _background(None if rng.random() < config.synthetic_background_prob else background, (w, h), rng)
 
     target_h = round(h * rng.uniform(*config.target_height))
-    sprite = _cylinder(_scale_to_height(cutout(target), target_h), rng, config)
+    # «другой тираж» — только для целевой упаковки: соседи остаются как есть
+    sprite = _cylinder(_reprint(_scale_to_height(cutout(target), target_h), rng, config), rng, config)
     sprite = _warp(sprite, rng, config.perspective)
     sprite = sprite.rotate(rng.uniform(-config.rotation_deg, config.rotation_deg), expand=True,
                            resample=Image.Resampling.BICUBIC)  # fmt: skip
