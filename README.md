@@ -160,7 +160,7 @@ CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.detector_eval --split synth_v1 --
 # сквозной прогон сервисного Scanner (конфиг из WINESCAN_*): решение «не найдено», p50/p95;
 # --holdout — только запросы, которые не видели при обучении выбора рамки и слияния
 CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.scanner_eval --split synth_v2 --tag default --holdout
-python -m winescan.eval.report                                               # -> docs/RESULTS.md
+python -m winescan.eval.report --json artifacts/eval/summary.json            # -> docs/RESULTS.md и сводка для страницы метрик
 ```
 
 ## Сервис
