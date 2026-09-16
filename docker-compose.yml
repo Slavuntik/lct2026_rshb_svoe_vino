@@ -40,9 +40,16 @@ services:
       - ./artifacts:/artifacts
       - hf-cache:/models/hf
     environment:
+      # Профиль для дымовой проверки и демонстрации, а не для оценки: на Xeon E5-2670 v2 полная
+      # конфигурация отвечает 86–88 с при таймауте скрипта 10 с. Здесь облегчённая: лёгкая модель,
+      # один индекс, без детектора и OCR — 0,7–1,1 с на скан, но заметно менее точно.
       WINESCAN_DEVICE: cpu
-      # на CPU OCR заметно медленнее; SIFT и детектор остаются
       WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-0}
+      WINESCAN_INDEXES: ${WINESCAN_INDEXES:-siglip2-base-patch16-224}
+      WINESCAN_INDEX_WEIGHTS: ${WINESCAN_INDEX_WEIGHTS:-1.0}
+      WINESCAN_USE_DETECTOR: ${WINESCAN_USE_DETECTOR:-0}
+      WINESCAN_BOX_CANDIDATES: ${WINESCAN_BOX_CANDIDATES:-1}
+      WINESCAN_FUSION: ${WINESCAN_FUSION:-0}
 
   # мобильный интерфейс; проксирует /api/** на сервис распознавания
   web:
