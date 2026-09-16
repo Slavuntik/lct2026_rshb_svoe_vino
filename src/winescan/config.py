@@ -6,7 +6,16 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+def project_root(source_root: Path, cwd: Path) -> Path:
+    """Корень репозитория: папка над `src`, если пакет запущен из исходников.
+
+    В Docker-образе пакет установлен в site-packages, и `source_root` указывает внутрь venv.
+    Тогда корнем считается рабочая папка (в образе `/app`, куда скопированы `configs` и `Makefile`),
+    иначе относительные пути вроде `configs/fusion_v2.json` не находятся."""
+    return source_root if (source_root / "pyproject.toml").exists() else cwd
+
+
+PROJECT_ROOT = project_root(Path(__file__).resolve().parents[2], Path.cwd())
 
 
 def _path(env: str, default: Path) -> Path:
