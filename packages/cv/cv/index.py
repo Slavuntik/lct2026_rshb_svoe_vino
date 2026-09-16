@@ -19,6 +19,7 @@ image-scan.md, "Пайплайн /scan/photo"; не входит в зону а�
 from __future__ import annotations
 
 import json
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,6 +29,11 @@ from cv.augment import prepare_reference, render_synthetic_views
 from cv.encoder import SiglipEncoder
 from cv.normalize import normalize_query
 from cv.store import QdrantStore, get_store
+
+# Печать прогресса в build() каждые N векторов (G3: боевая сборка ~35-44 тыс.
+# векторов идёт минуты — "запускай фоном, следи за прогрессом", agents/G3-real-index.md
+# — молчаливый долгий процесс неотличим от зависшего).
+_BUILD_PROGRESS_EVERY = 500
 
 
 @dataclass
@@ -88,6 +94,11 @@ class ImageIndex:
         # всегда доступная привязка "эта позиция на диске -> её манифест". Явный параметр
         # `manifest_path` по-прежнему в приоритете, если передан.
         self._manifest_path = manifest_path or (self.store.path / "manifest.json")
+        # Тайминги последнего build() по стадиям (load/normalize/embed/upsert) — не
+        # часть контракта, читается по желанию вызывающим кодом (CLI `cv build-index`,
+        # G3: agents/G3-real-index.md п.2 просит замер стадий боевой сборки). None до
+        # первого build().
+        self.last_build_stats: dict | None = None
 
     @property
     def index_version(self) -> str | None:
@@ -145,36 +156,88 @@ class ImageIndex:
         ]
 
     def build(self, refs: dict[str, list[str]], version: str) -> None:
-        """slug -> список путей [эталон, synth-1, synth-2, ...] (эталон + синтетические
-        ракурсы, контракт). Порядок в списке — конвенция: первый элемент = "real",
-        остальные = "synth-N" по позиции — именно так `cv.augment.save_synthetic_views`
-        пишет файлы на диск (см. докстринг там). Полная переиндексация: коллекция
-        пересоздаётся с нуля (в отличие от `add()`, который апсертит поверх)."""
+        """slug -> список путей [эталон, ...] (эталон + синтетические ракурсы, контракт).
+        Порядок в списке — конвенция: первый элемент = "real". Остальные элементы
+        различаются ПО ИМЕНИ ФАЙЛА, не только по позиции (G3-расширение для боевого
+        индекса, agents/G3-real-index.md п.1: реальные позиции каталога кейса могут
+        нести НЕСКОЛЬКО настоящих фото — ~30 слагов с `files` длиннее 1 в
+        `case-data/slug_refs.json`): файл, отрендеренный `cv.augment.save_synthetic_
+        views()` (имя вида `{slug}__synth-NN.*`), — "synth-N" по своему порядковому
+        номеру среди синтетики этой позиции; ЛЮБОЙ другой файл — дополнительный
+        РЕАЛЬНЫЙ ракурс той же позиции — "real" для первого, "real-2", "real-3"... для
+        следующих по порядку в списке. Оба класса проходят ОДИНАКОВУЮ нормализацию —
+        `prepare_reference()` буквально ЕСТЬ `normalize_query(enabled=True)` под другим
+        именем (см. `cv/augment.py`, тот же результат численно) — так что классификация
+        real/synth влияет ТОЛЬКО на строку `view` (какой ракурс сматчился, для отчётов/
+        отладки), не на сами векторы (см. reports/g-report.md, "Предположения" — почему
+        домен нормализации обязан быть одинаковым для real и synth).
+
+        Полная переиндексация: коллекция пересоздаётся с нуля (в отличие от `add()`,
+        который апсертит поверх). Тайминги по стадиям (load/normalize/embed/upsert,
+        секунды) — в `self.last_build_stats` после вызова (не часть контракта).
+        Прогресс — печать в stderr каждые `_BUILD_PROGRESS_EVERY` векторов (долгая
+        сборка боевого индекса не должна идти молча, тот же пункт брифа)."""
         dim = self.encoder.dim
         self.store.recreate_collection(self.collection, dim)
 
         ids, vectors, payloads = [], [], []
+        t_load = t_normalize = t_embed = 0.0
+        t_start = time.perf_counter()
         for slug, paths in refs.items():
-            for i, path in enumerate(paths):
-                view = "real" if i == 0 else f"synth-{i}"
+            real_i = 0
+            synth_i = 0
+            for path in paths:
+                is_synth = "__synth-" in Path(path).name
+                if is_synth:
+                    synth_i += 1
+                    view = f"synth-{synth_i}"
+                else:
+                    real_i += 1
+                    view = "real" if real_i == 1 else f"real-{real_i}"
+
+                t0 = time.perf_counter()
                 arr = imageio.load_image_file(path)
+                t1 = time.perf_counter()
                 # ВАЖНО (см. reports/g-report.md, "Предположения" — нашёл на self-match):
-                # и "real", и "synth" ракурсы прогоняются через ОДИНАКОВЫЙ normalize_query()
-                # — тот же пайплайн, что search() применяет к запросу. Ранняя версия
-                # применяла нормализацию только к "real" (через prepare_reference), а
-                # "synth"-файлы (уже отрендеренные cv.augment.save_synthetic_views)
-                # заносила в индекс СЫРЫМИ — из-за этого запрос (после normalize_query)
-                # и его ближайшие соседи в индексе (synth-ракурсы той же позиции, БЕЗ
-                # normalize_query) жили в разных "визуальных доменах", и self-match
-                # проседал именно от этого рассинхрона, а не от качества самой
-                # нормализации как таковой (ablation подтвердил: рассинхрон устранён —
-                # цифры восстановились, см. отчёт).
-                view_arr = prepare_reference(arr) if i == 0 else normalize_query(arr, enabled=True)
+                # и "real"(-N), и "synth"-N ракурсы прогоняются через ОДИНАКОВЫЙ
+                # normalize_query() — тот же пайплайн, что search() применяет к запросу.
+                # Ранняя версия применяла нормализацию только к "real" (через
+                # prepare_reference), а "synth"-файлы (уже отрендеренные cv.augment.
+                # save_synthetic_views) заносила в индекс СЫРЫМИ — из-за этого запрос
+                # (после normalize_query) и его ближайшие соседи в индексе (synth-ракурсы
+                # той же позиции, БЕЗ normalize_query) жили в разных "визуальных доменах",
+                # и self-match проседал именно от этого рассинхрона.
+                view_arr = prepare_reference(arr) if not is_synth else normalize_query(arr, enabled=True)
+                t2 = time.perf_counter()
                 vec = self.encoder.encode(view_arr)
+                t3 = time.perf_counter()
+                t_load += t1 - t0
+                t_normalize += t2 - t1
+                t_embed += t3 - t2
+
                 ids.append(f"{slug}::{view}")
                 vectors.append(vec)
                 payloads.append({"slug": slug, "view": view})
+                if len(ids) % _BUILD_PROGRESS_EVERY == 0:
+                    elapsed = time.perf_counter() - t_start
+                    rate = len(ids) / elapsed if elapsed > 0 else 0.0
+                    print(
+                        f"[ImageIndex.build] {len(ids)} векторов, {elapsed:.0f} с "
+                        f"({rate:.1f} вект/с)",
+                        file=sys.stderr,
+                    )
+
+        t_upsert0 = time.perf_counter()
         self.store.upsert(self.collection, ids, vectors, payloads)
+        t_upsert = time.perf_counter() - t_upsert0
+
+        self.last_build_stats = {
+            "load_s": round(t_load, 2),
+            "normalize_s": round(t_normalize, 2),
+            "embed_s": round(t_embed, 2),
+            "upsert_s": round(t_upsert, 2),
+            "total_s": round(time.perf_counter() - t_start, 2),
+        }
 
         manifest = {
             "version": version,

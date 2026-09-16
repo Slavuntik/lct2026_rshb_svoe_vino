@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+
 from cv import config, imageio
 from cv.augment import render_synthetic_views
 from cv.index import ImageIndex
@@ -33,10 +35,18 @@ NEAR_DUP_GROUPS: list[frozenset[str]] = [
 ]
 
 
-def is_acceptable_match(predicted_slug: str | None, true_slug: str) -> bool:
+def is_acceptable_match(
+    predicted_slug: str | None, true_slug: str, groups: list[frozenset[str]] | None = None
+) -> bool:
+    """`groups` по умолчанию — известные near-dup пары дев-фикстур (`NEAR_DUP_GROUPS`);
+    G3 (agents/G3-real-index.md) передаёт сюда реальные семьи каталога кейса
+    (`case-data/slug_refs.json["families"]`) — параметр, а не переопределение
+    глобала, чтобы дев-фикстурный self-match (`run_selfcheck`) не зависел от того,
+    что лежит в датасете кейса на момент запуска."""
     if predicted_slug == true_slug:
         return True
-    return any(predicted_slug in g and true_slug in g for g in NEAR_DUP_GROUPS)
+    g = groups if groups is not None else NEAR_DUP_GROUPS
+    return any(predicted_slug in grp and true_slug in grp for grp in g)
 
 
 def run_selfcheck(
@@ -69,3 +79,107 @@ def run_selfcheck(
 
     rate = hits / total if total else 0.0
     return {"total": total, "hits": hits, "top1_rate": round(rate, 4), "details": details}
+
+
+def _rate(hits: int, total: int) -> float:
+    return round(hits / total, 4) if total else 0.0
+
+
+def run_selfcheck_from_refs(
+    refs: dict[str, Path],
+    index: ImageIndex | None = None,
+    n_views: int = 2,
+    seed: int = config.AUGMENT_SEED_DEFAULT,
+    top_k: int = 5,
+    sample_n: int | None = None,
+    sample_seed: int = 0,
+    near_dup_groups: list[frozenset[str]] | None = None,
+    fallback_slugs: set[str] | None = None,
+) -> dict:
+    """Self-match на БОЕВОМ индексе (agents/G3-real-index.md п.4): `refs` — slug ->
+    путь к эталонному фото из `case-data/slug_refs.json` (первый файл слага; см.
+    `cv.cli.discover_refs_from_slug_refs_json`), НЕ дев-директория `run_selfcheck`
+    выше — там slug выводится из ИМЕНИ ФАЙЛА (`p.stem`), что не годится для боевых
+    данных: имена файлов в `uploads/` произвольные хэши/оригинальные имена, не slug.
+
+    Сэмплирует `sample_n` слагов детерминированно по `sample_seed` (без `n_views` х
+    ~1700 позиций на каждый прогон — бриф просит "сэмпл >= 300 слагов", не полный
+    прогон), рендерит `n_views` свежих holdout-ракурсов (см. `HOLDOUT_SEED_OFFSET`
+    выше — другой seed, чем любой `build()`/`add()`, иначе self-match тривиален) и
+    считает top-1 И top-5 rate (бриф п.4 просит оба — `run_selfcheck` выше исторически
+    даёт только top-1, здесь оба ради боевого отчёта, без изменения старой функции).
+
+    `near_dup_groups` — реальные near-dup семьи каталога (`slug_refs.json["families"]`,
+    как frozenset per семья), не дев-фикстурная `NEAR_DUP_GROUPS` — см. docstring
+    `is_acceptable_match`.
+
+    `fallback_slugs` — множество слагов, чей ЭТАЛОН дал fallback у детектора этикетки
+    (`cv.audit.label_detector_outcomes`, дополнение оркестратора от 16.09.2026: "шумные
+    эталоны размажут цифры и мы примем болезнь за норму"). Если передано — отчёт несёт
+    `by_ref_quality: {clean, fallback}` с отдельными top1/top5 для каждой группы, поверх
+    общих цифр (которые остаются как есть, ничего не выбрасывается из общего счёта)."""
+    index = index or ImageIndex()
+    fallback_slugs = fallback_slugs or set()
+
+    slugs = sorted(refs.keys())
+    if sample_n is not None and sample_n < len(slugs):
+        rng = np.random.default_rng(sample_seed)
+        idx = rng.choice(len(slugs), size=sample_n, replace=False)
+        slugs = sorted(slugs[i] for i in idx)
+
+    total = top1_hits = top5_hits = 0
+    by_quality = {
+        "clean": {"total": 0, "top1_hits": 0, "top5_hits": 0},
+        "fallback": {"total": 0, "top1_hits": 0, "top5_hits": 0},
+    }
+    details = []
+    for slug in slugs:
+        path = refs[slug]
+        try:
+            arr = imageio.load_image_file(str(path))
+        except ValueError:
+            continue
+        is_fallback_ref = slug in fallback_slugs
+        bucket = by_quality["fallback"] if is_fallback_ref else by_quality["clean"]
+        holdout_views = render_synthetic_views(arr, n=n_views, seed=seed + HOLDOUT_SEED_OFFSET)
+        for view_i, view in enumerate(holdout_views):
+            total += 1
+            bucket["total"] += 1
+            matches = index.search(imageio.encode_jpeg(view), top_k=top_k)
+            top1 = matches[0].slug if matches else None
+            ok1 = is_acceptable_match(top1, slug, near_dup_groups)
+            ok5 = any(is_acceptable_match(m.slug, slug, near_dup_groups) for m in matches)
+            top1_hits += int(ok1)
+            top5_hits += int(ok5)
+            bucket["top1_hits"] += int(ok1)
+            bucket["top5_hits"] += int(ok5)
+            details.append(
+                {
+                    "slug": slug,
+                    "view_i": view_i,
+                    "top1": top1,
+                    "ok1": ok1,
+                    "ok5": ok5,
+                    "fallback_ref": is_fallback_ref,
+                }
+            )
+
+    report = {
+        "sampled_slugs": len(slugs),
+        "total_views": total,
+        "top1_hits": top1_hits,
+        "top1_rate": _rate(top1_hits, total),
+        "top5_hits": top5_hits,
+        "top5_rate": _rate(top5_hits, total),
+        "details": details,
+    }
+    if fallback_slugs:
+        report["by_ref_quality"] = {
+            name: {
+                "total": b["total"],
+                "top1_rate": _rate(b["top1_hits"], b["total"]),
+                "top5_rate": _rate(b["top5_hits"], b["total"]),
+            }
+            for name, b in by_quality.items()
+        }
+    return report

@@ -212,3 +212,52 @@ def test_gaps_to_next_group_skips_same_group_neighbors():
 def test_match_is_plain_dataclass_per_contract():
     m = Match(slug="x", score=0.5, gap=0.1, view="real")
     assert (m.slug, m.score, m.gap, m.view) == ("x", 0.5, 0.1, "real")
+
+
+# --- G3 (agents/G3-real-index.md п.1/2): доп. реальные ракурсы + тайминги стадий build() ---
+
+
+def test_build_labels_extra_real_angle_by_filename_not_position(tmp_path, shared_encoder, sample_refs):
+    """~30 слагов боевого датасета кейса несут НЕСКОЛЬКО настоящих фото в одной позиции
+    (slug_refs.json: files длиннее 1 — near-dup серия, отдельное фото на год/категорию).
+    Такой доп-ракурс должен получить view="real-2" ПО ИМЕНИ ФАЙЛА (не совпадает с
+    шаблоном cv.augment.save_synthetic_views `__synth-NN.`), даже если в списке идёт
+    ПОСЛЕ синтетических ракурсов — порядок elements в refs[slug], не позиция 0/>0,
+    больше не определяет классификацию real/synth (см. cv/index.py::build())."""
+    slug, primary_path = next(iter(sample_refs.items()))
+    store = QdrantStore(path=tmp_path / "qdrant")
+    index = ImageIndex(
+        store=store, encoder=shared_encoder, collection="view_label_test", manifest_path=tmp_path / "manifest.json"
+    )
+
+    synth_paths = save_synthetic_views(primary_path, tmp_path / "views", slug, n=2, seed=0)
+    extra_real = tmp_path / "views" / f"{slug}__extra-angle.jpg"
+    extra_real.write_bytes(primary_path.read_bytes())
+
+    # extra_real ПОСЛЕДНИЙ в списке (после обоих synth) — намеренно, проверяет, что
+    # классификация идёт по имени файла, не по позиции.
+    refs = {slug: [str(primary_path)] + [str(p) for p in synth_paths] + [str(extra_real)]}
+    index.build(refs, version="pytest-view-label")
+
+    points, _ = index.store.client.scroll(collection_name="view_label_test", limit=100, with_payload=True)
+    views = sorted(p.payload["view"] for p in points)
+    assert views == ["real", "real-2", "synth-1", "synth-2"]
+
+
+def test_build_records_stage_timings(tmp_path, shared_encoder, sample_refs):
+    """G3 п.2: время сборки по стадиям (load/normalize/embed/upsert) — читается вызывающим
+    кодом (CLI `cv build-index`) через `index.last_build_stats` после build()."""
+    slug, path = next(iter(sample_refs.items()))
+    store = QdrantStore(path=tmp_path / "qdrant")
+    index = ImageIndex(
+        store=store, encoder=shared_encoder, collection="stage_timing_test", manifest_path=tmp_path / "manifest.json"
+    )
+    assert index.last_build_stats is None  # до первого build()
+
+    synth_paths = save_synthetic_views(path, tmp_path / "views", slug, n=2, seed=0)
+    index.build({slug: [str(path)] + [str(p) for p in synth_paths]}, version="pytest-timing")
+
+    stats = index.last_build_stats
+    assert stats is not None
+    assert set(stats) == {"load_s", "normalize_s", "embed_s", "upsert_s", "total_s"}
+    assert all(v >= 0 for v in stats.values())
