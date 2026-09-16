@@ -106,6 +106,38 @@ export interface SuggestRequest {
   exclude_slugs?: string[]
 }
 
+/** Итог решения «не найдено» в сквозном прогоне сервиса (winescan.eval.scanner_eval). */
+export interface MetricsDecision {
+  in_catalog: number
+  answered_correct: number | null
+  answered_wrong: number | null
+  rejected: number | null
+  precision_of_answers: number | null
+  out_of_catalog: number
+  out_of_catalog_rejected: number | null
+  open_set_accuracy: number | null
+}
+
+/** Один прогон из artifacts/eval: поиск (winescan.eval.run) или сквозной прогон сервиса. */
+export interface MetricsRun {
+  run: string
+  split: string | null
+  kind: 'сервис' | 'поиск'
+  queries: number | null
+  top1: number | null
+  top5: number | null
+  top1_in_phash_group: number | null
+  decision: MetricsDecision | null
+  latency_p50_ms: number | null
+  latency_p95_ms: number | null
+  finished_at: string
+}
+
+export interface MetricsResponse {
+  generated_at: string
+  runs: MetricsRun[]
+}
+
 export interface SuggestResponse {
   suggestions: ReasonedWine[]
   disclaimer: string

@@ -8,6 +8,9 @@
       <p class="app-footer__note">
         Сведения о винах из каталога «Своё вино» носят информационный характер. Сервис предназначен для лиц старше 18 лет.
       </p>
+      <p class="app-footer__note">
+        <NuxtLink to="/metrics" class="app-footer__link">Метрики распознавания</NuxtLink>
+      </p>
     </div>
   </footer>
 </template>
@@ -51,5 +54,10 @@
   color: var(--c-text-secondary);
   font-size: 13px;
   line-height: 18px;
+}
+
+.app-footer__link {
+  color: var(--c-text-secondary);
+  text-decoration: underline;
 }
 </style>

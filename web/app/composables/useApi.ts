@@ -1,5 +1,6 @@
 import type {
   AnalogsResponse,
+  MetricsResponse,
   QuestionsResponse,
   ScanResponse,
   SuggestRequest,
@@ -29,6 +30,8 @@ export function useApi() {
     },
     wine: (slug: string) => api<WineCard>(winePath(slug)),
     analogs: (slug: string, limit = 6) => api<AnalogsResponse>(`${winePath(slug)}/analogs`, { query: { limit } }),
+    /** Сводка прогонов для страницы метрик; 404, если сводка ещё не собрана (make report). */
+    metrics: () => api<MetricsResponse>('/v1/metrics'),
     questions: () => api<QuestionsResponse>('/v1/sommelier/questions'),
     suggest: (request: SuggestRequest) => api<SuggestResponse>('/v1/sommelier/suggest', { method: 'POST', body: request }),
   }

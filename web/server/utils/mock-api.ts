@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises'
 import { basename, extname, resolve } from 'node:path'
 import type { H3Event } from 'h3'
-import type { QuestionsResponse, ReasonedWine, ScanResponse, Sweetness, WineCard } from '#shared/types/api'
+import type { MetricsResponse, QuestionsResponse, ReasonedWine, ScanResponse, Sweetness, WineCard } from '#shared/types/api'
 
 interface MockData {
   wines: Record<string, WineCard>
@@ -15,6 +15,8 @@ interface MockData {
   questions: QuestionsResponse
   scanFound: ScanResponse
   scanNotFound: ScanResponse
+  /** сводка прогонов оценки для страницы метрик (в сервисе её готовит `make report`) */
+  metrics: MetricsResponse
 }
 
 const DISCLAIMER = 'Информация о винах каталога. 18+. Чрезмерное употребление алкоголя вредит вашему здоровью.'
@@ -39,15 +41,16 @@ function loadMocks(): Promise<MockData> {
       if (value === null || value === undefined) throw new Error(`нет фикстуры mocks/${name}`)
       return value
     }
-    const [wines, analogs, suggest, questions, scanFound, scanNotFound] = await Promise.all([
+    const [wines, analogs, suggest, questions, scanFound, scanNotFound, metrics] = await Promise.all([
       read<MockData['wines']>('wines.json'),
       read<MockData['analogs']>('analogs.json'),
       read<MockData['suggest']>('suggest.json'),
       read<QuestionsResponse>('questions.json'),
       read<ScanResponse>('scan_found.json'),
       read<ScanResponse>('scan_not_found.json'),
+      read<MetricsResponse>('metrics.json'),
     ])
-    return { wines, analogs, suggest, questions, scanFound, scanNotFound }
+    return { wines, analogs, suggest, questions, scanFound, scanNotFound, metrics }
   })().catch((error: unknown) => {
     cache = null
     throw error
@@ -76,6 +79,7 @@ export async function handleMockRequest(event: H3Event, path: string): Promise<u
 
   if (method === 'GET' && route === 'health') return { status: 'ok', wines: Object.keys(data.wines).length, mock: true }
   if (method === 'POST' && route === 'v1/scan') return mockScan(event, data)
+  if (method === 'GET' && route === 'v1/metrics') return data.metrics
   if (method === 'GET' && route === 'v1/sommelier/questions') return data.questions
   if (method === 'POST' && route === 'v1/sommelier/suggest') return mockSuggest(event, data)
 
