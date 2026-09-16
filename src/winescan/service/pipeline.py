@@ -203,10 +203,12 @@ class Scanner:
         for _ in range(2):
             self.scan(image)
 
-    def _boxes(self, image: Image.Image, timings: dict) -> list[tuple[tuple | None, float]]:
+    def _boxes(self, image: Image.Image, timings: dict, user_box: tuple | None = None) -> list[tuple[tuple | None, float]]:
         from winescan.vision.detector import rank_packages, select_candidates
 
         self._det_scores = [1.0]
+        if user_box is not None:
+            return [(user_box, 1.0)]  # пользователь указал бутылку сам — выбирать не из чего
         if self.detector is None:
             return [(None, 1.0)]
         step = time.perf_counter()
@@ -218,15 +220,24 @@ class Scanner:
         self._det_scores = [detection.score for detection, _ in chosen]
         return [(detection.box, weight) for detection, weight in chosen]
 
-    def scan(self, image: Image.Image) -> ScanResult:
+    def scan(self, image: Image.Image, relative_box: tuple[float, float, float, float] | None = None) -> ScanResult:
+        """``relative_box`` — рамка, которую указал пользователь, в долях кадра (0…1).
+
+        Если она задана, детектор не нужен: на синтетике идеальная рамка даёт top-1 0,775 против
+        0,663 у автоматического выбора, и этот разрыв из кадра ничем не берётся (WORKLOG)."""
         config = self.config
         timings: dict[str, float] = {}
         began = time.perf_counter()
         image = ImageOps.exif_transpose(image).convert("RGB")
         image.thumbnail((MAX_QUERY_SIDE, MAX_QUERY_SIDE))
+        user_box = None
+        if relative_box is not None:
+            width, height = image.size
+            x1, y1, x2, y2 = relative_box
+            user_box = (x1 * width, y1 * height, x2 * width, y2 * height)
 
         with self._lock:
-            boxes = self._boxes(image, timings)
+            boxes = self._boxes(image, timings, user_box)
             step = time.perf_counter()
             vectors = self.searcher.embed_views([image] * len(boxes), [box for box, _ in boxes])
             scores = self.searcher.wine_scores(vectors)

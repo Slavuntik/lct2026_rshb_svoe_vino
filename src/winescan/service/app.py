@@ -12,7 +12,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import Protocol
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from PIL import Image, UnidentifiedImageError
 
@@ -43,6 +43,22 @@ def _read_image(upload: UploadFile) -> Image.Image:
         raise HTTPException(status_code=400, detail=f"не удалось прочитать изображение: {exc}") from exc
 
 
+def _parse_box(box: str | None) -> tuple[float, float, float, float] | None:
+    """«x1,y1,x2,y2» в долях кадра -> рамка; None, если не задана. Ошибка формата — 400."""
+    if box is None or not box.strip():
+        return None
+    try:
+        values = tuple(float(part) for part in box.split(","))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"рамка должна быть четырьмя числами: {box}") from exc
+    if len(values) != 4:
+        raise HTTPException(status_code=400, detail="рамка задаётся как x1,y1,x2,y2 в долях кадра")
+    x1, y1, x2, y2 = (min(max(value, 0.0), 1.0) for value in values)
+    if x2 - x1 < 0.02 or y2 - y1 < 0.02:
+        raise HTTPException(status_code=400, detail="рамка слишком мала")
+    return x1, y1, x2, y2
+
+
 def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
     state: dict[str, ScannerLike] = {}
 
@@ -67,8 +83,12 @@ def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
         return {"slug": state["scanner"].top1_slug(_read_image(image))}
 
     @app.post("/v1/scan")
-    def scan(image: UploadFile = File(...)) -> dict:
-        return state["scanner"].scan(_read_image(image)).to_dict()
+    def scan(image: UploadFile = File(...), box: str | None = Form(None)) -> dict:
+        """``box`` — рамка, которую указал пользователь: «x1,y1,x2,y2» в долях кадра (0…1).
+
+        Без неё бутылку выбирает детектор; с ней выбор не нужен — именно на нём теряется
+        больше всего точности (ARCHITECTURE.md, слой 1)."""
+        return state["scanner"].scan(_read_image(image), _parse_box(box)).to_dict()
 
     @app.get("/v1/wines/{slug}")
     def wine(slug: str) -> dict:

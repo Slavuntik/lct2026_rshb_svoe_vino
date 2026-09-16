@@ -17,8 +17,10 @@ RED = {**CARD, "slug": "saperavi", "name": "Саперави", "winery": "Фан
 
 class FakeScanner:
     cards = {c["slug"]: c for c in (CARD, ANALOG, RED)}
+    last_box = None
 
-    def scan(self, image):
+    def scan(self, image, relative_box=None):
+        FakeScanner.last_box = relative_box
         return ScanResult(
             status="found",
             slug=CARD["slug"],
@@ -56,6 +58,20 @@ def test_scan_returns_card_and_confidence(client):
 
     assert body["status"] == "found" and body["card"]["name"] == "Кокур Сухое, 2025"
     assert body["confidence"]["margin_top1_top2"] == 0.2
+
+
+def test_scan_accepts_user_box_in_fractions(client):
+    files = {"image": ("q.jpg", _jpeg(), "image/jpeg")}
+
+    assert client.post("/v1/scan", files=files).status_code == 200
+    assert FakeScanner.last_box is None  # без рамки бутылку ищет детектор
+
+    assert client.post("/v1/scan", files=files, data={"box": "0.2,0.1,0.8,0.95"}).status_code == 200
+    assert FakeScanner.last_box == (0.2, 0.1, 0.8, 0.95)
+
+    assert client.post("/v1/scan", files=files, data={"box": "0.2,0.1,0.8"}).status_code == 400
+    assert client.post("/v1/scan", files=files, data={"box": "0.5,0.5,0.505,0.9"}).status_code == 400
+    assert client.post("/v1/scan", files=files, data={"box": "левее,0.1,0.8,0.9"}).status_code == 400
 
 
 def test_broken_image_is_400(client):
