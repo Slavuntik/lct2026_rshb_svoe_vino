@@ -59,7 +59,7 @@ flowchart LR
 |---|---|---|---|
 | `winescan.catalog` | 0 | CSV, правила имён Strapi, привязка фото, отчёт | pandas, Pillow |
 | `winescan.vision` | 1–2 | `preprocess` (вырезка, кроп, квадрат, виды), `detector` (OWLv2, вес и выбор K рамок), `embedder` (SigLIP 2), `ocr` (EasyOCR), `vlm` (Qwen3-VL, поля этикетки), `cylinder` (поворот цилиндра для синтетики и галереи) | torch, transformers, easyocr |
-| `winescan.search` | 3 | `index` (точный индекс, несколько векторов на вино), `build_index` (виды и ракурсы), `multi` (сумма индексов), `box_selection` и `box_ranker` (выбор рамки), `local_match` и `local_features` (SIFT и хранилище признаков эталонов), `verify` (признаки проверки), `text_match`, `fields` (поля VLM), `fusion` (логистическая регрессия), `rerank` (слияние и решение) | vision, OpenCV, scikit-learn |
+| `winescan.search` | 3 | `index` (точный индекс, несколько векторов на вино), `build_index` (виды и ракурсы), `multi` (сумма индексов), `box_selection` и `box_ranker` (выбор рамки), `local_match` и `local_features` (SIFT и хранилище признаков эталонов), `deep_match` (ALIKED + LightGlue, тот же интерфейс), `verify` (признаки проверки, сопоставитель — параметр), `text_match`, `fields` (поля VLM), `fusion` (логистическая регрессия), `rerank` (слияние и решение) | vision, OpenCV, scikit-learn |
 | `winescan.product` | 5 | `analogs` (аналоги других виноделен), `sommelier` (правила сочетаний) | только каталог |
 | `winescan.service` | 4 | `pipeline` (Scanner и конфиг), `app` (FastAPI) | search, vision, product |
 | `winescan.validation` | валидация | генератор синтетических кадров (пресеты v1, v2) | vision.preprocess, vision.cylinder |
@@ -228,6 +228,7 @@ flowchart LR
 | `POST /v1/scan` (multipart `image`) | фронтенд | `status`, `slug`, `card`, `confidence` (скор, визуальный скор, отрыв, причина решения, текст OCR), `top5` (со слагаемыми скора), `box`, `timings_ms` |
 | `GET /v1/wines/{slug}` | карточка | запись `catalog.jsonl` |
 | `GET /v1/wines/{slug}/image` | эталонное фото | файл из uploads |
+| `GET /v1/metrics` | страница метрик интерфейса | сводка прогонов из `artifacts/eval/summary.json` (готовит `make report`); 404, если сводки нет |
 | `GET /health` | готовность | `{"status": "ok", "wines": 2103}` |
 
 Один процесс uvicorn; модели загружаются и прогреваются при старте; инференс под
@@ -264,6 +265,8 @@ GPU — p50 1,02 с, p95 1,59 с. Без хранилища SIFT-признак�
     (localStorage).
   - Прокси `/api/**` → `NUXT_API_BASE`; режим фикстур `NUXT_PUBLIC_MOCK=1` для демо без GPU.
   - Цвета и шрифты сняты с CSS vino-svoe.ru.
+  - Страница `/metrics` показывает числа из прогонов оценки (точность, доля отказов, задержки),
+    чтобы на демонстрации не пересказывать их устно; ссылка — в подвале.
   - Проверено сборкой и `nuxi typecheck`; на реальном телефоне не проверялось.
 
 ## 5. Валидация и метрики
