@@ -6,6 +6,7 @@ OCR-верификатор.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import time
 
@@ -47,7 +48,9 @@ def test_flat_mode_never_errors_on_empty_file(client: TestClient):
 
 
 def test_flat_mode_never_errors_on_oversized_file(client: TestClient, monkeypatch):
-    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet" + b"0" * (9 * 1024 * 1024), flat=True)
+    # v0.4.4: лимит поднят до 25 МБ (было 8) — филлер должен реально его
+    # превышать, иначе тест перестал бы проверять лимит вообще.
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet" + b"0" * (26 * 1024 * 1024), flat=True)
     assert r.status_code == 200
     assert r.json() == {"slug": ""}
 
@@ -78,6 +81,74 @@ def test_flat_mode_works_without_any_auth_token(client: TestClient):
     упоминает авторизацию) — эндпоинт обязан работать анонимно."""
     r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=True)
     assert r.status_code == 200
+
+
+# --- v0.4.4 (ревью 04, блокер 1): "несгораемость flat ДО КОНЦА" -------------
+
+class _ExplodingImageIndex:
+    index_version = "exploding-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        raise RuntimeError("не ValueError — ровно то, что flat обязан пережить")
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_flat_mode_survives_non_value_error_exception(client: TestClient, app):
+    """contracts/image-scan.md v0.4.4: flat ловит ЛЮБОЕ исключение, не только
+    ValueError. До этой правки `except ValueError` пропускал бы любой другой
+    сбой пайплайна (индекс/БД/что угодно) наружу как 500 — ровно то, чего
+    "несгораемость flat" не допускает."""
+    app.state.image_index = _ExplodingImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=True)
+    assert r.status_code == 200
+    assert r.json() == {"slug": ""}
+
+
+def test_flat_mode_accepts_first_file_field_regardless_of_name(client: TestClient):
+    """v0.4.4: скрипт кейсодержателя может назвать multipart-поле не "image"
+    — берём первое файловое поле формы независимо от имени."""
+    r = client.post(
+        "/v1/scan/photo?flat=1",
+        files={"photo": ("label.jpg", b"MOCKPHOTO:shato-vymysel-cabernet", "image/jpeg")},
+    )
+    assert r.status_code == 200
+    assert r.json() == {"slug": "shato-vymysel-cabernet"}
+
+
+def test_scan_flat_default_env_makes_flat_the_default_without_query_param(client: TestClient, app):
+    """v0.4.4: SCAN_FLAT_DEFAULT=1 — страховка на случай, если скрипт
+    кейсодержателя вообще не знает про ?flat=1. Без query-параметра
+    /scan/photo обязан вести себя как flat."""
+    app.state.settings = dataclasses.replace(app.state.settings, scan_flat_default=True)
+    r = client.post(
+        "/v1/scan/photo",  # без ?flat вообще
+        files={"image": ("label.jpg", b"MOCKPHOTO:shato-vymysel-cabernet", "image/jpeg")},
+    )
+    assert r.status_code == 200
+    assert r.json() == {"slug": "shato-vymysel-cabernet"}  # ровно flat-форма, не rich
+
+
+def test_scan_flat_default_env_yields_to_explicit_query_param(client: TestClient, app):
+    """Явный ?flat=0 обязан пересилить SCAN_FLAT_DEFAULT=1 — это страховка на
+    неизвестный случай скрипта, а не отмена самого query-параметра."""
+    app.state.settings = dataclasses.replace(app.state.settings, scan_flat_default=True)
+    r = client.post(
+        "/v1/scan/photo?flat=0",
+        files={"image": ("label.jpg", b"MOCKPHOTO:shato-vymysel-cabernet", "image/jpeg")},
+    )
+    assert r.status_code == 200
+    assert set(r.json().keys()) == {
+        "slug", "card", "confidence", "ocr_verified", "timing_ms",
+        "not_in_catalog", "similar", "analogs", "matches",
+    }  # rich-форма — explicit ?flat=0 пересилил env-дефолт
 
 
 # --- rich mode: full schema --------------------------------------------------
@@ -155,7 +226,40 @@ def test_rich_mode_empty_file_is_honest_400(client: TestClient):
 
 
 def test_rich_mode_oversized_file_is_honest_400(client: TestClient):
-    r = _photo(client, b"0" * (9 * 1024 * 1024), flat=False)
+    # v0.4.4: лимит поднят до 25 МБ (было 8) — филлер должен реально его
+    # превышать, иначе тест перестал бы проверять лимит вообще.
+    r = _photo(client, b"0" * (26 * 1024 * 1024), flat=False)
+    assert r.status_code == 400
+    assert r.json()["error"]["code"] == "validation_error"
+
+
+def test_rich_mode_accepts_photo_up_to_new_25mb_limit(client: TestClient):
+    """v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ — телефонные фото часто
+    больше 8 МБ. Байты за MOCKPHOTO-конвенцией + честный филлер до ~10 МБ:
+    раньше это гарантированно резалось лимитом, теперь обязано пройти как
+    обычный (пусть и не распознанный по хвосту) файл."""
+    payload = b"MOCKPHOTO:shato-vymysel-cabernet" + b"\x00" * (10 * 1024 * 1024)
+    assert len(payload) > 8 * 1024 * 1024
+    r = _photo(client, payload, flat=False)
+    assert r.status_code == 200
+
+
+def test_rich_mode_accepts_first_file_field_regardless_of_name(client: TestClient):
+    """v0.4.4: та же подстраховка, что и у flat — см.
+    test_flat_mode_accepts_first_file_field_regardless_of_name."""
+    r = client.post(
+        "/v1/scan/photo",
+        files={"upload": ("label.jpg", b"MOCKPHOTO:shato-vymysel-cabernet", "image/jpeg")},
+    )
+    assert r.status_code == 200
+    assert r.json()["slug"] == "shato-vymysel-cabernet"
+
+
+def test_rich_mode_no_file_field_at_all_is_honest_400(client: TestClient):
+    """Нет ни "image", ни какого-либо другого файлового поля вообще — честный
+    400, не 422 фреймворка и не 500 (image теперь Optional ради п.
+    "первое файловое поле независимо от имени")."""
+    r = client.post("/v1/scan/photo", data={"not_a_file": "just text"})
     assert r.status_code == 400
     assert r.json()["error"]["code"] == "validation_error"
 
@@ -183,16 +287,69 @@ def test_near_dup_ocr_can_override_top_ann_choice(client: TestClient):
     assert r.json()["ocr_verified"] is True
 
 
-def test_near_dup_ocr_failure_falls_back_to_top_ann_honestly(client: TestClient):
+def test_near_dup_ocr_failure_is_honestly_not_in_catalog(client: TestClient):
+    """v0.4.5: до этой волны OCR-неудача честно откатывалась на top-1 ANN
+    ("мы не смогли прочитать этикетку, но что-то похожее нашли"). Ревью 04 /
+    калибровка F2 поменяли семантику: маленький gap (near-dup-диапазон) БЕЗ
+    успешной OCR-верификации теперь и есть определение недостаточной маржи
+    (CV_MARGIN_FLOOR) — та же двусмысленность, ради которой вообще звали
+    OCR, честно уезжает в not_in_catalog, а не превращается в уверенный
+    (но потенциально неверный) выбор одного из members пары."""
     r = _photo(client, b"MOCKPHOTO:near-dup:NONE", flat=False)
     body = r.json()
     assert body["ocr_verified"] is False
-    assert body["slug"] in {"mock-tainoe-vino-2022", "mock-tainoe-vino-2023"}
+    assert body["not_in_catalog"] is True
+    assert body["slug"] is None
+    # flat, тем не менее, обязан продолжать отдавать лучший ANN-угад — см.
+    # test_flat_mode_near_dup_still_returns_ocr_resolved_slug и
+    # test_flat_mode_always_returns_best_slug_even_at_low_confidence: not_in_catalog
+    # — честность rich/UI, а не сигнал "нечего вернуть" для скрипта оценки.
 
 
 def test_flat_mode_near_dup_still_returns_ocr_resolved_slug(client: TestClient):
     r = _photo(client, b"MOCKPHOTO:near-dup:mock-tainoe-vino-2022", flat=True)
     assert r.json() == {"slug": "mock-tainoe-vino-2022"}
+
+
+# --- v0.4.5 (ревью 04, калибровка F2): not_in_catalog по марже, не по score --
+
+class _LowScoreHighGapImageIndex:
+    """Изолирует ветвь CV_ABS_FLOOR правила: маржа (gap) щедрая, единственная
+    причина not_in_catalog — низкий score сам по себе. Зеркальный случай
+    (высокий score, низкая маржа, OCR не спас) — уже
+    test_near_dup_ocr_failure_is_honestly_not_in_catalog выше."""
+
+    index_version = "low-score-high-gap-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        # score=0.7 < CV_ABS_FLOOR(0.9), gap=0.5 >= CV_MARGIN_FLOOR(0.3) —
+        # маржа никаких сомнений не сигналит, дело чисто в слабом score.
+        return [Match(slug="shato-vymysel-cabernet", score=0.7, gap=0.5, view="real")]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_not_in_catalog_triggers_on_low_score_alone_even_with_wide_margin(client: TestClient, app):
+    """v0.4.5: правило — OR, не AND. Достаточно провалить ХОТЯ БЫ один из
+    двух порогов (contracts/image-scan.md: "top1_score < CV_ABS_FLOOR ИЛИ
+    ... gap < CV_MARGIN_FLOOR"). Здесь маржа щедрая (0.5) — ветвь по gap
+    сама по себе результат бы не изменила; not_in_catalog обязан всё равно
+    сработать чисто по низкому score."""
+    app.state.image_index = _LowScoreHighGapImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["not_in_catalog"] is True
+    assert body["slug"] is None
+    assert body["confidence"]["top1_score"] == 0.7
+    assert body["confidence"]["gap"] == 0.5
 
 
 # --- timing_ms genuinely measured, not hardcoded -----------------------------
@@ -205,7 +362,7 @@ class _SlowImageIndex:
 
     def search(self, image: bytes, top_k: int = 5) -> list[Match]:
         time.sleep(0.05)
-        return [Match(slug="shato-vymysel-cabernet", score=0.95, gap=0.2, view="реальный")]
+        return [Match(slug="shato-vymysel-cabernet", score=0.95, gap=0.2, view="real")]
 
     def build(self, refs, version) -> None:
         return None

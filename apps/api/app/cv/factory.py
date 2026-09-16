@@ -20,11 +20,30 @@ IMAGE_INDEX_MODE (qdrant_embedded|pgvector, contracts/image-scan.md) — это 
 ВНУТРЕННИЙ выбор бэкенда настоящего ImageIndex (cv/config.py), не имеет
 отношения к этому файлу.
 
-LABEL_VERIFIER_PROVIDER аналогично для LabelVerifier — реализация OCR-
-верификатора вне зоны B и вне зоны G ("реализация придёт позже"), дефолт
-по-прежнему mock (эта волна её не касается).
+VERIFIER_PROVIDER (v0.4.4: переименовано из LABEL_VERIFIER_PROVIDER — короче,
+симметрично IMAGE_PROVIDER) аналогично для LabelVerifier. v0.4.4 дала
+реальную спецификацию (packages/cv/cv/verify.py, PaddleOCR) — на момент
+написания ещё не закоммичена (проверено: файла нет). До её появления
+VERIFIER_PROVIDER=real — честный RuntimeError, дефолт mock.
+
+Прогрев + офлайн (ревью 04, блокер 2): при IMAGE_PROVIDER=real модель
+(SigLIP2, transformers) грузится ЛЕНИВО при первом embed/search — если это
+происходит на первом боевом запросе, а не при старте процесса, пользователь
+получает холодный старт вместо ответа (F2 намеряла ~340 с на чистом
+окружении; в интеграционном тесте B тот же холодный кэш дал транзитный
+ECONNRESET на HF Hub). Поэтому здесь же: (1) HF_HUB_OFFLINE/
+TRANSFORMERS_OFFLINE выставляются ДО импорта cv.index, не только в тестах —
+модель уже должна быть на диске (см. reports/b-report.md), сети до HF Hub не
+нужно; (2) warm_up_image_index() — один embed() заглушки СРАЗУ после
+конструирования реального индекса, вызывается из app/main.py при старте
+приложения, а не на первом запросе. Результат — app.state.image_index_warm,
+наружу — GET /healthz.warm.
 """
 from __future__ import annotations
+
+import os
+import struct
+import zlib
 
 from ..config import Settings
 from .interface import ImageIndex, LabelVerifier
@@ -36,6 +55,13 @@ def get_image_index(settings: Settings) -> ImageIndex:
     if provider == "mock":
         return MockImageIndex()
     if provider == "real":
+        # Ревью 04, блокер 2: ДО импорта cv.index (тот тянет transformers/
+        # huggingface_hub) — иначе первый же холодный запрос на живом сервере
+        # рискует сетевым обращением к HF Hub (ECONNRESET уже случался в
+        # интеграционном тесте B на полностью валидном локальном кэше).
+        # setdefault — не переопределяем, если оператор явно попросил иное.
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
         try:
             from cv import index as _cv_index  # packages/cv/cv/index.py, зона агента G
         except ImportError as exc:
@@ -58,15 +84,48 @@ def get_image_index(settings: Settings) -> ImageIndex:
 
 
 def get_label_verifier(settings: Settings) -> LabelVerifier:
-    provider = settings.label_verifier_provider
+    provider = settings.verifier_provider
     if provider == "mock":
         return MockLabelVerifier()
     if provider == "real":
         raise RuntimeError(
-            "LABEL_VERIFIER_PROVIDER=real, но реализация OCR-верификатора ещё "
-            "не готова (вне зоны B и вне зоны G — придёт позже). Используйте "
-            "LABEL_VERIFIER_PROVIDER=mock (дефолт)."
+            "VERIFIER_PROVIDER=real, но реализация OCR-верификатора ещё не "
+            "закоммичена в packages/cv (packages/cv/cv/verify.py, v0.4.4, "
+            "агент G). Используйте VERIFIER_PROVIDER=mock (дефолт)."
         )
-    raise ValueError(
-        f"Неизвестный LABEL_VERIFIER_PROVIDER={provider!r}, ожидается mock|real"
-    )
+    raise ValueError(f"Неизвестный VERIFIER_PROVIDER={provider!r}, ожидается mock|real")
+
+
+def _tiny_placeholder_png() -> bytes:
+    """2x2 белый PNG, валидный для любого декодера (PIL/opencv) — только
+    stdlib (struct+zlib), без зависимости от Pillow в apps/api. Нужен
+    исключительно как вход для warm_up_image_index(). Не 1x1: packages/cv/cv/
+    imageio.py::decode_image() требует shape[0]>=2 и shape[1]>=2 (проверено
+    эмпирически — 1x1 давал честный ValueError у decode_image самого, не у
+    прогрева) — 2x2 минимальный размер, который реально проходит."""
+    def chunk(tag: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+    width = height = 2
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)  # 2x2, 8-bit, truecolor RGB
+    row = b"\x00" + bytes([255, 255, 255]) * width  # filter=none + width белых пикселей
+    idat = zlib.compress(row * height, 9)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr) + chunk(b"IDAT", idat) + chunk(b"IEND", b"")
+
+
+_PLACEHOLDER_IMAGE = _tiny_placeholder_png()
+
+
+def warm_up_image_index(image_index: ImageIndex, settings: Settings) -> bool:
+    """Один embed() заглушки СРАЗУ при старте процесса (не на первом боевом
+    запросе) — ревью 04, блокер 2. На IMAGE_PROVIDER=mock прогрев не нужен —
+    мок мгновенный, возвращаем True без вызова (нечего греть). Ошибка
+    прогрева НЕ роняет старт приложения (лучше поднятый процесс с warm=False,
+    чем не поднятый вовсе) — /healthz.warm сигнализирует состояние наружу."""
+    if settings.image_provider != "real":
+        return True
+    try:
+        image_index.embed(_PLACEHOLDER_IMAGE)
+        return True
+    except Exception:
+        return False

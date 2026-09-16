@@ -148,6 +148,44 @@ def _slug_for(filename: str) -> str:
 
 
 @pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
+def test_real_healthz_reports_warm_true_after_startup_warmup(real_cv_client: TestClient):
+    """v0.4.4 (ревью 04, блокер 2): create_app() прогревает реальный энкодер
+    ОДНИМ embed() заглушки при старте (app/cv/factory.py::warm_up_image_index,
+    вызывается из app/main.py) — real_cv_client уже прошёл этот путь целиком
+    (плюс собственный warm-up POST фикстуры). /healthz обязан честно отразить
+    успешный прогрев, а не врать True по дефолту схемы."""
+    r = real_cv_client.get("/v1/healthz")
+    assert r.status_code == 200
+    assert r.json()["warm"] is True
+
+
+@pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
+def test_real_metrics_index_version_matches_live_image_index_property(real_cv_client: TestClient):
+    """v0.4.4 (ревью 04, блокер 3): index_version обязан идти ТОЛЬКО из живого
+    ImageIndex.index_version, никогда из env-плейсхолдера.
+
+    НАХОДКА этого теста: на момент проверки G ДОБАВИЛА `index_version` в
+    cv.index.ImageIndex (свойство читает манифест) параллельно, в той же
+    рабочей копии, некоммиченно — контракта "TODO/null до её коммита" уже
+    недостаточно, свойство реально есть. НО его значение здесь — НЕ версия
+    из тестового tmp-индекса этого файла ("b-integration-test"): `cv/config.py`
+    вычисляет MANIFEST_PATH как модульную константу ОДИН РАЗ при первом
+    импорте cv.config (а он импортируется уже при коллекции этого файла —
+    `try: import cv.index` в шапке, — до того как фикстура здесь успевает
+    выставить CV_DATA_DIR), поэтому property читает манифест ПО СТАРОМУ
+    дефолтному пути (packages/cv/data/manifest.json), не из изолированной
+    tmp-директории теста — межагентский шов, не мой баг и не тестовый
+    артефакт (см. reports/b-report.md, предложение к packages/cv/cv/config.py:
+    MANIFEST_PATH/DATA_DIR стоит резолвить лениво, а не при импорте модуля).
+    Поэтому здесь НЕ проверяем конкретное значение — только то, что моя
+    сторона (routers/metrics.py) честно ретранслирует РОВНО то, что говорит
+    живой объект, что бы там ни было, а не какой-то свой env-плейсхолдер."""
+    r = real_cv_client.get("/v1/metrics/scan")
+    assert r.status_code == 200
+    assert r.json()["index_version"] == real_cv_client.app.state.image_index.index_version
+
+
+@pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
 def test_real_photo_flat_mode_returns_correct_slug(real_cv_client: TestClient):
     photo = next(f for f in _DEVFIX_FILES if f.name == "ballet-blanc.webp")
     r = real_cv_client.post(
@@ -180,14 +218,21 @@ class _RecordingVerifier:
     и тест не увидел бы, дошёл ли пайплайн до вызова verify() вообще.
     Подменяем принципиально другим стабом-шпионом: сам факт вызова с
     правильными кандидатами и есть то, что тут проверяется, а не то, что
-    ответит верификатор."""
+    ответит верификатор.
+
+    v0.4.4: candidates — list[VerifyCandidate] ({slug, name, vintage}), не
+    голые строки (app/cv/service.py::_verify_candidates() строит их через
+    retriever.get_by_id()). RAG в этом тесте остаётся mock (фикстура не
+    выставляет RAG_PROVIDER=real) и не знает настоящие слаги датасета —
+    name/vintage у обоих кандидатов честно деградируют до slug/None, это не
+    баг, а тот же fallback, что и для card=None."""
 
     def __init__(self):
-        self.calls: list[list[str]] = []
+        self.calls: list[list[dict]] = []
 
-    def verify(self, image_bytes: bytes, candidates: list[str]) -> str | None:
+    def verify(self, image_bytes: bytes, candidates: list[dict]) -> str | None:
         self.calls.append(candidates)
-        return candidates[0]
+        return candidates[0]["slug"]
 
 
 @pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
@@ -232,14 +277,19 @@ def test_real_near_dup_pair_triggers_ocr_verifier_routing(real_cv_client: TestCl
     assert body["ocr_verified"] is True, "near-dup routing должен был позвать верификатор и принять его ответ"
 
     assert spy.calls, "LabelVerifier.verify() ни разу не вызван — near-dup routing не сработал на реальном gap"
-    assert set(spy.calls[0]) == {"aligote-barrel-2024", "aligote-barrel-2025"}, (
-        f"ожидали ровно near-dup пару среди кандидатов, получили {spy.calls[0]}"
+    candidate_slugs = {c["slug"] for c in spy.calls[0]}
+    assert candidate_slugs == {"aligote-barrel-2024", "aligote-barrel-2025"}, (
+        f"ожидали ровно near-dup пару среди кандидатов, получили {candidate_slugs}"
     )
+    # v0.4.4: каждый кандидат несёт метаданные каталога (пусть и деградировавшие
+    # до slug/None здесь, см. докстринг _RecordingVerifier) — форма, не голые строки.
+    assert all(set(c.keys()) == {"slug", "name", "vintage"} for c in spy.calls[0])
     # НЕ проверяем, какой из пары "победил" в ANN (см. НАХОДКА №2 выше) —
     # проверяем, что пайплайн ПРИМЕНИЛ ответ верификатора: итоговый slug
     # обязан РОВНО совпасть с тем, что вернул verify() (spy возвращает
-    # candidates[0]), иначе near-dup routing вызывает OCR, но игнорирует его.
-    assert body["slug"] == spy.calls[0][0], (
+    # candidates[0]["slug"]), иначе near-dup routing вызывает OCR, но
+    # игнорирует его.
+    assert body["slug"] == spy.calls[0][0]["slug"], (
         "итоговый slug обязан совпасть с ответом verify(), а не остаться "
         "на исходном топ-1 ANN — иначе OCR-решение ни на что не влияет"
     )

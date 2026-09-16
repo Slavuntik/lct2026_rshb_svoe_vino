@@ -6,8 +6,15 @@ from __future__ import annotations
 import pytest
 
 from app.cv.fixtures import ALL_SLUGS, NEAR_DUP_GROUP
-from app.cv.interface import Match
+from app.cv.interface import Match, VerifyCandidate
 from app.cv.mock import MockImageIndex, MockLabelVerifier
+
+
+def _candidates(slugs: list[str]) -> list[VerifyCandidate]:
+    """v0.4.4: verify() принимает VerifyCandidate ({slug, name, vintage}), не
+    голые slug'и — мок в этих тестах не смотрит на name/vintage вообще (см.
+    докстринг MockLabelVerifier), значения тут произвольные."""
+    return [VerifyCandidate(slug=s, name=s, vintage=None) for s in slugs]
 
 
 def test_search_on_empty_bytes_raises_value_error_not_500():
@@ -100,24 +107,37 @@ def test_build_does_not_raise():
 
 def test_label_verifier_resolves_default_near_dup_answer():
     verifier = MockLabelVerifier()
-    answer = verifier.verify(b"MOCKPHOTO:near-dup", NEAR_DUP_GROUP)
+    answer = verifier.verify(b"MOCKPHOTO:near-dup", _candidates(NEAR_DUP_GROUP))
     assert answer in NEAR_DUP_GROUP
 
 
 def test_label_verifier_honors_explicit_requested_slug():
     verifier = MockLabelVerifier()
     requested = NEAR_DUP_GROUP[0]
-    answer = verifier.verify(f"MOCKPHOTO:near-dup:{requested}".encode(), NEAR_DUP_GROUP)
+    answer = verifier.verify(f"MOCKPHOTO:near-dup:{requested}".encode(), _candidates(NEAR_DUP_GROUP))
     assert answer == requested
 
 
 def test_label_verifier_returns_none_when_told_to_simulate_failure():
     verifier = MockLabelVerifier()
-    answer = verifier.verify(b"MOCKPHOTO:near-dup:NONE", NEAR_DUP_GROUP)
+    answer = verifier.verify(b"MOCKPHOTO:near-dup:NONE", _candidates(NEAR_DUP_GROUP))
     assert answer is None
 
 
 def test_label_verifier_ignores_slug_not_in_candidates():
     verifier = MockLabelVerifier()
-    answer = verifier.verify(b"MOCKPHOTO:near-dup:not-a-real-candidate", NEAR_DUP_GROUP)
+    answer = verifier.verify(b"MOCKPHOTO:near-dup:not-a-real-candidate", _candidates(NEAR_DUP_GROUP))
     assert answer is None
+
+
+def test_label_verifier_receives_catalog_metadata_shape():
+    """v0.4.4: сам Protocol теперь про VerifyCandidate — минимальная проверка,
+    что мок принимает форму {slug, name, vintage} и достаёт из неё slug (а не
+    падает, приняв дикты за строки)."""
+    verifier = MockLabelVerifier()
+    candidates: list[VerifyCandidate] = [
+        VerifyCandidate(slug=NEAR_DUP_GROUP[0], name="Тайное вино 2022", vintage=2022),
+        VerifyCandidate(slug=NEAR_DUP_GROUP[1], name="Тайное вино 2023", vintage=2023),
+    ]
+    answer = verifier.verify(f"MOCKPHOTO:near-dup:{NEAR_DUP_GROUP[1]}".encode(), candidates)
+    assert answer == NEAR_DUP_GROUP[1]

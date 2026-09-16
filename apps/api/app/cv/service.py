@@ -1,15 +1,20 @@
 """Пайплайн /scan/photo (contracts/image-scan.md): ANN top-K -> near-dup
 routing по gap -> OCR-верификатор -> confident/not_in_catalog решение.
 
-Порог "уверенности" (CV_CONFIDENT_SCORE_THRESHOLD) и порог "маленького
-gap" (CV_NEAR_DUP_GAP_THRESHOLD) — оба ПЛЕЙСХОЛДЕРЫ до приезда датасета
-кейса и реальной калибровки на голд-сете (см. reports/b-report.md, раздел
-«Кейс: /scan/photo» — пересчитать, когда появится eval на настоящих данных,
-как это уже сделал агент A для текстового ретривера). CV_NEAR_DUP_GAP_THRESHOLD
-уже пересчитан ОДИН раз по реальному примеру (интеграционный тест на
-настоящем ImageIndex поймал: исходный 0.05 был угадан по шкале мок-скоров и
-не сработал бы вовсе на реальных данных, где near-dup пара дала gap=0.245)
-— см. app/config.py. Значения и их env — там же.
+Пороги — все ПЛЕЙСХОЛДЕРЫ до реальной калибровки на голд-сете кейса, но
+разной степени "угаданности" (см. app/config.py, там же env-имена):
+- CV_NEAR_DUP_GAP_THRESHOLD — пересчитан ОДИН раз по реальному near-dup
+  примеру (aligote-barrel-2024/2025, gap=0.245 на настоящем ImageIndex,
+  tests/test_integration_real_cv.py) — было 0.05, угадано по мок-шкале.
+- CV_ABS_FLOOR — v0.4.5, реально откалиброван F2 на impostor-холдауте (45
+  "чужих" вин против калибровочного индекса): чистый score-порог НЕ
+  разделяет позитив/импостеров без неприемлемой цены, минимальный порог с
+  FPR<=5% — 0.9 (ценой FNR=66.7%), см. qa/scan-eval-runs/
+  not-in-catalog-calibration/report.md.
+- CV_MARGIN_FLOOR — v0.4.5, добавлен КАК рычаг ПО ВЫВОДУ калибровки F2
+  ("одного порога на сыром score недостаточно"), но само число НЕ
+  откалибровано (заимствовано у CV_NEAR_DUP_GAP_THRESHOLD как общий якорь —
+  оба читают Match.gap) — пересчитать отдельно, когда приедет датасет.
 
 run_photo_scan() НЕ решает confident/not_in_catalog единолично — отдаёт
 PhotoScanResult с обоими "срезами" (best_guess_slug — всегда, для flat;
@@ -36,7 +41,7 @@ from typing import Iterable
 from ..config import Settings
 from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
-from .interface import ImageIndex, LabelVerifier, Match
+from .interface import ImageIndex, LabelVerifier, Match, VerifyCandidate
 
 
 @dataclass
@@ -66,6 +71,26 @@ def _match_items(matches: list[Match], limit: int = 5) -> list[dict]:
     """v0.4.3: {slug, score} по убыванию, независимо от `top_k`, с которым был
     вызван поиск — контракт фиксирует именно top-5 для eval, а не "top_k"."""
     return [{"slug": m.slug, "score": m.score} for m in matches[:limit]]
+
+
+def _verify_candidates(retriever: Retriever, slugs: list[str]) -> list[VerifyCandidate]:
+    """v0.4.4: LabelVerifier.verify() принимает метаданные из каталога, не
+    голые slug'и — "B передаёт метаданные кандидатов из каталога (get_by_id)".
+    Каталог может не знать конкретный slug (CV нашёл позицию, которой ещё/уже
+    нет в каталожном слое — тот же реалистичный сценарий рассинхрона, что и у
+    `card=None`) — тогда деградируем честно: name=slug, vintage=None, а не
+    падаем и не роняем near-dup routing из-за пробела в каталоге."""
+    result: list[VerifyCandidate] = []
+    for slug in slugs:
+        candidate = retriever.get_by_id(slug)
+        if candidate is not None and candidate.kind == "wine":
+            source = candidate.meta["source"]
+            result.append(VerifyCandidate(
+                slug=slug, name=source.get("name", slug), vintage=source.get("vintage"),
+            ))
+        else:
+            result.append(VerifyCandidate(slug=slug, name=slug, vintage=None))
+    return result
 
 
 def _wine_item(retriever: Retriever, slug: str) -> dict | None:
@@ -154,13 +179,36 @@ def run_photo_scan(
             m.slug for m in matches[:top_k] if m.score > group_floor
         )
         if len(candidate_slugs) > 1:
-            verified = verifier.verify(image_bytes, candidate_slugs)
+            # v0.4.4: verify() хочет метаданные каталога (name/vintage), не
+            # голые slug'и — см. _verify_candidates().
+            verified = verifier.verify(image_bytes, _verify_candidates(retriever, candidate_slugs))
             if verified is not None and verified in candidate_slugs:
                 chosen_slug = verified
                 ocr_verified = True
 
     best_guess_slug = chosen_slug
-    confident = top.score >= settings.cv_confident_score_threshold
+    # v0.4.5 (ревью 04, калибровка F2 на impostor-холдауте): not_in_catalog
+    # переведён с абсолютного score на решение по марже. F2 доказала числом,
+    # что голый top1_score не разделяет позитив/импостеров ни на одном
+    # пороге без неприемлемой цены (0.55 -> FPR=100%; 0.9 -> FNR=66.7%;
+    # EER 0.85 -> 8.9%/26.7%) — qa/scan-eval-runs/not-in-catalog-calibration/.
+    # Правило контракта: not_in_catalog, если top1_score < CV_ABS_FLOOR ИЛИ
+    # gap < CV_MARGIN_FLOOR (gap — та же величина, что и для near-dup routing
+    # выше: отрыв от первого НЕ-той-же-группы конкурента).
+    #
+    # Исключение: успешный OCR (ocr_verified=True) ОБХОДИТ проверку по gap —
+    # маленький gap в near-dup ветке ровно и означает "top1 близко к другой
+    # позиции ТОЙ ЖЕ семьи", а верификатор существует именно для разрешения
+    # этой неоднозначности содержательно (год/категория с этикетки), а не
+    # числом. Считать результат неуверенным ПОСЛЕ того, как OCR уже дал
+    # конкретный ответ, значило бы игнорировать более сильный сигнал ради
+    # более слабого. Score-порог (CV_ABS_FLOOR) при этом всё равно
+    # применяется и после OCR — уверенное распознавание этикетки не спасает
+    # от в целом слабого ANN-совпадения (сюда OCR не проникает: он читает
+    # текст, а не оценивает общее визуальное сходство).
+    confident = top.score >= settings.cv_abs_floor and (
+        ocr_verified or top.gap is None or top.gap >= settings.cv_margin_floor
+    )
 
     # v0.4.1: card — ровно тело GET /wines/{id} (включая similar), общий
     # построитель с routers/wines.py (app/rag/cards.py) — не две формы.

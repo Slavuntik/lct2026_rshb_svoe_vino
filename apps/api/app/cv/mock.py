@@ -32,18 +32,33 @@ from __future__ import annotations
 import hashlib
 
 from .fixtures import ALL_SLUGS, CONFIDENT_SLUGS, INDEX_VERSION, NEAR_DUP_GROUP, NEAR_DUP_OCR_ANSWER
-from .interface import Match
+from .interface import Match, VerifyCandidate
 
 _CONFIDENT_SCORE = 0.93
-_CONFIDENT_GAP = 0.2
+# v0.4.5: >= CV_MARGIN_FLOOR (дефолт 0.3) — "уверенный" фикстурный сценарий обязан
+# читаться как однозначно НЕ near-dup и НЕ маржинальный по обоим новым порогам разом
+# (app/config.py::cv_abs_floor/cv_margin_floor), не только по старому единственному
+# score-порогу. 0.2 (старое значение) был < 0.3 уже тогда, когда завели
+# cv_near_dup_gap_threshold=0.3 — просто раньше это не било в видимое поведение
+# (единственный кандидат -> near-dup ветка технически входила, но не могла ничего
+# изменить без второго кандидата); с приходом margin_floor тот же 0.2 стал сразу
+# видимым регрессом (confident внезапно False) — фикстура починена, не только тест.
+_CONFIDENT_GAP = 0.4
 _WEAK_SCORE = 0.32
 _WEAK_GAP = 0.15
-_NEAR_DUP_SCORE = 0.88
-_NEAR_DUP_PARTNER_SCORE = 0.875  # второй член ТОЙ ЖЕ группы — строго между top1 и границей группы
+# v0.4.5: score поднят с 0.88 до значения выше CV_ABS_FLOOR (0.9) — реальные near-dup
+# пары датасета скорят ~1.0 (top1_score=1.0000000000000002 на aligote-barrel-2024/2025,
+# tests/test_integration_real_cv.py), 0.88 был произвольной старой заглушкой снизу от
+# ПРЕЖНЕГО порога 0.55, а не попыткой смоделировать реальную величину.
+_NEAR_DUP_SCORE = 0.97
+_NEAR_DUP_PARTNER_SCORE = 0.965  # второй член ТОЙ ЖЕ группы — строго между top1 и границей группы
 _NEAR_DUP_GAP = 0.01  # v0.4.2: отрыв ИМЕННО до следующего НЕ-той-же-группы кандидата
                        # (contracts/image-scan.md), а не до соседа по рангу — оба члена
                        # near-dup группы обязаны сидеть строго выше границы (top.score - gap),
                        # её определяет третья, реально другая позиция ниже (см. search()).
+                       # < CV_MARGIN_FLOOR нарочно: без успешного OCR (ocr_verified=True)
+                       # v0.4.5 обязан честно увести такой случай в not_in_catalog — см.
+                       # test_near_dup_ocr_failure_is_honestly_not_in_catalog.
 _NEAR_DUP_OTHER_SLUG = CONFIDENT_SLUGS[0]  # "чужая" позиция ровно на границе группы
 _FALLBACK_SCORE = 0.6
 _FALLBACK_GAP = 0.15
@@ -112,15 +127,22 @@ class MockImageIndex:
 
 
 class MockLabelVerifier:
-    """См. докстринг модуля — управляется той же MOCKPHOTO-конвенцией."""
+    """См. докстринг модуля — управляется той же MOCKPHOTO-конвенцией.
 
-    def verify(self, image_bytes: bytes, candidates: list[str]) -> str | None:
-        text = image_bytes.decode("utf-8", errors="ignore")
+    v0.4.4: `candidates` — `list[VerifyCandidate]` ({slug, name, vintage}), не
+    голые строки. Мок не читает name/vintage по-настоящему (нет OCR) — решает
+    ровно как раньше, по slug'ам кандидатов и MOCKPHOTO-байтам; name/vintage
+    принимаются и игнорируются осознанно (реальный верификатор их
+    использует, контракт это не требует от мока)."""
+
+    def verify(self, image: bytes, candidates: list[VerifyCandidate]) -> str | None:
+        slugs = [c["slug"] for c in candidates]
+        text = image.decode("utf-8", errors="ignore")
         if text.startswith(_VERIFY_PREFIX):
             requested = text[len(_VERIFY_PREFIX):].strip()
             if requested == "NONE":
                 return None
-            return requested if requested in candidates else None
-        if NEAR_DUP_OCR_ANSWER in candidates:
+            return requested if requested in slugs else None
+        if NEAR_DUP_OCR_ANSWER in slugs:
             return NEAR_DUP_OCR_ANSWER
         return None

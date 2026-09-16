@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from llm.base import get_llm
 
 from .config import get_settings
-from .cv.factory import get_image_index, get_label_verifier
+from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index
 from .db import make_engine, make_session_factory
 from .errors import register_error_handlers
 from .models import Base
@@ -47,6 +47,10 @@ def create_app() -> FastAPI:
     app.state.llm = get_llm()
     app.state.image_index = get_image_index(settings)
     app.state.label_verifier = get_label_verifier(settings)
+    # Ревью 04, блокер 2: прогрев ПРИ СТАРТЕ процесса, не на первом боевом
+    # запросе (холодный старт реального SigLIP2 занял ~340 с у F2) — /healthz
+    # сообщает результат в поле warm.
+    app.state.image_index_warm = warm_up_image_index(app.state.image_index, settings)
 
     # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
     # существовало, но никто его не читал. Bearer-токены в Authorization,

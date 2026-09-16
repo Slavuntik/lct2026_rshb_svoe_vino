@@ -46,12 +46,17 @@ class Settings:
     image_provider: str = field(
         default_factory=lambda: os.environ.get("IMAGE_PROVIDER", "mock").strip().lower()
     )
-    label_verifier_provider: str = field(
-        default_factory=lambda: os.environ.get("LABEL_VERIFIER_PROVIDER", "mock").strip().lower()
+    # v0.4.4 (ревью 04, задание оркестратора): переименовано из
+    # LABEL_VERIFIER_PROVIDER в VERIFIER_PROVIDER — короче, симметрично
+    # IMAGE_PROVIDER/RAG_PROVIDER/LLM_PROVIDER.
+    verifier_provider: str = field(
+        default_factory=lambda: os.environ.get("VERIFIER_PROVIDER", "mock").strip().lower()
     )
-    cv_index_version: str = field(
-        default_factory=lambda: os.environ.get("CV_INDEX_VERSION", "mock-cv-fixtures-0.1")
-    )
+    # v0.4.4 (ревью 04, блокер 3): index_version — ТОЛЬКО из живого
+    # ImageIndex.index_version (манифест), никогда из env-плейсхолдера — тот
+    # молча врал бы "mock-..." даже когда IMAGE_PROVIDER=real, пока G не
+    # добавит property в packages/cv (сейчас её там ещё нет). Настройки
+    # cv_index_version больше нет — см. routers/metrics.py TODO.
     cv_eval_report_path: str = field(
         # Дефолт — относительно cwd процесса; проект уже предполагает запуск
         # `uvicorn` из apps/api (см. DATABASE_URL=sqlite:///./... выше), так
@@ -74,16 +79,71 @@ class Settings:
         # "Предложения к контрактам" п.2), но теперь хотя бы не заведомо мёртвый.
         default_factory=lambda: float(os.environ.get("CV_NEAR_DUP_GAP_THRESHOLD", "0.3"))
     )
-    cv_confident_score_threshold: float = field(
-        # Тоже плейсхолдер — case.md не даёт числа, только "отрыв 1-го от
-        # 2-го ощутимый и стабильный". Пересчитать по приезду датасета.
-        default_factory=lambda: float(os.environ.get("CV_CONFIDENT_SCORE_THRESHOLD", "0.55"))
+    cv_abs_floor: float = field(
+        # v0.4.5 (калибровка F2 на impostor-холдауте, qa/scan-eval-runs/
+        # not-in-catalog-calibration/report.md): переименовано из
+        # CV_CONFIDENT_SCORE_THRESHOLD (0.55) — тот почти никогда не
+        # срабатывал (top1_score 0.8-1.0 даже у ПРАВИЛЬНЫХ совпадений) и на
+        # impostor-холдауте дал FPR=100% (все 45 "чужих" вин прошли бы как
+        # confident). Рекомендация F2 (минимальный порог с FPR<=5%,
+        # приоритет ложноположительным — case.md ценит честный
+        # not_in_catalog особо высоко): 0.9, ценой FNR=66.7%. Это по-прежнему
+        # ТОЛЬКО грубый пол, не единственный рычаг — см. cv_margin_floor
+        # ниже и app/cv/service.py (not_in_catalog теперь ИЛИ по score, ИЛИ
+        # по марже). Пересчитать вместе с margin_floor на датасете кейса.
+        default_factory=lambda: float(os.environ.get("CV_ABS_FLOOR", "0.9"))
+    )
+    cv_margin_floor: float = field(
+        # v0.4.5: второй, независимый рычаг решения not_in_catalog — маржа
+        # (top1 - top2_чужой_семьи, т.е. Match.gap) вместо голого score.
+        # F2 на impostor-холдауте эмпирически посчитала ТОЛЬКО скоровый
+        # порог (см. cv_abs_floor) и явно указала выводом: "одного
+        # глобального порога на сыром top1_score недостаточно — сигнал
+        # искать другой рычаг (relative-margin/gap-подобная метрика)"
+        # (reports/f-report.md, "Кейс-сканер: impostor-калибровка"), но
+        # калиброванного числа для самой маржи не дала — это назначено на
+        # G/B/оркестратора (qa/acceptance.md, "Решение о рычаге").
+        #
+        # Стартовое значение — НЕ калибровка (n=1 на класс, не голд-сет), а
+        # лучшая ОЦЕНКА по двум реальным точкам, что вообще есть на руках:
+        # near-dup пара датасета (aligote-barrel-2024/2025) даёт gap~0.245 на
+        # реальном ImageIndex; заведомо ОДНОЗНАЧНАЯ, не-near-dup позиция
+        # (abrau-dyurso-...) на ТОМ ЖЕ 5-позиционном тестовом индексе — НЕ
+        # стабильное число: 0.245 < gap < 0.315 в разных прогонах одного и
+        # того же интеграционного теста (0.2705/0.3146/0.3146 — три замера,
+        # tests/test_integration_real_cv.py), похоже на MPS-нестабильность
+        # порядка суммирования плавающей точки (top1_score при этом стабилен,
+        # ~0.999-1.0 — шумит именно gap). Изначальный выбор "переиспользовать
+        # cv_near_dup_gap_threshold=0.3 как есть" оказался НЕБЕЗОПАСЕН: он
+        # почти совпал с нижней границей шума однозначного случая и ловил
+        # его как not_in_catalog (живой интеграционный прогон поймал это,
+        # см. reports/b-report.md). Пересчитано на 0.25 — с запасом выше
+        # near-dup примера (0.245) и ниже всех наблюдавшихся значений
+        # однозначного случая (>= 0.2705). Тесная зона всё равно тесная
+        # (n=1 на класс) — обязательно пересчитать по-настоящему на
+        # impostor-холдауте (та же методология, что
+        # qa/calibrate_not_in_catalog_threshold.py, но по gap, не по score),
+        # когда приедет датасет кейса.
+        default_factory=lambda: float(os.environ.get("CV_MARGIN_FLOOR", "0.25"))
     )
     low_confidence_threshold: float = field(
         default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
     )
     max_upload_bytes: int = field(
-        default_factory=lambda: int(os.environ.get("SCAN_MAX_UPLOAD_BYTES", str(8 * 1024 * 1024)))
+        # v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ. Телефонные фото (особенно
+        # HEIC/iPhone на полном разрешении) часто больше 8 МБ — старый лимит
+        # молча резал часть валидных кадров скрипта оценки в "гарантированный
+        # промах" ({"slug": ""}/{}) ещё до попытки распознать.
+        default_factory=lambda: int(os.environ.get("SCAN_MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
+    )
+    scan_flat_default: bool = field(
+        # v0.4.4 (ревью 04, блокер 1): страховка на случай, если скрипт
+        # кейсодержателя не знает про ?flat=1 вообще (неизвестный формат её
+        # вызова) — при SCAN_FLAT_DEFAULT=1 /scan/photo без query-параметра
+        # ведёт себя как flat. Явный ?flat=0/1 в запросе всегда важнее этого
+        # дефолта (см. routers/scan.py) — это только сетка на неизвестный
+        # случай, не отмена самого параметра.
+        default_factory=lambda: _bool_env("SCAN_FLAT_DEFAULT", False)
     )
     rate_limit_window_seconds: int = field(
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))

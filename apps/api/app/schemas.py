@@ -162,6 +162,11 @@ class WaitlistRequest(BaseModel):
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     index_version: str
+    # v0.4.4 (ревью 04, блокер 2): готовность CV-энкодера. True сразу на
+    # IMAGE_PROVIDER=mock (нечего греть); на real — True только после
+    # успешного прогрева при старте процесса (app/cv/factory.py::
+    # warm_up_image_index), False если прогрев не удался или ещё идёт.
+    warm: bool = True
 
 
 # --- Кейс ЛЦТ: сканер по фото (contracts/image-scan.md v0.4) --------------

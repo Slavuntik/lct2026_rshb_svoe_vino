@@ -17,11 +17,22 @@ openapi.yaml ещё обещал 200/422, это было приведено к 
 здесь внешний контракт оценки жёстче внутренней политики 18+, а мобильный
 UI (агент C) отвечает за то, чтобы не показывать сканер, минуя свой
 собственный экран согласия.
+
+v0.4.4 (ревью 04, блокер 1) — "несгораемость flat ДО КОНЦА", три независимые
+подстраховки под неизвестный формат скрипта кейсодержателя: (1) flat ловит
+ЛЮБОЕ исключение (`except Exception`, не только `ValueError`) -> всегда
+`{"slug": ""}`, никогда 4xx/5xx; (2) файловое поле принимается ПЕРВЫМ по
+порядку формы, независимо от имени (`_first_uploaded_file` — быстрый путь на
+буквальное имя "image", иначе честный обход `await request.form()`);
+(3) `SCAN_FLAT_DEFAULT=1` включает flat-поведение без query-параметра вообще
+(явный `?flat=0/1` всегда важнее этого дефолта). Лимит размера — 25 МБ
+(`SCAN_MAX_UPLOAD_BYTES`, было 8 МБ — телефонные фото часто больше).
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from sqlalchemy.orm import Session
+from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from ..config import Settings, get_settings_dep
 from ..cv.eval_report import read_eval_report
@@ -121,10 +132,40 @@ def _build_confidence(settings: Settings, result: PhotoScanResult) -> ScanConfid
     )
 
 
+async def _first_uploaded_file(
+    request: Request, named: UploadFile | None
+) -> UploadFile | StarletteUploadFile | None:
+    """v0.4.4 (ревью 04, блокер 1): "принимает первое файловое поле multipart
+    независимо от имени" — скрипт кейсодержателя может назвать поле не
+    `image`. Быстрый путь: если FastAPI уже связал параметр `image` (поле
+    называется буквально "image", как во всех наших тестах) — используем его
+    без повторного разбора формы. Иначе — единственный честный способ найти
+    файл под ДРУГИМ именем: самим пройтись по `await request.form()` и взять
+    первое значение файлового типа, в порядке полей формы.
+
+    ВАЖНО: значения из `request.form()` — это `starlette.datastructures.
+    UploadFile` (парсер Starlette), а НЕ `fastapi.UploadFile` — тот лишь
+    подкласс, добавленный самим FastAPI при связывании параметров (см.
+    `fastapi.UploadFile.__mro__`). `isinstance(value, fastapi.UploadFile)`
+    здесь всегда даёт False — проверяем против базового класса Starlette,
+    которому оба варианта реально принадлежат."""
+    if named is not None:
+        return named
+    form = await request.form()
+    for value in form.values():
+        if isinstance(value, StarletteUploadFile):
+            return value
+    return None
+
+
 @router.post("/photo")
-def scan_photo(
-    image: UploadFile = File(...),
-    flat: bool = Query(default=False, description="?flat=1 — режим скрипта оценки"),
+async def scan_photo(
+    request: Request,
+    image: UploadFile | None = File(default=None),
+    flat: bool | None = Query(
+        default=None,
+        description="?flat=1 — режим скрипта оценки; без параметра решает env SCAN_FLAT_DEFAULT",
+    ),
     principal: Principal | None = Depends(get_current_principal_optional),
     image_index: ImageIndex = Depends(get_image_index_dep),
     verifier: LabelVerifier = Depends(get_label_verifier_dep),
@@ -132,26 +173,33 @@ def scan_photo(
     settings: Settings = Depends(get_settings_dep),
     db: Session = Depends(get_db),
 ):
-    data = image.file.read()
+    # v0.4.4: явный ?flat=0/1 в запросе всегда важнее env-дефолта — тот лишь
+    # страховка на случай, если скрипт кейсодержателя вообще не знает про
+    # query-параметр.
+    effective_flat = settings.scan_flat_default if flat is None else flat
 
-    if flat:
-        # contracts/image-scan.md: flat ВСЕГДА отдаёт валидный {"slug": "..."}
-        # — скрипт оценки не должен споткнуться НИ О ЧТО (пустой/битый файл,
-        # переполнение, сбой БД). Честность про уверенность — только в rich.
-        if not data or len(data) > settings.max_upload_bytes:
-            return ScanPhotoFlatResponse(slug="")
+    upload = await _first_uploaded_file(request, image)
+    data = await upload.read() if upload is not None else b""
+
+    if effective_flat:
+        # contracts/image-scan.md (v0.4.4, ревью 04, блокер 1): flat ловит
+        # ЛЮБОЕ исключение — не только ValueError (декодер/индекс/БД/что
+        # угодно) — скрипт оценки не должен споткнуться НИ О ЧЕМ. Честность
+        # про уверенность — только в rich.
         try:
+            if upload is None or not data or len(data) > settings.max_upload_bytes:
+                return ScanPhotoFlatResponse(slug="")
             result = run_photo_scan(
                 image_bytes=data, image_index=image_index, verifier=verifier,
                 retriever=retriever, settings=settings,
             )
-        except ValueError:
+            _record_photo_scan(db, principal, len(data), result, best_effort=True)
+            return ScanPhotoFlatResponse(slug=result.best_guess_slug or "")
+        except Exception:
             return ScanPhotoFlatResponse(slug="")
-        _record_photo_scan(db, principal, len(data), result, best_effort=True)
-        return ScanPhotoFlatResponse(slug=result.best_guess_slug or "")
 
     # rich-режим (UI) — честные ошибки, как везде в API.
-    if not data:
+    if upload is None or not data:
         raise ApiError(400, "validation_error", "Пустой файл изображения")
     if len(data) > settings.max_upload_bytes:
         raise ApiError(400, "validation_error", f"Файл больше {settings.max_upload_bytes} байт")
