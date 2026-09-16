@@ -37,13 +37,29 @@ def test_new_settings_are_off_by_default():
     assert SYNTH_PRESETS["v2"].reprint_hue == 0 and SYNTH_PRESETS["v2"].recompress_rounds == 0
 
 
-def test_v3_changes_the_target_but_keeps_layout():
-    v2, v3 = _frame("v2"), _frame("v3")
+def test_v2_and_v3_differ_only_in_the_target():
+    """При одном посеве v2 и v3 обязаны совпадать всюду, кроме целевой упаковки.
 
-    assert v2.shape == v3.shape
-    difference = np.abs(v2 - v3).mean()
-    assert difference > 1.0, f"кадр почти не изменился: {difference:.2f}"
-    assert difference < 60.0, f"кадр изменился до неузнаваемости: {difference:.2f}"
+    Пресет нужен, чтобы мерить цену «другого тиража». Если порча печати расходует числа общего
+    генератора, сдвигается вся дальнейшая сцена — положение, фон, засветка, — и разница двух
+    выборок перестаёт быть разницей тиража. Тест сторожит именно это свойство.
+    """
+    bottle = _bottle()
+    v2, box_v2 = render_sample(bottle, [], None, random.Random(5), SYNTH_PRESETS["v2"])
+    v3, box_v3 = render_sample(bottle, [], None, random.Random(5), SYNTH_PRESETS["v3"])
+    assert box_v2 == box_v3, f"рамка разъехалась: {box_v2} против {box_v3}"
+
+    a = np.asarray(v2.convert("RGB"), dtype=np.int16)
+    b = np.asarray(v3.convert("RGB"), dtype=np.int16)
+    x0, y0, x1, y1 = box_v2
+    pad = 24  # смаз и засветка размазывают разницу на несколько пикселей за рамку
+    outside = np.abs(a - b).copy()
+    outside[max(0, y0 - pad):y1 + pad, max(0, x0 - pad):x1 + pad] = 0
+
+    assert outside.mean() < 0.5, f"сцена за пределами упаковки разъехалась: {outside.mean():.2f}"
+    # на посеве 5 отличие внутри рамки 8,9 из 255; по проверенным посевам минимум 2,7
+    inside = np.abs(a[y0:y1, x0:x1] - b[y0:y1, x0:x1]).mean()
+    assert inside > 3.0, f"целевая упаковка почти не изменилась: {inside:.2f}"
 
 
 def test_v3_is_reproducible():

@@ -265,8 +265,12 @@ def render_sample(
     canvas = _background(None if rng.random() < config.synthetic_background_prob else background, (w, h), rng)
 
     target_h = round(h * rng.uniform(*config.target_height))
-    # «другой тираж» — только для целевой упаковки: соседи остаются как есть
-    sprite = _cylinder(_reprint(_scale_to_height(cutout(target), target_h), rng, config), rng, config)
+    # «другой тираж» — только для целевой упаковки: соседи остаются как есть.
+    # Случайность для него берётся из отдельного генератора, выведенного из состояния основного
+    # без его расходования. Иначе порча печати сдвигает всю дальнейшую последовательность, и при
+    # одном посеве выборки различаются сценой, а не тиражом: сравнивать кадры попарно нельзя.
+    reprint_rng = random.Random(repr(rng.getstate()[1][:8]))
+    sprite = _cylinder(_reprint(_scale_to_height(cutout(target), target_h), reprint_rng, config), rng, config)
     sprite = _warp(sprite, rng, config.perspective)
     sprite = sprite.rotate(rng.uniform(-config.rotation_deg, config.rotation_deg), expand=True,
                            resample=Image.Resampling.BICUBIC)  # fmt: skip
