@@ -17,12 +17,13 @@ p50/p95 времени ответа, отчёт JSON (машине, тот же 
   flat  — POST /v1/scan/photo?flat=1 против живого apps/api — РОВНО то, что делает скрипт
           кейсодержателя (case.md, п.6): один slug на фото, ничего больше. Основной режим
           для match-rate/SLA — критерий 90-100% и ≤3с считаются кейсодержателем именно так.
-  rich  — POST /v1/scan/photo (без flat) — полный ответ с `confidence`, `similar` и т.д.
-          Топ-5 собирается лучшим доступным способом: [slug] + slug'и из `similar` (контракт
-          НЕ гарантирует ранжированный топ-5 в rich-ответе для уверенного матча — это пробел
-          контракта, см. reports/f-report.md, «предложения к контрактам»); если `similar`
-          пуст — топ-5 деградирует к топ-1, раннер честно помечает это предупреждением, не
-          молчит.
+  rich  — POST /v1/scan/photo (без flat) — полный ответ с `confidence`, `matches` и т.д.
+          Топ-5 — из официального поля `matches: [{slug, score}]` (contracts/image-scan.md
+          v0.4.3, apps/api `a2bc591`; пробел, который раньше был здесь задокументирован,
+          закрыт по этому же предложению). Заполняется независимо от confident/not_in_catalog
+          — честный топ-5 кандидатов не зависит от решения порога. Фолбэк на `similar` (старое
+          поведение) — только если `matches` нет вовсе (API старее v0.4.3) или пуст; раннер
+          честно помечает деградацию предупреждением, не молчит.
   mock  — без сети: `MockPredictor` в процессе (по умолчанию — «идеальный оракул», предсказывает
           true_slug; конкретные фото можно переопределить `--mock-map`, включая намеренно
           неверные ответы — для прогона метрик на управляемых кейсах и для pytest).
@@ -219,7 +220,7 @@ class Prediction:
     latency_ms: float
     top1_score: float | None = None
     gap: float | None = None
-    degraded_top5: bool = False  # rich-режим: пришлось урезать топ-5 до топ-1 (similar пуст)
+    degraded_top5: bool = False  # rich-режим: нет поля 'matches' (API < v0.4.3) и 'similar' пуст
     error: str | None = None
 
 
@@ -300,14 +301,38 @@ class FlatApiPredictor:
         return Prediction(top1_slug=slug, top5_slugs=[slug], latency_ms=elapsed_ms)
 
 
+def _extract_matches_top5(data: dict[str, Any]) -> list[str]:
+    """contracts/image-scan.md v0.4.3 (apps/api commit `a2bc591`, пробел нашёл F, задание
+    оркестратора `ba0ab1e`): `matches: [{slug, score}]` — top-5 схлопнутых ANN-позиций по
+    убыванию, заполняется НЕЗАВИСИМО от confident/not_in_catalog решения. Официальный
+    источник top-5 для eval — не костыль из `similar` (тот семантически про ветку "не в
+    каталоге", см. `_RichApiPredictorFallback` ниже). Терпим к мусору внутри списка (не
+    роняем весь прогон из-за одного кривого элемента) — сохраняем порядок, дедуп, срез до
+    `DEFAULT_TOP_K`."""
+    raw = data.get("matches")
+    if not isinstance(raw, list):
+        return []
+    slugs = [item["slug"] for item in raw if isinstance(item, dict) and isinstance(item.get("slug"), str) and item["slug"]]
+    seen: set[str] = set()
+    deduped = []
+    for s in slugs:
+        if s not in seen:
+            seen.add(s)
+            deduped.append(s)
+    return deduped[:DEFAULT_TOP_K]
+
+
 class RichApiPredictor:
-    """POST /v1/scan/photo (rich) — топ-5 собирается лучшим доступным способом: контракт
-    (v0.4) для confident-ответа явно НЕ гарантирует ранжированный список кандидатов —
-    `similar` семантически про ветку "не в каталоге" (case.md, п.5). Здесь `similar`
-    используется как единственный доступный источник доп.кандидатов, если он всё же заполнен;
-    если пуст — топ-5 деградирует к топ-1 (`degraded_top5=True`, раннер это подсвечивает в
-    отчёте предупреждением, не молчит). См. reports/f-report.md, «предложения к контрактам»:
-    предложено явное поле `confidence.candidates: [{slug, score}]`.
+    """POST /v1/scan/photo (rich) — топ-5 берётся из ОФИЦИАЛЬНОГО поля `matches:
+    [{slug, score}]` (contracts/image-scan.md v0.4.3, пробел нашёл этот же раннер в baseline
+    F2 — без него F1-top5 против живого API вырождался в F1-top1; B закрыл в `a2bc591`).
+    `matches` заполняется НЕЗАВИСИМО от того, confident ответ или not_in_catalog — честный
+    top-5 кандидатов измеряет КАЧЕСТВО РАНЖИРОВАНИЯ отдельно от калибровки порога confident/
+    not_in_catalog (полезно как раз для калибровки этого порога, см. qa/acceptance.md,
+    «Порядок дня датасета»). Если `matches` отсутствует или пуст (API старее v0.4.3, или сам
+    ImageIndex не нашёл вовсе ничего) — деградация на старый источник (`similar`, семантически
+    про ветку "не в каталоге" — костыль, не полноценный топ-5), `degraded_top5=True`
+    подсвечивает это в отчёте, не молчит.
     """
 
     def __init__(self, api_url: str = DEFAULT_API_URL, timeout: float = DEFAULT_TIMEOUT_S):
@@ -331,27 +356,36 @@ class RichApiPredictor:
         if slug is not None and not isinstance(slug, str):
             return Prediction(top1_slug=None, top5_slugs=[], latency_ms=elapsed_ms, error=f"rich-ответ: поле slug неожиданного типа: {data!r}")
         confidence = data.get("confidence") or {}
+        top5_from_matches = _extract_matches_top5(data)
+
         if not slug:
             # Как и в FlatApiPredictor (см. его комментарий) — slug=null/"" с
             # not_in_catalog=true валиден по контракту ("вина нет в каталоге -> похожие/
             # аналоги либо честное 'не найдено'", case.md, оценивается ОСОБО высоко, не
-            # штрафуется) — не error. top5 пуст: у not_in_catalog нет своего кандидата,
-            # `similar`/`analogs` — это ДРУГИЕ вина для UI, не ранжированный топ-5 ЭТОГО
-            # запроса (см. докстринг класса) — top1_slug=None корректно засчитается как
-            # промах в match-rate, если для этого фото ожидался конкретный true_slug.
+            # штрафуется) — не error. top1_slug=None корректно засчитается как промах в
+            # match-rate top-1. top5_slugs — из `matches`, если API его прислал (v0.4.3+):
+            # not_in_catalog НЕ обнуляет candidate-пул ANN, интересно знать, был ли
+            # true_slug где-то в топ-5, даже когда порог confident решил перестраховаться —
+            # это ровно то, что нужно для калибровки CV_CONFIDENT_SCORE_THRESHOLD.
             return Prediction(
-                top1_slug=None, top5_slugs=[], latency_ms=elapsed_ms,
+                top1_slug=None, top5_slugs=top5_from_matches, latency_ms=elapsed_ms,
                 top1_score=confidence.get("top1_score"), gap=confidence.get("gap"),
+                degraded_top5=not top5_from_matches,
             )
+
+        if top5_from_matches:
+            return Prediction(
+                top1_slug=slug, top5_slugs=top5_from_matches, latency_ms=elapsed_ms,
+                top1_score=confidence.get("top1_score"), gap=confidence.get("gap"),
+                degraded_top5=False,
+            )
+
+        # Фолбэк — API старее v0.4.3 (нет поля `matches`) или оно пусто: старое поведение из
+        # `similar` (apps/api/app/schemas.py::AnalogsWineItem — идентификатор `wine_id`, не
+        # `slug`, найдено живой проверкой против настоящего apps/api, не предположением).
         similar = data.get("similar") or []
-        # apps/api/app/schemas.py::AnalogsWineItem — идентификатор здесь называется `wine_id`,
-        # не `slug` (в этой системе wine_id и slug — одна и та же строка, см. deep_link_for в
-        # demo_pack.py, но ИМЯ ПОЛЯ в JSON другое — проверено чтением реальной схемы B, не
-        # предположением; расхождение поймано именно на этом различии между моим собственным
-        # mock_scan_server.py, который я сам сочинил с полем "slug", и настоящим контрактом).
         extra_slugs = [s.get("wine_id") for s in similar if isinstance(s, dict) and isinstance(s.get("wine_id"), str)]
         top5 = [slug] + [s for s in extra_slugs if s and s != slug]
-        # dedupe, сохраняя порядок, срез до DEFAULT_TOP_K
         seen: set[str] = set()
         deduped = []
         for s in top5:
@@ -812,8 +846,8 @@ def run(argv: list[str]) -> int:
         n_degraded = sum(1 for r in records if r.degraded_top5)
         if n_degraded:
             run_warnings.append(
-                f"rich: у {n_degraded} из {len(records)} ответов поле 'similar' пусто — топ-5 "
-                f"деградировал к топ-1 (контракт не гарантирует ранжированный топ-5 для confident-ответа)"
+                f"rich: у {n_degraded} из {len(records)} ответов нет поля 'matches' (API старее "
+                f"v0.4.3) и 'similar' пусто — топ-5 деградировал к топ-1"
             )
 
     report = build_report(

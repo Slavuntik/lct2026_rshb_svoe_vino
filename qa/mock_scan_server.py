@@ -98,7 +98,12 @@ def make_handler(
     min_latency_ms: float,
     max_latency_ms: float,
     rng: random.Random,
+    *,
+    legacy_no_matches: bool = False,
 ) -> type[BaseHTTPRequestHandler]:
+    """`legacy_no_matches=True` — не класть поле `matches` в rich-ответ вовсе, имитируя
+    apps/api старее v0.4.3 (до `a2bc591`) — нужно только тестам фолбэка `RichApiPredictor`
+    на `similar`; CLI/рехёрсал по умолчанию всегда шлют `matches` (текущий контракт)."""
     slug_map = _normalize_slug_map(slug_map)
     class ScanPhotoHandler(BaseHTTPRequestHandler):
         def log_message(self, fmt: str, *args: object) -> None:  # тише в тестах/CLI-рехёрсале
@@ -157,37 +162,65 @@ def make_handler(
             latency_ms = rng.uniform(min_latency_ms, max_latency_ms)
             time.sleep(latency_ms / 1000)
 
-            slug = top5[0] if top5 else None
+            # FALLBACK_SLUG как ПЕРВЫЙ элемент — явный сигнал "not_in_catalog, но с
+            # реальными ANN-кандидатами дальше в списке" (contracts/image-scan.md v0.4.3:
+            # PhotoScanResult.matches заполняется НЕЗАВИСИМО от confident-решения) —
+            # отличается от top5=[] ("совсем ничего не нашли", slug=null И matches тоже
+            # пуст). Нужно для test_rich_api_predictor_not_in_catalog_still_reports_matches_
+            # for_top5 — калибровка CV_CONFIDENT_SCORE_THRESHOLD смотрит именно на эту
+            # комбинацию (qa/acceptance.md, «Порядок дня датасета»).
+            if top5 and top5[0] == FALLBACK_SLUG:
+                slug = None
+                candidates = top5[1:]
+            else:
+                slug = top5[0] if top5 else None
+                candidates = top5[1:] if top5 else []
+
             if flat:
                 self._send_json(200, {"slug": slug or ""})
                 return
-            self._send_json(
-                200,
-                {
-                    "slug": slug,
-                    "card": None,
-                    "confidence": {
-                        "top1_score": 0.9 if slug else None,
-                        "gap": 0.2 if slug else None,
-                        "f1_top1": None,
-                        "f1_top5": None,
-                    },
-                    "ocr_verified": False,
-                    "timing_ms": latency_ms,
-                    "not_in_catalog": slug is None or slug == FALLBACK_SLUG,
-                    # apps/api/app/schemas.py::AnalogsWineItem — поле называется wine_id, не
-                    # slug (в этой системе они совпадают по значению, но не по имени ключа) —
-                    # мок должен зеркалить настоящую форму, а не удобную для себя.
-                    "similar": [{"wine_id": s, "name": s, "winery_name": "", "region_name": ""} for s in top5[1:]],
-                    "analogs": [],
+            rich_body = {
+                "slug": slug,
+                "card": None,
+                "confidence": {
+                    "top1_score": 0.9 if slug else None,
+                    "gap": 0.2 if slug else None,
+                    "f1_top1": None,
+                    "f1_top5": None,
                 },
-            )
+                "ocr_verified": False,
+                "timing_ms": latency_ms,
+                "not_in_catalog": slug is None,
+                # apps/api/app/schemas.py::AnalogsWineItem — поле называется wine_id, не
+                # slug (в этой системе они совпадают по значению, но не по имени ключа) —
+                # мок должен зеркалить настоящую форму, а не удобную для себя.
+                "similar": [{"wine_id": s, "name": s, "winery_name": "", "region_name": ""} for s in candidates],
+                "analogs": [],
+            }
+            if not legacy_no_matches:
+                # contracts/image-scan.md v0.4.3 (apps/api commit a2bc591, пробел нашёл F):
+                # top-5 схлопнутых позиций {slug, score} по убыванию, заполняется
+                # НЕЗАВИСИМО от confident/not_in_catalog — честные синтетические убывающие
+                # скоры, реальные числа мок не считает (у него нет модели).
+                matches_source = ([slug] if slug else []) + candidates
+                rich_body["matches"] = [
+                    {"slug": s, "score": round(0.9 - i * 0.05, 4)} for i, s in enumerate(matches_source[:5])
+                ]
+            self._send_json(200, rich_body)
 
     return ScanPhotoHandler
 
 
-def serve(port: int, slug_map: dict[str, list[str]], min_latency_ms: float, max_latency_ms: float, seed: int) -> ThreadingHTTPServer:
-    handler = make_handler(slug_map, min_latency_ms, max_latency_ms, random.Random(seed))
+def serve(
+    port: int,
+    slug_map: dict[str, list[str]],
+    min_latency_ms: float,
+    max_latency_ms: float,
+    seed: int,
+    *,
+    legacy_no_matches: bool = False,
+) -> ThreadingHTTPServer:
+    handler = make_handler(slug_map, min_latency_ms, max_latency_ms, random.Random(seed), legacy_no_matches=legacy_no_matches)
     server = ThreadingHTTPServer(("localhost", port), handler)
     return server
 

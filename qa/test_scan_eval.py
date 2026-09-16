@@ -378,8 +378,10 @@ def test_multipart_parse_rejects_missing_boundary():
 def mock_server_factory():
     servers: list[ThreadingHTTPServer] = []
 
-    def _make(slug_map: dict | None = None, min_latency_ms: float = 1.0, max_latency_ms: float = 3.0) -> str:
-        server = mss.serve(0, slug_map or {}, min_latency_ms, max_latency_ms, seed=1)
+    def _make(
+        slug_map: dict | None = None, min_latency_ms: float = 1.0, max_latency_ms: float = 3.0, **kwargs
+    ) -> str:
+        server = mss.serve(0, slug_map or {}, min_latency_ms, max_latency_ms, seed=1, **kwargs)
         port = server.server_address[1]
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -410,7 +412,9 @@ def test_flat_api_predictor_unmapped_filename_falls_back_to_inference(mock_serve
     assert pred.top1_slug == "some-real-slug"
 
 
-def test_rich_api_predictor_assembles_top5_from_similar(mock_server_factory):
+def test_rich_api_predictor_assembles_top5_from_matches(mock_server_factory):
+    """contracts/image-scan.md v0.4.3 (apps/api `a2bc591`): `matches` — не `similar` —
+    официальный источник топ-5 в rich-режиме (см. докстринг `se.RichApiPredictor`)."""
     base_url = mock_server_factory(slug_map={"a.jpg": ["slug-a", "slug-b", "slug-c"]})
     predictor = se.RichApiPredictor(base_url, timeout=5.0)
     pred = predictor.predict(b"bytes", "a.jpg")
@@ -420,12 +424,37 @@ def test_rich_api_predictor_assembles_top5_from_similar(mock_server_factory):
     assert pred.top1_score == pytest.approx(0.9)
 
 
-def test_rich_api_predictor_degrades_when_similar_empty(mock_server_factory):
+def test_rich_api_predictor_single_match_is_not_a_degradation(mock_server_factory):
+    """Регресс на смену семантики v0.4.3: раньше единственный кандидат в топ-5 (когда
+    `similar` пуст) считался деградацией — теперь `matches` авторитетно говорит "у ANN и
+    правда был только один релевантный кандидат", это честный ответ, не костыль."""
     base_url = mock_server_factory(slug_map={"a.jpg": "slug-a"})
     predictor = se.RichApiPredictor(base_url, timeout=5.0)
     pred = predictor.predict(b"bytes", "a.jpg")
     assert pred.top5_slugs == ["slug-a"]
+    assert pred.degraded_top5 is False
+
+
+def test_rich_api_predictor_falls_back_to_similar_on_legacy_api_without_matches(mock_server_factory):
+    """API старее v0.4.3 (нет поля `matches` вовсе) — фолбэк на старую сборку из `similar`,
+    с честной пометкой деградации, раз `similar` тут тоже пуст (см. mock_scan_server.py
+    `legacy_no_matches`)."""
+    base_url = mock_server_factory(slug_map={"a.jpg": "slug-a"}, legacy_no_matches=True)
+    predictor = se.RichApiPredictor(base_url, timeout=5.0)
+    pred = predictor.predict(b"bytes", "a.jpg")
+    assert pred.top1_slug == "slug-a"
+    assert pred.top5_slugs == ["slug-a"]  # из fallback-сборки [slug] + similar (пуст)
     assert pred.degraded_top5 is True
+
+
+def test_rich_api_predictor_falls_back_to_similar_when_matches_missing_but_present(mock_server_factory):
+    """Легаси-API без `matches`, но с несколькими похожими в `similar` — фолбэк всё ещё
+    собирает содержательный топ-5, просто не из авторитетного источника."""
+    base_url = mock_server_factory(slug_map={"a.jpg": ["slug-a", "slug-b"]}, legacy_no_matches=True)
+    predictor = se.RichApiPredictor(base_url, timeout=5.0)
+    pred = predictor.predict(b"bytes", "a.jpg")
+    assert pred.top5_slugs == ["slug-a", "slug-b"]
+    assert pred.degraded_top5 is False
 
 
 def test_flat_api_predictor_empty_slug_is_a_valid_miss_not_an_error(mock_server_factory):
@@ -448,6 +477,56 @@ def test_rich_api_predictor_not_in_catalog_is_a_valid_miss_not_an_error(mock_ser
     assert pred.error is None
     assert pred.top1_slug is None
     assert pred.top5_slugs == []
+
+
+def test_rich_api_predictor_not_in_catalog_still_reports_matches_for_top5(mock_server_factory):
+    """v0.4.3: `matches` заполняется НЕЗАВИСИМО от confident/not_in_catalog (mock_scan_server
+    считает not_in_catalog, только когда slug is None/FALLBACK_SLUG — здесь используем
+    FALLBACK_SLUG top-1, чтобы мок отдал not_in_catalog=true, но с непустым `matches`).
+    top1_slug остаётся None (официальный ответ — "не нашли"), но top5_slugs честно несёт
+    ANN-кандидатов — ровно то, что нужно для калибровки CV_CONFIDENT_SCORE_THRESHOLD
+    (qa/acceptance.md, «Порядок дня датасета»): был ли true_slug где-то рядом, даже если
+    порог решил перестраховаться."""
+    base_url = mock_server_factory(slug_map={"weak.jpg": [mss.FALLBACK_SLUG, "slug-b", "slug-c"]})
+    predictor = se.RichApiPredictor(base_url, timeout=5.0)
+    pred = predictor.predict(b"bytes", "weak.jpg")
+    assert pred.error is None
+    assert pred.top1_slug is None  # not_in_catalog -> match-rate top-1 честно засчитает промах
+    assert pred.top5_slugs == ["slug-b", "slug-c"]  # но top-5 не пуст (сам сентинел исключён)
+    assert pred.degraded_top5 is False
+
+
+# ----------------------------------------------------------------------------------
+# _extract_matches_top5 — парсер поля matches, без сети
+# ----------------------------------------------------------------------------------
+
+
+def test_extract_matches_top5_happy_path():
+    data = {"matches": [{"slug": "a", "score": 0.9}, {"slug": "b", "score": 0.8}]}
+    assert se._extract_matches_top5(data) == ["a", "b"]
+
+
+def test_extract_matches_top5_missing_key_returns_empty():
+    assert se._extract_matches_top5({}) == []
+
+
+def test_extract_matches_top5_not_a_list_returns_empty():
+    assert se._extract_matches_top5({"matches": "not-a-list"}) == []
+
+
+def test_extract_matches_top5_skips_malformed_items_without_failing():
+    data = {"matches": [{"slug": "a", "score": 0.9}, {"no_slug": True}, "garbage", {"slug": 123}, {"slug": "b"}]}
+    assert se._extract_matches_top5(data) == ["a", "b"]
+
+
+def test_extract_matches_top5_dedupes_preserving_order():
+    data = {"matches": [{"slug": "a"}, {"slug": "b"}, {"slug": "a"}]}
+    assert se._extract_matches_top5(data) == ["a", "b"]
+
+
+def test_extract_matches_top5_caps_at_default_top_k():
+    data = {"matches": [{"slug": f"s{i}"} for i in range(10)]}
+    assert len(se._extract_matches_top5(data)) == se.DEFAULT_TOP_K
 
 
 def test_flat_api_predictor_reports_error_on_unreachable_server():
