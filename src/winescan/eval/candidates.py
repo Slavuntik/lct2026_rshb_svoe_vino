@@ -70,12 +70,13 @@ def _task(task: dict) -> list[dict]:
     return rows
 
 
-def _deep_rows(tasks: list[dict], images_dir: str, image_of: dict[str, str]) -> list[dict]:
+def _deep_rows(tasks: list[dict], images_dir: str, image_of: dict[str, str], device: str | None = None) -> list[dict]:
     """То же, что _task, но ALIKED + LightGlue на GPU: один процесс, модели грузятся один раз."""
     from winescan.search.deep_match import DeepMatcher
 
     _init(images_dir, image_of)
-    matcher = DeepMatcher()
+    matcher = DeepMatcher(device=device)
+    log.info("ALIKED + LightGlue на устройстве %s", matcher.device)  # на CPU проход в разы дольше
     references: dict[str, tuple] = {}
     rows = []
     for number, task in enumerate(tasks, start=1):
@@ -110,6 +111,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--name", default=None, help="имя таблицы вместо candidates_top<K>")
     parser.add_argument("--features", choices=("sift", "aliked"), default="sift",
                         help="локальные признаки: SIFT на процессах CPU или ALIKED + LightGlue на GPU")  # fmt: skip
+    parser.add_argument("--device", default=None,
+                        help="устройство для ALIKED: cuda падает с ошибкой, если карта недоступна (иначе тихо считается на CPU)")  # fmt: skip
     args = parser.parse_args(argv)
     setup_logging()
 
@@ -139,7 +142,7 @@ def main(argv: list[str] | None = None) -> None:
         })  # fmt: skip
 
     if args.features == "aliked":
-        rows = _deep_rows(tasks, str(images_dir), image_of)
+        rows = _deep_rows(tasks, str(images_dir), image_of, args.device)
     else:
         workers = args.workers or min(16, os.cpu_count() or 1)
         with ProcessPoolExecutor(max_workers=workers, initializer=_init, initargs=(str(images_dir), image_of)) as pool:
