@@ -191,7 +191,7 @@ curl -F image=@data/eval/queries/02eef911.webp http://127.0.0.1:8080/v1/scan
 | Эндпоинт | Ответ |
 |---|---|
 | `POST /v1/eval/predict` (multipart `image`) | `{"slug": "…"}` — всегда лучший кандидат |
-| `POST /v1/scan` (multipart `image`) | статус found / not_found, карточка, уверенность (полоса high / medium / low), top-5 со слагаемыми скора, рамка, тайминги |
+| `POST /v1/scan` (multipart `image`, необязательное поле `box`) | статус found / not_found, карточка, уверенность (полоса high / medium / low), top-5 со слагаемыми скора, рамка, тайминги. `box` — рамка, указанная пользователем, «x1,y1,x2,y2» в долях кадра (0…1): с ней детектор не запускается |
 | `GET /v1/wines/{slug}`, `GET /v1/wines/{slug}/image` | карточка и эталонное фото |
 | `GET /v1/wines/{slug}/analogs?limit=6` | аналоги других виноделен с объяснением по совпавшим полям |
 | `GET /v1/sommelier/questions`, `POST /v1/sommelier/suggest` | «Цифровой сомелье»: вопросы-кнопки и 3 вина из каталога с объяснением |
