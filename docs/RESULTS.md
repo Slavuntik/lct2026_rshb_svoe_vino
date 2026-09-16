@@ -1,6 +1,6 @@
 # Результаты экспериментов
 
-Сгенерировано `python -m winescan.eval.report` 2026-09-15 22:02. Не редактировать руками.
+Сгенерировано `python -m winescan.eval.report` 2026-09-16 04:08. Не редактировать руками.
 Определения метрик — `src/winescan/eval/metrics.py`; подвыборки — docs/DATA.md, раздел 6.
 
 ## Прогоны
@@ -19,6 +19,8 @@
 | `scanner__synth_v2__default__holdout` | 09-15 21:31 | сервис, рамок 3, выбор обучен | да | 0.714 | 0.799 | 0.694 | 0.345 | 0.725 | 324 | 162 |
 | `scanner__synth_v2__fusion_v2__holdout` | 09-15 21:09 | сервис, рамок 3, выбор обучен | нет | 0.687 | 0.780 | 0.680 | 0.231 | 0.692 | 325 | 0 |
 | `scanner__synth_v2__fusion_v2_hybrid__holdout` | 09-15 21:20 | сервис, рамок 3, выбор обучен | нет | 0.702 | 0.780 | 0.703 | 0.231 | 0.712 | 369 | 200 |
+| `scanner__synth_v2__latency_hybrid__limit150` | 09-15 22:06 | сервис, рамок 3, выбор обучен | нет | 0.800 | 0.887 | 0.842 | 0.500 | 0.807 | 211 | 123 |
+| `scanner__synth_v2__latency_legacy__limit150` | 09-15 22:09 | сервис, рамок 3, выбор обучен | да | 0.793 | 0.887 | 0.825 | 0.500 | 0.812 | 203 | 120 |
 | `synth_v1__siglip2-base-patch16-224__gt` | 09-15 15:05 | gt | нет | 0.659 | 0.907 | 0.553 | 0.407 | 0.660 | 0 | 0 |
 | `synth_v1__siglip2-so400m-patch14-384+siglip2-so400m-patch14-384__label@0.3,0.7__gt` | 09-15 15:35 | gt | нет | 0.905 | 0.989 | 0.865 | 0.424 | 0.905 | 0 | 0 |
 | `synth_v1__siglip2-so400m-patch14-384+siglip2-so400m-patch14-384__label@0.5,0.5__detector__ocr` | 09-15 16:13 | detector | да | 0.819 | 0.911 | 0.789 | 0.492 | 0.819 | 207 | 128 |
@@ -55,15 +57,17 @@
 | `scanner__synth_v2__default__holdout` | 1052 | 0.714 | 0.699 | 0.235 | 0.067 | — | 1913 | 5790 |
 | `scanner__synth_v2__fusion_v2__holdout` | 533 | 0.687 | 0.670 | 0.242 | 0.088 | — | 1942 | 6542 |
 | `scanner__synth_v2__fusion_v2_hybrid__holdout` | 533 | 0.702 | 0.685 | 0.220 | 0.096 | — | 3919 | 7466 |
+| `scanner__synth_v2__latency_hybrid__limit150` | 150 | 0.800 | 0.787 | 0.187 | 0.027 | — | 1019 | 1588 |
+| `scanner__synth_v2__latency_legacy__limit150` | 150 | 0.793 | 0.780 | 0.193 | 0.027 | — | 761 | 1123 |
 
 Синтетика оптимистична (в кадре пиксели эталона), см. ARCHITECTURE.md, раздел 4.
 
 ## Публичные фото через сервис
 
-`participant_test.sh` кейсодержателя и `/v1/scan` с настройками по умолчанию (2026-09-15 16:00). Разметка неофициальная (`configs/eval_public_labels.csv`).
+`participant_test.sh` кейсодержателя и `/v1/scan` с настройками по умолчанию (2026-09-15 22:10). Разметка неофициальная (`configs/eval_public_labels.csv`).
 
 | фото | ожидается | /v1/eval/predict | верно | задержка скрипта, мс | /v1/scan | визуальный скор | в сервисе, мс |
 |---|---|---|---|---|---|---|---|
-| 019c68d0.jpg | (нет в каталоге) | vaynkraft-pino-nuar-krasnoe-suhoe-13 | вне каталога: да | 1769 | not_found | 0.6599 | 1054.9 |
-| 02eef911.webp | massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16 | massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16 | да | 1791 | found | 0.7842 | 1189.0 |
-| 096ca74e.jpg | (нет в каталоге) | abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12 | вне каталога: да | 2024 | not_found | 0.6951 | 1196.3 |
+| 019c68d0.jpg | (нет в каталоге) | vaynkraft-pino-nuar-krasnoe-suhoe-13 | вне каталога: да | 2127 | not_found | 0.6674 | 1465.2 |
+| 02eef911.webp | massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16 | massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16 | да | 2145 | found | 0.8419 | 1592.5 |
+| 096ca74e.jpg | (нет в каталоге) | abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12 | вне каталога: да | 2025 | not_found | 0.7016 | 1767.0 |
