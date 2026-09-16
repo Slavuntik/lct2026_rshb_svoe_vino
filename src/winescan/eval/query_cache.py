@@ -1,6 +1,6 @@
 """Кэш запросов для быстрых офлайн-экспериментов (без повторного запуска моделей).
 
-Запуск: ``python -m winescan.eval.query_cache --split synth_v1 [--boxes 3] [--limit N]``
+Запуск: ``python -m winescan.eval.query_cache --split synth_v1 [--boxes 3] [--limit N] [--name ИМЯ]``
 
 Для каждого кадра: все детекции OWLv2, до K рамок-кандидатов (по априорному весу, без почти
 совпадающих), весь кадр и — для синтетики — настоящая рамка; эмбеддинги кропа каждой рамки по
@@ -36,6 +36,8 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Кэш детекций и эмбеддингов запросов")
     parser.add_argument("--split", required=True)
     parser.add_argument("--boxes", type=int, default=3, help="рамок-кандидатов детектора")
+    parser.add_argument("--name", default=None,
+                        help="имя папки кэша вместо имени сплита: чтобы не затирать уже построенный кэш")  # fmt: skip
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--device", default=None)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -95,7 +97,7 @@ def main(argv: list[str] | None = None) -> None:
                 vectors[query_index, slot_index, index_position] = index_vectors[position]
         log.info("%s / %s", min(start + args.batch_size, len(rows)), len(rows))
 
-    out_dir = paths.artifacts_dir / "cache" / (args.split + (f"__limit{args.limit}" if args.limit else ""))
+    out_dir = paths.artifacts_dir / "cache" / (args.name or args.split + (f"__limit{args.limit}" if args.limit else ""))
     out_dir.mkdir(parents=True, exist_ok=True)
     with (out_dir / "queries.jsonl").open("w", encoding="utf-8") as fh:
         for record in records:
