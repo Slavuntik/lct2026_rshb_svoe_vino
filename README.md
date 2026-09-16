@@ -61,6 +61,44 @@ cd apps/web && npm i && npm run dev                                             
 Реальный поиск: собрать индекс пайплайном, затем `RAG_PROVIDER=real RAG_MODE=embedded` —
 интеграционные тесты: `RUN_RAG_INTEGRATION=1 pytest` в `apps/api`.
 
+## Прогон скрипта кейсодержателя
+
+`POST /v1/eval/predict` — фиксированный путь скрипта оценки ЛЦТ
+(`case-data/eval/participant_test.sh`), алиас несгораемого плоского режима сканера
+(`/v1/scan/photo?flat=1`, `contracts/image-scan.md`): без авторизации, multipart-поле
+`image`, всегда HTTP 200 + `{"slug": "..."}` (лучшая доступная догадка, даже при
+низкой уверенности или сбое пайплайна).
+
+Поднять API на порту 8080 — дефолтный эндпоинт скрипта уже
+`http://127.0.0.1:8080/v1/eval/predict`, дополнительных ключей не требуется
+(mock-провайдеры по умолчанию):
+
+```bash
+cd apps/api
+./.venv/bin/uvicorn app.main:app --port 8080
+```
+
+В другом терминале — их скрипт как есть, без правок:
+
+```bash
+cd /Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data/eval
+chmod +x participant_test.sh
+./participant_test.sh \
+  --images-dir ./queries \
+  --manifest ./queries.tsv \
+  --endpoint 'http://127.0.0.1:8080/v1/eval/predict' \
+  --output ./predictions.jsonl
+```
+
+По завершении — `predictions.jsonl` рядом со скриптом, по одной JSON-строке на фото
+(`query_id`, `image_path`, `image_sha256`, `predicted_slug`, `latency_ms`); если файл
+уже существует, скрипт откажется запускаться — удалите/переименуйте перед повторным
+прогоном.
+
+На mock-провайдерах (команда выше) сервис отвечает мгновенно, но `predicted_slug` —
+не настоящие слаги каталога. Содержательный прогон на боевом индексе — те же команды с
+`IMAGE_PROVIDER=real VERIFIER_PROVIDER=real` перед `uvicorn`; см. `reports/b3-eval-route.md`.
+
 ## Качество
 
 - голд-сет из 78 вопросов шести типов; hit@8 ≥ 0.85 на ранжирующих типах,

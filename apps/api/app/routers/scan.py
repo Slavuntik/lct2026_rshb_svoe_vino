@@ -27,6 +27,12 @@ v0.4.4 (ревью 04, блокер 1) — "несгораемость flat ДО
 (3) `SCAN_FLAT_DEFAULT=1` включает flat-поведение без query-параметра вообще
 (явный `?flat=0/1` всегда важнее этого дефолта). Лимит размера — 25 МБ
 (`SCAN_MAX_UPLOAD_BYTES`, было 8 МБ — телефонные фото часто больше).
+
+agents/B3-eval-route.md — `flat_scan_response()` ниже несёт ровно эту
+несгораемую семантику как отдельно вызываемая функция, а не только ветку
+`scan_photo`: `routers/eval.py::POST /v1/eval/predict` (эндпоинт скрипта
+кейсодержателя, case-data/eval/participant_test.sh) — общий обработчик с
+`/scan/photo?flat=1`, БЕЗ копипасты логики.
 """
 from __future__ import annotations
 
@@ -158,6 +164,43 @@ async def _first_uploaded_file(
     return None
 
 
+async def flat_scan_response(
+    request: Request,
+    image: UploadFile | None,
+    principal: Principal | None,
+    image_index: ImageIndex,
+    verifier: LabelVerifier,
+    retriever: Retriever,
+    settings: Settings,
+    db: Session,
+) -> ScanPhotoFlatResponse:
+    """Несгораемая flat-семантика (contracts/image-scan.md v0.4.4, "Режимы
+    ответа API"): ЛЮБОЙ сбой -> валидный `{"slug": "<лучшая догадка>"}`,
+    HTTP 200, никогда исключение/4xx/5xx наружу. Общий обработчик для ДВУХ
+    путей: `/scan/photo?flat=1` (или `SCAN_FLAT_DEFAULT=1`) и
+    `/v1/eval/predict` (`routers/eval.py`, алиас для скрипта кейсодержателя
+    agents/B3-eval-route.md) — оба зовут ровно эту функцию, не копия логики.
+    """
+    upload = await _first_uploaded_file(request, image)
+    data = await upload.read() if upload is not None else b""
+
+    # contracts/image-scan.md (v0.4.4, ревью 04, блокер 1): flat ловит
+    # ЛЮБОЕ исключение — не только ValueError (декодер/индекс/БД/что
+    # угодно) — скрипт оценки не должен споткнуться НИ О ЧЕМ. Честность
+    # про уверенность — только в rich.
+    try:
+        if upload is None or not data or len(data) > settings.max_upload_bytes:
+            return ScanPhotoFlatResponse(slug="")
+        result = run_photo_scan(
+            image_bytes=data, image_index=image_index, verifier=verifier,
+            retriever=retriever, settings=settings,
+        )
+        _record_photo_scan(db, principal, len(data), result, best_effort=True)
+        return ScanPhotoFlatResponse(slug=result.best_guess_slug or "")
+    except Exception:
+        return ScanPhotoFlatResponse(slug="")
+
+
 @router.post("/photo")
 async def scan_photo(
     request: Request,
@@ -178,27 +221,14 @@ async def scan_photo(
     # query-параметр.
     effective_flat = settings.scan_flat_default if flat is None else flat
 
-    upload = await _first_uploaded_file(request, image)
-    data = await upload.read() if upload is not None else b""
-
     if effective_flat:
-        # contracts/image-scan.md (v0.4.4, ревью 04, блокер 1): flat ловит
-        # ЛЮБОЕ исключение — не только ValueError (декодер/индекс/БД/что
-        # угодно) — скрипт оценки не должен споткнуться НИ О ЧЕМ. Честность
-        # про уверенность — только в rich.
-        try:
-            if upload is None or not data or len(data) > settings.max_upload_bytes:
-                return ScanPhotoFlatResponse(slug="")
-            result = run_photo_scan(
-                image_bytes=data, image_index=image_index, verifier=verifier,
-                retriever=retriever, settings=settings,
-            )
-            _record_photo_scan(db, principal, len(data), result, best_effort=True)
-            return ScanPhotoFlatResponse(slug=result.best_guess_slug or "")
-        except Exception:
-            return ScanPhotoFlatResponse(slug="")
+        return await flat_scan_response(
+            request, image, principal, image_index, verifier, retriever, settings, db,
+        )
 
     # rich-режим (UI) — честные ошибки, как везде в API.
+    upload = await _first_uploaded_file(request, image)
+    data = await upload.read() if upload is not None else b""
     if upload is None or not data:
         raise ApiError(400, "validation_error", "Пустой файл изображения")
     if len(data) > settings.max_upload_bytes:

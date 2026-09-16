@@ -74,13 +74,30 @@ def test_contract_paths_and_methods_are_all_implemented(client: TestClient):
     assert not method_mismatches, f"методов из контракта нет в приложении: {method_mismatches}"
 
 
+# agents/B3-eval-route.md (волна датасета): POST /v1/eval/predict — новый
+# путь, эндпоинт скрипта кейсодержателя (case-data/eval/participant_test.sh),
+# добавленный ПОСЛЕ того как оба контракта были заморожены. Это алиас уже
+# описанной flat-семантики /scan/photo?flat=1 (contracts/image-scan.md v0.4
+# её покрывает), но буквально сам путь /v1/eval/predict в contracts/ пока не
+# упомянут — правка contracts/ вне зоны B3 (ORCHESTRATION.md: "контракты
+# меняет только оркестратор"; B3-eval-route.md: "если увидишь необходимость
+# правки контракта — написать в отчёт, НЕ править"). Зафиксировано как
+# именованное, документированное исключение (не тихий пропуск), см.
+# reports/b3-eval-route.md, "Предложения к контрактам": когда оркестратор
+# добавит строку `` `POST /v1/eval/predict` `` в image-scan.md, эта запись
+# станет лишней и её можно будет убрать вместе с проверкой.
+_KNOWN_UNDOCUMENTED_EXTRA_PATHS: frozenset[str] = frozenset({"/v1/eval/predict"})
+
+
 def test_contract_paths_match_app_exactly_no_undocumented_extras(client: TestClient):
     """Не требование DoD буквально (там речь только о "контракт покрыт"), но
     множества путей совпадают 1:1 по обоим контрактам — фиксируем это как
     регресс-тест: если кто-то добавит эндпоинт мимо обоих контрактов, тест
-    это заметит."""
+    это заметит. Единственное сознательное исключение —
+    `_KNOWN_UNDOCUMENTED_EXTRA_PATHS` выше, не общая лазейка: любой ДРУГОЙ
+    путь мимо контракта тест по-прежнему ловит."""
     contract = _load_all_contract_paths()
     app_schema = client.app.openapi()
     app_paths = set(app_schema["paths"])
-    extra = sorted(app_paths - set(contract))
+    extra = sorted(app_paths - set(contract) - _KNOWN_UNDOCUMENTED_EXTRA_PATHS)
     assert extra == [], f"в приложении есть пути, которых нет в контракте: {extra}"
