@@ -66,35 +66,80 @@ cd apps/api && ./.venv/bin/python -m pytest -q
 
 ## Предложения к контрактам
 
-`contracts/image-scan.md` описывает flat-семантику, но буквально путь
-`/v1/eval/predict` в контракте (ни в `image-scan.md`, ни в `openapi.yaml`) не
-упомянут — а `tests/test_openapi_contract.py::
+**ЗАКРЫТО (v0.4.6, коммит `1f3e6e9`, оркестратор).** `contracts/image-scan.md`
+описывал flat-семантику, но буквально путь `/v1/eval/predict` в контракте
+не был упомянут — `tests/test_openapi_contract.py::
 test_contract_paths_match_app_exactly_no_undocumented_extras` проверяет
-точное совпадение множества путей приложения с контрактами (регресс-тест
-"нет путей мимо контракта"). Контракт не правил (не моя зона правки). Вместо
-этого — именованное, задокументированное исключение прямо в тесте
-(`_KNOWN_UNDOCUMENTED_EXTRA_PATHS = {"/v1/eval/predict"}`, с комментарием и
-ссылкой на этот отчёт): тест по-прежнему ловит ЛЮБОЙ другой путь мимо
-контракта, но не падает именно на этом, уже согласованном оркестратором в
-брифе этой волны, пути.
-
-**Предложение**: добавить в `contracts/image-scan.md` (раздел «Режимы ответа
-API») строку вида `` `POST /v1/eval/predict` `` — алиас `/scan/photo?flat=1`
-для скрипта кейсодержателя, без query-параметров, без auth. После этого
-`_KNOWN_UNDOCUMENTED_EXTRA_PATHS` в `test_openapi_contract.py` можно убрать
-(и тест снова станет чистым 1:1 без исключений).
+точное совпадение множества путей приложения с контрактами и падал бы на
+этом. Временно (на момент первой сдачи шагов 1–3) это было обойдено
+именованным исключением прямо в тесте (`_KNOWN_UNDOCUMENTED_EXTRA_PATHS`).
+Оркестратор вписал путь в `contracts/image-scan.md` (раздел «Режимы ответа
+API», новый абзац v0.4.6: "`POST /v1/eval/predict` — фиксированный алиас
+flat-режима..."). Исключение из теста убрано, тест снова проверяет строгое
+совпадение 1:1 без изъятий — прогнан отдельно
+(`pytest tests/test_openapi_contract.py -v` → 2 passed) и в составе полного
+набора (186 passed, 11 skipped, без регрессий).
 
 ## Блокеры
 
-Нет. Единственное отступление от буквы задачи — правка
-`tests/test_openapi_contract.py` (в зоне `apps/api/`, не `contracts/`) ради
-исключения выше; описано подробно в предыдущем разделе, не скрыто.
+Нет.
 
-## Шаг 4 — статус
+## Шаг 4 — предсигнальная подготовка (16–17.09, оркестратор)
 
-Ожидаю сигнал оркестратора о готовности боевого индекса G3. После сигнала:
-`IMAGE_PROVIDER=real VERIFIER_PROVIDER=real` на `:8080`, их
-`participant_test.sh` на `case-data/eval/queries/` + `queries.tsv`
-(3 строки, судя по составу `case-data/eval/queries.tsv` на момент этого
-отчёта), результат — 3 строки `predictions.jsonl` + p95 latency_ms допишу
-сюда же.
+Оркестратор прислал предсигнал: индекс `case-20260917` (1982 позиции,
+`slug_refs.json`, только usable) пересобирается у G3, манифест ещё
+`case-20260916` — «ПУСК» придёт отдельным сообщением, когда манифест
+покажет новую версию. Ниже — подготовка БЕЗ запуска API (пункты 2–3 брифа
+оркестратора), само исполнение — только по «ПУСК».
+
+**Проверено, что понадобится для команды запуска** (сверено с кодом, не
+угадано): `apps/api/app/cv/factory.py` — актуальные имена `IMAGE_PROVIDER`/
+`VERIFIER_PROVIDER` (не устаревшее `LABEL_VERIFIER_PROVIDER`); offline-флаги
+(`HF_HUB_OFFLINE`/`TRANSFORMERS_OFFLINE`) там же уже проставляются через
+`os.environ.setdefault(...)` при `IMAGE_PROVIDER=real`, явная передача снаружи
+их не переопределяет, только страхует; `packages/cv/cv/config.py` —
+`CV_DATA_DIR` реально существующий env (дефолт `packages/cv/data`, оркестратор
+просит указать его явно и абсолютно). `/healthz.warm` — готовое поле
+(`app/main.py::warm_up_image_index`, ложится в `HealthResponse.warm`).
+
+**Подготовленная (НЕ выполненная) команда запуска:**
+
+```bash
+cd /Users/vyacheslavfokin/ClaudeWorkspace/vines/svoy-somelye/apps/api
+
+DATABASE_URL="sqlite:////private/tmp/claude-501/-Users-vyacheslavfokin-ClaudeWorkspace/3ef8e524-2f02-493d-bf79-36104e8b36c9/scratchpad/b3-eval-rehearsal.db" \
+IMAGE_PROVIDER=real \
+VERIFIER_PROVIDER=real \
+CV_DATA_DIR=/Users/vyacheslavfokin/ClaudeWorkspace/vines/svoy-somelye/packages/cv/data \
+RAG_PROVIDER=mock \
+HF_HUB_OFFLINE=1 \
+TRANSFORMERS_OFFLINE=1 \
+./.venv/bin/uvicorn app.main:app --port 8080 \
+  > /private/tmp/claude-501/-Users-vyacheslavfokin-ClaudeWorkspace/3ef8e524-2f02-493d-bf79-36104e8b36c9/scratchpad/uvicorn-rehearsal.log 2>&1 &
+
+# ждать прогрева перед прогоном скрипта:
+until curl -s http://127.0.0.1:8080/v1/healthz | grep -q '"warm":true'; do sleep 2; done
+```
+
+**План прогона (их скрипт без модификаций):**
+
+```bash
+bash /Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data/eval/participant_test.sh \
+  --images-dir /Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data/eval/queries \
+  --manifest /Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data/eval/queries.tsv \
+  --endpoint http://127.0.0.1:8080/v1/eval/predict \
+  --output /private/tmp/claude-501/-Users-vyacheslavfokin-ClaudeWorkspace/3ef8e524-2f02-493d-bf79-36104e8b36c9/scratchpad/predictions.jsonl
+```
+
+`case-data/eval/queries.tsv` на момент этой подготовки — ровно 3 строки
+данных (`q-000001`/`019c68d0.jpg`, `q-000002`/`02eef911.webp`,
+`q-000003`/`096ca74e.jpg`), подтверждено чтением файла. По вводным G3: q1
+(Табия Пино Нуар) и q3 (Aristov Donum) не в каталоге кейса — flat обязан всё
+равно вернуть лучший слаг (несгораемость, не пустой ответ); q2 (Мускатель
+Массандра Белый) в каталоге — интересен ранг на новом индексе.
+
+**После «ПУСК» (не выполнено сейчас):** прогнать команды выше, дождаться
+`predictions.jsonl` (3 строки), дописать их + latency_ms/p95 в этот раздел;
+погасить `uvicorn` (`kill <pid>`, что само по себе освобождает файловый лок
+embedded qdrant — отдельных действий не требуется); подтвердить, что процесс
+реально завершился (индекс дальше нужен F3) перед докладом оркестратору.
