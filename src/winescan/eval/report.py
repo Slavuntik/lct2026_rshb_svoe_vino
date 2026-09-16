@@ -148,12 +148,42 @@ def _participant_section(directory: Path) -> list[str]:
     return lines
 
 
+def summary(eval_dir: Path) -> dict:
+    """Ключевые числа прогонов в машиночитаемом виде — для страницы метрик интерфейса."""
+    runs = []
+    for run in sorted(p.parent for p in eval_dir.glob("*/metrics.json")):
+        metrics = json.loads((run / "metrics.json").read_text(encoding="utf-8"))
+        if "all" not in metrics and "decision" not in metrics:
+            continue
+        latency = metrics.get("latency_ms", {})
+        runs.append({
+            "run": run.name,
+            "split": metrics.get("split"),
+            "kind": "сервис" if "decision" in metrics else "поиск",
+            "queries": metrics.get("queries"),
+            "top1": (metrics.get("all") or {}).get("top1_accuracy"),
+            "top5": (metrics.get("all") or {}).get("top5_accuracy"),
+            "top1_in_phash_group": (metrics.get("in_phash_group") or {}).get("top1_accuracy"),
+            "decision": metrics.get("decision"),
+            "latency_p50_ms": latency.get("total_p50"),
+            "latency_p95_ms": latency.get("total_p95"),
+            "finished_at": datetime.fromtimestamp((run / "metrics.json").stat().st_mtime).isoformat(timespec="seconds"),
+        })  # fmt: skip
+    return {"generated_at": datetime.now().isoformat(timespec="seconds"), "runs": runs}
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Сводная таблица экспериментов")
     parser.add_argument("--out", type=Path, default=PROJECT_ROOT / "docs" / "RESULTS.md")
+    parser.add_argument("--json", type=Path, default=None,
+                        help="дополнительно сохранить ключевые числа в JSON (страница метрик интерфейса)")  # fmt: skip
     args = parser.parse_args(argv)
-    text = render(get_paths().artifacts_dir / "eval")
+    eval_dir = get_paths().artifacts_dir / "eval"
+    text = render(eval_dir)
     args.out.write_text(text, encoding="utf-8")
+    if args.json:
+        args.json.write_text(json.dumps(summary(eval_dir), ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"ключевые числа -> {args.json}")
     print(text)
 
 
