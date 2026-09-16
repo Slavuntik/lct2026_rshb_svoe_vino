@@ -47,6 +47,11 @@ class QueryCache:
         with (directory / "queries.jsonl").open(encoding="utf-8") as fh:
             records = [json.loads(line) for line in fh]
         vectors = np.load(directory / "vectors.npy")
+        if indexes and len(indexes) != len(meta["indexes"]):
+            # векторы в кэше сохранены по индексу на вид; с другим их числом reshape склеит виды,
+            # и падение случится глубоко в умножении матриц — сообщение было бы невнятным
+            raise ValueError(f"в кэше {len(meta['indexes'])} индексов, передано {len(indexes)}: "
+                             "подменять можно только галерею той же формы")  # fmt: skip
         loaded = [VectorIndex.load(paths.artifacts_dir / "index" / n) for n in indexes or meta["indexes"]]
         if indexes:
             for original, replacement in zip(meta["indexes"], loaded):
