@@ -205,8 +205,9 @@ NUXT_PUBLIC_MOCK=1 npm run dev                      # без сервиса, н�
 ## Makefile
 
 `make help` — список целей. Основные: `make install`, `make data`, `make artifacts GPU=3`
-(каталог, индексы, SIFT-признаки и вырезки эталонов), `make synth`, `make cache GPU=3`,
-`make eval GPU=3`, `make serve GPU=3`, `make participant`, `make test`.
+(каталог, индексы с поворотами, SIFT-признаки и вырезки эталонов), `make synth`,
+`make cache GPU=3`, `make eval GPU=3` (поиск), `make scanner GPU=3` (сквозной прогон сервиса
+с решением «не найдено» и задержками), `make serve GPU=3`, `make participant`, `make test`.
 
 ## Docker
 

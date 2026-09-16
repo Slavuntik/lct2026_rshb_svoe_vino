@@ -9,16 +9,17 @@ YAWS ?= -30,-15,0,15,30
 INDEXES ?= siglip2-so400m-patch14-384__yaw-30_-15_0_15_30,siglip2-so400m-patch14-384__label__yaw-30_-15_0_15_30
 RUN_GPU = CUDA_VISIBLE_DEVICES=$(GPU)
 
-.PHONY: help install data catalog index index-frontal features artifacts synth cache eval report serve participant test clean-eval
+.PHONY: help install data catalog index index-frontal features artifacts synth cache eval scanner report serve participant test clean-eval
 
 help:
 	@echo "install     — .venv, torch (CUDA 12.6) и пакет с зависимостями ml, dev"
 	@echo "data        — распаковать дамп Strapi и eval.zip (нужен unrar)"
 	@echo "artifacts   — каталог, индексы SigLIP 2 (full, label, повороты $(YAWS)), SIFT-признаки эталонов"
-	@echo "index-frontal — фронтальные индексы (нужны кэшам запросов cache)"
+	@echo "index-frontal — фронтальные индексы: базовая линия и сравнение галерей"
 	@echo "synth       — синтетические выборки synth_v1 и synth_v2"
 	@echo "cache       — кэш детекций и эмбеддингов запросов для офлайн-экспериментов"
-	@echo "eval        — сквозной прогон на synth_v2 и публичных фото + docs/RESULTS.md"
+	@echo "eval        — прогон поиска на synth_v2 и публичных фото + docs/RESULTS.md"
+	@echo "scanner     — сквозной прогон сервиса (выбор рамки, проверка, отказ) + docs/RESULTS.md"
 	@echo "serve       — сервис на :8080; participant — скрипт кейсодержателя на публичных фото"
 	@echo "test        — unit-тесты (без GPU и данных)"
 
@@ -60,6 +61,12 @@ cache:
 eval:
 	$(RUN_GPU) $(PY) -m winescan.eval.run --split synth_v2 --index $(INDEXES) --crop detector --ocr --batch-size 16
 	$(RUN_GPU) $(PY) -m winescan.eval.run --split public --index $(INDEXES) --crop detector --ocr
+	$(MAKE) report
+
+# сквозной прогон сервисного Scanner: решение «не найдено» и задержки, только отложенные запросы
+scanner:
+	$(RUN_GPU) $(PY) -m winescan.eval.scanner_eval --split synth_v2 --tag default --holdout
+	$(RUN_GPU) $(PY) -m winescan.eval.scanner_eval --split public --tag default
 	$(MAKE) report
 
 report:
