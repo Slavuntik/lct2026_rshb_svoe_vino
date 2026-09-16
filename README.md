@@ -69,9 +69,9 @@ src/winescan/
                             преобразование эмбеддингов), verify, text_match, fields, fusion, rerank
   service/                  слой 4: pipeline (Scanner), app (FastAPI)
   product/                  слой 5: analogs, sommelier
-  validation/               синтетические «полевые» кадры (пресеты v1, v2)
+  validation/               синтетические «полевые» кадры (пресеты v1, v2, v3 «другой тираж»)
   eval/                     метрики, прогоны, кэши запросов, офлайн-эксперименты, обучение выбора рамки
-                            и слияния, IoU детектора, сводная таблица
+                            и слияния, IoU детектора, сравнение распознавателей текста, сводная таблица
 web/                        мобильный интерфейс на Nuxt 4 (свой README)
 tests/                      pytest (без GPU и данных кейса)
 artifacts/                  результаты сборок и прогонов, в git не кладутся
@@ -95,6 +95,11 @@ artifacts/                  результаты сборок и прогоно�
   Версия `kornia-rs` закреплена намеренно: свежие сборки этого расширения требуют инструкций
   AVX2, которых нет у Xeon E5-2670 v2 на нашем сервере, и любой импорт падает с
   `Illegal instruction`.
+- Необязательно, для сравнения распознавателей текста (эксперимент PLAN 2.7):
+  `pip install -e ".[ocr-compare]"` — RapidOCR на onnxruntime и загрузка моделей PP-OCRv5
+  (`cyrillic_PP-OCRv5_mobile_rec_onnx`, `PP-OCRv5_mobile_det_onnx`, Apache-2.0). PaddlePaddle
+  здесь не годится по той же причине, что и `kornia-rs`: он требует AVX2. В сервис и в образ
+  эти зависимости не входят — в нём работает EasyOCR (ARCHITECTURE.md, D29).
 
 ## Установка
 
@@ -167,6 +172,9 @@ CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.run --split synth_v1 \
     --index siglip2-so400m-patch14-384,siglip2-so400m-patch14-384__label --crop detector --ocr --batch-size 16
 python -m winescan.eval.local_rerank_eval <папка прогона> --split synth_v1   # SIFT, подбор веса (CPU)
 python -m winescan.eval.rerank_sweep <папка прогона>                         # текст OCR, подбор веса
+# EasyOCR против PP-OCRv5 с кириллической моделью (нужно дополнение ocr-compare, см. «Требования»)
+OMP_NUM_THREADS=1 python -m winescan.eval.ocr_compare --run <папка прогона> \
+    --split artifacts/validation/synth_v1 --limit 1000
 CUDA_VISIBLE_DEVICES=3 python -m winescan.eval.detector_eval --split synth_v1 --limit 400   # IoU детектора
 # сквозной прогон сервисного Scanner (конфиг из WINESCAN_*): решение «не найдено», p50/p95;
 # --holdout — только запросы, которые не видели при обучении выбора рамки и слияния
@@ -303,7 +311,9 @@ python -m winescan.search.local_features          # SIFT-признаки эта
 - Дампа базы Strapi нет: связь «вино → файл» восстановлена эвристиками и 13 ручными решениями.
 - 59 вин делят байт-в-байт одинаковые эталоны, 212 групп вин одной винодельни различаются
   только цветом, сладостью или годом; дубли карточек не различит никакой метод.
-- SIFT не видит цвета, OCR на стилизованных этикетках шумный.
+- SIFT не видит цвета, OCR на стилизованных этикетках шумный. Замена на PP-OCRv5 с кириллической
+  моделью делает текст вдвое точнее, но ответ сервиса не меняет (+0,5 п.п., p = 0,36) и стоит
+  1,35 с на вырезку против 180 мс.
 - Задержки измерены на общем сервере под нагрузкой (load average до 800).
 - «Цифровой сомелье» работает на правилах без LLM; интерфейс не проверялся на реальном телефоне.
 - Рейтинга Роскачества в выданной выгрузке нет (проверены и CSV, и собранный каталог), поэтому
