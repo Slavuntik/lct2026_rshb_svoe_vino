@@ -58,7 +58,8 @@ src/winescan/
   vision/                   слои 1–2: preprocess, detector (OWLv2), embedder (SigLIP 2), ocr (EasyOCR),
                             vlm (Qwen3-VL), cylinder (поворот цилиндра)
   search/                   слой 3: index, build_index, multi, box_selection, box_ranker, local_match и
-                            local_features (SIFT), verify, text_match, fields, fusion, rerank
+                            local_features (SIFT), deep_match (ALIKED + LightGlue), verify, text_match,
+                            fields, fusion, rerank
   service/                  слой 4: pipeline (Scanner), app (FastAPI)
   product/                  слой 5: analogs, sommelier
   validation/               синтетические «полевые» кадры (пресеты v1, v2)
