@@ -7,18 +7,26 @@ from PIL import Image
 
 from winescan.config import get_paths
 from winescan.search.index import VectorIndex, top_k
+from winescan.search.metric import Metric
 from winescan.vision.embedder import ImageEmbedder
 from winescan.vision.preprocess import Box, query_view
 
 
 class MultiIndexSearcher:
-    def __init__(self, index_names: list[str], weights: list[float], device: str | None = None):
+    def __init__(self, index_names: list[str], weights: list[float], device: str | None = None, metric: Metric | None = None):
         if len(index_names) != len(weights):
             raise ValueError("число весов не совпадает с числом индексов")
         paths = get_paths()
         self.index_names = list(index_names)
         self.indexes = [VectorIndex.load(paths.artifacts_dir / "index" / name) for name in index_names]
         self.weights = list(weights)
+        # линейное преобразование (search.metric): галерея проецируется один раз при загрузке,
+        # запрос — перед поиском, поэтому скоры остаются косинусами, но в другом пространстве
+        self.metric = metric
+        if metric is not None:
+            metric.check(self.indexes[0].meta["model_id"], index_names)
+            for index in self.indexes:
+                index.vectors = metric.project(index.vectors)
         self.wine_slugs = self.indexes[0].wine_slugs
         if any(index.wine_slugs != self.wine_slugs for index in self.indexes):
             raise ValueError("индексы построены по разным наборам вин — пересоберите их")
@@ -45,7 +53,8 @@ class MultiIndexSearcher:
         """Взвешенная сумма скоров вин по индексам: (n, число вин)."""
         total = np.zeros((len(vectors[0]), len(self.wine_slugs)), dtype=np.float32)
         for index, weight, index_vectors in zip(self.indexes, self.weights, vectors):
-            total += weight * index.wine_scores(index_vectors.astype(np.float32))
+            query = index_vectors.astype(np.float32)
+            total += weight * index.wine_scores(self.metric.project(query) if self.metric is not None else query)
         return total
 
     def search(self, images: list[Image.Image], boxes: list[Box | None], k: int) -> tuple[list[list[str]], np.ndarray]:
