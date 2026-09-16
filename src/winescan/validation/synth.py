@@ -30,6 +30,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 
+from winescan.validation.cylinder_alt import rotate_cylinder_perspective
 from winescan.vision.cylinder import rotate_cylinder
 from winescan.vision.preprocess import cutout
 
@@ -62,6 +63,9 @@ class SynthConfig:
     halftone_prob: float = 0.0
     resharpen_prob: float = 0.0
     recompress_rounds: int = 0
+    # проверка оговорки пункта 3.3 плана: искривление запроса моделью, не связанной с галереей
+    warp: str = "cylinder"  # "cylinder" — vision.cylinder (ею же строится галерея); "perspective" — validation.cylinder_alt
+    camera_distance: float = 5.0  # расстояние камеры в радиусах бутылки; влияет только при warp="perspective"
 
 
 SYNTH_PRESETS = {
@@ -89,6 +93,9 @@ SYNTH_PRESETS["v3"] = replace(
     resharpen_prob=0.7,
     recompress_rounds=2,
 )
+# то же, что v2, но запрос искривляется моделью, не связанной с построением галереи ракурсов:
+# проверка оговорки пункта 3.3 плана. Порядок розыгрышей тот же, поэтому кадры парные с v2
+SYNTH_PRESETS["v2p"] = replace(SYNTH_PRESETS["v2"], warp="perspective")
 
 
 def perspective_coefficients(src: list[tuple[float, float]], dst: list[tuple[float, float]]) -> list[float]:
@@ -126,15 +133,18 @@ def _cylinder(sprite: Image.Image, rng: random.Random, config: SynthConfig) -> I
     if not config.yaw_deg or sprite.height / max(sprite.width, 1) < 1.8:
         return sprite
     highlight = rng.uniform(-50, 50) if rng.random() < config.bottle_highlight_prob else None
-    return rotate_cylinder(
-        sprite,
-        yaw_deg=rng.uniform(-config.yaw_deg, config.yaw_deg),
-        pitch=rng.uniform(-config.arc_pitch, config.arc_pitch),
-        shading=rng.uniform(0, config.cylinder_shading),
-        highlight_angle_deg=highlight,
-        # на пробном листе блик 0,8 засвечивал бутылку почти целиком
-        highlight_strength=rng.uniform(0.25, 0.6),
-    )
+    # порядок розыгрышей один для обеих моделей: иначе выборки перестанут быть парными
+    yaw = rng.uniform(-config.yaw_deg, config.yaw_deg)
+    pitch = rng.uniform(-config.arc_pitch, config.arc_pitch)
+    shading = rng.uniform(0, config.cylinder_shading)
+    # на пробном листе блик 0,8 засвечивал бутылку почти целиком
+    strength = rng.uniform(0.25, 0.6)
+    if config.warp == "perspective":
+        return rotate_cylinder_perspective(sprite, yaw_deg=yaw, camera_distance=config.camera_distance,
+                                           pitch=pitch, shading=shading, highlight_angle_deg=highlight,
+                                           highlight_strength=strength)  # fmt: skip
+    return rotate_cylinder(sprite, yaw_deg=yaw, pitch=pitch, shading=shading,
+                           highlight_angle_deg=highlight, highlight_strength=strength)  # fmt: skip
 
 
 def _background(photo: Image.Image | None, size: tuple[int, int], rng: random.Random) -> Image.Image:
