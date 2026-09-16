@@ -17,6 +17,15 @@ slug — только если уверенно, для rich) и timing_ms, из
 вокруг всего пайплайна (embed/search внутри ImageIndex, плюс OCR, если он
 вызывался). confidence.f1_* и eval_missing — забота вызывающего роутера
 (см. app/cv/eval_report.py) — это system-level метрика, не per-запросная.
+
+v0.4.3 (пробел нашёл F): PhotoScanResult.matches — top-5 схлопнутых позиций
+{slug, score} по убыванию, ВСЕГДА (независимо от near-dup/confident решения) —
+baseline F показал, что без top-5 в живом API F1-top5 eval-раннера вырождается
+в F1-top1 (ТЗ требует обе метрики отдельно). UI это поле не рендерит (одна
+карточка — закон), flat-режим не меняется. `matches` уже схлопнуты в позиции
+самим ImageIndex.search() (contracts/image-scan.md; см. packages/cv/cv/
+index.py::search() — best_by_slug оставляет один Match на slug), здесь только
+берём готовый список как есть.
 """
 from __future__ import annotations
 
@@ -42,6 +51,7 @@ class PhotoScanResult:
     timing_ms: int
     similar: list[dict] = field(default_factory=list)
     analogs: list[dict] = field(default_factory=list)
+    matches: list[dict] = field(default_factory=list)  # v0.4.3: top-5 {slug, score} для eval F1-top5
 
 
 def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
@@ -50,6 +60,12 @@ def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
         if s not in seen:
             seen.append(s)
     return seen
+
+
+def _match_items(matches: list[Match], limit: int = 5) -> list[dict]:
+    """v0.4.3: {slug, score} по убыванию, независимо от `top_k`, с которым был
+    вызван поиск — контракт фиксирует именно top-5 для eval, а не "top_k"."""
+    return [{"slug": m.slug, "score": m.score} for m in matches[:limit]]
 
 
 def _wine_item(retriever: Retriever, slug: str) -> dict | None:
@@ -111,6 +127,7 @@ def run_photo_scan(
             best_guess_slug=None, slug=None, card=None, top1_score=None, gap=None,
             ocr_verified=False, not_in_catalog=True,
             timing_ms=int((time.monotonic() - t0) * 1000),
+            matches=[],
         )
 
     top = matches[0]
@@ -164,4 +181,5 @@ def run_photo_scan(
         timing_ms=int((time.monotonic() - t0) * 1000),
         similar=similar,
         analogs=analogs,
+        matches=_match_items(matches),
     )

@@ -706,6 +706,21 @@ tests/test_integration_real_cv.py::test_real_near_dup_pair_triggers_ocr_verifier
 регрессировало), 6 skipped по умолчанию (3 RAG-интеграция без изменений + 3 новых CV-интеграция) —
 оба интеграционных набора реально прогнаны и зелёные вживую, цифры выше и в разделе про RAG.
 
+**v0.4.3 (пробел нашёл F): `matches` в rich-ответе.** Baseline F показал, что без top-5 в живом
+API `F1-top5` eval-раннера вырождается в `F1-top1` (ТЗ требует обе метрики отдельно). Добавлено
+поле `matches: [{slug, score}]` — top-5 схлопнутых позиций по убыванию (`PhotoMatchItem` в
+`schemas.py`, не путать с `ScanMatch` текстового `/scan/resolve` — разная форма и назначение).
+Реализация тривиальна: `matches` в `run_photo_scan()` — это ровно то, что уже вернул
+`ImageIndex.search()` (он и так схлопывает ракурсы в позиции, см. `packages/cv/cv/
+index.py::search()`), поле заполняется независимо от near-dup/confident-решения (в т.ч. на
+`not_in_catalog`, где различие top-1 vs top-5 для eval важнее всего) — только срез
+`PhotoScanResult.matches` в `app/cv/service.py`, проброс в `routers/scan.py`, пустой список на
+`not_in_catalog` без единого кандидата. `flat`-режим не тронут. Один тест на форму расширил
+существующий `test_rich_mode_confident_match_full_schema` (ключ есть, `{slug, score}`, убывание
+score, `matches[0].score == confidence.top1_score`) плюс две мелкие проверки в
+low-confidence/unknown тестах (`matches` непусто на слабом матче, пусто на полном промахе).
+151 passed, 6 skipped — без регрессий; перепрогнан и реальный CV-интеграционный smoke (3 passed).
+
 ### Команды
 
 ```bash

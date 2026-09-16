@@ -88,9 +88,19 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     body = r.json()
     assert set(body.keys()) == {
         "slug", "card", "confidence", "ocr_verified", "timing_ms",
-        "not_in_catalog", "similar", "analogs",
+        "not_in_catalog", "similar", "analogs", "matches",
     }
     assert body["slug"] == "shato-vymysel-cabernet"
+
+    # v0.4.3 (пробел нашёл F): matches — top-5 {slug, score} по убыванию, для
+    # eval-раннера (F1-top5 иначе вырождается в F1-top1 через живой API). UI
+    # это поле не рендерит — тут только проверяем форму и что оно вообще есть.
+    assert 1 <= len(body["matches"]) <= 5
+    assert set(body["matches"][0].keys()) == {"slug", "score"}
+    assert body["matches"][0]["slug"] == "shato-vymysel-cabernet"
+    assert body["matches"][0]["score"] == body["confidence"]["top1_score"]
+    scores = [m["score"] for m in body["matches"]]
+    assert scores == sorted(scores, reverse=True), "matches обязаны идти по убыванию score"
     assert body["card"]["source"]["name"]
     assert body["card"]["derived"]["sensory"]
     assert body["not_in_catalog"] is False
@@ -121,6 +131,11 @@ def test_rich_mode_low_confidence_is_not_in_catalog_with_similar(client: TestCli
     assert body["card"] is None
     assert body["similar"]
     assert body["similar"][0]["wine_id"] == "rozovyy-mirazh"
+    # v0.4.3: matches — про сырой ANN top-5 для eval, не про итоговое решение
+    # "confident" — обязано быть заполнено И на низкой уверенности (иначе
+    # F1-top5 именно на трудных случаях остался бы неизмерим через живой API).
+    assert body["matches"]
+    assert body["matches"][0]["slug"] == "rozovyy-mirazh"
 
 
 def test_rich_mode_unrecognized_photo_is_honest_not_found(client: TestClient):
@@ -130,6 +145,7 @@ def test_rich_mode_unrecognized_photo_is_honest_not_found(client: TestClient):
     assert body["slug"] is None
     assert body["similar"] == []
     assert body["analogs"] == []
+    assert body["matches"] == []  # v0.4.3: ANN ничего не нашёл — top-5 честно пуст
 
 
 def test_rich_mode_empty_file_is_honest_400(client: TestClient):

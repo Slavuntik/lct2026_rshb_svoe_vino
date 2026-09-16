@@ -181,6 +181,14 @@ class ScanConfidence(BaseModel):
     eval_missing: bool = False
 
 
+class PhotoMatchItem(BaseModel):
+    """v0.4.3 (пробел нашёл F): сырая ANN-позиция для eval-раннера, НЕ карточка
+    вина (в отличие от `ScanMatch` текстового /scan/resolve выше) — только то,
+    что нужно посчитать F1-top5 сравнением с закрытой таблицей: slug и score."""
+    slug: str
+    score: float
+
+
 class ScanPhotoRichResponse(BaseModel):
     slug: str | None
     card: dict | None = None
@@ -190,6 +198,10 @@ class ScanPhotoRichResponse(BaseModel):
     not_in_catalog: bool
     similar: list[AnalogsWineItem] = Field(default_factory=list)
     analogs: list[AnalogsWineItem] = Field(default_factory=list)
+    # v0.4.3: top-5 схлопнутых позиций по убыванию — UI не рендерит, нужно
+    # исключительно eval-раннеру (без этого поля F1-top5 через живой API
+    # вырождается в F1-top1). flat-режим (ScanPhotoFlatResponse) не меняется.
+    matches: list[PhotoMatchItem] = Field(default_factory=list, max_length=5)
 
 
 class ScanMetricsResponse(BaseModel):

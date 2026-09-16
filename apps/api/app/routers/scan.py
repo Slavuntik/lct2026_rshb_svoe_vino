@@ -34,6 +34,7 @@ from ..models import Scan
 from ..rag.interface import Retriever
 from ..schemas import (
     AnalogsWineItem,
+    PhotoMatchItem,
     ScanConfidence,
     ScanMatch,
     ScanPhotoFlatResponse,
@@ -173,4 +174,7 @@ def scan_photo(
         not_in_catalog=result.not_in_catalog,
         similar=[AnalogsWineItem(**item) for item in result.similar],
         analogs=[AnalogsWineItem(**item) for item in result.analogs],
+        # v0.4.3 (пробел нашёл F): top-5 сырых ANN-позиций для eval F1-top5,
+        # UI не рендерит (см. докстринг PhotoMatchItem/ScanPhotoRichResponse).
+        matches=[PhotoMatchItem(**item) for item in result.matches],
     )
