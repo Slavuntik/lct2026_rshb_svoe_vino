@@ -20,3 +20,11 @@ scan-eval-runs/
 # от них же плюс модель. Ключевые цифры конкретного прогона — в reports/f-report.md и
 # qa/acceptance.md (цитатой), тот же принцип, что и scan-eval-runs/ выше.
 synthetic/
+
+# Перепись датасета кейса (агент F3, qa/case_census.py/case_ref_triage.py) — стата+
+# SigLIP2-эмбеддинг-кэш прогона, пересобираются командой без правки кода (см. reports/
+# f3-case-census.md, «Команды воспроизведения»); эмбеддинг-кэш один — ~40 МБ мелких JSON,
+# ключ sha256 пиксельных байт, тот же принцип, что и остальные *-runs/ каталоги выше.
+# Числа прогона — в reports/f3-case-census.md и qa/acceptance.md §9 (цитатой), не сырым
+# JSON-файлом.
+case-census-run/
