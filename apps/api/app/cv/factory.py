@@ -22,9 +22,14 @@ IMAGE_INDEX_MODE (qdrant_embedded|pgvector, contracts/image-scan.md) — это 
 
 VERIFIER_PROVIDER (v0.4.4: переименовано из LABEL_VERIFIER_PROVIDER — короче,
 симметрично IMAGE_PROVIDER) аналогично для LabelVerifier. v0.4.4 дала
-реальную спецификацию (packages/cv/cv/verify.py, PaddleOCR) — на момент
-написания ещё не закоммичена (проверено: файла нет). До её появления
-VERIFIER_PROVIDER=real — честный RuntimeError, дефолт mock.
+реальную спецификацию, СДАНА агентом G коммитом `6a7e47a` (packages/cv/cv/
+verify.py, PaddleOCR, p95=513мс на её замере — бюджет контракта <=700мс).
+Тот же паттерн импорта, что и у ImageIndex: класс напрямую (`cv.verify.
+LabelVerifier`), конструктор без обязательных аргументов (`lang`/
+`score_thresh` — оба опциональны с разумными дефолтами). Сигнатура
+`verify(image, candidates: list[VerifyCandidate])` сверена посимвольно с
+app/cv/interface.py::LabelVerifier/VerifyCandidate при обновлении Protocol
+под v0.4.4 (до её коммита) — совпало без расхождений.
 
 Прогрев + офлайн (ревью 04, блокер 2): при IMAGE_PROVIDER=real модель
 (SigLIP2, transformers) грузится ЛЕНИВО при первом embed/search — если это
@@ -88,11 +93,23 @@ def get_label_verifier(settings: Settings) -> LabelVerifier:
     if provider == "mock":
         return MockLabelVerifier()
     if provider == "real":
-        raise RuntimeError(
-            "VERIFIER_PROVIDER=real, но реализация OCR-верификатора ещё не "
-            "закоммичена в packages/cv (packages/cv/cv/verify.py, v0.4.4, "
-            "агент G). Используйте VERIFIER_PROVIDER=mock (дефолт)."
-        )
+        try:
+            from cv import verify as _cv_verify  # packages/cv/cv/verify.py, зона агента G, коммит 6a7e47a
+        except ImportError as exc:
+            raise RuntimeError(
+                "VERIFIER_PROVIDER=real, но пакет packages/cv не установлен в это "
+                "окружение (uv sync --extra integration в apps/api, тянет "
+                "paddleocr/paddlepaddle — тяжёлые зависимости). Пока он не нужен — "
+                "используйте VERIFIER_PROVIDER=mock (дефолт)."
+            ) from exc
+        # Нет фабричной функции (тот же паттерн, что у cv.index) — класс
+        # напрямую, конструктор без обязательных аргументов. PaddleOCR
+        # грузится ЛЕНИВО внутри (LabelVerifier._load(), первый verify()) —
+        # конструктор здесь сам по себе дешёвый, не требует отдельного
+        # прогрева на уровне фабрики (в отличие от warm_up_image_index()
+        # для энкодера) — вызывающий код прогревает явным verify(), если
+        # хочет исключить cold-start из первого боевого запроса.
+        return _cv_verify.LabelVerifier()
     raise ValueError(f"Неизвестный VERIFIER_PROVIDER={provider!r}, ожидается mock|real")
 
 

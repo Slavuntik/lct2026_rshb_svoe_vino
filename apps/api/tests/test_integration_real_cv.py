@@ -13,9 +13,11 @@ rich) настоящим фото из devfix.
   3. packages/cv/devfix/ существует и содержит фото (агент G скачал вежливым
      скриптом, не в git).
 
-LabelVerifier остаётся mock — эта волна интегрирует ТОЛЬКО ImageIndex
-(задание оркестратора), OCR-верификатор всё ещё "придёт позже" вне зон
-B и G.
+LabelVerifier: большинство тестов файла по-прежнему используют мок/спай
+(near-dup routing как факт, независимо от того, что именно решит OCR) —
+настоящий `cv.verify.LabelVerifier` (агент G, коммит `6a7e47a`, PaddleOCR)
+подключается точечно, в последних тестах файла (`test_real_verifier_...`),
+где важно именно содержательное чтение этикетки, а не только факт вызова.
 
 Индекс строится в tmp_path (CV_DATA_DIR) — НЕ в packages/cv/data, чтобы не
 затирать собственный индекс агента G. Embed-кэш (CV_EMBED_CACHE_DIR) НЕ
@@ -37,6 +39,8 @@ from pathlib import Path
 
 import pytest
 from starlette.testclient import TestClient
+
+from app.cv.interface import VerifyCandidate
 
 # packages/cv (encoder.py) лениво грузит SigLIP2 через transformers
 # .from_pretrained() — и в сабпроцессе `cv build-index`, и здесь же в
@@ -111,7 +115,12 @@ def real_cv_index_dir(tmp_path_factory) -> Path:
     )
     assert result.returncode == 0, f"cv build-index упал:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
 
-    manifest = json.loads((data_dir / "manifest.json").read_text(encoding="utf-8"))
+    # Находка G (коммит 6a7e47a, фикс "находки B" про MANIFEST_PATH-константу):
+    # ImageIndex теперь резолвит манифест из self.store.path/"manifest.json"
+    # (путь КОНКРЕТНОГО store, не модульная config.MANIFEST_PATH) —
+    # self.store.path по умолчанию config.QDRANT_PATH = CV_DATA_DIR/"qdrant",
+    # так что манифест лежит НЕ прямо в data_dir, а в data_dir/"qdrant".
+    manifest = json.loads((data_dir / "qdrant" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["positions"] == len(_DEVFIX_FILES)
 
     return data_dir
@@ -141,6 +150,45 @@ def real_cv_client(real_cv_index_dir):
     finally:
         os.environ.clear()
         os.environ.update(old_env)
+
+
+def _readable_aligote_2024_view(real_cv_index_dir: Path) -> bytes | None:
+    """Ищет ракурс aligote-barrel-2024 (эталон или один из 24 синтетических,
+    `<data>/augmented/`, побочный эффект `cv build-index`), на котором
+    настоящий OCR реально читает год — если такой есть. `None`, если нет ни
+    одного (см. находку ниже — для этой пары его и не оказалось)."""
+    from cv.verify import LabelVerifier as RealLabelVerifier
+
+    augmented_dir = real_cv_index_dir / "augmented"
+    candidate_files = [DEVFIX_DIR / "aligote-barrel-2024.webp"] + sorted(
+        augmented_dir.glob("aligote-barrel-2024__synth-*.jpg")
+    )
+    candidates: list[VerifyCandidate] = [
+        VerifyCandidate(slug="aligote-barrel-2024", name="Алиготе на бочке", vintage=2024),
+        VerifyCandidate(slug="aligote-barrel-2025", name="Алиготе на бочке", vintage=2025),
+    ]
+    verifier = RealLabelVerifier()
+    for f in candidate_files:
+        if not f.exists():
+            continue
+        data = f.read_bytes()
+        if verifier.verify(data, candidates) == "aligote-barrel-2024":
+            return data
+    return None
+
+
+@pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
+def test_real_ocr_finds_no_readable_vintage_view_for_this_dataset_pair(real_cv_index_dir: Path):
+    """Канарейка, документирующая находку выше как ПРОВЕРЯЕМЫЙ факт, не
+    только прозу в докстринге: ни эталон, ни ОДИН из 24 синтетических
+    ракурсов aligote-barrel-2024 не даёт настоящему OCR читаемого года на
+    этом датасете (проверено напрямую через `cv.verify.LabelVerifier`, без
+    HTTP). Если этот тест когда-нибудь ЗАПАДАЕТ (перестаёт быть None) —
+    это ХОРОШАЯ новость (детектор/фото улучшились), сигнал обновить
+    test_real_verifier_is_invoked_and_its_honest_abstention_is_respected
+    обратно на проверку успешного распознавания, как изначально и просил
+    оркестратор ("разрешается верификатором в правильный год")."""
+    assert _readable_aligote_2024_view(real_cv_index_dir) is None
 
 
 def _slug_for(filename: str) -> str:
@@ -301,3 +349,163 @@ def test_real_near_dup_pair_triggers_ocr_verifier_routing(real_cv_client: TestCl
         f"gap={gap} — вне разумного диапазона; если это снова изменилось, порог в "
         f"app/config.py::cv_near_dup_gap_threshold нужно пересчитать ещё раз"
     )
+
+
+# --- последняя проводка кейс-волны: НАСТОЯЩИЙ LabelVerifier (агент G, 6a7e47a) ---
+
+class _SpyWrappingRealVerifier:
+    """Оборачивает НАСТОЯЩИЙ cv.verify.LabelVerifier — в отличие от
+    _RecordingVerifier выше (который ПОДМЕНЯЕТ решение произвольным стабом),
+    здесь решение принимает реальный OCR, обёртка только записывает вызовы и
+    ответы. Оркестратор: "шпионом проверь, что verify звался и его ответ
+    уважён" — оба разом проверяются через `calls`/`answers` ниже."""
+
+    def __init__(self, real):
+        self._real = real
+        self.calls: list[list[dict]] = []
+        self.answers: list[str | None] = []
+
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        self.calls.append(candidates)
+        answer = self._real.verify(image, candidates)
+        self.answers.append(answer)
+        return answer
+
+
+@pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
+def test_real_verifier_is_invoked_and_its_honest_abstention_is_respected(real_cv_client: TestClient):
+    """Последняя проводка кейс-волны: подключаем НАСТОЯЩИЙ LabelVerifier
+    (PaddleOCR, не спай/мок) на реальный near-dup сценарий.
+
+    НАХОДКА (проверено напрямую, вне HTTP: `LabelVerifier()._ocr.predict()`
+    на нормализованных aligote-barrel-2024.webp/2025.webp даёт БУКВАЛЬНО
+    одинаковый результат на обеих фото — `["ALIGOTE BARREL", "he s5"]`,
+    confidence 0.96/0.37 — ни на одном из 24 синтетических ракурсов + самом
+    эталоне год/объём/категория не распознаются вовсе: этикетка этой
+    конкретной пары не несёт печатного года в кадрируемой области (не баг
+    OCR — визуальный дизайн этикетки; см. reports/b-report.md). Пара
+    остаётся near-dup ПРАВИЛЬНО (gap мал, ANN не может её развести — это
+    ровно то, для чего near-dup routing существует), но настоящий OCR НЕ
+    МОЖЕТ дать корректный ответ на этих снимках и честно воздерживается
+    (`None`) — контракт (`cv/verify.py`): "None — ЗАКОНОМЕРНЫЙ исход... не
+    ошибка". Ценность этого теста поэтому не в "верификатор угадал год" (на
+    ЭТОЙ паре нечего угадывать), а в том, что (а) verify() реально вызван с
+    правильными кандидатами через живой HTTP-пайплайн, (б) его честное `None`
+    ДЕЙСТВИТЕЛЬНО уважено — пайплайн не подменяет отказ уверенным угадыванием,
+    а v0.4.5 margin-floor корректно уводит такой случай в not_in_catalog
+    (см. test_near_dup_ocr_failure_is_honestly_not_in_catalog в
+    test_scan_photo.py — тот же сценарий мок-верификатором). Отдельно,
+    независимо от фото датасета, test_match_candidates_picks_correct_vintage_
+    given_readable_ocr_text ниже доказывает, что сам алгоритм сопоставления
+    (`match_candidates()`) верно выбирает год, КОГДА текст читаем."""
+    photo = next(f for f in _DEVFIX_FILES if f.name == "aligote-barrel-2024.webp")
+
+    from cv.verify import LabelVerifier as RealLabelVerifier
+
+    spy = _SpyWrappingRealVerifier(RealLabelVerifier())
+    real_cv_client.app.state.label_verifier = spy
+    try:
+        r = real_cv_client.post(
+            "/v1/scan/photo", files={"image": (photo.name, photo.read_bytes(), "image/webp")},
+        )
+    finally:
+        from app.cv.mock import MockLabelVerifier
+        real_cv_client.app.state.label_verifier = MockLabelVerifier()  # не протекаем в другие тесты модуля
+
+    assert r.status_code == 200
+    body = r.json()
+
+    assert spy.calls, "near-dup routing не вызвал verify() на настоящей near-dup паре"
+    candidate_slugs = {c["slug"] for c in spy.calls[0]}
+    assert candidate_slugs == {"aligote-barrel-2024", "aligote-barrel-2025"}
+
+    assert spy.answers[0] is None, (
+        f"ожидали честное воздержание настоящего OCR на этой паре (не читает год), "
+        f"получили {spy.answers[0]!r} — если это изменилось (например, G улучшила "
+        f"детектор/кадрирование), это ХОРОШАЯ новость: замени тест на проверку "
+        f"успешного распознавания, как изначально просил оркестратор"
+    )
+    assert body["ocr_verified"] is False, "verify() вернул None — ocr_verified обязан остаться False"
+    # v0.4.5: маленький gap БЕЗ успешной OCR-верификации -> честно not_in_catalog
+    # (не молчаливый откат на топ-1 ANN, см. app/cv/service.py и находку в
+    # test_scan_photo.py::test_near_dup_ocr_failure_is_honestly_not_in_catalog).
+    assert body["not_in_catalog"] is True
+    assert body["slug"] is None
+
+
+@pytest.mark.skipif(not _CV_IMPORTABLE, reason="packages/cv не установлен (uv sync --extra integration)")
+def test_match_candidates_picks_correct_vintage_given_readable_ocr_text():
+    """Дополняет тест выше: сам алгоритм сопоставления (`cv.verify.
+    match_candidates`, чистая функция без OCR) проверяется НАПРЯМУЮ на
+    реалистичном распознанном тексте — раз реальные фото этой конкретной
+    near-dup пары не несут читаемого года (см. находку выше), это
+    единственный способ честно показать, что логика выбора года работает
+    корректно, когда OCR ЕСТЬ что прочитать. Не под полным RUN_CV_INTEGRATION-
+    гейтом (`_READY`) — чистый Python, не требует ни моделей, ни devfix,
+    только сам пакет cv установленным (`_CV_IMPORTABLE`)."""
+    from cv.verify import match_candidates
+
+    candidates: list[VerifyCandidate] = [
+        VerifyCandidate(slug="aligote-barrel-2024", name="Алиготе на бочке", vintage=2024),
+        VerifyCandidate(slug="aligote-barrel-2025", name="Алиготе на бочке", vintage=2025),
+    ]
+    assert match_candidates("ALIGOTE BARREL уро 2024 сухое", candidates) == "aligote-barrel-2024"
+    assert match_candidates("ALIGOTE BARREL уро 2025 сухое", candidates) == "aligote-barrel-2025"
+    # Неоднозначный/пустой текст -> честное воздержание, не угадывание.
+    assert match_candidates("", candidates) is None
+    assert match_candidates("ALIGOTE BARREL", candidates) is None  # ни года, ни объёма, ни категории
+
+
+@pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
+def test_real_verifier_full_pipeline_p95_within_sla_budget(real_cv_client: TestClient):
+    """p95 ПОЛНОГО пути /scan/photo (embed+search+near-dup routing+OCR
+    вместе) с настоящим LabelVerifier — case.md: SLA <= 3с. PaddleOCR сам по
+    себе бюджетируется отдельно в контракте (p95<=700мс, G замерила 513мс),
+    но интересен именно СУММАРНЫЙ путь: раньше OCR только мокался, теперь
+    реально сидит в горячем пути near-dup-запросов. Используем реальную
+    near-dup фотографию (aligote-barrel-2024.webp) — near-dup routing и,
+    следовательно, вызов verify() гарантированно происходят на каждый
+    запрос (gap этой пары стабильно много ниже CV_NEAR_DUP_GAP_THRESHOLD),
+    независимо от того, что именно ответит OCR (см. предыдущий тест — здесь
+    таймингу всё равно, это abstain или match). Прогреваем верификатор
+    (ленивая загрузка PaddleOCR при первом verify()) ДО замера — та же
+    дисциплина, что у warm_up_image_index() для энкодера."""
+    photo = next(f for f in _DEVFIX_FILES if f.name == "aligote-barrel-2024.webp")
+    payload = photo.read_bytes()
+
+    from cv.verify import LabelVerifier as RealLabelVerifier
+
+    real_verifier = RealLabelVerifier()
+    real_cv_client.app.state.label_verifier = real_verifier
+    try:
+        warm = real_cv_client.post(
+            "/v1/scan/photo", files={"image": (photo.name, payload, "image/webp")},
+        )
+        assert warm.status_code == 200, f"прогрев верификатора упал: {warm.text}"
+
+        n = 7
+        timings_ms: list[int] = []
+        for _ in range(n):
+            r = real_cv_client.post(
+                "/v1/scan/photo", files={"image": (photo.name, payload, "image/webp")},
+            )
+            assert r.status_code == 200
+            timings_ms.append(r.json()["timing_ms"])
+    finally:
+        from app.cv.mock import MockLabelVerifier
+        real_cv_client.app.state.label_verifier = MockLabelVerifier()
+
+    budget_ms = 3000
+    # n=7 — не статистическая выборка, консервативная оценка p95 маленькой
+    # выборки: максимум (не интерполированный перцентиль) — честнее в сторону
+    # завышения, не занижения бюджета.
+    p95_ms = max(timings_ms)
+    headroom_ms = budget_ms - p95_ms
+    assert p95_ms <= budget_ms, (
+        f"p95(max)={p95_ms}мс вне бюджета SLA {budget_ms}мс, все замеры: {timings_ms}"
+    )
+    # Печатаем в лог теста (pytest -s) — цифры идут в reports/b-report.md вручную,
+    # само число не хардкодим в assert (реальный запас — не контракт).
+    print(f"\np95(max) timing_ms С настоящим верификатором (near-dup, каждый запрос "
+          f"реально зовёт OCR): {p95_ms} мс из {timings_ms}; запас до бюджета "
+          f"{budget_ms} мс: {headroom_ms} мс")
