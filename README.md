@@ -194,6 +194,7 @@ curl -F image=@data/eval/queries/02eef911.webp http://127.0.0.1:8080/v1/scan
 | `GET /v1/wines/{slug}`, `GET /v1/wines/{slug}/image` | карточка и эталонное фото |
 | `GET /v1/wines/{slug}/analogs?limit=6` | аналоги других виноделен с объяснением по совпавшим полям |
 | `GET /v1/sommelier/questions`, `POST /v1/sommelier/suggest` | «Цифровой сомелье»: вопросы-кнопки и 3 вина из каталога с объяснением |
+| `GET /v1/metrics` | сводка прогонов для страницы метрик (файл `artifacts/eval/summary.json` готовит `make report`) |
 | `GET /health` | готовность |
 
 ## Интерфейс

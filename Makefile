@@ -70,7 +70,7 @@ scanner:
 	$(MAKE) report
 
 report:
-	$(PY) -m winescan.eval.report
+	$(PY) -m winescan.eval.report --json artifacts/eval/summary.json
 
 serve:
 	$(RUN_GPU) .venv/bin/uvicorn winescan.service.app:app --host 0.0.0.0 --port 8080

@@ -78,6 +78,21 @@ def test_analogs_endpoint(client):
     assert client.get("/v1/wines/unknown/analogs").status_code == 404
 
 
+def test_metrics_endpoint_reads_prepared_summary(monkeypatch, tmp_path):
+    monkeypatch.setenv("WINESCAN_ARTIFACTS_DIR", str(tmp_path))
+    with TestClient(create_app(FakeScanner)) as test_client:
+        assert test_client.get("/v1/metrics").status_code == 404  # сводка ещё не собрана
+
+        (tmp_path / "eval").mkdir(parents=True)
+        (tmp_path / "eval" / "summary.json").write_text(
+            '{"generated_at": "2026-09-16T08:00:00", "runs": [{"run": "scanner__public__default", "top1": 1.0}]}',
+            encoding="utf-8",
+        )
+
+        body = test_client.get("/v1/metrics").json()
+        assert body["runs"][0]["run"] == "scanner__public__default"
+
+
 def test_sommelier_endpoints(client):
     questions = client.get("/v1/sommelier/questions").json()["questions"]
     assert questions[0]["id"] == "dish"

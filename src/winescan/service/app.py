@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import io
+import json
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import Protocol
@@ -110,6 +111,15 @@ def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         return {"suggestions": [s.as_dict() for s in suggestions],
                 "disclaimer": "Информация о винах каталога. 18+. Чрезмерное употребление алкоголя вредит вашему здоровью."}  # fmt: skip
+
+    @app.get("/v1/metrics")
+    def metrics() -> dict:
+        """Сводка прогонов для страницы метрик. Файл готовит `make report`; сервис не зависит от
+        пакета измерений (ARCHITECTURE.md, раздел 3), поэтому читает готовый JSON."""
+        path = get_paths().artifacts_dir / "eval" / "summary.json"
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="сводка прогонов не собрана: make report")
+        return json.loads(path.read_text(encoding="utf-8"))
 
     @app.get("/v1/wines/{slug}/image")
     def wine_image(slug: str) -> FileResponse:
