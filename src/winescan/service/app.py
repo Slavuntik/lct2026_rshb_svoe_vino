@@ -82,13 +82,43 @@ def create_app(scanner_factory: Callable[[], ScannerLike]) -> FastAPI:
         """Контракт скрипта оценки: плоский {"slug": "..."}, всегда лучший кандидат."""
         return {"slug": state["scanner"].top1_slug(_read_image(image))}
 
+    def _quality() -> dict | None:
+        """Надёжность выдачи: доли верных ответов в top-1 и top-5 по последним сквозным прогонам.
+
+        ТЗ требует показывать уверенность для топ-1 и топ-5 вместе с карточкой (в интерфейсе не
+        обязательно, достаточно в API). Числа берутся из сводки прогонов, которую готовит
+        `make report`; без неё поле просто отсутствует."""
+        path = get_paths().artifacts_dir / "eval" / "summary.json"
+        if not path.exists():
+            return None
+        stamp = path.stat().st_mtime
+        cached = state.get("quality")
+        if cached and cached[0] == stamp:
+            return cached[1]
+        summary = json.loads(path.read_text(encoding="utf-8"))
+        runs = [r for r in summary.get("runs", []) if r.get("kind") == "сервис" and r.get("top1") is not None]
+        splits: dict[str, dict] = {}
+        for run in sorted(runs, key=lambda r: r.get("finished_at") or ""):  # остаётся самый свежий по выборке
+            splits[run.get("split") or "неизвестно"] = {
+                "run": run["run"],
+                "queries": run.get("queries"),
+                "top1": round(run["top1"], 4),
+                "top5": round(run["top5"], 4) if run.get("top5") is not None else None,
+                "measured_at": run.get("finished_at"),
+            }
+        value = {"measured_on": summary.get("generated_at"), "splits": splits} if splits else None
+        state["quality"] = (stamp, value)
+        return value
+
     @app.post("/v1/scan")
     def scan(image: UploadFile = File(...), box: str | None = Form(None)) -> dict:
         """``box`` — рамка, которую указал пользователь: «x1,y1,x2,y2» в долях кадра (0…1).
 
         Без неё бутылку выбирает детектор; с ней выбор не нужен — именно на нём теряется
         больше всего точности (ARCHITECTURE.md, слой 1)."""
-        return state["scanner"].scan(_read_image(image), _parse_box(box)).to_dict()
+        body = state["scanner"].scan(_read_image(image), _parse_box(box)).to_dict()
+        quality = _quality()
+        return {**body, "quality": quality} if quality else body
 
     @app.get("/v1/wines/{slug}")
     def wine(slug: str) -> dict:

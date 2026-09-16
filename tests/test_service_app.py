@@ -1,4 +1,5 @@
 import io
+import json
 
 import pytest
 from fastapi.testclient import TestClient
@@ -92,6 +93,31 @@ def test_analogs_endpoint(client):
     assert [a["slug"] for a in body["analogs"]] == ["kokur-winepark"]
     assert "сорт: Кокур" in body["analogs"][0]["reasons"]
     assert client.get("/v1/wines/unknown/analogs").status_code == 404
+
+
+def test_scan_reports_top1_and_top5_reliability(monkeypatch, tmp_path):
+    """ТЗ: вместе с карточкой сервис показывает уверенность для топ-1 и топ-5."""
+    monkeypatch.setenv("WINESCAN_ARTIFACTS_DIR", str(tmp_path))
+    (tmp_path / "eval").mkdir(parents=True)
+    with TestClient(create_app(FakeScanner)) as test_client:
+        files = {"image": ("q.jpg", _jpeg(), "image/jpeg")}
+        assert "quality" not in test_client.post("/v1/scan", files=files).json()  # сводки ещё нет
+
+        (tmp_path / "eval" / "summary.json").write_text(json.dumps({
+            "generated_at": "2026-09-16T11:15:56",
+            "runs": [
+                {"run": "старый", "split": "synth_v2", "kind": "сервис", "queries": 100, "top1": 0.5,
+                 "top5": 0.6, "finished_at": "2026-09-15T10:00:00"},
+                {"run": "свежий", "split": "synth_v2", "kind": "сервис", "queries": 1052, "top1": 0.7139,
+                 "top5": 0.7994, "finished_at": "2026-09-16T00:42:11"},
+                {"run": "поиск", "split": "synth_v2", "kind": "поиск", "queries": 2103, "top1": 0.9},
+            ],
+        }), encoding="utf-8")  # fmt: skip
+
+        quality = test_client.post("/v1/scan", files=files).json()["quality"]
+
+    assert quality["splits"]["synth_v2"]["run"] == "свежий"  # берётся самый свежий сквозной прогон
+    assert quality["splits"]["synth_v2"]["top1"] == 0.7139 and quality["splits"]["synth_v2"]["top5"] == 0.7994
 
 
 def test_metrics_endpoint_reads_prepared_summary(monkeypatch, tmp_path):
