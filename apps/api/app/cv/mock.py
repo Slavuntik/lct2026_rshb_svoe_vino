@@ -9,9 +9,13 @@ MockRetriever для packages/rag).
   b"MOCKPHOTO:<slug>"                     -> уверенный матч на <slug> (из фикстур)
   b"MOCKPHOTO:weak:<slug>"                -> тот же <slug>, низкий score
                                              (для сценария not_in_catalog)
-  b"MOCKPHOTO:near-dup"                   -> топ-2 из NEAR_DUP_GROUP, близкие
-                                             score, маленький gap -> включает
-                                             OCR-ветку пайплайна
+  b"MOCKPHOTO:near-dup"                   -> топ-2 из NEAR_DUP_GROUP выше границы
+                                             группы + одна "чужая" позиция РОВНО
+                                             на границе (score = top.score - gap,
+                                             contracts v0.4.2: gap — отрыв до
+                                             следующего НЕ-той-же-группы кандидата,
+                                             не до соседа по рангу) -> включает
+                                             OCR-ветку пайплайна на двух первых
   b"MOCKPHOTO:near-dup:<slug>"            -> то же + MockLabelVerifier "прочтёт"
                                              именно <slug>, если он в кандидатах
   b"MOCKPHOTO:near-dup:NONE"              -> то же, но верификатор честно не
@@ -35,7 +39,12 @@ _CONFIDENT_GAP = 0.2
 _WEAK_SCORE = 0.32
 _WEAK_GAP = 0.15
 _NEAR_DUP_SCORE = 0.88
-_NEAR_DUP_GAP = 0.01  # маленький разрыв — сигнал "рядом есть похожая позиция"
+_NEAR_DUP_PARTNER_SCORE = 0.875  # второй член ТОЙ ЖЕ группы — строго между top1 и границей группы
+_NEAR_DUP_GAP = 0.01  # v0.4.2: отрыв ИМЕННО до следующего НЕ-той-же-группы кандидата
+                       # (contracts/image-scan.md), а не до соседа по рангу — оба члена
+                       # near-dup группы обязаны сидеть строго выше границы (top.score - gap),
+                       # её определяет третья, реально другая позиция ниже (см. search()).
+_NEAR_DUP_OTHER_SLUG = CONFIDENT_SLUGS[0]  # "чужая" позиция ровно на границе группы
 _FALLBACK_SCORE = 0.6
 _FALLBACK_GAP = 0.15
 
@@ -70,9 +79,13 @@ class MockImageIndex:
 
         if text.startswith(_NEAR_DUP_PREFIX):
             return [
-                Match(slug=NEAR_DUP_GROUP[0], score=_NEAR_DUP_SCORE, gap=_NEAR_DUP_GAP, view="реальный"),
-                Match(slug=NEAR_DUP_GROUP[1], score=round(_NEAR_DUP_SCORE - 0.01, 4),
+                Match(slug=NEAR_DUP_GROUP[0], score=_NEAR_DUP_SCORE, gap=_NEAR_DUP_GAP, view="real"),
+                Match(slug=NEAR_DUP_GROUP[1], score=_NEAR_DUP_PARTNER_SCORE,
                       gap=_NEAR_DUP_GAP, view="synth-2"),
+                # Граница группы: score РОВНО top.score - gap -> run_photo_scan()
+                # обязан её ИСКЛЮЧИТЬ из кандидатов на OCR (не строго больше границы).
+                Match(slug=_NEAR_DUP_OTHER_SLUG, score=round(_NEAR_DUP_SCORE - _NEAR_DUP_GAP, 4),
+                      gap=None, view="real"),
             ][:top_k]
 
         if text.startswith("MOCKPHOTO:unknown"):
@@ -81,13 +94,13 @@ class MockImageIndex:
         if text.startswith("MOCKPHOTO:"):
             slug = text[len("MOCKPHOTO:"):].strip()
             if slug in ALL_SLUGS:
-                return [Match(slug=slug, score=_CONFIDENT_SCORE, gap=_CONFIDENT_GAP, view="реальный")]
+                return [Match(slug=slug, score=_CONFIDENT_SCORE, gap=_CONFIDENT_GAP, view="real")]
             return []
 
         # Не наша конвенция (настоящие байты фото) — детерминированная
         # деградация вместо падения.
         idx = int(hashlib.sha256(image).hexdigest(), 16) % len(CONFIDENT_SLUGS)
-        return [Match(slug=CONFIDENT_SLUGS[idx], score=_FALLBACK_SCORE, gap=_FALLBACK_GAP, view="реальный")]
+        return [Match(slug=CONFIDENT_SLUGS[idx], score=_FALLBACK_SCORE, gap=_FALLBACK_GAP, view="real")]
 
     def build(self, refs: dict[str, list[str]], version: str) -> None:
         # Фикстуры статические — мок ничего не переиндексирует. Метод есть

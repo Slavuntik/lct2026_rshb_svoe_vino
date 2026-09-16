@@ -40,8 +40,11 @@ class Settings:
         default_factory=lambda: os.environ.get("RAG_INDEX_VERSION", "mock-fixtures-0.1")
     )
     # --- Кейс ЛЦТ: сканер по фото (contracts/image-scan.md v0.4) --------
-    cv_provider: str = field(
-        default_factory=lambda: os.environ.get("CV_PROVIDER", "mock").strip().lower()
+    # v0.4.3 (по образцу get_retriever, задание оркестратора): переименовано
+    # из CV_PROVIDER в IMAGE_PROVIDER — симметрично RAG_PROVIDER/LLM_PROVIDER,
+    # явное указание оркестратора при подключении реального packages/cv.
+    image_provider: str = field(
+        default_factory=lambda: os.environ.get("IMAGE_PROVIDER", "mock").strip().lower()
     )
     label_verifier_provider: str = field(
         default_factory=lambda: os.environ.get("LABEL_VERIFIER_PROVIDER", "mock").strip().lower()
@@ -60,9 +63,16 @@ class Settings:
         )
     )
     cv_near_dup_gap_threshold: float = field(
-        # Плейсхолдер до калибровки на датасете кейса (пересчитать вместе с
-        # agents/G-cv.md, когда появится честный gap на реальном индексе).
-        default_factory=lambda: float(os.environ.get("CV_NEAR_DUP_GAP_THRESHOLD", "0.05"))
+        # Пересчитано с 0.05 на 0.3 по РЕАЛЬНОМУ near-dup примеру (интеграционный
+        # тест на настоящем ImageIndex, tests/test_integration_real_cv.py):
+        # aligote-barrel-2024/2025 (настоящая near-dup пара датасета) дали
+        # gap=0.245 на реальном индексе — 0.05 был угадан по шкале мок-скоров и
+        # НИКОГДА не сработал бы на реальных данных (near-dup routing тихо не
+        # вызывался бы вовсе). Один пример — не калибровка на голд-сете, порог
+        # всё ещё плейсхолдер (пересчитать, когда приедет датасет кейса —
+        # near-dup пар там наверняка больше одной, см. reports/g-report.md,
+        # "Предложения к контрактам" п.2), но теперь хотя бы не заведомо мёртвый.
+        default_factory=lambda: float(os.environ.get("CV_NEAR_DUP_GAP_THRESHOLD", "0.3"))
     )
     cv_confident_score_threshold: float = field(
         # Тоже плейсхолдер — case.md не даёт числа, только "отрыв 1-го от

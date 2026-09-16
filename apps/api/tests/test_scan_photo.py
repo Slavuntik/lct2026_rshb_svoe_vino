@@ -96,6 +96,17 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     assert body["not_in_catalog"] is False
     assert body["ocr_verified"] is False
 
+    # v0.4.1 (пробел нашёл C): card — РОВНО тело GET /wines/{id}, включая
+    # similar, не усечённая форма без него.
+    assert set(body["card"].keys()) == {"wine_id", "source", "derived", "source_url", "similar"}
+    assert body["card"]["wine_id"] == "shato-vymysel-cabernet"
+    assert isinstance(body["card"]["similar"], list)
+
+    wines_r = client.get(f"/v1/wines/{body['card']['wine_id']}", headers=auth_header(register_user(
+        client, email="photo-card-parity@example.com")))
+    assert wines_r.status_code == 200
+    assert wines_r.json() == body["card"], "card в /scan/photo обязан буквально совпадать с GET /wines/{id}"
+
     conf = body["confidence"]
     assert set(conf.keys()) == {"top1_score", "gap", "f1_top1", "f1_top5", "eval_missing"}
     assert conf["top1_score"] > 0.9

@@ -5,8 +5,11 @@ routing по gap -> OCR-верификатор -> confident/not_in_catalog ре�
 gap" (CV_NEAR_DUP_GAP_THRESHOLD) — оба ПЛЕЙСХОЛДЕРЫ до приезда датасета
 кейса и реальной калибровки на голд-сете (см. reports/b-report.md, раздел
 «Кейс: /scan/photo» — пересчитать, когда появится eval на настоящих данных,
-как это уже сделал агент A для текстового ретривера). Значения и their env
-— app/config.py.
+как это уже сделал агент A для текстового ретривера). CV_NEAR_DUP_GAP_THRESHOLD
+уже пересчитан ОДИН раз по реальному примеру (интеграционный тест на
+настоящем ImageIndex поймал: исходный 0.05 был угадан по шкале мок-скоров и
+не сработал бы вовсе на реальных данных, где near-dup пара дала gap=0.245)
+— см. app/config.py. Значения и их env — там же.
 
 run_photo_scan() НЕ решает confident/not_in_catalog единолично — отдаёт
 PhotoScanResult с обоими "срезами" (best_guess_slug — всегда, для flat;
@@ -22,6 +25,7 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 from ..config import Settings
+from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
 from .interface import ImageIndex, LabelVerifier, Match
 
@@ -46,18 +50,6 @@ def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
         if s not in seen:
             seen.append(s)
     return seen
-
-
-def _hydrate_card(retriever: Retriever, slug: str) -> dict | None:
-    candidate = retriever.get_by_id(slug)
-    if candidate is None or candidate.kind != "wine":
-        return None
-    return {
-        "wine_id": slug,
-        "source": candidate.meta["source"],
-        "derived": candidate.meta["derived"],
-        "source_url": candidate.url,
-    }
 
 
 def _wine_item(retriever: Retriever, slug: str) -> dict | None:
@@ -128,8 +120,22 @@ def run_photo_scan(
     # Near-dup routing: маленький gap = топ рядом с чужой-другой позицией ->
     # звать OCR по всем РАЗЛИЧНЫМ слагам среди топ-кандидатов (contracts/
     # image-scan.md: "если топ-позиции из одной near-dup-группы").
+    #
+    # v0.4.2, найдено интеграционным тестом на реальном ImageIndex
+    # (tests/test_integration_real_cv.py): кандидаты для OCR — НЕ голый срез
+    # matches[:top_k], а именно позиции ТОЙ ЖЕ near-dup-группы, что и top1.
+    # Контракт определяет gap как "отрыв от следующего НЕ-той-же-группы
+    # кандидата" — а значит по построению у cv/index.py ВСЕ матчи со
+    # score строго выше границы (top.score - top.gap) обязаны быть из одной
+    # группы с top1 (иначе граница была бы посчитана раньше, на них). На
+    # крошечном тестовом индексе (5 фото) matches[:top_k] отдавал ВСЕ 5 позиций
+    # целиком, из них реально в группе с top1 — только 2; без этого фильтра
+    # OCR-верификатор звался бы с заведомо чужими, далёкими по score слагами.
     if top.gap is not None and top.gap < settings.cv_near_dup_gap_threshold:
-        candidate_slugs = _dedupe_preserve_order(m.slug for m in matches[:top_k])
+        group_floor = top.score - top.gap
+        candidate_slugs = _dedupe_preserve_order(
+            m.slug for m in matches[:top_k] if m.score > group_floor
+        )
         if len(candidate_slugs) > 1:
             verified = verifier.verify(image_bytes, candidate_slugs)
             if verified is not None and verified in candidate_slugs:
@@ -139,7 +145,9 @@ def run_photo_scan(
     best_guess_slug = chosen_slug
     confident = top.score >= settings.cv_confident_score_threshold
 
-    card = _hydrate_card(retriever, chosen_slug) if confident else None
+    # v0.4.1: card — ровно тело GET /wines/{id} (включая similar), общий
+    # построитель с routers/wines.py (app/rag/cards.py) — не две формы.
+    card = build_wine_card(retriever, chosen_slug) if confident else None
     similar: list[dict] = []
     analogs: list[dict] = []
     if not confident:

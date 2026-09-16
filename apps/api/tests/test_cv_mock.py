@@ -39,7 +39,7 @@ def test_search_confident_match_returns_single_high_score_match():
     assert isinstance(m, Match)
     assert m.slug == "belye-peski-sauvignon-blanc"
     assert m.score > 0.9
-    assert m.view in ("реальный",) or m.view.startswith("synth-")
+    assert m.view in ("real",) or m.view.startswith("synth-")
 
 
 def test_search_unknown_photo_returns_empty_list():
@@ -47,14 +47,25 @@ def test_search_unknown_photo_returns_empty_list():
     assert index.search(b"MOCKPHOTO:unknown") == []
 
 
-def test_search_near_dup_returns_two_close_scored_matches_with_small_gap():
+def test_search_near_dup_returns_group_plus_boundary_match_with_small_gap():
+    """v0.4.2: contracts/image-scan.md определяет gap как отрыв ИМЕННО до
+    следующего НЕ-той-же-группы кандидата (не до соседа по рангу) —
+    run_photo_scan() отфильтровывает кандидатов на OCR по score > (top.score
+    - top.gap) (app/cv/service.py). Мок обязан отдавать не только 2 члена
+    группы, но и границу — иначе фильтр нечего проверять на реалистичных
+    данных (найдено интеграционным тестом на реальном ImageIndex, см.
+    reports/b-report.md)."""
     index = MockImageIndex()
     results = index.search(b"MOCKPHOTO:near-dup", top_k=5)
-    assert len(results) == 2
-    slugs = {m.slug for m in results}
-    assert slugs == set(NEAR_DUP_GROUP)
-    assert abs(results[0].score - results[1].score) < 0.05
-    assert all(m.gap is not None and m.gap < 0.05 for m in results)
+    assert len(results) == 3
+    group_slugs = {m.slug for m in results[:2]}
+    assert group_slugs == set(NEAR_DUP_GROUP)
+    top = results[0]
+    assert abs(top.score - results[1].score) < 0.05  # два члена группы — близкий score
+    assert top.gap is not None and top.gap < 0.05
+    # Третья позиция — граница группы: другой слаг, score ровно top.score - gap.
+    assert results[2].slug not in NEAR_DUP_GROUP
+    assert round(top.score - top.gap, 4) == results[2].score
 
 
 def test_search_respects_top_k():

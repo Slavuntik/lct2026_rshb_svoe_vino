@@ -25,19 +25,23 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
 ]
-# v0.3 (ревью 02, п.7): опциональная связка для tests/test_integration_real_rag.py
-# — настоящий packages/rag агента A (embeddings/reranker/qdrant-embedded, тяжёлые
-# зависимости, поэтому НЕ в основных dependencies). Установка:
+# v0.3 (ревью 02, п.7) + кейс ЛЦТ (интеграция с packages/cv): опциональная
+# связка для tests/test_integration_real_rag.py и tests/test_integration_real_cv.py
+# — настоящие packages/rag (агент A) и packages/cv (агент G), оба с тяжёлыми
+# ML-зависимостями (embeddings/reranker/torch+transformers), поэтому НЕ в
+# основных dependencies. Установка:
 #   uv sync --extra dev --extra integration
-# Без этой extra тест сам себя скипает (RAG_PROVIDER=real не сможет импортировать
-# rag) — базовый прогон `uv sync --extra dev` его не требует.
+# Без этой extra оба теста сами себя скипают (RAG_PROVIDER=real/IMAGE_PROVIDER=real
+# не смогут импортировать rag/cv) — базовый прогон `uv sync --extra dev` их не требует.
 integration = [
     "rag",
+    "cv",
 ]
 
 [tool.uv.sources]
 llm = { path = "../../packages/llm", editable = true }
 rag = { path = "../../packages/rag", editable = true }
+cv = { path = "../../packages/cv", editable = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -50,5 +54,5 @@ packages = ["app"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = [
-    "integration: настоящий packages/rag + собранный индекс A; скип по умолчанию, вкл. RUN_RAG_INTEGRATION=1 (см. tests/test_integration_real_rag.py)",
+    "integration: настоящие packages/rag (RUN_RAG_INTEGRATION=1) / packages/cv (RUN_CV_INTEGRATION=1); скип по умолчанию (см. tests/test_integration_real_rag.py, tests/test_integration_real_cv.py)",
 ]

@@ -1,18 +1,26 @@
-"""Зеркало contracts/image-scan.md v0.4 (ЗАМОРОЖЁН, правки — через
-оркестратора). Пакет packages/cv — зона агента G; на момент написания этого
-кода пуст (датасет кейса ещё не приехал, packages/cv/ не создан вовсе). По
-тому же паттерну, что и app/rag/interface.py для агента A: ImageIndex
-продублирован здесь дословно как структурный (duck-typed) Protocol,
-MockImageIndex в mock.py его реализует, app/cv/factory.py переключается на
-настоящий packages/cv через CV_PROVIDER=real, если/когда пакет появится.
+"""Зеркало contracts/image-scan.md v0.4.2 (ЗАМОРОЖЁН, правки — через
+оркестратора). Пакет packages/cv — зона агента G; сдан коммитом 4fdb445
+(ImageIndex по контракту, qdrant_embedded, self-match 93.9%, search p95
+30.8 мс). По тому же паттерну, что и app/rag/interface.py для агента A:
+ImageIndex продублирован здесь дословно как структурный (duck-typed)
+Protocol, MockImageIndex в mock.py его реализует, app/cv/factory.py
+переключается на настоящий packages/cv через IMAGE_PROVIDER=real.
+
+Сверено посимвольно с packages/cv/cv/index.py (задание оркестратора после
+урока ревью 02 — "оба берега хороши, пока швы не примерены"): поля/типы
+Match идентичны; единственное расхождение было в значении `view` для
+эталонного ракурса — контракт v0.4 писал "реальный" в прозе, настоящий код
+(и поправленный v0.4.2) используют латинское "real". MockImageIndex
+приведён к этому же значению.
 
 LabelVerifier (OCR-верификатор) — contracts/image-scan.md описывает его роль
 в пайплайне ("OCR-верификатор (год, категория, объём с этикетки)"), но не
-даёт готовой сигнатуры класса — она из задачи оркестратора этой волны:
-`verify(image_bytes, candidates: list[str]) -> str | None`. Реализация вне
-зоны B ("реализация придёт позже") — здесь только Protocol и мок по
-фикстурам, аналогично ImageIndex. НЕ в packages/llm (прямое указание
-оркестратора) — лежит здесь же, рядом с остальным зеркалом CV-контракта.
+даёт готовой сигнатуры класса — она из задачи оркестратора, поставившей
+CV-интеграцию: `verify(image_bytes, candidates: list[str]) -> str | None`.
+Реализация вне зоны B и вне зоны G ("реализация придёт позже") — здесь
+только Protocol и мок по фикстурам, аналогично ImageIndex. НЕ в
+packages/llm (прямое указание оркестратора) — лежит здесь же, рядом с
+остальным зеркалом CV-контракта.
 """
 from __future__ import annotations
 
@@ -25,7 +33,7 @@ class Match:
     slug: str
     score: float  # сравним только внутри одного ответа (как rag.Candidate.score)
     gap: float | None  # отрыв от следующего НЕ-той-же-группы кандидата
-    view: str  # какой ракурс эталона сматчился (реальный | synth-N)
+    view: str  # какой ракурс эталона сматчился ("real" | "synth-N")
 
 
 class ImageIndex(Protocol):
@@ -38,10 +46,15 @@ class ImageIndex(Protocol):
         500-полуфабрикат (см. agents/G-cv.md, тесты)."""
 
     def build(self, refs: dict[str, list[str]], version: str) -> None:
-        """slug -> список файлов (эталон + синтетические ракурсы). Версия в манифест."""
+        """slug -> список файлов (эталон + синтетические ракурсы). Версия в
+        манифест. v0.4.2: конвенция порядка в списке — первый файл эталон
+        (view="real"), остальные synth-1..N по позиции; менять нормализацию
+        = пересобирать индекс заново (единый домен нормализации, см.
+        уточнения v0.4.2 в contracts/image-scan.md)."""
 
     def add(self, slug: str, images: list[bytes]) -> None:
-        """+50 позиций/день без ребилда всего индекса."""
+        """+50 позиций/день без ребилда всего индекса. Та же конвенция
+        порядка, что у build() (v0.4.2)."""
 
 
 class LabelVerifier(Protocol):
@@ -53,7 +66,11 @@ class LabelVerifier(Protocol):
 
 
 def get_image_index() -> ImageIndex:  # pragma: no cover - см. app/cv/factory.py
-    """Симметрично rag.get_retriever()/llm.get_llm(): ожидаемая точка входа
-    настоящего packages/cv (её там пока нет — пакет пуст). apps/api вместо
-    неё использует app.cv.factory.get_image_index(settings)."""
+    """Симметрично rag.get_retriever()/llm.get_llm() — но, в отличие от
+    packages/rag, настоящий packages/cv такую фабричную функцию НЕ
+    экспортирует (проверено: packages/cv/cv/__init__.py содержит только
+    __version__). app/cv/factory.py::get_image_index(settings) при
+    IMAGE_PROVIDER=real поэтому импортирует класс напрямую —
+    `from cv.index import ImageIndex` — и пробует эту функцию только как
+    опциональный, forward-совместимый вариант (hasattr-проверка)."""
     raise NotImplementedError("реализация — в пакете packages/cv, не здесь")
