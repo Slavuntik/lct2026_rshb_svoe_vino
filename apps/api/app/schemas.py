@@ -161,11 +161,22 @@ class WaitlistRequest(BaseModel):
 
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
+    # v0.4.7 (контракт §6, TODO-3 ревью 05): index_version — DEPRECATED-алиас
+    # rag_index_version (до v0.5, contracts/openapi.yaml). Поле было
+    # неоднозначным при двух провайдерах версий (RAG-ретривер и CV-индекс
+    # кейса) — ревью 05 поймало это ложной тревогой на прогоне B3 ("index_version
+    # смотрит на RAG, а не на CV — не значит, что CV на моке", reports/
+    # 05-dataset-wave.md). Оставлен как есть (не удалён) — только ради обратной
+    # совместимости существующих клиентов до v0.5.
     index_version: str
-    # v0.4.4 (ревью 04, блокер 2): готовность CV-энкодера. True сразу на
-    # IMAGE_PROVIDER=mock (нечего греть); на real — True только после
-    # успешного прогрева при старте процесса (app/cv/factory.py::
-    # warm_up_image_index), False если прогрев не удался или ещё идёт.
+    rag_index_version: str
+    cv_index_version: str
+    # v0.4.4 (ревью 04, блокер 2): готовность CV-энкодера И (v0.4.7, TODO-1)
+    # OCR-верификатора — AND обоих прогревов (app/cv/factory.py::
+    # warm_up_image_index/warm_up_label_verifier). True сразу, если
+    # соответствующий провайдер — mock (нечего греть); на real — True только
+    # после успешного прогрева при старте процесса, False если прогрев не
+    # удался или ещё идёт.
     warm: bool = True
 
 
