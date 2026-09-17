@@ -352,6 +352,166 @@ def test_not_in_catalog_triggers_on_low_score_alone_even_with_wide_margin(client
     assert body["confidence"]["gap"] == 0.5
 
 
+# --- v0.4.7 (контракт §2/3, TODO-0 ревью 05): null-gap = доминирование ------
+#
+# Контекст (reports/f3-synthetic-baseline.md, b4f9608): на боевом каталоге
+# case-20260917 `gap` почти всегда null (epsilon-группировка на плотном
+# каталоге не находит границы группы вовсе), и полномасштабный baseline
+# намерил официальный гейтованный match-rate 6,8% при raw top-1 69,4% —
+# ревью 05 завело TODO-0 именно на пересмотр семантики null. Ни один
+# существующий тест этого файла до этой волны не констролировал top.gap=None
+# у top-1 напрямую (near-dup фикстуры мока всегда несут числовой gap) — все
+# тесты ниже новые.
+
+class _DominantNullGapImageIndex:
+    """score >= CV_ABS_FLOOR(0.9), gap=None — "в top-K нет кандидата вне
+    семьи top-1" (доминирование), а не неопределённость."""
+
+    index_version = "dominant-null-gap-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [Match(slug="shato-vymysel-cabernet", score=0.95, gap=None, view="real")]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+class _WeakDominantNullGapImageIndex:
+    """Зеркало выше: score < CV_ABS_FLOOR(0.9), gap=None всё равно."""
+
+    index_version = "weak-dominant-null-gap-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [Match(slug="shato-vymysel-cabernet", score=0.5, gap=None, view="real")]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+class _SpyLabelVerifier:
+    def __init__(self, answer: str | None = None):
+        self.calls: list[list[dict]] = []
+        self._answer = answer
+
+    def verify(self, image_bytes: bytes, candidates: list[dict]) -> str | None:
+        self.calls.append(candidates)
+        return self._answer
+
+
+def test_null_gap_with_high_score_is_confident_not_margin_failure(client: TestClient, app):
+    """v0.4.7 §2 (TODO-0, главное): `gap is None` — доминирование, маржа
+    считается пройденной; единственный путь not_in_catalog на null-gap —
+    провал CV_ABS_FLOOR (проверяется отдельно ниже). Один-единственный матч —
+    заодно пин на то, что верификатор НЕ зовётся зря (нечего различать)."""
+    app.state.image_index = _DominantNullGapImageIndex()
+    spy = _SpyLabelVerifier()
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["not_in_catalog"] is False
+    assert body["slug"] == "shato-vymysel-cabernet"
+    assert body["confidence"]["gap"] is None
+    assert body["confidence"]["top1_score"] == 0.95
+    assert spy.calls == [], "единственный кандидат — различать нечего, верификатор не должен звать"
+
+
+def test_null_gap_with_score_below_floor_is_still_not_in_catalog(client: TestClient, app):
+    """Null-gap НЕ спасает от низкого score — единственный легитимный путь
+    not_in_catalog при gap=None (v0.4.7 §2: "только по абсолютному полу")."""
+    app.state.image_index = _WeakDominantNullGapImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["not_in_catalog"] is True
+    assert body["slug"] is None
+    assert body["confidence"]["gap"] is None
+    assert body["confidence"]["top1_score"] == 0.5
+
+
+class _MultiSlugNullGapImageIndex:
+    """Три РАЗЛИЧНЫХ слага в top-K, top1.gap=None. По v0.4.7 §1 это означает
+    "в top-K нет кандидата вне семьи top-1" — то есть все три, по построению
+    метрики, члены ОДНОЙ семьи: ровно сценарий §3 ("несколько членов одной
+    семьи в top-K"), верификатор обязан вызваться."""
+
+    index_version = "multi-slug-null-gap-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [
+            Match(slug="family-member-a", score=0.95, gap=None, view="real"),
+            Match(slug="family-member-b", score=0.94, gap=None, view="synth-1"),
+            Match(slug="family-member-c", score=0.93, gap=None, view="synth-2"),
+        ]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_verifier_called_for_family_members_in_top_k_even_when_gap_is_null(client: TestClient, app):
+    """contracts/image-scan.md v0.4.7 §3: "если top-K содержит несколько
+    членов одной семьи — верификатор вызывается ... независимо от исхода
+    маржинальной проверки". До этой волны near-dup routing целиком
+    пропускался при gap=None (`if top.gap is not None and ...`) — на
+    практике (F3 baseline) это значило "верификатор внутри семьи почти
+    никогда не вызывается на боевом каталоге", ровно диагноз review 05 TODO-2
+    (Мускатель Массандра). Здесь маржа УЖЕ "пройдена" null-ом (доминирование),
+    но верификатор обязан всё равно вызваться и его ответ — примениться."""
+    app.state.image_index = _MultiSlugNullGapImageIndex()
+    spy = _SpyLabelVerifier(answer="family-member-b")
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+
+    assert spy.calls, "верификатор обязан был вызваться — top-K держит 3 члена одной семьи при gap=None"
+    called_slugs = {c["slug"] for c in spy.calls[0]}
+    assert called_slugs == {"family-member-a", "family-member-b", "family-member-c"}
+    assert all(set(c.keys()) == {"slug", "name", "vintage"} for c in spy.calls[0])
+
+    assert body["ocr_verified"] is True
+    assert body["slug"] == "family-member-b"  # OCR переставил с top-1 ANN (family-member-a)
+    assert body["not_in_catalog"] is False
+
+
+def test_verifier_abstention_with_null_gap_still_confident_via_dominance(client: TestClient, app):
+    """Отличие от test_near_dup_ocr_failure_is_honestly_not_in_catalog (тот
+    сценарий — НЕНУЛЕВОЙ маленький gap, то есть реальный внешний конкурент
+    близко, и честная деградация в not_in_catalog при неудаче OCR оправдана
+    контрактом v0.4.5). Здесь gap=None — конкурента ВНЕ семьи нет вовсе,
+    доминирование не отменяется тем, что OCR не смог различить, КТО именно
+    внутри семьи на фото — top-1 ANN остаётся confident-ответом."""
+    app.state.image_index = _MultiSlugNullGapImageIndex()
+    spy = _SpyLabelVerifier(answer=None)  # честно не смог различить
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+
+    assert spy.calls, "верификатор обязан был вызваться, даже если в итоге воздержался"
+    assert body["ocr_verified"] is False
+    assert body["not_in_catalog"] is False, "null-gap доминирование не отменяется воздержанием OCR"
+    assert body["slug"] == "family-member-a"  # top-1 ANN как есть, OCR не подтвердил замену
+
+
 # --- timing_ms genuinely measured, not hardcoded -----------------------------
 
 class _SlowImageIndex:

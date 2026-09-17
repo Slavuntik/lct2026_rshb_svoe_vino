@@ -173,18 +173,39 @@ def run_photo_scan(
     # крошечном тестовом индексе (5 фото) matches[:top_k] отдавал ВСЕ 5 позиций
     # целиком, из них реально в группе с top1 — только 2; без этого фильтра
     # OCR-верификатор звался бы с заведомо чужими, далёкими по score слагами.
-    if top.gap is not None and top.gap < settings.cv_near_dup_gap_threshold:
+    #
+    # v0.4.7 (контракт §3, TODO-0/2 ревью 05): gap=None БОЛЬШЕ НЕ значит "нет
+    # near-dup соседей вовсе" — теперь это "в top-K нет кандидата ВНЕ семьи
+    # top-1" (см. `confident` ниже). Из этого следует: если gap=None, то ВСЕ
+    # различные слаги, которые вообще вернул search() (matches[:top_k]), по
+    # определению — члены ОДНОЙ семьи top-1 (иначе first-outside-family
+    # конкурент был бы найден раньше, и gap не был бы null). Старая версия
+    # этого блока (`if top.gap is not None and top.gap < threshold`) в этом
+    # случае near-dup routing целиком ПРОПУСКАЛА — на плотном каталоге gap
+    # почти всегда null (F3 baseline, reports/f3-synthetic-baseline.md), а
+    # значит OCR-верификатор внутри семьи фактически никогда не вызывался,
+    # даже когда top-K реально держал 2+ членов одной семьи (диагноз review
+    # 05 TODO-2, Мускатель Массандра). Ветка ниже чинит именно это — верификатор
+    # обязан вызываться "независимо от исхода маржинальной проверки" (§3):
+    # маржа (см. `confident`) на null-gap уже считается пройденной, но это не
+    # повод пропускать различение ГОД/КАТЕГОРИЯ внутри семьи.
+    if top.gap is None:
+        candidate_slugs = _dedupe_preserve_order(m.slug for m in matches[:top_k])
+    elif top.gap < settings.cv_near_dup_gap_threshold:
         group_floor = top.score - top.gap
         candidate_slugs = _dedupe_preserve_order(
             m.slug for m in matches[:top_k] if m.score > group_floor
         )
-        if len(candidate_slugs) > 1:
-            # v0.4.4: verify() хочет метаданные каталога (name/vintage), не
-            # голые slug'и — см. _verify_candidates().
-            verified = verifier.verify(image_bytes, _verify_candidates(retriever, candidate_slugs))
-            if verified is not None and verified in candidate_slugs:
-                chosen_slug = verified
-                ocr_verified = True
+    else:
+        candidate_slugs = [top.slug]  # конкурент вне семьи далёк — не near-dup случай
+
+    if len(candidate_slugs) > 1:
+        # v0.4.4: verify() хочет метаданные каталога (name/vintage), не
+        # голые slug'и — см. _verify_candidates().
+        verified = verifier.verify(image_bytes, _verify_candidates(retriever, candidate_slugs))
+        if verified is not None and verified in candidate_slugs:
+            chosen_slug = verified
+            ocr_verified = True
 
     best_guess_slug = chosen_slug
     # v0.4.5 (ревью 04, калибровка F2 на impostor-холдауте): not_in_catalog
@@ -206,6 +227,23 @@ def run_photo_scan(
     # применяется и после OCR — уверенное распознавание этикетки не спасает
     # от в целом слабого ANN-совпадения (сюда OCR не проникает: он читает
     # текст, а не оценивает общее визуальное сходство).
+    #
+    # v0.4.7 (контракт §2, TODO-0 ревью 05, "null-gap = доминирование"):
+    # `top.gap is None` НЕ провал маржи — маржинальная проверка СЧИТАЕТСЯ
+    # ПРОЙДЕННОЙ (null означает "в top-K нет кандидата вне семьи top-1", то
+    # есть top1 доминирует над всем, что вообще нашлось, а не "неизвестно,
+    # есть ли конкурент"). not_in_catalog на null-gap возможен ТОЛЬКО через
+    # первое условие (top1_score < CV_ABS_FLOOR). Эта ветка (`top.gap is
+    # None`) технически уже была здесь до v0.4.7 (коммит f87768e, часть
+    # исходной v0.4.5) — F3 полномасштабный baseline (reports/
+    # f3-synthetic-baseline.md, b4f9608) намерил официальный match-rate 6,8%
+    # при raw top-1 69,4% на ЭТОЙ ЖЕ формуле, что и раскрыло TODO-0. Разбор
+    # ДО/ПОСЛЕ этой волны с разбивкой not_in_catalog по причине (floor vs
+    # margin) — reports/b4-gate-v047.md §5 (конкретные цифры измерены там, не
+    # предполагаются здесь). Явного регресс-теста на "null-gap + score>=floor
+    # -> confident" при этом не было (test_scan_photo.py ни разу не
+    # констролировал gap=None у top1) — закрыто этой волной:
+    # test_null_gap_with_high_score_is_confident_not_margin_failure.
     confident = top.score >= settings.cv_abs_floor and (
         ocr_verified or top.gap is None or top.gap >= settings.cv_margin_floor
     )
