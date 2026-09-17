@@ -160,6 +160,20 @@ paths:
                   low_confidence:
                     type: boolean
                     description: true => клиент показывает выбор из matches, не автопереход
+                  analogs:
+                    type: array
+                    maxItems: 12
+                    description: >
+                      Фолбэк при пустых matches (B7, 17.09): из текста запроса извлечён
+                      сорт/стиль (pipeline/ref: grape_synonyms + reference_styles) →
+                      российские аналоги тем же резолвером, что /analogs. Форма items —
+                      как у wines в ответе /analogs. Иностранное вино вне каталога →
+                      «вот российский аналог».
+                    items: { type: object }
+                  analog_reason:
+                    type: string
+                    nullable: true
+                    description: человекочитаемое объяснение фолбэка («Urban Riesling вне каталога — аналоги по стилю рислинг»)
 
   /scan/ocr:
     post:
