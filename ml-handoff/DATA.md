@@ -2,10 +2,10 @@
 
 Все пути в этом документе, отмеченные **[локально, вне git]**, существуют только на
 машинах команды — воспроизвести их у себя ML-команда должна получением дампа кейса
-от кейсодержателя отдельно. Ничего из `case-data/` в этот репозиторий не коммитится
+от кейсодержателя отдельно. Ничего из `../case-data/` в этот репозиторий не коммитится
 (`.gitignore: case-data/`).
 
-## 1. `case-data/` **[локально, вне git]**
+## 1. `../case-data/` **[локально, вне git]**
 
 Путь: env `CASE_DATA_DIR`, дефолт `/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data`
 (`../contracts/image-scan.md`). Состав на момент сборки этого пакета (2026-09-17):
@@ -13,9 +13,9 @@
 | Путь **[локально, вне git]** | Что | Источник |
 |---|---|---|
 | `strapi_output0709.csv` + `prod-svoe-vino-strapi/.../strapi/uploads/` (15 803 файлов) | Дамп каталога: CSV карточек + все загруженные фото (эталоны + шум) | поставка кейсодержателя |
-| `slug_refs.json` | slug → эталонное фото + метаданные (см. §2) | `qa/case_census.py`, агент F3 |
-| `families.json` | 165 near-dup семей / 364 слага | `qa/case_census.py`, агент F3 |
-| `triage_samples/` | по 12 файлов/класс для ручной проверки SigLIP2-триажа | `qa/case_ref_triage.py` |
+| `slug_refs.json` | slug → эталонное фото + метаданные (см. §2) | `../qa/case_census.py`, агент F3 |
+| `families.json` | 165 near-dup семей / 364 слага | `../qa/case_census.py`, агент F3 |
+| `triage_samples/` | по 12 файлов/класс для ручной проверки SigLIP2-триажа | `../qa/case_ref_triage.py` |
 | `eval/` (`queries/` — 3 фото, `queries.tsv`, `participant_test.sh`) | **smoke**-набор кейсодержателя — проверка ФОРМАТА ответа API, НЕ dev/holdout материал | поставка кейсодержателя |
 | `field-shots/` (7 фото) | Реальные фото плотных полок магазинов (не из поставки кейса — доп. стресс-тест по указанию Вячеслава) | см. BASELINES.md §7 |
 
@@ -77,7 +77,7 @@ alveus-…`, 5 разных годов + разные купажные проп�
 сошлось прямым пересчётом этой же сессии над файлом (см. §5 ниже).
 
 OCR-читаемость года НА ЭТАЛОНЕ (та же пайплайн, что боевой верификатор,
-`packages/cv/cv/verify.py`): из 48 членов семей с явным годом в slug только **9
+`../packages/cv/cv/verify.py`): из 48 членов семей с явным годом в slug только **9
 (18,75%)** подтверждаются OCR с эталона, 38 (79%) — год не читается вовсе (низкое
 разрешение эталонов, §2 выше). Источник: `../reports/f3-case-census.md` §3. **Вывод
 для RECIPE.md**: OCR-верификатор эталона решает меньшинство near-dup случаев — но он
@@ -95,7 +95,7 @@ OCR-читаемость года НА ЭТАЛОНЕ (та же пайплай�
 
 ## 5. Числа, пересчитанные заново этой сессией (метод указан, не из отчётов)
 
-Прямым чтением `case-data/slug_refs.json` + `case-data/families.json` (код —
+Прямым чтением `../case-data/slug_refs.json` + `../case-data/families.json` (код —
 `ml-handoff/scripts/make_triplets.py`, прогон — см. `../reports/m1-ml-handoff.md`):
 
 | | Значение |
@@ -113,7 +113,7 @@ RECIPE.md, "наше дополнение").
 
 ## 6. Сожжённые сиды синтетики — не переиспользовать для нового измерения
 
-Все синтетические ракурсы порождаются `packages/cv/cv/augment.py::render_synthetic_views`
+Все синтетические ракурсы порождаются `../packages/cv/cv/augment.py::render_synthetic_views`
 (детерминировано по `(image, n, seed)`). Каждый seed ниже уже был использован для
 КОНКРЕТНОГО измерения — переиспользование того же seed для другого измерения/для
 обучающих данных рискует произвести побайтово те же картинки, которые уже "видел"
@@ -121,8 +121,8 @@ eval, и обесценить честность сравнения.
 
 | Seed | Для чего | Источник |
 |---:|---|---|
-| `0` | `AUGMENT_SEED_DEFAULT` (`cv/config.py`) — синтетические ракурсы ВНУТРИ каждого боевого индекса (case-20260916, case-20260917) | `packages/cv/cv/config.py` |
-| `9973` = `0 + HOLDOUT_SEED_OFFSET` | Self-match дельта-проверка G3: case-20260916 64,8/77,0% → case-20260917 **75,2/88,2%** top1/top5 (сэмпл 300×2 ракурса) | `packages/cv/cv/selfcheck.py::HOLDOUT_SEED_OFFSET`; числа — `../reviews/05-dataset-wave.md` (прозой) + локальный артефакт `packages/cv/data/selfcheck_delta_case-20260917.json` **[не в git — `packages/cv/data/` гитигнорено; см. `../reviews/06-gate-and-analogs.md` п.6 — "не влито в отчёт G" — перегенерировать командой ниже]** |
+| `0` | `AUGMENT_SEED_DEFAULT` (`cv/config.py`) — синтетические ракурсы ВНУТРИ каждого боевого индекса (case-20260916, case-20260917) | `../packages/cv/cv/config.py` |
+| `9973` = `0 + HOLDOUT_SEED_OFFSET` | Self-match дельта-проверка G3: case-20260916 64,8/77,0% → case-20260917 **75,2/88,2%** top1/top5 (сэмпл 300×2 ракурса) | `../packages/cv/cv/selfcheck.py::HOLDOUT_SEED_OFFSET`; числа — `../reviews/05-dataset-wave.md` (прозой) + локальный артефакт `../packages/cv/data/selfcheck_delta_case-20260917.json` **[не в git — `../packages/cv/data/` гитигнорено; см. `../reviews/06-gate-and-analogs.md` п.6 — "не влито в отчёт G" — перегенерировать командой ниже]** |
 | `20260917` | F3 полномасштабный zero-shot baseline (raw top-1 69,4%) + финальный e2e-гейт (match-rate 41,6%) | `../reports/f3-synthetic-baseline.md` (commit `b4f9608`), `../qa/scan-eval-runs/case-20260917-final-b7/` (commit `fc6a1f6`) |
 | `314159` | B4/B5 приёмочная выборка 150 свежих синт-фото (гейт v0.4.7 → v0.4.8/v0.4.9) | `../reports/b4-gate-v047.md`, `../reports/b5-gate-v048.md` |
 | **`555001`** | **НОВЫЙ**, этот пакет — `ml-handoff/scripts/make_triplets.py`, рецепт positive-ракурсов для fine-tune-триплетов. Намеренно НЕ пересекается ни с одним из вышеперечисленных | `ml-handoff/scripts/make_triplets.py::DEFAULT_TRIPLET_SEED` |
@@ -143,7 +143,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 -m cv.cli selfcheck \
 
 ## 7. SHA-сплит dev/holdout — готов, ждёт полевых фото
 
-`qa/scan_eval.py::assign_split(photo_id, seed, holdout_frac)`:
+`../qa/scan_eval.py::assign_split(photo_id, seed, holdout_frac)`:
 
 ```python
 digest = hashlib.sha256(f"{seed}:{photo_id}".encode()).hexdigest()
@@ -152,16 +152,16 @@ return "holdout" if bucket < holdout_frac else "dev"
 ```
 
 Хэш **фото**, не позиция в списке — устойчив к росту каталога (~50 позиций/день,
-`case.md`): фото, уже размеченное, не сменит сплит при добавлении новых. Дефолты
-инструмента: `DEFAULT_SEED=1337`, `DEFAULT_HOLDOUT_FRAC=0.2` (`qa/scan_eval.py`) — но
+`../case.md`): фото, уже размеченное, не сменит сплит при добавлении новых. Дефолты
+инструмента: `DEFAULT_SEED=1337`, `DEFAULT_HOLDOUT_FRAC=0.2` (`../qa/scan_eval.py`) — но
 **это дефолты инструмента, не финальные числа кейса**: `../qa/acceptance.md` §9(б)
 требует зафиксировать `--seed`/`--holdout-frac` ОДИН РАЗ в день приезда полевого
-датасета и записать их в `qa/acceptance.md` + `reports/f-report.md`, где они
+датасета и записать их в `../qa/acceptance.md` + `../reports/f-report.md`, где они
 становятся константой на всю оставшуюся кейс-волну.
 
 **Процедура по приезду полевого датасета (дословно §9(б), 3 шага):**
-1. Зафиксировать `--seed`/`--holdout-frac`, записать в `qa/acceptance.md` и
-   `reports/f-report.md`.
+1. Зафиксировать `--seed`/`--holdout-frac`, записать в `../qa/acceptance.md` и
+   `../reports/f-report.md`.
 2. `python qa/scan_eval.py --photos-dir <публичный набор> --split holdout --mode mock
    --mock-imperfect` — материализует и фиксирует сам факт разбиения на диске
    (CLI печатает явное предупреждение при `--split holdout`).
@@ -169,7 +169,7 @@ return "holdout" if bucket < holdout_frac else "dev"
    организационная дисциплина (докстринг модуля), не техническое ограничение,
    но нарушение обесценивает весь смысл сплита.
 
-Шаг (в) `qa/acceptance.md` (zero-shot flat baseline на dev, БЕЗ единой правки) и шаг
+Шаг (в) `../qa/acceptance.md` (zero-shot flat baseline на dev, БЕЗ единой правки) и шаг
 (г) (три диагностических числа — fallback-rate детектора, доля EXIF-повёрнутых,
 классификация ошибок) — тоже готовы и обкатаны на синтетике, ждут `--photos-dir`.
 Таблица решения о рычаге (шаг (д)) — перенесена в RECIPE.md ("лестница мер").

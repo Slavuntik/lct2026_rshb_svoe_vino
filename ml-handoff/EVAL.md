@@ -6,11 +6,11 @@
 CLI, уже умеет всё нужное). Режимы (`--mode`):
 
 - **`flat`** — `POST /v1/scan/photo?flat=1` — РОВНО то, что делает скрипт
-  кейсодержателя (`case.md` п.6): один slug на фото, ничего больше. **Основной режим
+  кейсодержателя (`../case.md` п.6): один slug на фото, ничего больше. **Основной режим
   для match-rate/SLA** — критерий "90–100% совпадений" (50/100 баллов кейса) и SLA
   ≤3с кейсодержатель меряет именно так.
 - **`rich`** — полный ответ (`confidence`, `matches[]`) — нужен для F1 топ-1/топ-5:
-  топ-5 берётся из `matches: [{slug, score}]` (`contracts/image-scan.md` v0.4.3), а
+  топ-5 берётся из `matches: [{slug, score}]` (`../contracts/image-scan.md` v0.4.3), а
   НЕ из `similar` (фолбэк только при API < v0.4.3, раннер честно помечает
   деградацию, не молчит).
 - **`mock`** — без сети (`MockPredictor` в процессе) — для unit-прогонов/CI.
@@ -28,7 +28,7 @@ python qa/scan_eval.py --photos-dir <публичный набор>/dev --mode r
 ```
 
 Когда `apps/api` поднимать не нужно (чистое CV, без API-обвязки) — адаптер вида
-`qa/run_cv_index_baseline.py` (см. `../qa/acceptance.md` §9(в)).
+`../qa/run_cv_index_baseline.py` (см. `../qa/acceptance.md` §9(в)).
 
 ## 2. Какие цифры сдавать
 
@@ -37,7 +37,7 @@ python qa/scan_eval.py --photos-dir <публичный набор>/dev --mode r
 | **raw top-1 / top-5** | `matches[0]`/`matches[:5]` без гейта confident/not_in_catalog | Потолок ranking'а — то, что эта fine-tune задача обязана двигать |
 | **match-rate top-1 / top-5** | С гейтом (основной путь `/v1/scan/photo`, `flat`-режим для top-1) | То, что реально увидит кейсодержатель — итоговый критерий ТЗ |
 | **F1 top-1 / top-5 (macro)** | `scan_eval.py::_macro_f1` — класс = только slug'и, реально встретившиеся как `true_slug` в eval-сете | ТЗ формулу F1 не даёт, только цель "виден отрыв лидера" — это НАША интерпретация (докстринг `_macro_f1`); при получении реального скрипта оценки — сверить и задокументировать расхождение, если есть |
-| **Срезы near-dup / НЕ near-dup** | по `families.json` | `case.md`: near-dup — "главный источник ошибок", обязательный срез |
+| **Срезы near-dup / НЕ near-dup** | по `families.json` | `../case.md`: near-dup — "главный источник ошибок", обязательный срез |
 | **Срезы clean / fallback-детектор** | по `cv.audit.label_detector_outcomes` | Уже показал 14 п.п. разницы в raw top-1 (BASELINES.md) — устойчивый сигнал качества эталона/фото |
 | **p50 / p95, отдельно MPS и CPU** | `cv bench --devices mps,cpu` или полный путь через `scan_eval.py` | SLA ≤3с (case.md); "GPU желателен, нет GPU — на CPU" |
 
@@ -64,7 +64,7 @@ python qa/scan_eval.py --photos-dir <публичный набор>/dev --mode r
 
 - **`/v1/healthz.index_version` — это версия RAG (текстового) индекса, НЕ CV!**
   Deprecated-алиас `rag_index_version`, оставлен для обратной совместимости
-  (`contracts/image-scan.md` v0.4.7 п.6). Для CV — `cv_index_version` в том же
+  (`../contracts/image-scan.md` v0.4.7 п.6). Для CV — `cv_index_version` в том же
   `/healthz`, ИЛИ `GET /v1/metrics/scan.index_version` (последний работает даже ДО
   первого eval-прогона). Путаница уже ловила ревьюера вживую: `../reports/
   b3-eval-route.md` — "ложная тревога... поле RAG-ретривера, решающая улика — лог
@@ -111,5 +111,5 @@ python3 -m cv.cli build-index \
 
 `--version` ОБЯЗАН отражаться в `index_version` (манифест → `/v1/healthz.
 cv_index_version` → `/v1/metrics/scan`) — контракт ТЗ "метрика уверенности в API"
-(`case.md` п.3) требует, чтобы это была видимая, не заглушечная строка. Полный
+(`../case.md` п.3) требует, чтобы это была видимая, не заглушечная строка. Полный
 пошаговый runbook (сравнение до/после, откат) — `scripts/eval_new_encoder.md`.

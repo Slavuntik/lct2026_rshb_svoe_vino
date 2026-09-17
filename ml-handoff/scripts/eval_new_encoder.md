@@ -88,14 +88,14 @@ python qa/scan_eval.py --photos-dir <публичный набор>/dev --mode r
 
 Если полевой датасет ещё не приехал (DATA.md §1/§7) — прогон на синтетике
 (seed **НЕ** из списка "сожжённых", DATA.md §6) с явной пометкой в отчёте
-"synthetic, not field" — тем же принципом, что `../reports/f3-synthetic-baseline.md`.
+"synthetic, not field" — тем же принципом, что `../../reports/f3-synthetic-baseline.md`.
 
 ## 6. Сравнить с BASELINES.md — решение о публикации
 
 - raw top-1/top-5, match-rate top-1/top-5, F1 — рядом со строкой `../BASELINES.md`
   §3/§4 (тот же индекс/выборка/seed, если синтетика) или новой строкой в holdout-разделе
   (если реальный полевой прогон).
-- p50/p95 — не хуже SLA ≤3с (`case.md`); сравнить и с `../BASELINES.md` §6.
+- p50/p95 — не хуже SLA ≤3с (`../../case.md`); сравнить и с `../BASELINES.md` §6.
 - **Публиковать/переключать `CV_MODEL` только при неухудшении** (или явно
   обоснованном компромиссе) — см. `../EVAL.md` §3.
 
@@ -109,7 +109,7 @@ lsof +D packages/cv/data/qdrant                # пусто — лок своб�
 ```
 
 Подтвердить ОБА пустых вывода перед тем, как считать шаг завершённым — та же
-дисциплина, что `../reports/f3-synthetic-baseline.md` §1.5/`../reports/
+дисциплина, что `../../reports/f3-synthetic-baseline.md` §1.5/`../../reports/
 b4-gate-v047.md` "Завершение".
 
 ## 8. Записать результат
