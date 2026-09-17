@@ -15,7 +15,12 @@ import dataclasses
 import pytest
 
 from app.config import Settings
-from app.cv.factory import get_image_index, get_label_verifier, warm_up_image_index
+from app.cv.factory import (
+    get_image_index,
+    get_label_verifier,
+    warm_up_image_index,
+    warm_up_label_verifier,
+)
 from app.cv.mock import MockImageIndex, MockLabelVerifier
 
 try:
@@ -59,31 +64,80 @@ def test_get_label_verifier_unknown_provider_raises_value_error():
         get_label_verifier(_settings(verifier_provider="bogus"))
 
 
-class _EmbedOK:
-    def embed(self, image: bytes) -> list[float]:
-        return [0.0]
+class _SearchOK:
+    def search(self, image: bytes, top_k: int = 5) -> list:
+        return []
 
 
-class _EmbedExplodes:
-    def embed(self, image: bytes) -> list[float]:
-        raise RuntimeError("энкодер недоступен — ровно то, что warm-up обязан пережить")
+class _SearchExplodes:
+    def search(self, image: bytes, top_k: int = 5) -> list:
+        raise RuntimeError("store/энкодер недоступны — ровно то, что warm-up обязан пережить")
 
 
-class _EmbedMustNotBeCalled:
-    def embed(self, image: bytes) -> list[float]:
-        raise AssertionError("mock-провайдер не должен вызывать embed() при прогреве вообще")
+class _SearchMustNotBeCalled:
+    def search(self, image: bytes, top_k: int = 5) -> list:
+        raise AssertionError("mock-провайдер не должен вызывать search() при прогреве вообще")
 
 
-def test_warm_up_skips_embed_entirely_on_mock_provider():
-    """IMAGE_PROVIDER=mock — нечего греть, True без обращения к embed()."""
-    assert warm_up_image_index(_EmbedMustNotBeCalled(), _settings(image_provider="mock")) is True
+def test_warm_up_skips_search_entirely_on_mock_provider():
+    """IMAGE_PROVIDER=mock — нечего греть, True без обращения к search()."""
+    assert warm_up_image_index(_SearchMustNotBeCalled(), _settings(image_provider="mock")) is True
 
 
-def test_warm_up_returns_true_when_real_encoder_embeds_successfully():
-    assert warm_up_image_index(_EmbedOK(), _settings(image_provider="real")) is True
+def test_warm_up_returns_true_when_real_index_searches_successfully():
+    """v0.4.7 (TODO-1 ревью 05): прогрев зовёт ИМЕННО search(), не embed() —
+    измерено напрямую (reports/b4-gate-v047.md), что embed() прогревает
+    только энкодер, а ~2 с холодного старта на этом каталоге (49650 точек)
+    сидят в первом обращении embedded Qdrant-стора внутри search(), которое
+    embed() вообще не задевает."""
+    assert warm_up_image_index(_SearchOK(), _settings(image_provider="real")) is True
 
 
-def test_warm_up_returns_false_without_raising_when_real_encoder_fails():
+def test_warm_up_returns_false_without_raising_when_real_index_search_fails():
     """Ошибка прогрева не должна ронять вызывающий код (app/main.py::create_app)
     — лучше поднятый процесс с warm=False, чем не поднятый вовсе."""
-    assert warm_up_image_index(_EmbedExplodes(), _settings(image_provider="real")) is False
+    assert warm_up_image_index(_SearchExplodes(), _settings(image_provider="real")) is False
+
+
+# --- v0.4.7 (контракт §5, TODO-1 ревью 05): прогрев LabelVerifier -----------
+
+class _VerifyOK:
+    def __init__(self) -> None:
+        self.calls: list[list[dict]] = []
+
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        self.calls.append(candidates)
+        return None
+
+
+class _VerifyExplodes:
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        raise RuntimeError("OCR-движок недоступен — ровно то, что warm-up обязан пережить")
+
+
+class _VerifyMustNotBeCalled:
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        raise AssertionError("mock-провайдер не должен вызывать verify() при прогреве вообще")
+
+
+def test_warm_up_verifier_skips_verify_entirely_on_mock_provider():
+    """VERIFIER_PROVIDER=mock — нечего греть, True без обращения к verify()."""
+    assert warm_up_label_verifier(_VerifyMustNotBeCalled(), _settings(verifier_provider="mock")) is True
+
+
+def test_warm_up_verifier_returns_true_and_calls_verify_with_nonempty_candidates():
+    """packages/cv/cv/verify.py::LabelVerifier.verify() возвращает None РАНЬШЕ
+    _load()/read_text() на пустом списке кандидатов (`if not candidates:
+    return None`) — прогрев с candidates=[] был бы пустышкой, PaddleOCR так и
+    остался бы не загружен. warm_up_label_verifier() обязан передать ХОТЯ БЫ
+    одного (фиктивного) кандидата, иначе холодный старт всё равно ловит
+    первый боевой near-dup запрос (репетиция B3, +2 с, c03edd0)."""
+    verifier = _VerifyOK()
+    assert warm_up_label_verifier(verifier, _settings(verifier_provider="real")) is True
+    assert len(verifier.calls) == 1
+    assert len(verifier.calls[0]) >= 1, "прогрев обязан передать непустой список кандидатов"
+
+
+def test_warm_up_verifier_returns_false_without_raising_when_real_verifier_fails():
+    """Симметрично warm_up_image_index — ошибка прогрева не роняет старт."""
+    assert warm_up_label_verifier(_VerifyExplodes(), _settings(verifier_provider="real")) is False

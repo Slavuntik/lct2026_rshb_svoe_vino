@@ -39,10 +39,30 @@ app/cv/interface.py::LabelVerifier/VerifyCandidate при обновлении P
 ECONNRESET на HF Hub). Поэтому здесь же: (1) HF_HUB_OFFLINE/
 TRANSFORMERS_OFFLINE выставляются ДО импорта cv.index, не только в тестах —
 модель уже должна быть на диске (см. reports/b-report.md), сети до HF Hub не
-нужно; (2) warm_up_image_index() — один embed() заглушки СРАЗУ после
+нужно; (2) warm_up_image_index() — один search() заглушки СРАЗУ после
 конструирования реального индекса, вызывается из app/main.py при старте
 приложения, а не на первом запросе. Результат — app.state.image_index_warm,
 наружу — GET /healthz.warm.
+
+v0.4.7 (контракт §5, TODO-1 ревью 05): та же дисциплина теперь и для
+LabelVerifier — warm_up_label_verifier() ниже, холостой verify() заглушки на
+VERIFIER_PROVIDER=real (PaddleOCR тоже грузится лениво, packages/cv/cv/
+verify.py::LabelVerifier._load()). Репетиция B3 (c03edd0) намерила +2 с
+первому боевому near-dup запросу и списала это на ленивый PaddleOCR —
+warm_up_image_index() грел только энкодер (embed()), не верификатор.
+
+НАХОДКА этой волны (измерено напрямую, в обход HTTP — reports/
+b4-gate-v047.md): диагноз "+2 с = PaddleOCR" был НЕПОЛНЫМ. С прогретым
+верификатором первый БОЕВОЙ /scan/photo всё равно нёс ~1.8-1.9 с — не OCR.
+Настоящий источник — embedded Qdrant-стор (packages/cv/cv/store.py):
+embed() прогревает ТОЛЬКО энкодер SigLIP2, вообще не касаясь store; ПЕРВЫЙ
+QdrantStore.search() на коллекции из 49650 точек стоит ~2 с САМ ПО СЕБЕ
+(предупреждение самого клиента: "Local mode is not recommended for
+collections with more than 20000 points"), все следующие — ~30 мс. Поэтому
+warm_up_image_index() теперь зовёт search(), не embed() — заодно прогревает
+и энкодер (search() вызывает его внутри себя), embed()-прогрев отдельно стал
+избыточен. Результат обоих прогревов — app.state.image_index_warm/
+label_verifier_warm; GET /healthz.warm — AND обоих.
 """
 from __future__ import annotations
 
@@ -51,7 +71,7 @@ import struct
 import zlib
 
 from ..config import Settings
-from .interface import ImageIndex, LabelVerifier
+from .interface import ImageIndex, LabelVerifier, VerifyCandidate
 from .mock import MockImageIndex, MockLabelVerifier
 
 
@@ -134,15 +154,63 @@ _PLACEHOLDER_IMAGE = _tiny_placeholder_png()
 
 
 def warm_up_image_index(image_index: ImageIndex, settings: Settings) -> bool:
-    """Один embed() заглушки СРАЗУ при старте процесса (не на первом боевом
+    """Один search() заглушки СРАЗУ при старте процесса (не на первом боевом
     запросе) — ревью 04, блокер 2. На IMAGE_PROVIDER=mock прогрев не нужен —
     мок мгновенный, возвращаем True без вызова (нечего греть). Ошибка
     прогрева НЕ роняет старт приложения (лучше поднятый процесс с warm=False,
-    чем не поднятый вовсе) — /healthz.warm сигнализирует состояние наружу."""
+    чем не поднятый вовсе) — /healthz.warm сигнализирует состояние наружу.
+
+    v0.4.7 (TODO-1 ревью 05, "первый запрос без +2 с"): ИЗМЕНЕНО с embed() на
+    search() этой волной — ИЗМЕРЕНО напрямую (в обход HTTP, packages/cv/cv/
+    index.py::ImageIndex.search()/store.py::QdrantStore.search()), что
+    embed() прогревает ТОЛЬКО энкодер (SigLIP2), а search() дополнительно
+    идёт в embedded Qdrant-стор — а у ТОГО отдельный, гораздо более дорогой
+    одноразовый холодный старт при первом обращении к коллекции (49650
+    точек, "Local mode is not recommended for collections with more than
+    20000 points" — предупреждение самого клиента): FIRST store.search() ~2 c,
+    ВСЕ последующие ~30 мс, embed() (без похода в store) — считанные мс что
+    прогретый, что нет. Первоначальная гипотеза TODO-1 ("+2 c — ленивый
+    PaddleOCR") оказалась НЕ основной причиной: с прогретым верификатором
+    (warm_up_label_verifier ниже) первый БОЕВОЙ /scan/photo всё равно нёс
+    ~1.8-1.9 с — ровно холодный Qdrant, не OCR (см. reports/b4-gate-v047.md
+    §"Прогрев" за цифрами обоих экспериментов). embed() как ТАКОВОЙ прогрев
+    энкодера теперь избыточен — search() делает то же самое внутри себя."""
     if settings.image_provider != "real":
         return True
     try:
-        image_index.embed(_PLACEHOLDER_IMAGE)
+        image_index.search(_PLACEHOLDER_IMAGE, top_k=1)
+        return True
+    except Exception:
+        return False
+
+
+# v0.4.7 (контракт §5, TODO-1 ревью 05): фиктивный кандидат для прогрева
+# верификатора — НЕ пустой список. `cv.verify.LabelVerifier.verify()`
+# возвращает None РАНЬШЕ вызова read_text()/_load() именно на пустом списке
+# кандидатов (`if not candidates: return None`, packages/cv/cv/verify.py) —
+# прогрев с candidates=[] был бы пустышкой: PaddleOCR так и остался бы не
+# загружен, а первый БОЕВОЙ near-dup запрос всё равно поймал бы холодный
+# старт (репетиция B3 намерила +2 с первому запросу, c03edd0). slug/name —
+# заведомо не совпадут ни с одним настоящим кандидатом (см. match_candidates()
+# в cv/verify.py) — результат сопоставления не важен и осознанно
+# отбрасывается, важен только побочный эффект: OCR-модель загружена.
+_WARMUP_VERIFY_CANDIDATES: list[VerifyCandidate] = [
+    {"slug": "__warmup__", "name": "", "vintage": None},
+]
+
+
+def warm_up_label_verifier(verifier: LabelVerifier, settings: Settings) -> bool:
+    """Холостой verify() заглушки СРАЗУ при старте — симметрично
+    warm_up_image_index(), но для PaddleOCR (packages/cv/cv/verify.py::
+    LabelVerifier._load(), ленивая загрузка на первый verify()). Прогревается
+    ТОЛЬКО при VERIFIER_PROVIDER=real (мок мгновенный, нечего греть — то же
+    правило, что и у image_index). Ошибка прогрева не роняет старт (см.
+    warm_up_image_index) — /healthz.warm сигнализирует состояние наружу (AND
+    обоих прогревов, см. app/routers/health.py)."""
+    if settings.verifier_provider != "real":
+        return True
+    try:
+        verifier.verify(_PLACEHOLDER_IMAGE, _WARMUP_VERIFY_CANDIDATES)
         return True
     except Exception:
         return False

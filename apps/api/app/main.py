@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from llm.base import get_llm
 
 from .config import get_settings
-from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index
+from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index, warm_up_label_verifier
 from .db import make_engine, make_session_factory
 from .errors import register_error_handlers
 from .models import Base
@@ -52,6 +52,11 @@ def create_app() -> FastAPI:
     # запросе (холодный старт реального SigLIP2 занял ~340 с у F2) — /healthz
     # сообщает результат в поле warm.
     app.state.image_index_warm = warm_up_image_index(app.state.image_index, settings)
+    # v0.4.7 (контракт §5, TODO-1 ревью 05): та же дисциплина для LabelVerifier
+    # (PaddleOCR тоже ленивая загрузка) — репетиция B3 намерила +2 с первому
+    # боевому near-dup запросу без этого прогрева (c03edd0). /healthz.warm —
+    # AND обоих прогревов (app/routers/health.py).
+    app.state.label_verifier_warm = warm_up_label_verifier(app.state.label_verifier, settings)
 
     # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
     # существовало, но никто его не читал. Bearer-токены в Authorization,

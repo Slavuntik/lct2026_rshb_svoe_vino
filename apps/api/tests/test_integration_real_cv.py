@@ -197,11 +197,13 @@ def _slug_for(filename: str) -> str:
 
 @pytest.mark.skipif(not _READY, reason=_SKIP_REASON)
 def test_real_healthz_reports_warm_true_after_startup_warmup(real_cv_client: TestClient):
-    """v0.4.4 (ревью 04, блокер 2): create_app() прогревает реальный энкодер
-    ОДНИМ embed() заглушки при старте (app/cv/factory.py::warm_up_image_index,
-    вызывается из app/main.py) — real_cv_client уже прошёл этот путь целиком
-    (плюс собственный warm-up POST фикстуры). /healthz обязан честно отразить
-    успешный прогрев, а не врать True по дефолту схемы."""
+    """v0.4.4 (ревью 04, блокер 2): create_app() прогревает реальный индекс
+    ОДНИМ search() заглушки при старте (app/cv/factory.py::warm_up_image_index,
+    вызывается из app/main.py; v0.4.7 TODO-1 — было embed(), см. факт-докстринг
+    factory.py: search() дополнительно прогревает embedded Qdrant-стор, у
+    которого свой отдельный холодный старт) — real_cv_client уже прошёл этот
+    путь целиком (плюс собственный warm-up POST фикстуры). /healthz обязан
+    честно отразить успешный прогрев, а не врать True по дефолту схемы."""
     r = real_cv_client.get("/v1/healthz")
     assert r.status_code == 200
     assert r.json()["warm"] is True
