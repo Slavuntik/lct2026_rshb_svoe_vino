@@ -11,7 +11,19 @@ playwright-report/
 # CASE_DATA_DIR), не деликт: как test-results/ выше, пересобирается на каждый прогон. Ключевые
 # цифры конкретных прогонов — в reports/f-report.md и qa/acceptance.md (цитатой), не сырым
 # JSON/MD файлом — тот же принцип, что и остальная документация агента F.
-scan-eval-runs/
+scan-eval-runs/*
+
+# ИСКЛЮЧЕНИЕ (поручение оркестратора, 2026-09-17): полномасштабный синтетический baseline
+# на боевом индексе case-20260917 — единственный прогон этой волны, чей JSON+README идут В
+# GIT как есть (не только цитатой в reports/) — объём небольшой (~1,4 МБ), records внутри
+# нужны как сырые данные для будущей сверки/повторного анализа, не только агрегаты. Сами
+# синтетические ФОТО (scratchpad, не qa/) сюда не попадают в любом случае.
+!scan-eval-runs/case-20260917-synthetic-baseline/
+scan-eval-runs/case-20260917-synthetic-baseline/*
+!scan-eval-runs/case-20260917-synthetic-baseline/report.json
+!scan-eval-runs/case-20260917-synthetic-baseline/report.md
+!scan-eval-runs/case-20260917-synthetic-baseline/README.md
+!scan-eval-runs/case-20260917-synthetic-baseline/eval_report_snapshot.json
 
 # Синтетические «полевые» фото сканера (агент F2, qa/gen_synthetic_scan_photos.py) +
 # локальный CV-индекс, построенный поверх них (qa/run_cv_index_baseline.py) — оба
