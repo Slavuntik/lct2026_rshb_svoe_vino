@@ -30,7 +30,9 @@ apps/web     веб-клиент (React + TS + Vite, PWA): скан, карто�
 apps/shell   Capacitor-оболочка + нативный OCR-плагин (Vision, кириллица)
 qa/          демо-паки (make demo-pack WINERY=<slug>), e2e (Playwright), приёмка
 infra/       Docker Compose (prod/staging), CI, деплой индекса, RUNBOOK
-docs/        C4-архитектура сервиса
+docs/        C4-архитектура сервиса; scan-engines.md — два движка распознавания и как
+             выбирается умолчание; winescan-integration.md — что приехало из отдельного
+             решения, где проходят швы и что проверено
 ```
 
 ## Данные
