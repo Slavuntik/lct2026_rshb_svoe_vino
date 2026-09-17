@@ -26,7 +26,10 @@ paths:
                 type: object
                 properties:
                   status: { type: string, enum: [ok] }
-                  index_version: { type: string }
+                  index_version: { type: string, description: "DEPRECATED алиас rag_index_version (до v0.5)" }
+                  rag_index_version: { type: string }
+                  cv_index_version: { type: string }
+                  warm: { type: boolean }
 
   /auth/register:
     post:
