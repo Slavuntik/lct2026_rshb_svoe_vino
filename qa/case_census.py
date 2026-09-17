@@ -246,10 +246,29 @@ def resolve_best_candidate(
     return sorted(candidates, key=lambda fn: (-area(fn), fn))[0]
 
 
+def load_manual_matches(path: Path) -> dict[str, str]:
+    """agents/F4-data-hygiene.md, задача 2: ручной словарь `slug -> filename` (uploads/)
+    для случаев, где имя фото в CSV настолько отличается от загруженного файла, что ни
+    точный ключ, ни фолбэк по подстроке не находят уверенного кандидата (см. докстринг
+    qa/manual_photo_matches.yaml для метода разбора). Отсутствующий файл -> пустой
+    словарь (тот же принцип, что `cv.cli.load_near_dup_groups` — не ошибка, а "словаря
+    пока нет"). `yaml` — ленивый импорт (тот же приём, что PIL в `make_pil_size_lookup`
+    выше): чистая логика модуля не должна требовать лишней зависимости на уровне файла."""
+    if not path.is_file():
+        return {}
+    import yaml
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path}: ожидался плоский словарь slug -> filename, получено {type(payload)}")
+    return {str(k): str(v) for k, v in payload.items()}
+
+
 def run_matcher(
     slug_table: dict[str, dict[str, str]],
     upload_filenames: Iterable[str],
     size_lookup: Callable[[str], tuple[int, int] | None] = lambda fn: None,
+    manual_matches: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     index = build_upload_index(upload_filenames)
     mapping: dict[str, Any] = {}
@@ -294,6 +313,24 @@ def run_matcher(
                     )
         mapping[slug] = entry
 
+    # F4, задача 2: словарь консультируется ТОЛЬКО для слогов, которых автоматика выше НЕ
+    # сматчила (chosen is None) — никогда не может перекрыть уже успешный автоматический
+    # матч, даже если словарь устарел/содержит опечатку. Ссылка на файл, которого больше
+    # нет на диске (устаревшая запись словаря), тоже молча пропускается — не ошибка сборки.
+    known_files = {fn for files in index.values() for fn in files}
+    applied_manual: set[str] = set()
+    for slug, filename in (manual_matches or {}).items():
+        entry = mapping.get(slug)
+        if entry is None or entry["chosen"] is not None or filename not in known_files:
+            continue
+        entry["chosen"] = filename
+        entry["candidates"] = [filename]
+        entry["match_method"] = "manual_override"
+        applied_manual.add(slug)
+    if applied_manual:
+        no_ref_slugs = [s for s in no_ref_slugs if s not in applied_manual]
+        unmatched_by_name = [e for e in unmatched_by_name if e["slug"] not in applied_manual]
+
     multi_candidate_slugs = sorted(s for s, e in mapping.items() if len(e["candidates"]) > 1)
 
     shared_files: dict[str, list[str]] = defaultdict(list)
@@ -308,6 +345,7 @@ def run_matcher(
         "unmatched_by_name": sorted(unmatched_by_name, key=lambda d: d["slug"]),
         "multi_candidate_slugs": multi_candidate_slugs,
         "shared_files": shared_families,
+        "manual_override_count": len(applied_manual),
     }
 
 
@@ -674,6 +712,7 @@ def write_slug_refs(path: Path, result: dict[str, Any]) -> None:
         "unmatched_by_name": result["unmatched_by_name"],
         "multi_candidate_slugs": result["multi_candidate_slugs"],
         "shared_files": result["shared_files"],
+        "manual_override_count": result.get("manual_override_count", 0),
         "generated_by": "qa/case_census.py",
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
@@ -691,6 +730,11 @@ def main(argv: list[str] | None = None) -> int:
         "--stats-out", type=Path, default=_QA_DIR / "case-census-run" / "stats.json",
         help="куда сохранить сводный JSON статистики (своя зона qa/, не case-data/)",
     )
+    parser.add_argument(
+        "--manual-matches", type=Path, default=_QA_DIR / "manual_photo_matches.yaml",
+        help="ручной словарь slug -> filename для слогов вне автоматического матчера "
+        "(F4, agents/F4-data-hygiene.md, задача 2) — отсутствующий файл -> пустой словарь",
+    )
     args = parser.parse_args(argv)
 
     case_dir: Path = args.case_data_dir
@@ -703,8 +747,9 @@ def main(argv: list[str] | None = None) -> int:
     upload_filenames = sorted(p.name for p in uploads_dir.iterdir() if p.is_file())
 
     size_lookup = make_pil_size_lookup(uploads_dir)
+    manual_matches = load_manual_matches(args.manual_matches)
 
-    result = run_matcher(slug_table, upload_filenames, size_lookup=size_lookup)
+    result = run_matcher(slug_table, upload_filenames, size_lookup=size_lookup, manual_matches=manual_matches)
     chosen_file_by_slug = {slug: e["chosen"] for slug, e in result["mapping"].items()}
     families = build_families(slug_table, chosen_file_by_slug)
 
@@ -716,6 +761,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = {
         "slugs_total": len(slug_table),
         "slugs_matched": matched,
+        "slugs_matched_manual_override": result.get("manual_override_count", 0),
         "slugs_no_ref": len(result["no_ref_slugs"]),
         "slugs_unmatched_by_name": len(result["unmatched_by_name"]),
         "multi_candidate_slugs": len(result["multi_candidate_slugs"]),

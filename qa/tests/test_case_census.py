@@ -207,6 +207,101 @@ class TestRunMatcher:
         assert result["multi_candidate_slugs"] == ["aligote-barrel-2024"]
         assert result["mapping"]["aligote-barrel-2024"]["chosen"] in uploads
 
+    # -- manual_matches (F4, agents/F4-data-hygiene.md, задача 2) --------------------
+
+    def test_manual_override_applied_when_automatic_match_fails(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp", "some_other_photo_aaaaaaaaaa.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"orphan-slug": "some_other_photo_aaaaaaaaaa.webp"}
+        )
+        entry = result["mapping"]["orphan-slug"]
+        assert entry["chosen"] == "some_other_photo_aaaaaaaaaa.webp"
+        assert entry["match_method"] == "manual_override"
+        assert "orphan-slug" not in result["no_ref_slugs"]
+        assert result["manual_override_count"] == 1
+
+    def test_manual_override_never_beats_a_successful_automatic_match(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp", "decoy_aaaaaaaaaa.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"zb-vajn-spumante-bryut-beloe": "decoy_aaaaaaaaaa.webp"}
+        )
+        entry = result["mapping"]["zb-vajn-spumante-bryut-beloe"]
+        assert entry["chosen"] == "Spumante_belyj_bryut_d34e854a7b.webp"  # автоматический, не decoy
+        assert entry["match_method"] == "cyrillic_transliteration"
+        assert result["manual_override_count"] == 0
+
+    def test_manual_override_ignores_stale_reference_to_missing_file(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"orphan-slug": "file_removed_since_curation.webp"}
+        )
+        assert result["mapping"]["orphan-slug"]["chosen"] is None
+        assert "orphan-slug" in result["no_ref_slugs"]
+        assert result["manual_override_count"] == 0
+
+    def test_manual_override_unknown_slug_is_ignored_not_an_error(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"not-a-real-slug-in-this-table": "whatever.webp"}
+        )
+        assert result["manual_override_count"] == 0
+
+    def test_no_manual_matches_behaves_exactly_like_before(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        with_none = cc.run_matcher(self._slug_table(), uploads, manual_matches=None)
+        without_arg = cc.run_matcher(self._slug_table(), uploads)
+        assert with_none["mapping"] == without_arg["mapping"]
+        assert with_none["manual_override_count"] == 0
+
+
+class TestLoadManualMatches:
+    def test_missing_file_returns_empty_dict(self, tmp_path: Path):
+        assert cc.load_manual_matches(tmp_path / "does-not-exist.yaml") == {}
+
+    def test_parses_flat_yaml_with_comments_and_inline_comments(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text(
+            "# header comment, ignored\n"
+            "aligote-avtorskoe: 4285_eq_F1_Fau_6d7da0f321.webp  # Массандра — Алиготе Авторское\n"
+            "kokur-avtorskoe: 4287_Y_Ch_P_Nz3_5f55816077.webp\n",
+            encoding="utf-8",
+        )
+        assert cc.load_manual_matches(p) == {
+            "aligote-avtorskoe": "4285_eq_F1_Fau_6d7da0f321.webp",
+            "kokur-avtorskoe": "4287_Y_Ch_P_Nz3_5f55816077.webp",
+        }
+
+    def test_empty_file_returns_empty_dict(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text("# только комментарии, ни одной записи\n", encoding="utf-8")
+        assert cc.load_manual_matches(p) == {}
+
+    def test_non_mapping_yaml_raises(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text("- just\n- a\n- list\n", encoding="utf-8")
+        import pytest
+
+        with pytest.raises(ValueError):
+            cc.load_manual_matches(p)
+
+    def test_real_repo_file_parses_and_every_file_exists_on_disk(self):
+        """Живой файл qa/manual_photo_matches.yaml — если vines/case-data доступен в этом
+        окружении (не в git, может отсутствовать на CI), каждая запись должна указывать
+        на реально существующий файл uploads/ — тот же контроль качества, что делался
+        вручную при курировании словаря (см. reports/f4-data-hygiene.md)."""
+        import pytest
+
+        repo_file = Path(__file__).resolve().parent.parent / "manual_photo_matches.yaml"
+        if not repo_file.is_file():
+            pytest.skip("qa/manual_photo_matches.yaml отсутствует в этом окружении")
+        uploads_dir = cc.DEFAULT_CASE_DATA_DIR / cc.UPLOADS_SUBPATH
+        if not uploads_dir.is_dir():
+            pytest.skip("case-data/ (вне git) недоступна в этом окружении")
+        matches = cc.load_manual_matches(repo_file)
+        assert len(matches) > 0
+        missing = [(slug, fn) for slug, fn in matches.items() if not (uploads_dir / fn).is_file()]
+        assert missing == []
+
 
 # --------------------------------------------------------------------------------------
 # Семьи near-dup

@@ -1,0 +1,121 @@
+# qa/manual_photo_matches.yaml
+#
+# Агент F4 (reports/f4-data-hygiene.md, задача 2) — ручной словарь slug -> файл
+# uploads/ для 76 слогов из case-data/slug_refs.json -> unmatched_by_name (все —
+# match_method=weak_lexical_overlap, автоматический матчер qa/case_census.py не
+# нашёл уверенного кандидата по ключу/подстроке). Метод разбора (полный отчёт —
+# reports/f4-data-hygiene.md):
+#
+# 1) Разделитель-нечувствительное точное сравнение: normalize_key(), но со ВСЕМИ
+#    '_' тоже вырезанными (не только схлопнутыми в normalize_key) — и из CSV-имени,
+#    и из имени файла в uploads/. Закрывает 72/76: Strapi при аплоаде вставляет
+#    доп. '_' на границах регистра ВНУТРИ непрозрачных ID (напр. 'CG6OxkC' в CSV ->
+#    файл 'CG_6_Oxk_C'), из-за чего обычный матчер по подстроке не совпадает, хотя
+#    это буквально тот же файл. Ложных срабатываний не ожидается (нужно совпадение
+#    ВСЕЙ строки идентификатора целиком, не общих слов) — выборочно перепроверено
+#    визуально (Read на сам файл), 3 случая ('Массандра Кокур Авторское',
+#    'Новый Свет Каберне Совиньон Полусладкое', 'Дербент Ди Каспико') — этикетка на
+#    фото совпадает с ожиданием 1:1.
+# 2) 1 слог (katharon-mezenka-risling-suhoe) — НЕ разделитель-нечувствительное
+#    совпадение, только визуальная проверка: токен-фаззи по общим словам предлагал
+#    2 кандидата с похожим счётом ('Risling_2024...' и 'Katharon_Risling_2025...'),
+#    но Read на оба файла показал, что 'Risling_2024*' — ЧУЖАЯ винодельня LETO
+#    (этикетка 'LETO ВИНОДЕЛЬНЯ'), не KATHARON — общие слова 'Risling'/'2024' её не
+#    различают. 'Katharon_Risling_2025' — этикетка 'KATHARON ... РИСЛИНГ СУХОЕ
+#    БЕЛОЕ 2025' — подтверждено визуально, точное совпадение винодельни и категории.
+# 3) 6 слогов из п.1 имели ПО ДВА физических кандидата (файл переаплоужен с новым
+#    хэш-суффиксом, тот же паттерн, что reports/f3-case-census.md §1.1.6) —
+#    разрешено тем же правилом, что основной матчер (resolve_best_candidate):
+#    большее разрешение (PIL), при равном разрешении — по алфавиту (детерминированно).
+#
+# 3 слога из 76 сюда НЕ попали — файл в поставке физически отсутствует (проверено
+# точечно для каждого, не гипотеза):
+#  - katharon-mezenka-risling-polusuhoe: в uploads есть KATHARON-рислинг (Risling_
+#    2025 = сухое, см. п.2 выше) и LETO-рислинги обеих категорий (чужая винодельня) —
+#    ни одного KATHARON-рислинга полусухое нет.
+#  - fanagoriya-fanagoriya-hey-bey-shardone-beloe-suhoe-13: "Название фото" в CSV —
+#    буквально сам slug (заглушка, не реальное имя файла); лучший фаззи-кандидат —
+#    ДРУГАЯ линейка той же винодельни (Fanagoriya Декантер Шардоне, не Хей Бэй).
+#  - vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-tsimlyanskiy-chernyy-
+#    krasnoe-suhoe-14: у Ведерниковъ Цимлянский Чёрный в uploads есть только
+#    варианты С категорией (резерв/брют-розе/брют-беле/розовый) — ни одного БЕЗ
+#    категории (как в CSV/slug этой позиции) не нашлось.
+#
+# Формат: slug: filename.webp (имя файла в uploads/, без пути). Матчер в
+# case_census.py консультирует этот файл ТОЛЬКО для слогов, которых не нашёл
+# автоматический pipeline (no_ref_slugs/unmatched_by_name) — никогда не
+# перекрывает уже успешный автоматический матч.
+
+aligote-avtorskoe: 4285_eq_F1_Fau_no_bg_preview_carve_photos_6d7da0f321.webp  # Массандра — Алиготе Авторское
+aligote-avtorskoe-vino: 4285_eq_F1_Fau_no_bg_preview_carve_photos_75f98bca1a.webp  # Массандра — Алиготе. Авторское вино
+aristov-kyuve-aleksandr-blan-de-blan: Aristov_Kyuve_ekstra_bryut_Blan_de_Blan_18_MESI_2022_GU_Normal_fcdb509a54.webp  # Кубань-Вино — Аристов. Кюве Александр. Блан Де Блан
+aristov-kyuve-aleksandr-blan-de-nuar: Aristov_Kyuve_ekstra_bryut_Blan_de_Nuar_18_MESI_2022_GU_Normal_4a2bea6a3e.webp  # Кубань-Вино — Аристов. Кюве Александр. Блан Де Нуар
+cantiani-aligote-riesling: Cantiani_Alig_Riesl_New_vid_042025_kopiya_fotor_bg_remover_20260821205234_286ee15115.webp  # Шато АЛВИСА — Cantiani Aligote Riesling
+cantiani-cabernet-sauvignon: Cantiani_Caber_Sauv_vid_042024_Photoroom_834a144a19.webp  # Шато АЛВИСА — Cantiani Cabernet Sauvignon
+cantiani-riesling-rkatsiteli: Cantiani_Riesl_Rkats_New_vid_042025_kopiya_9745bc157c.webp  # Шато АЛВИСА — Cantiani Riesling Rkatsiteli
+caperavi-avtorskoe-vino: 2917_Is_MEB_Ew_05f10fa301.webp  # Массандра — Cаперави. Авторское вино
+cary-pandas-avtorskoe-vino: 2920_t_IFZ_Zgl_88808d05fa.webp  # Массандра — Cары Пандас. Авторское вино
+chateau-tamagne-nature-orange: Sh_T_NATURE_0_75_2024gu_Normal_Orange_88fb104a59.webp  # Кубань-Вино — Chateau Tamagne Nature. Orange
+chateau-tamagne-nature-vert: Sh_T_Vert_295ed64be6.webp  # Кубань-Вино — Chateau Tamagne Nature. Vert
+chateau-tamagne-signature-kaberne: Sh_T_Signature_Cabernet_23_7c2ad72860.webp  # Кубань-Вино — Chateau Tamagne Signature. Каберне
+chateau-tamagne-signature-saperavi: Sh_T_Signature_Saperavi_23_417cbfd691.webp  # Кубань-Вино — Chateau Tamagne Signature. Саперави
+chateau-tamagne-signature-shardone: Sh_T_Signature_Chardonnay_23_6422e66a6f.webp  # Кубань-Вино — Chateau Tamagne Signature. Шардоне
+cira-avtorskoe-vino: 2919_Ktp_Yck_H_7dd7538fe4.webp  # Массандра — Cира. Авторское вино
+igristoe-vino-bryut-beloe-di-kaspiko-blan-de-blan-di-caspico-blanc-de-blancs: DI_CASPICO_Bd_B_b6d5b9772a.webp  # Дербент Вино — Ди Каспико Блан де Блан
+igristoe-vino-bryut-rozovoe-di-kaspiko-blan-de-nuar-di-caspico-blanc-de-noirs: DI_CASPICO_Bd_N_b64caa3e83.webp  # Дербент Вино — Ди Каспико Блан де Нуар
+kaberne-sovinon: 2202_v_UENI_49_2ae2376a1c.webp  # Массандра — Каберне Совиньон
+katharon-mezenka-risling-suhoe: Katharon_Risling_2025_983f02b959.webp  # KATHARON — Мезенка: Рислинг сухое
+kokur-2025: DSC_00839_Photoroom_418c4b31b3.webp  # Винодельня Братьев Мельниковых — Кокур, 2025
+kokur-avtorskoe: 4287_Y_Ch_P_Nz3_no_bg_preview_carve_photos_5f55816077.webp  # Массандра — Кокур Авторское
+kokur-premium: 4291_pif_Lu_Yu_no_bg_preview_carve_photos_d891f6036d.webp  # Массандра — Кокур Премиум
+kokur-suhoe-2025: DSC_00839_Photoroom_418c4b31b3.webp  # Винодельня Братьев Мельниковых — Кокур Сухое, 2025
+krasnostop-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Krasnostop_22827aa941.webp  # Кубань-Вино — Красностоп. Шато Тамань
+leto-kollekcziya-leta-2020-suhoe-beloe-1: VINO_suhoe_rozovoe_KOLLEK_Cz_I_Ya_LETA_05a35835db.webp  # LETO — LETO Коллекция Лета 2020 сухое розовое
+leto-kollekcziya-leta-kupazh-2021-suhoe-beloe: Vino_suhoe_beloe_KOLLEK_Cz_I_Ya_LETA_KUPA_Zh_0ee86a0a33.webp  # LETO — LETO Коллекция Лета Купаж 2021 сухое белое
+leto-kollekcziya-leta-kupazh-2023-suhoe-krasnoe: Vino_suhoe_krasnoe_KOLLEK_Cz_I_Ya_LETA_KUPA_Zh_46f3db9eb1.webp  # LETO — LETO Коллекция Лета Купаж 2023 сухое красное
+leto-shardone-2023-suhoe-beloe: Vino_beloe_suhoe_Sh_ARDONE_ae4ca974c5.webp  # LETO — LETO Шардоне 2023 сухое белое
+mantra-estate-sira-roze-rozovoe-suhoe-12: 4826_N_Ndc2f_W_Photoroom_276188e83c.webp  # Mantra Estate — Сира розе
+muskat-avtorskoe-vino: 2923_GVA_Ps_CA_no_bg_preview_carve_photos_4a01fd1119.webp  # Массандра — Мускат. Авторское вино
+muskat-pozdnego-sbora-rozovyj: 4290_z_D_Kb_OVA_no_bg_preview_carve_photos_6bdfe80e27.webp  # Массандра — Мускат позднего сбора розовый
+muskatnoe-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Muskat_24e7ba1069.webp  # Кубань-Вино — Мускатное. Шато Тамань
+novyj-svet-aligote: 2938_CG_6_Oxk_C_8ebbf0da39.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Алиготе
+novyj-svet-blan-de-nuar: 2939_WV_4_G4x_P_1d07c0e491.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Блан Де Нуар
+novyj-svet-kaberne: 2927_F6_GFXH_9_09971a59db.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне
+novyj-svet-kaberne-sovinon: 4308_TC_5bs_GE_232f37619b.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне Совиньон
+novyj-svet-kaberne-sovinon-polusladkoe: 4309_Xp_Hvu_QW_c001f686c0.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне Совиньон полусладкое
+novyj-svet-kollekczionnoe-bryut: 4293_5v_Oij6_H_e1d1daa1cf.webp  # Новый Свет. Дом шампанских вин — Новый Свет коллекционное брют
+novyj-svet-paradizio: 2934_gdn4e_Jx_261a22f964.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Парадизио
+novyj-svet-pino-gri-millezim: 4303_v_E_Ae_Fb_H_c2ae43e296.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Пино Гри Миллезим
+novyj-svet-polusladkoe: 4300_tl_K_Hp_Eg_0fa0eef9b4.webp  # Новый Свет. Дом шампанских вин — Новый Свет полусладкое
+novyj-svet-polusuhoe-kollekczionnoe: 4299_5o_I_Vt_UU_9348a5c313.webp  # Новый Свет. Дом шампанских вин — Новый Свет полусухое коллекционное
+novyj-svet-risling-kyuve-de-prestizh: 4298_n_Wd2gfl_fc9d46eed2.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Рислинг Кюве де Престиж
+novyj-svet-shardone: 4301_xc_Hycz_V_5f1c804393.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне
+novyj-svet-shardone-kyuve-de-prestizh: 4302_K89cs_Mx_a2f8098739.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне Кюве де Престиж
+novyj-svet-shardone-kyuve-de-prestizh-1: 2936_z_C6_X56_X_bbd70ec699.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне Кюве Де Престиж
+novyj-svet-vyderzhannoe-bryut: 4300_tl_K_Hp_Eg_58f660d670.webp  # Новый Свет. Дом шампанских вин — Новый Свет выдержанное брют
+novyj-svet-zolotoj-risling: 4310_5n67_NVV_9e7031b185.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Золотой Рислинг
+ona-skazala-da: Generated_Image_June_22_2026_10_44_PM_1_6fd1a74a1b.webp  # Фанагория — Она сказала Да!
+pino-glyu-2025: DSC_00837_Photoroom_494c8f4098.webp  # Коммуналка — Пино Глю, 2025
+pino-gri-avtorskoe: 4286_Ixm_F_Mpd_no_bg_preview_carve_photos_e9bc638816.webp  # Массандра — Пино Гри Авторское
+pinot-noir-2024-one-barrel-by-dmitry-maslov-pino-nuar-2024-uan-barrel-dmitrij-maslov: IMG_20250829_WA_0033_1_aa1d35a672.webp  # One Barrel (Уан Баррел) — Pinot Noir 2024 One Barrel by Dmitry Maslov
+risling-2024: DSC_00840_Photoroom_13a0701346.webp  # Винодельня Братьев Мельниковых — Рислинг, 2024
+risling-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Risling_42217577a3.webp  # Кубань-Вино — Рислинг. Шато Тамань
+roze-avtorskoe-vino: 2922_l_Cf6_Bdm_213c0a3fbb.webp  # Массандра — Розе. Авторское вино
+rozovoe-polusladkoe-2: Generated_Image_June_22_2026_10_44_PM_8cfe21d41e.webp  # Абрау-Дюрсо — Розовое полусладкое
+shato-taman-bryut: Sh_T_Igristoe_0_75_l_2024gu_Normal_Bryut_Beloe_1312c070e0.webp  # Кубань-Вино — Шато Тамань Брют
+shato-taman-bryut-1: Sh_T_Igristoe_0_75_l_2024gu_Normal_Bryut_Rozvoe_aa44c75092.webp  # Кубань-Вино — Шато Тамань Брют
+shato-taman-grape-dance: Sh_T_Grape_Dance_blanc_2021_fadfb6ea87.webp  # Кубань-Вино — Шато Тамань. GRAPE DANCE
+shato-taman-grape-dance-1: Sh_T_Grape_Dance_rose_2021_284abe2f5b.webp  # Кубань-Вино — Шато Тамань. GRAPE DANCE
+shato-taman-kaberne: 2024gu_Normal_Sh_T_Kaberne_suhoe_krasnoe_0_75_4e3842e06a.webp  # Кубань-Вино — Шато Тамань. Каберне
+shato-taman-kaberne-sovinon: 2024gu_Normal_Sh_T_Kaberene_Sovinon_suh_roz_burgundiya_0_75_44046e83c9.webp  # Кубань-Вино — Шато Тамань. Каберне Совиньон
+shato-taman-krasnostop: 2024gu_Normal_Sh_T_Krasnostop_suhoe_krasnoe_0_75_99318c8e15.webp  # Кубань-Вино — Шато Тамань. Красностоп
+shato-taman-par-la-mer-czvajgelt: Sh_T_Par_La_Mer_kras_suh_2024_GU_Normal_5e97b7a0a0.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Цвайгельт
+shato-taman-par-la-mer-korall: Sh_T_Par_La_Mer_Roze_suh_2024_GU_Normal_83f76a1685.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Коралл
+shato-taman-par-la-mer-pino-blan: Sh_T_Par_La_Mer_igristoe_brut_5ff54a7dda.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Пино Блан
+shato-taman-par-la-mer-pino-nuar: Sh_T_Par_La_Mer_igristoe_brut_rose_9659a53999.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Пино Нуар
+shato-taman-par-la-mer-sovinon: Sh_T_Par_La_Mer_Beloe_suh_2024_GU_Normal_717117b640.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Совиньон
+shato-taman-polusladkoe: Sh_T_Igristoe_0_75_l_2024gu_Normal_Beloe_Polusl_59c8d1f2c5.webp  # Кубань-Вино — Шато Тамань Полусладкое
+shato-taman-saperavi: 2024gu_Normal_Sh_T_Saperavi_suhoe_krasnoe_0_75_4b0f666d71.webp  # Кубань-Вино — Шато Тамань. Саперави
+shato-taman-shardone: 2024gu_Normal_Sh_T_Shardone_suhoe_beloe_0_75_a190db1db4.webp  # Кубань-Вино — Шато Тамань. Шардоне
+vinodelnya-byurne-kaberne-fran-krasnoe-suhoe-135: Kab_Fran_2020_no_bg_preview_carve_photos_467c50d49a.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ ФРАН сухое красное
+vinodelnya-byurne-kaberne-sovinon-krasnoe-suhoe-135: Kab_Sov_2019_no_bg_preview_carve_photos_6680889d32.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ СОВИНЬОН сухое красное
