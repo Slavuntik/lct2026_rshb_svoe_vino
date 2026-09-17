@@ -137,8 +137,7 @@ def test_scan_resolve_response_fields_match_contract_or_are_documented(client: T
     resolved = _resolve_schema_ref(app_schema, raw)
     app_props = set(resolved.get("properties", {}).keys())
 
-    known_extra = _KNOWN_UNDOCUMENTED_RESPONSE_FIELDS["/v1/scan/resolve"]
-    unexpected_extra = app_props - contract_props - known_extra
+    unexpected_extra = app_props - contract_props
     assert not unexpected_extra, f"недокументированные новые поля ответа /scan/resolve: {unexpected_extra}"
     missing = contract_props - app_props
     assert not missing, f"поля контракта пропали из ответа /scan/resolve: {missing}"
