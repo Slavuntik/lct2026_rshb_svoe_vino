@@ -7,15 +7,22 @@ from dataclasses import dataclass
 from pathlib import Path
 
 def project_root(source_root: Path, cwd: Path) -> Path:
-    """Корень репозитория: папка над `src`, если пакет запущен из исходников.
+    """Корень пакета: ближайшая вверх папка с `pyproject.toml`.
 
-    В Docker-образе пакет установлен в site-packages, и `source_root` указывает внутрь venv.
-    Тогда корнем считается рабочая папка (в образе `/app`, куда скопированы `configs` и `Makefile`),
-    иначе относительные пути вроде `configs/fusion_v2.json` не находятся."""
-    return source_root if (source_root / "pyproject.toml").exists() else cwd
+    Раскладок две, и обе рабочие: отдельный репозиторий (`<корень>/src/winescan/`) и монорепо
+    сервиса (`packages/winescan/winescan/`). Поиск вверх закрывает обе, не завися от имени
+    промежуточной папки; глубина ограничена, чтобы не уехать в чужой проект уровнем выше.
+
+    В Docker-образе пакет установлен в site-packages, и `pyproject.toml` рядом нет. Тогда корнем
+    считается рабочая папка (в образе `/app`, куда скопированы `configs` и `Makefile`), иначе
+    относительные пути вроде `configs/fusion_v2.json` не находятся."""
+    for candidate in (source_root, *list(source_root.parents)[:2]):
+        if (candidate / "pyproject.toml").exists():
+            return candidate
+    return cwd
 
 
-PROJECT_ROOT = project_root(Path(__file__).resolve().parents[2], Path.cwd())
+PROJECT_ROOT = project_root(Path(__file__).resolve().parents[1], Path.cwd())
 
 
 def _path(env: str, default: Path) -> Path:
