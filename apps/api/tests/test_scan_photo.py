@@ -902,3 +902,25 @@ def test_rich_mode_similar_wine_with_missing_winery_name_does_not_500(client: Te
     assert body["similar"], "сценарий низкой уверенности обязан заполнить similar, как и до хотфикса"
     item = next(w for w in body["similar"] if w["wine_id"] == "rozovyy-mirazh")
     assert item["winery_name"] is None, "честный null, не пустая строка-заглушка"
+
+
+def test_rich_mode_analog_with_none_name_dropped_none_region_kept(client: TestClient, monkeypatch):
+    """Продолжение хотфикса winery_name (пара chateau-de-talu на финальном
+    прогоне 17.09): у единичных вин каталога пусты name/region_name.
+    region_name=None — честный null в ответе; name=None — карточку не
+    отрендерить, элемент отбрасывается строителем ДО схемы (routers/scan.py),
+    остальной ответ живёт."""
+    from app.rag.fixtures import WINES_BY_SLUG
+    monkeypatch.setitem(WINES_BY_SLUG["rozovyy-mirazh"], "region_name", None)
+
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+    assert r.status_code == 200, r.text
+    item = next(w for w in r.json()["similar"] if w["wine_id"] == "rozovyy-mirazh")
+    assert item["region_name"] is None
+
+    monkeypatch.setitem(WINES_BY_SLUG["rozovyy-mirazh"], "name", None)
+    r2 = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+    assert r2.status_code == 200, r2.text
+    assert all(w["wine_id"] != "rozovyy-mirazh" for w in r2.json()["similar"]), (
+        "безымянный аналог обязан быть отброшен, а не ронять rich в 500"
+    )

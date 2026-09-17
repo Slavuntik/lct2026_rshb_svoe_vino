@@ -264,8 +264,10 @@ async def scan_photo(
         ocr_verified=result.ocr_verified,
         timing_ms=result.timing_ms,
         not_in_catalog=result.not_in_catalog,
-        similar=[AnalogsWineItem(**item) for item in result.similar],
-        analogs=[AnalogsWineItem(**item) for item in result.analogs],
+        # Безымянный аналог не рендерится карточкой — отбрасываем до схемы
+        # (см. комментарий у AnalogsWineItem: у единичных вин каталога name=None).
+        similar=[AnalogsWineItem(**item) for item in result.similar if item.get("name")],
+        analogs=[AnalogsWineItem(**item) for item in result.analogs if item.get("name")],
         # v0.4.3 (пробел нашёл F): top-5 сырых ANN-позиций для eval F1-top5,
         # UI не рендерит (см. докстринг PhotoMatchItem/ScanPhotoRichResponse).
         matches=[PhotoMatchItem(**item) for item in result.matches],
