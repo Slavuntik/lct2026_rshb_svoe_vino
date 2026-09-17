@@ -105,7 +105,27 @@ def get_image_index(settings: Settings) -> ImageIndex:
             "get_image_index(), ни класс ImageIndex() без аргументов — "
             "согласуйте способ инстанцирования с агентом G."
         )
-    raise ValueError(f"Неизвестный IMAGE_PROVIDER={provider!r}, ожидается mock|real")
+    if provider == "winescan":
+        # Второй движок распознавания (packages/winescan): детектор бутылки OWLv2 с обучаемым
+        # выбором рамки, SigLIP 2 so400m в двух видах (упаковка и этикетка), мультиракурсная
+        # галерея, проверка кандидатов по локальным признакам, рамка пользователя. Оркестрация
+        # не меняется — движок отдаёт те же Match(slug, score, gap, view); какой провайдер
+        # становится умолчанием, решает общий замер (docs/scan-engines.md).
+        #
+        # Офлайн-режим выставляется до импорта, как и для `real`: пакет тянет transformers,
+        # и первый холодный запрос иначе рискует сходить в сеть за весами.
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+        try:
+            from winescan.integration import vinchik_index as _winescan
+        except ImportError as exc:
+            raise RuntimeError(
+                "IMAGE_PROVIDER=winescan, но пакет packages/winescan не установлен в это "
+                'окружение (uv pip install -e ../../packages/winescan"[ml]"). '
+                "Используйте IMAGE_PROVIDER=mock (дефолт) или real."
+            ) from exc
+        return _winescan.get_image_index()
+    raise ValueError(f"Неизвестный IMAGE_PROVIDER={provider!r}, ожидается mock|real|winescan")
 
 
 def get_label_verifier(settings: Settings) -> LabelVerifier:
