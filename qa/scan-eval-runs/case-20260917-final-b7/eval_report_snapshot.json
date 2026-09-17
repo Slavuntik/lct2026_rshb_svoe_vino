@@ -1,0 +1,8 @@
+{
+  "index_version": "case-20260917",
+  "f1_top1": 0.4102693602693603,
+  "f1_top5": 0.4082683617372403,
+  "match_rate": 0.41565656565656567,
+  "eval_set": "/private/tmp/claude-501/-Users-vyacheslavfokin-ClaudeWorkspace/3ef8e524-2f02-493d-bf79-36104e8b36c9/scratchpad/case-synth-batchA + /private/tmp/claude-501/-Users-vyacheslavfokin-ClaudeWorkspace/3ef8e524-2f02-493d-bf79-36104e8b36c9/scratchpad/case-synth-batchB (батчи A+B, синтетика seed=20260917) (all, n=1980)",
+  "measured_at": "2026-09-17T04:18:27.421175+00:00"
+}
