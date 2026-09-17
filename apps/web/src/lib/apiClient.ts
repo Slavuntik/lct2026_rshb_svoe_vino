@@ -17,6 +17,7 @@ import {
   type LoginPayload,
   type PostConsentPayload,
   type RegisterPayload,
+  type ScanMetricsResponse,
   type ScanPhotoRichResponse,
   type ScanResolvePayload,
   type ScanResolveResponse,
@@ -138,10 +139,19 @@ export const apiClient = {
    * (без ?flat=1, тот — только для скрипта оценки). Фото не требует чекбокса согласия:
    * контракт не несёт explicit_consent вообще (честная тихая подпись — на экране, не тут).
    */
-  scanPhoto(image: Blob): Promise<ScanPhotoRichResponse> {
+  scanPhoto(image: Blob, box?: [number, number, number, number]): Promise<ScanPhotoRichResponse> {
     const form = new FormData();
     form.set("image", image, photoFileName(image));
+    // v0.4.10: рамка, которой пользователь сам указал бутылку, — доли кадра «x1,y1,x2,y2».
+    // Доли, а не пиксели: фотография показана вписанной, и её итоговое разрешение экрану
+    // неизвестно. Без рамки поле не отправляется вовсе — поведение прежнее.
+    if (box) form.set("box", box.join(","));
     return request("/scan/photo", { method: "POST", body: form });
+  },
+
+  /** v0.4: сводка последнего прогона оценки — числа для экрана метрик (ТЗ кейса: F1 в API). */
+  scanMetrics(): Promise<ScanMetricsResponse> {
+    return request("/metrics/scan");
   },
 
   getWine(wineId: string): Promise<WineCardResponse> {

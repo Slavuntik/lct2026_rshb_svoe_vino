@@ -5,6 +5,7 @@ import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
 import type { AnalogWine, ScanMatch, ScanPhotoRichResponse } from "../../lib/apiTypes";
+import { AimBox, DEFAULT_FRAME, type Frame } from "./AimBox";
 
 type ResolveOutcome = { matches: ScanMatch[]; lowConfidence: boolean } | null;
 
@@ -41,6 +42,10 @@ export function ScanScreen() {
   const [photoStatus, setPhotoStatus] = useState<"idle" | "searching" | "error">("idle");
   const [result, setResult] = useState<ScanPhotoRichResponse | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // v0.4.10: прицел. Фото не уходит на сервер сразу — сначала пользователь обводит нужную
+  // бутылку. Выбор бутылки в кадре, а не качество поиска, — главный резерв точности у полки.
+  const [aiming, setAiming] = useState(false);
+  const [frame, setFrame] = useState<Frame>(DEFAULT_FRAME);
 
   // --- текст (запасной путь) ---
   const [text, setText] = useState("");
@@ -59,7 +64,7 @@ export function ScanScreen() {
     navigate(`/app/wine/${encodeURIComponent(wineId)}`, { state: { from } });
   }
 
-  async function handlePhotoSelected(selected: File) {
+  function handlePhotoSelected(selected: File) {
     setPhotoPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(selected);
@@ -67,11 +72,21 @@ export function ScanScreen() {
     setPhotoFile(selected);
     setOutcome(null);
     setResult(null);
+    setFrame(DEFAULT_FRAME);
+    setAiming(false);
+    // Первый поиск идёт сразу, как и раньше: в обычном кадре бутылка одна, и лишний шаг
+    // раздражал бы. Прицел предлагается ПОСЛЕ ответа — когда в кадре несколько бутылок
+    // или сканер ошибся; тогда рамка снимает неопределённость выбора целиком.
+    void runPhotoScan(selected);
+  }
+
+  async function runPhotoScan(selected: File, box?: [number, number, number, number]) {
+    setAiming(false);
     setPhotoStatus("searching");
-    track("scan_started", { mode: "web_upload" });
+    track("scan_started", { mode: "web_upload", framed: box !== undefined });
 
     try {
-      const response = await apiClient.scanPhoto(selected);
+      const response = await apiClient.scanPhoto(selected, box);
       setResult(response);
       setPhotoStatus("idle");
       track("scan_resolved", {
@@ -107,6 +122,7 @@ export function ScanScreen() {
     setPhotoFile(null);
     setResult(null);
     setPhotoStatus("idle");
+    setAiming(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -178,7 +194,7 @@ export function ScanScreen() {
         onDrop={handleDrop}
         data-testid="scan-dropzone"
       >
-        {photoPreviewUrl && (
+        {photoPreviewUrl && !aiming && (
           <img src={photoPreviewUrl} alt={t("scan.uploadChosen", { name: photoFile?.name ?? "" })} className="dropzone__preview" />
         )}
         <p>{dragActive ? t("scan.dropHintActive") : t("scan.dropHint")}</p>
@@ -204,6 +220,40 @@ export function ScanScreen() {
       </div>
 
       {photoStatus === "searching" && <p className="text-small">{t("scan.photoSearching")}</p>}
+
+      {/* v0.4.10: уточнение рамкой. Предлагается после ответа — первый поиск уже прошёл по
+          всему кадру, а прицел нужен там, где в кадре несколько бутылок одной серии: выбор
+          нужной бутылки, а не качество поиска, и есть главный резерв точности у полки. */}
+      {photoFile && photoPreviewUrl && photoStatus !== "searching" && (result || photoStatus === "error") && (
+        <div className="stack" data-testid="scan-aim-offer">
+          {!aiming && (
+            <button type="button" className="btn btn--secondary" onClick={() => setAiming(true)}>
+              {t("scan.aimTitle")}
+            </button>
+          )}
+          {aiming && (
+            <div className="stack" data-testid="scan-aim">
+              <p className="text-small">{t("scan.aimHint")}</p>
+              <AimBox
+                previewUrl={photoPreviewUrl}
+                frame={frame}
+                onFrameChange={setFrame}
+                label={t("scan.aimFrameLabel")}
+              />
+              <button
+                type="button"
+                className="btn btn--primary"
+                onClick={() => void runPhotoScan(photoFile, [frame.x1, frame.y1, frame.x2, frame.y2])}
+              >
+                {t("scan.aimScanFramed")}
+              </button>
+              <button type="button" className="btn btn--ghost" onClick={() => setAiming(false)}>
+                {t("scan.aimScanWhole")}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {photoStatus === "error" && <p className="field__error">{t("scan.photoError")}</p>}
 
       {confidentCard && (

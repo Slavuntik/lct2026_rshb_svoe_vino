@@ -17,7 +17,10 @@ export interface EventPropsMap {
   consent_granted: { version: string; scope: string };
   consent_revoked: { version: string; scope: string };
   onboarding_completed: { scopes: string[] };
-  scan_started: { mode: "native" | "web_upload" | "text" };
+  // framed (v0.4.10): поиск шёл по рамке, которую пользователь обвёл сам, а не по всему кадру.
+  // Поле необязательное и структурное (булево), как требует contracts/events.md; нужно, чтобы
+  // на живых сканах измерить пользу прицела, а не спорить о ней умозрительно.
+  scan_started: { mode: "native" | "web_upload" | "text"; framed?: boolean };
   scan_resolved: { matched: boolean; confidence: number; wine_id?: string };
   wine_card_viewed: { wine_id: string; from: "scan" | "chat" | "similar" | "swipe" };
   source_link_clicked: { wine_id: string };

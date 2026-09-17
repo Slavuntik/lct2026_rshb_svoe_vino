@@ -12,7 +12,7 @@
 | `consent_granted` | `{version, scope}` | каждый выданный скоуп |
 | `consent_revoked` | `{version, scope}` | каждый отозванный |
 | `onboarding_completed` | `{scopes: []}` | конец онбординга |
-| `scan_started` | `{mode: native\|web_upload\|text}` | нажал «сканировать» |
+| `scan_started` | `{mode: native\|web_upload\|text, framed?: bool}` | нажал «сканировать»; `framed` (v0.4.10) — поиск шёл по рамке, которую пользователь обвёл сам |
 | `scan_resolved` | `{matched: bool, confidence, wine_id?}` | ответ /scan/resolve |
 | `wine_card_viewed` | `{wine_id, from: scan\|chat\|similar\|swipe}` | открыта карточка |
 | `source_link_clicked` | `{wine_id}` | переход на первоисточник |

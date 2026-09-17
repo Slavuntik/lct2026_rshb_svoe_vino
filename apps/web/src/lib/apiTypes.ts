@@ -167,6 +167,20 @@ export interface ScanPhotoRichResponse {
   analogs: AnalogWine[];
 }
 
+/**
+ * v0.4 (contracts/image-scan.md): GET /v1/metrics/scan — сводка последнего прогона оценки.
+ * Все поля необязательные: до первого прогона сервис честно отдаёт null вместо выдуманных
+ * чисел, и экран показывает это как «замер ещё не проводился», а не как ноль.
+ */
+export interface ScanMetricsResponse {
+  index_version: string | null;
+  f1_top1: number | null;
+  f1_top5: number | null;
+  match_rate: number | null;
+  eval_set: string | null;
+  measured_at: string | null;
+}
+
 // budget_rub_max выпилен в v0.2 — цен в каталоге vines нет вовсе (ревью 01, блокер 4).
 export type ChatFilters = Partial<{
   color: string;

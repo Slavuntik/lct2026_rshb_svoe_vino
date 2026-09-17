@@ -153,6 +153,70 @@ img {
   border-radius: var(--radius);
 }
 
+/* --- прицел: пользователь сам обводит нужную бутылку (contracts/image-scan.md v0.4.10) --- */
+
+.aim {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  touch-action: none; /* иначе жест по рамке уводит страницу в прокрутку */
+}
+
+/* фотография вписана целиком: доли рамки совпадают с долями кадра, который уходит в сервис */
+.aim__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.aim__frame {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 9999px rgb(20 18 17 / 45%);
+  cursor: move;
+}
+
+.aim__grip {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px rgb(0 0 0 / 35%);
+}
+
+.aim__grip--nw { top: -11px; left: -11px; cursor: nwse-resize; }
+.aim__grip--ne { top: -11px; right: -11px; cursor: nesw-resize; }
+.aim__grip--sw { bottom: -11px; left: -11px; cursor: nesw-resize; }
+.aim__grip--se { bottom: -11px; right: -11px; cursor: nwse-resize; }
+
+/* --- числа измерений (экран метрик) --- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.stat dt {
+  font-size: var(--fs-caption);
+  color: var(--muted);
+}
+
+.stat dd {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 600;
+}
+
 /* --- кнопки --- */
 
 .btn {

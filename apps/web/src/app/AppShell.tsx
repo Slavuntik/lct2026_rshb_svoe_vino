@@ -3,6 +3,7 @@ import { Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom"
 import { useI18n } from "../i18n";
 import { storage } from "../lib/storage";
 import { ChatScreen } from "./chat/ChatScreen";
+import { MetricsScreen } from "./metrics/MetricsScreen";
 import { OnboardingScreen } from "./onboarding/OnboardingScreen";
 import { ProfileScreen } from "./profile/ProfileScreen";
 import { ScanScreen } from "./scan/ScanScreen";
@@ -93,6 +94,10 @@ export default function AppShell() {
               </RequireOnboarding>
             }
           />
+          {/* v0.4.10: метрики распознавания — числа последнего прогона оценки. Экран намеренно
+              вне нижней навигации: она рассчитана на шесть пользовательских разделов, а это
+              страница для демонстрации и проверки, доступная по прямой ссылке /app/metrics. */}
+          <Route path="metrics" element={<MetricsScreen />} />
           <Route index element={<Navigate to={storage.isOnboardingComplete() ? "scan" : "onboarding"} replace />} />
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
