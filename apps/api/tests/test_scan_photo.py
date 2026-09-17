@@ -325,8 +325,9 @@ class _LowScoreHighGapImageIndex:
         return [0.0]
 
     def search(self, image: bytes, top_k: int = 5) -> list[Match]:
-        # score=0.7 < CV_ABS_FLOOR(0.9), gap=0.5 >= CV_MARGIN_FLOOR(0.3) —
-        # маржа никаких сомнений не сигналит, дело чисто в слабом score.
+        # score=0.7 < CV_ABS_FLOOR(0.82, v0.4.9), gap=0.5 >= CV_MARGIN_FLOOR
+        # (0.02, v0.4.9) — маржа никаких сомнений не сигналит, дело чисто в
+        # слабом score.
         return [Match(slug="shato-vymysel-cabernet", score=0.7, gap=0.5, view="real")]
 
     def build(self, refs, version) -> None:
@@ -352,6 +353,76 @@ def test_not_in_catalog_triggers_on_low_score_alone_even_with_wide_margin(client
     assert body["confidence"]["gap"] == 0.5
 
 
+# --- v0.4.9 (контракт, свип оркестратора): новые стартовые точки порогов ----
+
+def test_default_settings_pin_v049_threshold_starting_points():
+    """Пин значений по умолчанию — источник reports/b5-gate-v048.md (свип
+    оркестратора: 1982 синт-позитива с family-gap живым + 45 импосторов + 7
+    полевых полок), НЕ калибровка этой правки. Если этот тест упал —
+    кто-то откатил дефолты config.py, не поменяв заодно контракт/отчёт."""
+    from app.config import Settings
+    settings = Settings()
+    assert settings.cv_abs_floor == 0.82
+    assert settings.cv_margin_floor == 0.02
+
+
+class _BetweenOldAndNewFloorsImageIndex:
+    """score=0.85 — между старым (0.9) и новым (0.82) CV_ABS_FLOOR: под
+    v0.4.5/v0.4.7 это был бы not_in_catalog по полу, под v0.4.9 — confident.
+    Показывает, что дефолты реально ПРИМЕНЯЮТСЯ (не только задекларированы),
+    а не просто "тест того же качественного направления, что и раньше"."""
+
+    index_version = "between-old-new-floors-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [Match(slug="shato-vymysel-cabernet", score=0.85, gap=0.5, view="real")]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_v049_abs_floor_actually_lowered_not_just_documented(client: TestClient, app):
+    app.state.image_index = _BetweenOldAndNewFloorsImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert body["not_in_catalog"] is False, "0.85 >= новый CV_ABS_FLOOR(0.82) — обязан быть confident"
+    assert body["slug"] == "shato-vymysel-cabernet"
+
+
+class _BetweenOldAndNewMarginsImageIndex:
+    """gap=0.05 — между новым (0.02) и старым (0.25) CV_MARGIN_FLOOR: под
+    v0.4.5-v0.4.8 это not_in_catalog по марже, под v0.4.9 — margin пройдена
+    (score сам по себе выше пола)."""
+
+    index_version = "between-old-new-margins-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [Match(slug="shato-vymysel-cabernet", score=0.95, gap=0.05, view="real")]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_v049_margin_floor_actually_lowered_not_just_documented(client: TestClient, app):
+    app.state.image_index = _BetweenOldAndNewMarginsImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert body["not_in_catalog"] is False, "gap=0.05 >= новый CV_MARGIN_FLOOR(0.02) — обязан быть confident"
+    assert body["slug"] == "shato-vymysel-cabernet"
+
+
 # --- v0.4.7 (контракт §2/3, TODO-0 ревью 05): null-gap = доминирование ------
 #
 # Контекст (reports/f3-synthetic-baseline.md, b4f9608): на боевом каталоге
@@ -364,8 +435,8 @@ def test_not_in_catalog_triggers_on_low_score_alone_even_with_wide_margin(client
 # тесты ниже новые.
 
 class _DominantNullGapImageIndex:
-    """score >= CV_ABS_FLOOR(0.9), gap=None — "в top-K нет кандидата вне
-    семьи top-1" (доминирование), а не неопределённость."""
+    """score >= CV_ABS_FLOOR(0.82, v0.4.9), gap=None — "в top-K нет кандидата
+    вне семьи top-1" (доминирование), а не неопределённость."""
 
     index_version = "dominant-null-gap-stub"
 
@@ -383,7 +454,7 @@ class _DominantNullGapImageIndex:
 
 
 class _WeakDominantNullGapImageIndex:
-    """Зеркало выше: score < CV_ABS_FLOOR(0.9), gap=None всё равно."""
+    """Зеркало выше: score < CV_ABS_FLOOR(0.82, v0.4.9), gap=None всё равно."""
 
     index_version = "weak-dominant-null-gap-stub"
 
@@ -474,7 +545,15 @@ def test_verifier_called_for_family_members_in_top_k_even_when_gap_is_null(clien
     практике (F3 baseline) это значило "верификатор внутри семьи почти
     никогда не вызывается на боевом каталоге", ровно диагноз review 05 TODO-2
     (Мускатель Массандра). Здесь маржа УЖЕ "пройдена" null-ом (доминирование),
-    но верификатор обязан всё равно вызваться и его ответ — примениться."""
+    но верификатор обязан всё равно вызваться и его ответ — примениться.
+
+    v0.4.8: отбор кандидатов теперь по близости SCORE (CV_VERIFY_PROXIMITY),
+    не по семье/gap — этот тест продолжает проходить, потому что все три
+    "члена семьи" здесь и так в пределах proximity (0.95/0.94/0.93). Тест
+    остаётся как регресс на связку "верификатор вызывается, даже когда
+    маржа уже 'пройдена'" — само слово "семья" в названии теста теперь
+    исторический контекст, не механизм отбора (см. v0.4.8-тесты ниже,
+    построенные БЕЗ понятия семьи вообще, ровно как реальный кейс q2)."""
     app.state.image_index = _MultiSlugNullGapImageIndex()
     spy = _SpyLabelVerifier(answer="family-member-b")
     app.state.label_verifier = spy
@@ -510,6 +589,137 @@ def test_verifier_abstention_with_null_gap_still_confident_via_dominance(client:
     assert body["ocr_verified"] is False
     assert body["not_in_catalog"] is False, "null-gap доминирование не отменяется воздержанием OCR"
     assert body["slug"] == "family-member-a"  # top-1 ANN как есть, OCR не подтвердил замену
+
+
+# --- v0.4.8 (контракт, закрытие TODO-2): кандидаты верификатора — близость
+# скоров, НЕ family-based gap ------------------------------------------------
+#
+# Диагноз q2 ("Мускатель Массандра", reports/g4-family-gap.md, трассировка
+# G4 на живом каталоге): линейки ОДНОГО дизайна этикетки, но с разными
+# НАЗВАНИЯМИ (Портвейн/Мускат/Мускатель) перепись семей НЕ считает одной
+# семьёй — family-based отбор кандидатов (v0.4.2-v0.4.7) на такой связке
+# схлопывался до одного top1, хотя весь топ-5 держался в пределах 0.033 по
+# score. Стабы ниже НАРОЧНО не несут никакого понятия "семья" вообще (ни
+# общих префиксов, ни gap, соответствующего family) — ровно как в реальном
+# q2 — и всё равно обязаны корректно отобрать кандидатов ПО SCORE.
+
+class _CloseScoresNoSharedFamilyImageIndex:
+    """5 РАЗНЫХ, ничем не связанных слагов — визуально близнецы по score
+    (разброс 0.02, комфортно внутри дефолтного CV_VERIFY_PROXIMITY=0.03).
+    `gap` выставлен произвольно (не null, не по семье ни одной пары) —
+    подчёркивает, что gap в этом отборе не читается вовсе."""
+
+    index_version = "close-scores-no-family-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [
+            Match(slug="massandra-portveyn-belyy-gurzuf", score=0.930, gap=0.010, view="real"),
+            Match(slug="massandra-muskat-belyy-yuzhnoberezhnyy", score=0.923, gap=0.010, view="real"),
+            Match(slug="unrelated-wine-a", score=0.917, gap=0.010, view="real"),
+            Match(slug="massandra-muskatel-chernyy", score=0.914, gap=0.010, view="real"),
+            Match(slug="massandra-muskatel-belyy", score=0.910, gap=0.010, view="real"),
+        ]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_verifier_candidates_selected_by_score_proximity_not_family(client: TestClient, app):
+    """v0.4.8: 5 разных слагов без единой формальной семьи, но в пределах
+    CV_VERIFY_PROXIMITY — верификатор обязан получить ВСЕ пять (cap top-5),
+    не только top1. Это прямое воспроизведение диагноза q2: до этой правки
+    такая связка давала candidate_slugs=[top1], верификатор не вызывался."""
+    app.state.image_index = _CloseScoresNoSharedFamilyImageIndex()
+    spy = _SpyLabelVerifier(answer="massandra-muskatel-belyy")
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+
+    assert spy.calls, "верификатор обязан был вызваться — весь топ-5 в пределах CV_VERIFY_PROXIMITY"
+    called_slugs = {c["slug"] for c in spy.calls[0]}
+    assert called_slugs == {
+        "massandra-portveyn-belyy-gurzuf", "massandra-muskat-belyy-yuzhnoberezhnyy",
+        "unrelated-wine-a", "massandra-muskatel-chernyy", "massandra-muskatel-belyy",
+    }, "кандидаты отобраны по близости SCORE, а не по совпадению семьи (её здесь нет вовсе)"
+    assert body["slug"] == "massandra-muskatel-belyy"  # OCR переставил с top-1 ANN (portveyn)
+    assert body["ocr_verified"] is True
+    assert body["not_in_catalog"] is False
+
+
+class _DominantTopFarFromRestImageIndex:
+    """top1 доминирует с большим отрывом (> CV_VERIFY_PROXIMITY) от ВСЕХ
+    остальных — регресс-тест, явно потребованный заданием B5: "одиночный
+    уверенный топ без соседей -> верификатор не зовётся" (иначе — лишний
+    OCR впустую, тратящий бюджет 700 мс без единого реального кандидата)."""
+
+    index_version = "dominant-top-far-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [
+            Match(slug="clearly-the-one", score=0.97, gap=0.4, view="real"),
+            Match(slug="distant-runner-up-a", score=0.60, gap=None, view="real"),
+            Match(slug="distant-runner-up-b", score=0.55, gap=None, view="real"),
+        ]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_verifier_not_called_when_dominant_top_has_no_close_neighbors(client: TestClient, app):
+    app.state.image_index = _DominantTopFarFromRestImageIndex()
+    spy = _SpyLabelVerifier()
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    body = r.json()
+    assert spy.calls == [], "top1 доминирует далеко за пределами CV_VERIFY_PROXIMITY — верификатор лишний"
+    assert body["slug"] == "clearly-the-one"
+    assert body["ocr_verified"] is False
+
+
+def test_verifier_candidate_cap_is_explicitly_top_five(client: TestClient, app):
+    """Контракт: "cap — top-5" — явно, не полагаясь на top_k вызывающего кода.
+    6 слагов в пределах proximity (гипотетически, если бы run_photo_scan()
+    когда-нибудь вызвали с top_k>5) — кандидатов на верификатор не больше 5."""
+
+    class _SixCloseScoresImageIndex:
+        index_version = "six-close-scores-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [
+                Match(slug=f"slug-{i}", score=0.95 - i * 0.005, gap=0.01, view="real")
+                for i in range(6)
+            ]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _SixCloseScoresImageIndex()
+    spy = _SpyLabelVerifier()
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+    assert spy.calls, "6 близких по score слагов — верификатор обязан вызваться"
+    assert len(spy.calls[0]) == 5, "cap top-5 обязан примениться, даже если кандидатов было 6"
 
 
 # --- timing_ms genuinely measured, not hardcoded -----------------------------
