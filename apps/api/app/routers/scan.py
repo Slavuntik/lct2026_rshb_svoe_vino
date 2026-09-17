@@ -44,6 +44,7 @@ from ..config import Settings, get_settings_dep
 from ..cv.eval_report import read_eval_report
 from ..cv.interface import ImageIndex, LabelVerifier
 from ..cv.service import PhotoScanResult, run_photo_scan
+from ..cv.user_box import apply_user_box
 from ..db import get_db
 from ..deps import get_image_index_dep, get_label_verifier_dep, get_retriever_dep
 from ..errors import ApiError
@@ -187,6 +188,7 @@ async def flat_scan_response(
     retriever: Retriever,
     settings: Settings,
     db: Session,
+    raw_box: str | None = None,
 ) -> ScanPhotoFlatResponse:
     """Несгораемая flat-семантика (contracts/image-scan.md v0.4.4, "Режимы
     ответа API"): ЛЮБОЙ сбой -> валидный `{"slug": "<лучшая догадка>"}`,
@@ -205,6 +207,13 @@ async def flat_scan_response(
     try:
         if upload is None or not data or len(data) > settings.max_upload_bytes:
             return ScanPhotoFlatResponse(slug="")
+        # v0.4.10: рамка пользователя. Во flat негодная рамка НЕ ломает ответ — она просто
+        # игнорируется: у скрипта оценки поля box нет вовсе, и появиться оно может только
+        # по ошибке, а несгораемость важнее аккуратности ввода.
+        try:
+            data = apply_user_box(data, raw_box)
+        except ValueError:
+            pass
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,
             retriever=retriever, settings=settings,
@@ -219,6 +228,10 @@ async def flat_scan_response(
 async def scan_photo(
     request: Request,
     image: UploadFile | None = File(default=None),
+    box: str | None = Form(
+        default=None,
+        description='рамка пользователя «x1,y1,x2,y2» в долях кадра (0…1); без неё бутылку выбирает движок',
+    ),
     flat: bool | None = Query(
         default=None,
         description="?flat=1 — режим скрипта оценки; без параметра решает env SCAN_FLAT_DEFAULT",
@@ -237,7 +250,7 @@ async def scan_photo(
 
     if effective_flat:
         return await flat_scan_response(
-            request, image, principal, image_index, verifier, retriever, settings, db,
+            request, image, principal, image_index, verifier, retriever, settings, db, box,
         )
 
     # rich-режим (UI) — честные ошибки, как везде в API.
@@ -247,6 +260,13 @@ async def scan_photo(
         raise ApiError(400, "validation_error", "Пустой файл изображения")
     if len(data) > settings.max_upload_bytes:
         raise ApiError(400, "validation_error", f"Файл больше {settings.max_upload_bytes} байт")
+    # v0.4.10: рамка пользователя применяется ДО движка — контракт ImageIndex не меняется,
+    # и прицел работает у обоих провайдеров. В rich негодная рамка — честная 400, как и
+    # любой другой негодный ввод.
+    try:
+        data = apply_user_box(data, box)
+    except ValueError as exc:
+        raise ApiError(400, "validation_error", f"Негодная рамка: {exc}") from exc
     try:
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,
