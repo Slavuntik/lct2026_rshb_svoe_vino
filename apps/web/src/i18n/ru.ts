@@ -83,6 +83,7 @@ export const ru = {
     resolving: "Ищем в каталоге…",
     noMatchesTitle: "Ничего не нашли",
     noMatchesMessage: "Попробуйте переформулировать текст или другое фото — честно, такого вина в базе нет.",
+    analogsFoundTitle: "Похожие российские вина",
     lowConfidenceTitle: "Похоже на одно из этих вин",
     lowConfidenceSubtitle: "Не уверены на 100% — выберите нужное.",
     confidenceLabel: "совпадение {percent}%",

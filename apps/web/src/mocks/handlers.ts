@@ -86,6 +86,34 @@ function scoreWine(wine: WineFixture, normalizedText: string, hints?: ScanResolv
   return score;
 }
 
+// Мини-имитация фолбэка B7 (apps/api/app/foreign_scan_lookup.py, read-only для нас):
+// пустые matches + узнаваемый сорт/стиль в тексте -> российские аналоги. Не копирует
+// pipeline/ref/grape_synonyms.yaml — только достаточно детерминизма для UI-тестов и мока;
+// живой /v1/scan/resolve на :8000 уже отдаёт это по-настоящему (проверено curl'ом, см.
+// reports/c2-analogs-ui.md).
+const FOREIGN_ANALOG_RULES: { pattern: RegExp; label: string; wineIds: string[] }[] = [
+  { pattern: /risling|riesling/, label: "рислинг", wineIds: ["severny-sklon-riesling-poluslad-2023"] },
+  {
+    pattern: /chianti|sangiovese|санджовезе/,
+    label: "санджовезе",
+    wineIds: ["severny-sklon-krasnostop-2021", "sokoliny-utes-merlot-cabernet-2020"],
+  },
+];
+
+function foreignAnalogFallback(text: string): Pick<ScanResolveResponse, "analogs" | "analog_reason"> {
+  const normalized = text.toLowerCase();
+  for (const rule of FOREIGN_ANALOG_RULES) {
+    if (!rule.pattern.test(normalized)) continue;
+    const analogWines = rule.wineIds.map(findWineBySlug).filter((wine): wine is WineFixture => Boolean(wine));
+    if (analogWines.length === 0) continue;
+    return {
+      analogs: analogWines.map(toAnalogWine),
+      analog_reason: `«${text}» вне каталога российских вин — аналоги по стилю: ${rule.label}`,
+    };
+  }
+  return { analogs: [], analog_reason: null };
+}
+
 function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): ScanResolveResponse {
   const normalized = text.toLowerCase();
   const scored = wines
@@ -95,7 +123,7 @@ function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): Sca
     .slice(0, 5);
 
   if (scored.length === 0) {
-    return { matches: [], low_confidence: true };
+    return { matches: [], low_confidence: true, ...foreignAnalogFallback(text) };
   }
 
   const matches = scored.map(({ wine, score }) => ({
@@ -108,7 +136,7 @@ function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): Sca
   const [best, second] = matches;
   const lowConfidence = matches.length > 1 ? best.confidence - second.confidence < 0.12 : best.confidence < 0.75;
 
-  return { matches, low_confidence: lowConfidence };
+  return { matches, low_confidence: lowConfidence, analogs: [], analog_reason: null };
 }
 
 function toAnalogWine(wine: WineFixture): AnalogWine {

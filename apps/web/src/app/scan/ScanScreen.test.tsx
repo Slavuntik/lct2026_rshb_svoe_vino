@@ -187,5 +187,27 @@ describe("ScanScreen — текстовый путь (запасной вход)
     fireEvent.click(screen.getByRole("button", { name: /найти вино/i }));
 
     expect(await screen.findByTestId("scan-no-matches")).toBeInTheDocument();
+    // Честная деградация — не выдумываем аналоги, когда стиль не распознан.
+    expect(screen.queryByTestId("scan-text-analogs")).not.toBeInTheDocument();
+  });
+
+  it("matches пуст, но стиль узнан (B7) — «Похожие российские вина» тем же компонентом карточек", async () => {
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/текст с этикетки/i), {
+      // Живой кейс Вячеслава (17.09, contracts/openapi.yaml analogs/analog_reason):
+      // иностранное вино вне каталога, но сорт (рислинг) узнаётся с опечаткой.
+      target: { value: "Urban Risling" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /найти вино/i }));
+
+    const block = await screen.findByTestId("scan-text-analogs");
+    expect(within(block).getByText(/похожие российские вина/i)).toBeInTheDocument();
+    expect(within(block).getByText(/urban risling.*вне каталога.*рислинг/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("scan-no-matches")).not.toBeInTheDocument();
+
+    fireEvent.click(within(block).getByRole("button"));
+    await waitFor(() =>
+      expect(screen.getByText("WINE_CARD_PROBE:severny-sklon-riesling-poluslad-2023")).toBeInTheDocument(),
+    );
   });
 });

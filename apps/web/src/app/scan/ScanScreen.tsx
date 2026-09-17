@@ -4,9 +4,15 @@ import { WineCardContent } from "../../components/WineCardContent";
 import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
-import type { AnalogWine, ScanMatch, ScanPhotoRichResponse } from "../../lib/apiTypes";
+import type { AnalogWine, ScanMatch, ScanPhotoRichResponse, ScanResolveResponse } from "../../lib/apiTypes";
 
-type ResolveOutcome = { matches: ScanMatch[]; lowConfidence: boolean } | null;
+type ResolveOutcome = {
+  matches: ScanMatch[];
+  lowConfidence: boolean;
+  /** B7: заполнено только когда matches пуст — российские аналоги по стилю из текста. */
+  analogs: AnalogWine[];
+  analogReason: string | null;
+} | null;
 
 function WineResultChip({ wine, onClick }: { wine: AnalogWine; onClick: () => void }) {
   return (
@@ -122,7 +128,7 @@ export function ScanScreen() {
     });
   }
 
-  function handleResolveResult(resolved: { matches: ScanMatch[]; low_confidence: boolean }) {
+  function handleResolveResult(resolved: ScanResolveResponse) {
     const best = resolved.matches[0];
     track("scan_resolved", {
       matched: resolved.matches.length > 0,
@@ -130,14 +136,19 @@ export function ScanScreen() {
       wine_id: best?.wine_id,
     });
     if (resolved.matches.length === 0) {
-      setOutcome({ matches: [], lowConfidence: true });
+      setOutcome({
+        matches: [],
+        lowConfidence: true,
+        analogs: resolved.analogs ?? [],
+        analogReason: resolved.analog_reason ?? null,
+      });
       return;
     }
     if (!resolved.low_confidence) {
       goToWine(best.wine_id, "scan");
       return;
     }
-    setOutcome({ matches: resolved.matches, lowConfidence: true });
+    setOutcome({ matches: resolved.matches, lowConfidence: true, analogs: [], analogReason: null });
   }
 
   async function handleTextSubmit(event: FormEvent<HTMLFormElement>) {
@@ -282,7 +293,19 @@ export function ScanScreen() {
       {status === "resolving" && <p className="text-small">{t("scan.resolving")}</p>}
       {status === "error" && <p className="field__error">{t("common.errorGeneric")}</p>}
 
-      {outcome && outcome.matches.length === 0 && (
+      {outcome && outcome.matches.length === 0 && outcome.analogs.length > 0 && (
+        <div className="card stack" data-testid="scan-text-analogs">
+          <h2>{t("scan.analogsFoundTitle")}</h2>
+          {outcome.analogReason && <p className="text-small">{outcome.analogReason}</p>}
+          <div className="match-list">
+            {outcome.analogs.map((wine) => (
+              <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {outcome && outcome.matches.length === 0 && outcome.analogs.length === 0 && (
         <div className="card stack" data-testid="scan-no-matches">
           <h2>{t("scan.noMatchesTitle")}</h2>
           <p>{t("scan.noMatchesMessage")}</p>

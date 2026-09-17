@@ -89,6 +89,14 @@ export interface ScanMatch {
 export interface ScanResolveResponse {
   matches: ScanMatch[];
   low_confidence: boolean;
+  /**
+   * B7 (17.09, 4138171): фолбэк при пустых matches — из текста распознан сорт/стиль
+   * (pipeline/ref) -> российские аналоги тем же резолвером, что /v1/analogs. Форма
+   * items — как AnalogWine. Опционально по openapi.yaml (в required только matches) —
+   * клиент обязан трактовать отсутствие как пусто/null, не как ошибку.
+   */
+  analogs?: AnalogWine[];
+  analog_reason?: string | null;
 }
 
 export interface ScanResolvePayload {
