@@ -93,14 +93,26 @@ class Settings:
         # family-based gap) для отбора кандидатов верификатора — все схлопнутые
         # match'и в пределах этого порога от top1.score становятся кандидатами
         # на OCR-различение, независимо от переписи near-dup семей (families.json).
-        # Стартовое значение — ровно CV_GROUP_EPSILON пакета packages/cv (0.03,
-        # packages/cv/cv/config.py): тот же порядок величины, которым эпсилон-
-        # группировка САМА считала "визуально одна и та же группа" до family-gap
-        # — разумная стартовая точка для НОВОЙ, независимой от переписи метрики,
-        # не обязана совпадать с CV_GROUP_EPSILON навсегда. Не путать с
-        # cv_margin_floor (тот — про gap, про уверенность вообще; этот — про
-        # raw score, про то, кого спросить у OCR).
-        default_factory=lambda: float(os.environ.get("CV_VERIFY_PROXIMITY", "0.03"))
+        # Стартовое значение v0.4.8 — ровно CV_GROUP_EPSILON пакета packages/cv
+        # (0.03, packages/cv/cv/config.py): тот же порядок величины, которым
+        # эпсилон-группировка САМА считала "визуально одна и та же группа" до
+        # family-gap. Не путать с cv_margin_floor (тот — про gap, про
+        # уверенность вообще; этот — про raw score, про то, кого спросить у OCR).
+        #
+        # "Дополнения v0.4.9" (contracts/image-scan.md, после живого e2e B5,
+        # reports/b5-gate-v048.md §2 "Причина 1"): 0.03 -> 0.04. Живой прогон
+        # q2 ("Мускатель Массандра", IMAGE_PROVIDER=real VERIFIER_PROVIDER=real,
+        # индекс case-20260917, CV_VERIFY_DEBUG=1) показал: цель
+        # (massandra-muskatel-belyy-...) НЕ попадала в candidate_slugs — разрыв
+        # top1->цель составил 0,03287, то есть промахнулась мимо старого порога
+        # 0.03 на 0,0029. 0.04 включает цель (и весь остальной топ-5 на этом
+        # запросе — разрывы 4-й/5-й позиций от top1 тоже <= 0.033); cap top-5
+        # (app/cv/service.py::run_photo_scan) по-прежнему держит бюджет OCR
+        # независимо от того, сколько matches попадёт в proximity. Снова
+        # стартовая точка по букве v0.4.5/v0.4.9 (не калибровка на голд-сете,
+        # та же оговорка, что у cv_abs_floor/cv_margin_floor выше) — финал
+        # ждёт полевой dev-сплит.
+        default_factory=lambda: float(os.environ.get("CV_VERIFY_PROXIMITY", "0.04"))
     )
     cv_abs_floor: float = field(
         # v0.4.5 (калибровка F2 на impostor-холдауте, qa/scan-eval-runs/

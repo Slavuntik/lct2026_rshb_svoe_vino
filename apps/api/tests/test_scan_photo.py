@@ -605,7 +605,8 @@ def test_verifier_abstention_with_null_gap_still_confident_via_dominance(client:
 
 class _CloseScoresNoSharedFamilyImageIndex:
     """5 РАЗНЫХ, ничем не связанных слагов — визуально близнецы по score
-    (разброс 0.02, комфортно внутри дефолтного CV_VERIFY_PROXIMITY=0.03).
+    (разброс 0.02, комфортно внутри дефолтного CV_VERIFY_PROXIMITY=0.04,
+    v0.4.9-доп).
     `gap` выставлен произвольно (не null, не по семье ни одной пары) —
     подчёркивает, что gap в этом отборе не читается вовсе."""
 
@@ -720,6 +721,130 @@ def test_verifier_candidate_cap_is_explicitly_top_five(client: TestClient, app):
     assert r.status_code == 200
     assert spy.calls, "6 близких по score слагов — верификатор обязан вызваться"
     assert len(spy.calls[0]) == 5, "cap top-5 обязан примениться, даже если кандидатов было 6"
+
+
+# --- "Дополнения v0.4.9" (после e2e B5, reports/b5-gate-v048.md §2 "Причина
+# 3"; отчёт этой волны — reports/b6-case-candidates.md): метаданные
+# кандидатов верификатора — из КАТАЛОГА КЕЙСА (case-data/slug_refs.json), не
+# из нашего RAG/wines-каталога. Живой q2 показал `matched_on: []` на всех
+# кандидатах именно по этой причине — RAG_PROVIDER=mock (и наш каталог
+# вообще) не знает кейс-слагов и/или отдаёт латиницу, бесполезную для
+# кириллических словарей верификатора. Юнит-тесты самого источника (парсинг
+# vintage, кэш по пути, битый/отсутствующий файл) — tests/test_case_catalog.py;
+# здесь — интеграционная проверка через живой /v1/scan/photo: кандидаты,
+# которых реально передают верификатору, обязаны нести метаданные из ПРАВИЛЬНОГО
+# источника при смешанном покрытии (часть слагов в case-data, часть — нет).
+
+def test_verifier_candidates_use_case_catalog_metadata_when_present(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаги ниже НАРОЧНО отсутствуют в app/rag/fixtures.py::WINES —
+    воспроизводит ровно сценарий рассинхрона q2 (кейс-слаги в нашем каталоге
+    отсутствуют вовсе). С фикстурой case-data candidate ловит кириллические
+    name/winery/vintage вместо деградации до name=slug (латиница/транслит)."""
+    slug_refs = {
+        "mapping": {
+            "case-massandra-muskatel-belyy": {"name": "Мускатель белый", "winery": "Массандра"},
+            "case-massandra-portveyn-belyy": {"name": "Портвейн белый, 2019", "winery": "Массандра"},
+        }
+    }
+    (tmp_path / "slug_refs.json").write_text(json.dumps(slug_refs, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _CaseCatalogImageIndex:
+        index_version = "case-catalog-metadata-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [
+                Match(slug="case-massandra-portveyn-belyy", score=0.930, gap=0.01, view="real"),
+                Match(slug="case-massandra-muskatel-belyy", score=0.910, gap=0.01, view="real"),
+                Match(slug="case-unknown-elsewhere", score=0.905, gap=0.01, view="real"),
+            ]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _CaseCatalogImageIndex()
+    spy = _SpyLabelVerifier(answer="case-massandra-muskatel-belyy")
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+
+    assert spy.calls, "верификатор обязан был вызваться — 3 кандидата в пределах proximity"
+    by_slug = {c["slug"]: c for c in spy.calls[0]}
+    assert by_slug["case-massandra-muskatel-belyy"] == {
+        "slug": "case-massandra-muskatel-belyy", "name": "Массандра Мускатель белый", "vintage": None,
+    }
+    assert by_slug["case-massandra-portveyn-belyy"] == {
+        "slug": "case-massandra-portveyn-belyy", "name": "Массандра Портвейн белый, 2019", "vintage": 2019,
+    }
+    # слаг, которого нет НИ в case-data, НИ в RAG (mock) — честная деградация, как и раньше.
+    assert by_slug["case-unknown-elsewhere"] == {
+        "slug": "case-unknown-elsewhere", "name": "case-unknown-elsewhere", "vintage": None,
+    }
+    assert r.json()["ocr_verified"] is True
+
+
+def test_verifier_candidates_fall_back_to_get_by_id_without_case_data(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Контракт: "Фолбэк при отсутствии case-data — прежний путь get_by_id".
+    `tmp_path` без `slug_refs.json` — гарантированное отсутствие источника
+    (не полагаемся на то, что на этой машине case-data вообще нет — она
+    ЕСТЬ, см. reports/b6-case-candidates.md). Слаги — из app/rag/fixtures.py,
+    так что RAG-мок реально способен отдать кириллические name/vintage
+    через прежний путь, ничего не сломано этой правкой."""
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _RagKnownCloseScoresImageIndex:
+        index_version = "rag-known-close-scores-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [
+                Match(slug="shato-vymysel-cabernet", score=0.930, gap=0.01, view="real"),
+                Match(slug="tihaya-gavan-pinot-noir", score=0.915, gap=0.01, view="real"),
+            ]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _RagKnownCloseScoresImageIndex()
+    spy = _SpyLabelVerifier(answer="tihaya-gavan-pinot-noir")
+    app.state.label_verifier = spy
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200
+
+    assert spy.calls
+    by_slug = {c["slug"]: c for c in spy.calls[0]}
+    assert by_slug["shato-vymysel-cabernet"] == {
+        "slug": "shato-vymysel-cabernet", "name": "Шато Вымысел Каберне Совиньон", "vintage": 2022,
+    }
+    assert by_slug["tihaya-gavan-pinot-noir"] == {
+        "slug": "tihaya-gavan-pinot-noir", "name": "Тихая Гавань Пино Нуар", "vintage": 2022,
+    }
+
+
+def test_default_cv_verify_proximity_pinned_to_v049_addendum():
+    """Пин "Дополнений v0.4.9" (contracts/image-scan.md, после живого e2e B5,
+    reports/b5-gate-v048.md §2 "Причина 1"; применено этой волной — см.
+    reports/b6-case-candidates.md): CV_VERIFY_PROXIMITY 0.03 -> 0.04 — цель
+    q2 промахивалась мимо старого порога на 0,0029. Если этот тест упал —
+    кто-то откатил дефолт config.py, не поменяв заодно контракт/отчёт."""
+    from app.config import Settings
+    settings = Settings()
+    assert settings.cv_verify_proximity == 0.04
 
 
 # --- timing_ms genuinely measured, not hardcoded -----------------------------

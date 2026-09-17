@@ -12,6 +12,11 @@ confident/not_in_catalog решение по family-based марже.
   ОДНОГО дизайна этикетки, но с разными названиями перепись не считает
   семьёй, и gap-based отбор кандидатов на такой паре схлопывался до одного
   top1, хотя весь топ-5 держался в пределах 0.033 по score.
+  "Дополнения v0.4.9" (после живого e2e B5, reports/b5-gate-v048.md §2
+  "Причина 1"): 0.03 -> 0.04 — на живом каталоге (case-20260917) сама цель
+  q2 (massandra-muskatel-belyy-...) не попадала в кандидаты, промахнувшись
+  мимо старого порога на 0,0029 (разрыв top1->цель 0,03287); 0.04 включает
+  её, cap top-5 (см. run_photo_scan ниже) по-прежнему держит бюджет OCR.
 - CV_NEAR_DUP_GAP_THRESHOLD — v0.4.8: БОЛЬШЕ НЕ используется этим модулем
   (заменён CV_VERIFY_PROXIMITY выше). Поле в app/config.py оставлено не
   удалённым ради обратной совместимости (кто-то мог выставить этот env
@@ -53,6 +58,7 @@ from typing import Iterable
 from ..config import Settings
 from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
+from . import case_catalog
 from .interface import ImageIndex, LabelVerifier, Match, VerifyCandidate
 
 
@@ -88,12 +94,28 @@ def _match_items(matches: list[Match], limit: int = 5) -> list[dict]:
 def _verify_candidates(retriever: Retriever, slugs: list[str]) -> list[VerifyCandidate]:
     """v0.4.4: LabelVerifier.verify() принимает метаданные из каталога, не
     голые slug'и — "B передаёт метаданные кандидатов из каталога (get_by_id)".
-    Каталог может не знать конкретный slug (CV нашёл позицию, которой ещё/уже
-    нет в каталожном слое — тот же реалистичный сценарий рассинхрона, что и у
+
+    "Дополнения v0.4.9" (после e2e B5, reports/b5-gate-v048.md §2 "Причина
+    3"): источник метаданных ПЕРВЫМ делом — КАТАЛОГ КЕЙСА
+    (`case_catalog.lookup()`, case-data/slug_refs.json), не наш RAG/wines-
+    каталог. Кейс-слаги в нашем каталоге отсутствуют вовсе, а mock-RAG (dev/
+    тестовый профиль) отдаёт латиницу/транслит — бесполезно для
+    кириллических словарей верификатора (packages/cv/cv/verify.py::
+    _WINE_TYPE_KEYWORDS/_COLOR_KEYWORDS, граница слова): живой q2 e2e у B5
+    получил `matched_on: []` на всех кандидатах ровно по этой причине.
+    `case_catalog.lookup()` сам деградирует в `None`, когда case-data не
+    приехали на этой машине/slug ей не известен — тогда, и только тогда,
+    используется ПРЕЖНИЙ путь `retriever.get_by_id()`: каталог может не
+    знать конкретный slug (CV нашёл позицию, которой ещё/уже нет в
+    каталожном слое — тот же реалистичный сценарий рассинхрона, что и у
     `card=None`) — тогда деградируем честно: name=slug, vintage=None, а не
     падаем и не роняем near-dup routing из-за пробела в каталоге."""
     result: list[VerifyCandidate] = []
     for slug in slugs:
+        case_meta = case_catalog.lookup(slug)
+        if case_meta is not None:
+            result.append(VerifyCandidate(slug=slug, name=case_meta.name, vintage=case_meta.vintage))
+            continue
         candidate = retriever.get_by_id(slug)
         if candidate is not None and candidate.kind == "wine":
             source = candidate.meta["source"]
