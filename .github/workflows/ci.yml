@@ -11,6 +11,11 @@ on:
   pull_request:
   push:
     branches: [main]
+  # agents/E2-cicd.md, п.1: разрешает deploy-hack-yc.yml/deploy-biz.yml переиспользовать
+  # ровно эти тесты как гейт перед деплоем (jobs.tests: uses: ./.github/workflows/ci.yml)
+  # вместо дублирования pytest/vitest шагов в каждом деплой-workflow. Поведение по
+  # pull_request/push не меняется — это только доп. способ вызвать тот же набор джобов.
+  workflow_call:
 
 permissions:
   contents: read

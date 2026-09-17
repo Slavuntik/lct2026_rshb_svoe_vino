@@ -1,0 +1,165 @@
+name: Deploy — Hack (Yandex Cloud)
+
+# Хак-линия (agents/E2-cicd.md): сам кейс по ТЗ демонстрируется ЛОКАЛЬНО, деплой ему не
+# нужен — но на пилот/финал показа нужен работающий контур на Yandex Cloud. Самая простая
+# из двух линий CI/CD этого репозитория: одна VM, без домена и без Cloudflare (это отличие
+# от бизнес-линии — ../../ARCHITECTURE.md/agents/E2-cicd.md, «Контекст»).
+#
+# Аккаунтов на момент написания ЕЩЁ НЕТ (заводит Вячеслав утром — infra/ACCOUNTS.md,
+# колонка «Хак: Yandex Cloud»). Пока секреты не заданы — джобы build-push/deploy аккуратно
+# помечаются skipped (см. джобу guard), workflow остаётся зелёным. Реальных запусков не
+# было и пока не планируется (agents/E2-cicd.md, «Не делать»: сеть не использовать).
+#
+# Топология на VM — infra/deploy/hack-yandex-cloud.md: штатный infra/compose.prod.yml БЕЗ
+# ИЗМЕНЕНИЙ (nginx+api+qdrant+postgres), TLS — самоподписанный сертификат вместо Cloudflare
+# origin-cert (нет домена). Почему web едет ОБРАЗОМ, а не tar.gz как у биз-линии, и почему
+# деплой не переиспользует infra/scripts/deploy.sh — infra/scripts/deploy-hack-yc.sh (шапка
+# файла) и reports/e2-cicd.md, «Решения по хак-линии».
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ["hack-v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # --- Гейт: те же тесты, что в PR/main (реюз, не дублирование — agents/E2-cicd.md, п.1) ---
+  tests:
+    uses: ./.github/workflows/ci.yml
+
+  # --- Тег релиза: из push тега hack-v*, либо синтетический при ручном workflow_dispatch ---
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.pick.outputs.tag }}
+    steps:
+      - id: pick
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/hack-v* ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=hack-manual-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # --- Гард секретов (agents/E2-cicd.md, п.1: "нет секретов -> notice, не красный") --------
+  # Секреты читаются через env, а не подставляются прямо в условие if:/строку run: — так их
+  # значения не попадают в текст шага, только в переменные окружения самого процесса.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          YC_SA_KEY_JSON: ${{ secrets.YC_SA_KEY_JSON }}
+          YC_CR_REGISTRY_ID: ${{ secrets.YC_CR_REGISTRY_ID }}
+          YC_VM_HOST: ${{ secrets.YC_VM_HOST }}
+          YC_VM_SSH_KEY: ${{ secrets.YC_VM_SSH_KEY }}
+        run: |
+          if [[ -n "$YC_SA_KEY_JSON" && -n "$YC_CR_REGISTRY_ID" && -n "$YC_VM_HOST" && -n "$YC_VM_SSH_KEY" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::секреты не заданы, пропуск — нужны YC_SA_KEY_JSON, YC_CR_REGISTRY_ID, YC_VM_HOST, YC_VM_SSH_KEY (infra/ACCOUNTS.md, колонка «Хак»). Это ожидаемо, пока Вячеслав не завёл аккаунт Yandex Cloud."
+          fi
+
+  # --- Сборка и публикация образов api+web в Yandex Container Registry --------------------
+  build-push:
+    needs: [tests, determine, guard]
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      api_image: ${{ steps.meta.outputs.api_image }}
+      web_image: ${{ steps.meta.outputs.web_image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        env:
+          REGISTRY_ID: ${{ secrets.YC_CR_REGISTRY_ID }}
+        run: |
+          echo "api_image=cr.yandex/${REGISTRY_ID}/svoy-somelye-api" >> "$GITHUB_OUTPUT"
+          echo "web_image=cr.yandex/${REGISTRY_ID}/svoy-somelye-web" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Yandex Container Registry: docker login с логином json_key и паролем — содержимым
+      # авторизованного ключа сервисного аккаунта целиком (стандартная схема YC CR, как у
+      # GCR). Заведено офлайн, без доступа в сеть (agents/E2-cicd.md, «Не делать») — ПЕРЕД
+      # первым реальным прогоном сверить с актуальной документацией Yandex Cloud (Container
+      # Registry -> Docker CLI), см. infra/deploy/hack-yandex-cloud.md.
+      - uses: docker/login-action@v3
+        with:
+          registry: cr.yandex
+          username: json_key
+          password: ${{ secrets.YC_SA_KEY_JSON }}
+
+      - name: Собрать и запушить образ api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.api
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.api_image }}:${{ needs.determine.outputs.tag }}
+            ${{ steps.meta.outputs.api_image }}:hack-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # web — образ-носитель статики apps/web, не рантайм-сервис (см. infra/Dockerfile.web,
+      # шапка файла, и infra/scripts/deploy-hack-yc.sh — он вытаскивает /dist на VM).
+      - name: Собрать и запушить образ web (носитель статики, не рантайм)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.web
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.web_image }}:${{ needs.determine.outputs.tag }}
+            ${{ steps.meta.outputs.web_image }}:hack-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # --- Деплой по SSH на YC Compute VM + прогрев healthz curl-циклом -----------------------
+  deploy:
+    needs: [determine, guard, build-push]
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    # Один "хак"-контур — без staging/prod разделения на самой VM, поэтому без
+    # concurrency-группы по env (в отличие от deploy-biz.yml/deploy.yml): второй одновременный
+    # прогон этого workflow — редкий ручной случай, не гоняем автоматику настолько часто.
+    concurrency:
+      group: deploy-hack-yc
+      cancel-in-progress: false
+    steps:
+      - name: Ключ и known_hosts для ssh
+        env:
+          YC_VM_SSH_KEY: ${{ secrets.YC_VM_SSH_KEY }}
+          YC_VM_HOST: ${{ secrets.YC_VM_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_ed25519
+          printf '%s\n' "$YC_VM_SSH_KEY" > ~/.ssh/id_ed25519
+          # Хак-линия сознательно БЕЗ закреплённого known_hosts-секрета (в отличие от
+          # DEPLOY_KNOWN_HOSTS у биз-линии) — имени под это в брифе не выделено (п.1: только
+          # 4 секрета YC_*), поэтому TOFU через ssh-keyscan при каждом прогоне. Компромисс
+          # осознанный и приемлемый для пилотной VM без критичных данных — см.
+          # infra/deploy/hack-yandex-cloud.md, «Чем хак проще биз».
+          ssh-keyscan -H "$YC_VM_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: infra/scripts/deploy-hack-yc.sh на VM
+        env:
+          YC_VM_HOST: ${{ secrets.YC_VM_HOST }}
+          API_IMAGE: ${{ needs.build-push.outputs.api_image }}
+          WEB_IMAGE: ${{ needs.build-push.outputs.web_image }}
+          TAG: ${{ needs.determine.outputs.tag }}
+        run: |
+          ssh "deploy@${YC_VM_HOST}" \
+            "/opt/somelye/hack/infra/scripts/deploy-hack-yc.sh '${API_IMAGE}' '${WEB_IMAGE}' '${TAG}'"
+          # ^ скрипт уже на VM через git-checkout (infra/ обновляется на хосте вручную
+          # `git pull`, тот же принцип, что и у биз-линии — RUNBOOK.md §2.5). Сам скрипт
+          # делает pull+up -d штатного compose.prod.yml и здоровается с /nginx-health и
+          # api healthcheck циклом (20 попыток по 3с) — это и есть требуемый "прогрев
+          # healthz curl-циклом" из agents/E2-cicd.md, п.1.

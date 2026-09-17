@@ -1,0 +1,242 @@
+name: Deploy — Business (Contabo)
+
+# Бизнес-линия (agents/E2-cicd.md): релизы прод-контура «Свой Сомелье» на Contabo VPS, за
+# Cloudflare, клиент — PWA + Capacitor (iOS/Android). Триггеры НАМЕРЕННО отдельные от
+# .github/workflows/deploy.yml (push main -> staging, тег v* -> prod, снаряжённый агентом E
+# под демо-окно кейса ЛЦТ) — release-v* маркирует осознанный бизнес-релиз, а не
+# демо-коммит. Оба workflow метят ОДИН И ТОТ ЖЕ хост/каталог /opt/somelye/prod и один и тот
+# же infra/scripts/deploy.sh — см. reports/e2-cicd.md, «deploy.yml vs deploy-biz.yml», это
+# явно зафиксированная нестыковка для оркестратора, не тихо решённая.
+#
+# Аккаунтов на момент написания ЕЩЁ НЕТ (заводит Вячеслав утром — infra/ACCOUNTS.md, колонка
+# «Бизнес»). Пока секреты не заданы — build-push/ship аккуратно skipped (джоба guard), workflow
+# остаётся зелёным. Реальных запусков не было (agents/E2-cicd.md, «Не делать»: сеть не
+# использовать).
+#
+# ВАЖНО: секреты DEPLOY_* ниже должны быть заведены на уровне РЕПОЗИТОРИЯ (Settings ->
+# Secrets and variables -> Actions -> Repository secrets), НЕ на уровне GitHub Environment
+# "prod" — иначе джоба guard (она не объявляет environment:) их не увидит и всегда решит,
+# что секретов нет. Approval-гейт заморозки демо-окна (RUNBOOK.md §7) вешается через
+# environment: prod ТОЛЬКО на джобу ship, где секреты снова читаются штатно — см.
+# infra/deploy/biz-contabo.md.
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ["release-v*"]
+
+# Минимально: contents: read на весь workflow, packages: write — точечно только на джобе
+# build-push (см. её собственный permissions: ниже), как и в .github/workflows/deploy.yml.
+permissions:
+  contents: read
+
+jobs:
+  # --- Гейт: те же тесты, что в PR/main (реюз, не дублирование — agents/E2-cicd.md, п.1) ---
+  tests:
+    uses: ./.github/workflows/ci.yml
+
+  # --- Тег релиза: из push тега release-v*, либо синтетический при ручном dispatch --------
+  determine:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.pick.outputs.tag }}
+    steps:
+      - id: pick
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/release-v* ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=release-manual-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # --- Гард секретов (тот же паттерн, что в deploy-hack-yc.yml — agents/E2-cicd.md, п.1,
+  #     распространено и на биз-линию для единообразия, см. reports/e2-cicd.md) -------------
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          if [[ -n "$DEPLOY_SSH_HOST" && -n "$DEPLOY_SSH_USER" && -n "$DEPLOY_SSH_PORT" && \
+                -n "$DEPLOY_SSH_KEY" && -n "$DEPLOY_KNOWN_HOSTS" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::секреты не заданы, пропуск — нужны DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_SSH_PORT, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS (infra/ACCOUNTS.md, колонка «Бизнес»; те же имена, что уже использует .github/workflows/deploy.yml и infra/RUNBOOK.md §3.1). Это ожидаемо, пока цепочка аккаунтов Contabo не заведена."
+          fi
+
+  # --- Сборка и публикация api-образа в GHCR + сборка статики apps/web --------------------
+  build-push:
+    needs: [tests, determine, guard]
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: |
+          repo_lower="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          echo "image=ghcr.io/${repo_lower}-api" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/Dockerfile.api
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ needs.determine.outputs.tag }}
+            ${{ steps.meta.outputs.image }}:prod-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Собрать apps/web (лендинг + PWA)
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Упаковать статику для деплоя (формат, который читает infra/scripts/deploy.sh)
+        run: tar -czf web-dist.tar.gz -C apps/web/dist .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web-dist.tar.gz
+          retention-days: 14
+
+  # --- Android APK (Capacitor, debug, без подписи) — независимо от секретов Contabo -------
+  # Не деплоится никуда, просто CI-артефакт (agents/E2-cicd.md, п.2). iOS НЕ собирается —
+  # см. infra/deploy/biz-contabo.md, раздел «iOS — ручной шаг на Mac с Xcode»: публикация
+  # идёт с изолированного контура (другой Mac, другой Apple ID — не пересекается с этим
+  # репозиторием и с этим CI, см. agents/E-infra.md §1 и ORCHESTRATION.md).
+  android-apk:
+    needs: [tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Собрать apps/web (webDir для Capacitor из capacitor.config.ts — ../web/dist)
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/shell/package-lock.json
+
+      - name: npm ci + cap sync android (ТОЛЬКО android — без ios, см. примечание выше)
+        working-directory: apps/shell
+        run: |
+          npm ci
+          npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Платформа/build-tools под compileSdk из apps/shell/android/variables.gradle
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: ./gradlew assembleDebug (без подписи — debug-keystore AGP создаёт сам)
+        working-directory: apps/shell/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: apps/shell/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  # --- SSH-деплой на Contabo: миграции + publish-index по RUNBOOK + healthz-гейт + откат ---
+  ship:
+    needs: [determine, guard, build-push]
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    # environment: prod — ТОТ ЖЕ бэкстоп заморозки демо-окна, что уже описан в
+    # infra/RUNBOOK.md §7 для deploy.yml (Settings -> Environments -> prod -> Required
+    # reviewers). Секреты DEPLOY_* при этом должны быть репозиторными (см. шапку файла) —
+    # environment: prod здесь только про approval, не про область видимости секретов.
+    environment: prod
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+
+      - name: Ключ и known_hosts для ssh (секреты — infra/RUNBOOK.md §3.1)
+        run: |
+          install -m 700 -d ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Скопировать релиз статики на хост
+        run: |
+          scp -P "${{ secrets.DEPLOY_SSH_PORT }}" web-dist.tar.gz \
+            "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}:/opt/somelye/prod/incoming/web-${{ needs.determine.outputs.tag }}.tar.gz"
+
+      # ЗАГЛУШКА: в контракте/коде на момент написания нет отдельного механизма миграций —
+      # contracts/schema.sql применяется ТОЛЬКО через postgres docker-entrypoint-initdb.d при
+      # первом старте на пустом volume (см. compose.prod.yml). Живого мигратора (alembic и
+      # т.п.) в apps/api нет (проверено — grep по репозиторию пуст). Шаг — явный маркер ТОЧКИ
+      # в пайплайне, куда он встанет, когда появится, а не тихая имитация работы. Зафиксировано
+      # как гэп, не втихую — см. reports/e2-cicd.md, «Предложения к контрактам».
+      - name: Миграции БД (заглушка — механизма миграций пока нет, см. комментарий выше)
+        run: |
+          echo "::notice::миграций нет — contracts/schema.sql применяется только через postgres initdb на пустом volume (RUNBOOK.md §2.6/compose.prod.yml). Если/когда появится мигратор — шаг встаёт сюда, ПЕРЕД деплоем api-образа."
+
+      - name: infra/scripts/deploy.sh на хосте (pull+up -d, healthz-гейт, авто-откат внутри)
+        run: |
+          ssh -p "${{ secrets.DEPLOY_SSH_PORT }}" "${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SSH_HOST }}" \
+            "/opt/somelye/prod/infra/scripts/deploy.sh prod ${{ needs.determine.outputs.tag }} ${{ needs.build-push.outputs.image }}"
+          # deploy.sh уже реализует и healthz-гейт, и автоматический откат на предыдущий тег
+          # при неудачном healthcheck (infra/scripts/deploy.sh, шаг 5) — отдельно
+          # реализовывать не нужно. РУЧНОЙ откат (если проблема всплыла ПОСЛЕ здорового
+          # healthcheck) — infra/deploy/biz-contabo.md, «Откат», и RUNBOOK.md §4.2:
+          #   ssh deploy@<host> \
+          #     /opt/somelye/prod/infra/scripts/deploy.sh prod <предыдущий_tag> <image_repo>

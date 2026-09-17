@@ -1,0 +1,55 @@
+# infra/Dockerfile.web — образ-НОСИТЕЛЬ статической сборки apps/web (agents/E2-cicd.md, п.1,
+# хак-линия: "build&push образов api и web в Yandex Container Registry").
+#
+# ВАЖНО, чем это НЕ является: это не рантайм-сервис и не альтернативный edge-nginx. Он не
+# запускается как контейнер в проде хак-линии. Причина — apps/web ходит на API по
+# ОТНОСИТЕЛЬНОМУ пути /v1 на ТОМ ЖЕ origin (см. apps/web/vite.config.ts, API_BASE_PATH и
+# apps/web/src/lib/env.ts) — в проде это работает только потому, что infra/nginx.conf
+# одновременно и раздаёт статику, и проксирует /v1 на api (см. чек-лист в reports/e-report.md).
+# Заводить для этого образа СВОЙ nginx.conf — значит держать вторую копию той же логики
+# (gzip/security-заголовки/SSE-исключение для /v1/chat) и рисковать расхождением. Поэтому:
+#
+#   infra/scripts/deploy-hack-yc.sh (на YC VM) вытаскивает /dist ИЗ ЭТОГО ОБРАЗА
+#   (docker create + docker cp) в releases/<tag>/web — раздаёт его тот же nginx, что и
+#   в compose.prod.yml, который хак-линия переиспользует БЕЗ ИЗМЕНЕНИЙ (см.
+#   infra/deploy/hack-yandex-cloud.md и reports/e2-cicd.md, «Решения по хак-линии»).
+#
+# Итого этот образ — просто версионированный, переносимый через YC Container Registry
+# артефакт (аналог web-dist.tar.gz из .github/workflows/deploy.yml биз-линии, только в
+# виде образа, как явно просит бриф, а не tar.gz по scp).
+#
+# Контекст сборки — КОРЕНЬ репозитория (см. infra/Dockerfile.api — та же причина): apps/web
+# зависит от локального пакета apps/shell/plugins/ocr-plugin (package.json:
+# "svoy-somelye-ocr-plugin": "file:../shell/plugins/ocr-plugin") — собрать из-под apps/web/
+# без соседей по монорепо нельзя.
+
+# syntax=docker/dockerfile:1.7
+
+FROM node:20-alpine AS build
+
+WORKDIR /repo
+
+# Сначала — манифесты (свой слой кэша, не инвалидируется правками кода):
+COPY apps/web/package.json apps/web/package-lock.json ./apps/web/
+COPY apps/shell/plugins/ocr-plugin ./apps/shell/plugins/ocr-plugin
+
+WORKDIR /repo/apps/web
+RUN npm ci
+
+# Теперь код apps/web целиком и сборка (npm run build = tsc -b && vite build, см. package.json).
+WORKDIR /repo
+COPY apps/web ./apps/web
+WORKDIR /repo/apps/web
+RUN npm run build
+
+# --- Финальная стадия: ТОЛЬКО файлы сборки, без Node/nginx/рантайма ------------------------
+# Минимальная база — образ никогда не запускается как сервис (см. шапку файла), нужен
+# только для `docker create` + `docker cp` на хосте.
+FROM alpine:3.20
+
+COPY --from=build /repo/apps/web/dist /dist
+
+# Не ENTRYPOINT/CMD — намеренно: `docker run` этот образ не предполагается вызывать. Метка —
+# просто чтобы `docker images`/`docker inspect` не путал с рантайм-образом api.
+LABEL ru.svoysomelye.image-kind="static-artifact" \
+      ru.svoysomelye.description="apps/web dist/ — только для docker create+cp, не рантайм"
