@@ -1,15 +1,21 @@
 """POST /analogs — детерминированный путь «аналог импортного» (v0.2):
 resolve_style -> analog_for_style, без обращения к LLM. list_reference_styles
 — часть contracts/rag-interface.md с v0.2.1 (было предложением агента B).
+
+resolve_style -> analog_for_style (через wines_for_style) — общий вызов с
+фолбэком /v1/scan/resolve на пустых matches (agents/B7-foreign-analogs.md);
+сама функция вынесена в ../analog_lookup.py, чтобы не дублировать маппинг
+Candidate -> AnalogsWineItem в двух роутерах.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
+from ..analog_lookup import wines_for_style
 from ..deps import get_retriever_dep
 from ..errors import ApiError
 from ..rag.interface import Filters, Retriever
-from ..schemas import AnalogsRequest, AnalogsResponse, AnalogsStyle, AnalogsWineItem
+from ..schemas import AnalogsRequest, AnalogsResponse, AnalogsStyle
 from ..security import Principal, get_current_principal
 
 router = APIRouter(prefix="/analogs", tags=["analogs"])
@@ -34,14 +40,5 @@ def analogs(
         region=body.filters.region if body.filters else None,
         sugar=body.filters.sugar if body.filters else None,
     )
-    candidates = retriever.analog_for_style(style["slug"], filters=filters, top_k=12)
-    wines = [
-        # meta для kind=wine — {"source": {...}, "derived": {...}} (v0.3).
-        AnalogsWineItem(
-            wine_id=c.id, name=c.meta["source"].get("name", c.id),
-            winery_name=c.meta["source"].get("winery_name", ""),
-            region_name=c.meta["source"].get("region_name", ""),
-        )
-        for c in candidates
-    ]
+    wines = wines_for_style(retriever, style["slug"], filters=filters, top_k=12)
     return AnalogsResponse(style=AnalogsStyle(**style), wines=wines)

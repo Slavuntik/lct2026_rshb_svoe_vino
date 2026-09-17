@@ -191,6 +191,15 @@ class Settings:
     low_confidence_threshold: float = field(
         default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
     )
+    # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
+    # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,
+    # reference_styles}.yaml, зона пайплайна, ТОЛЬКО ЧТЕНИЕ отсюда. Путь —
+    # тот же принцип, что у cv_eval_report_path выше: относительный от cwd
+    # процесса, а проект уже предполагает запуск uvicorn из apps/api, так что
+    # дефолт "../../pipeline/ref" резолвится в корень репо.
+    scan_foreign_ref_dir: str = field(
+        default_factory=lambda: os.environ.get("SCAN_FOREIGN_REF_DIR", "../../pipeline/ref")
+    )
     max_upload_bytes: int = field(
         # v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ. Телефонные фото (особенно
         # HEIC/iPhone на полном разрешении) часто больше 8 МБ — старый лимит

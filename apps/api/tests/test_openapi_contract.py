@@ -90,3 +90,55 @@ def test_contract_paths_match_app_exactly_no_undocumented_extras(client: TestCli
     app_paths = set(app_schema["paths"])
     extra = sorted(app_paths - set(contract))
     assert extra == [], f"в приложении есть пути, которых нет в контракте: {extra}"
+
+
+# agents/B7-foreign-analogs.md: POST /v1/scan/resolve получил два новых
+# ОПЦИОНАЛЬНЫХ поля ответа — analogs (та же форма, что у /v1/analogs) и
+# analog_reason — фолбэк на пустых matches: узнанный по pipeline/ref
+# сорт/стиль -> аналоги российских вин. Путь /scan/resolve в контракте уже
+# есть (проверка выше её не ловит — та смотрит только на пути/методы, не на
+# поля тела ответа), но САМИ поля пока не описаны в contracts/openapi.yaml —
+# правка contracts/ вне зоны B7 (ORCHESTRATION.md: "контракты меняет только
+# оркестратор"; B7-foreign-analogs.md: "схему ответа в openapi.yaml обновит
+# оркестратор по твоему отчёту"). Тот же паттерн именованного исключения, что
+# B3 применял к путям (_KNOWN_UNDOCUMENTED_EXTRA_PATHS выше, по всей истории
+# файла) — здесь на уровне полей одного ответа. Когда оркестратор впишет оба
+# поля в contracts/openapi.yaml, запись можно убрать вместе с проверкой, см.
+# reports/b7-foreign-analogs.md.
+_KNOWN_UNDOCUMENTED_RESPONSE_FIELDS: dict[str, frozenset[str]] = {
+    "/v1/scan/resolve": frozenset({"analogs", "analog_reason"}),
+}
+
+
+def _resolve_schema_ref(app_schema: dict, schema: dict) -> dict:
+    ref = schema.get("$ref")
+    if ref is None:
+        return schema
+    node = app_schema
+    for part in ref.lstrip("#/").split("/"):
+        node = node[part]
+    return node
+
+
+def test_scan_resolve_response_fields_match_contract_or_are_documented(client: TestClient):
+    """Более тонкая, чем "путь есть" — сверяет СВОЙСТВА тела ответа 200 у
+    /scan/resolve с contracts/openapi.yaml, с единственным исключением
+    _KNOWN_UNDOCUMENTED_RESPONSE_FIELDS выше (не общая лазейка: и пропажа
+    контрактного поля, и ЛЮБОЕ ДРУГОЕ недокументированное поле по-прежнему
+    ловятся)."""
+    contract_schema = yaml.safe_load(OPENAPI_PATH.read_text(encoding="utf-8"))
+    contract_props = set(
+        contract_schema["paths"]["/scan/resolve"]["post"]["responses"]["200"]
+        ["content"]["application/json"]["schema"]["properties"].keys()
+    )
+
+    app_schema = client.app.openapi()
+    raw = app_schema["paths"]["/v1/scan/resolve"]["post"]["responses"]["200"]["content"]["application/json"]["schema"]
+    resolved = _resolve_schema_ref(app_schema, raw)
+    app_props = set(resolved.get("properties", {}).keys())
+
+    known_extra = _KNOWN_UNDOCUMENTED_RESPONSE_FIELDS["/v1/scan/resolve"]
+    unexpected_extra = app_props - contract_props - known_extra
+    assert not unexpected_extra, f"недокументированные новые поля ответа /scan/resolve: {unexpected_extra}"
+    missing = contract_props - app_props
+    assert not missing, f"поля контракта пропали из ответа /scan/resolve: {missing}"

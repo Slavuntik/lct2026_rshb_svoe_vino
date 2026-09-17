@@ -878,3 +878,27 @@ def test_timing_ms_reflects_real_elapsed_time_not_hardcoded(client: TestClient, 
 def test_timing_ms_is_fast_on_default_mock(client: TestClient):
     r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
     assert 0 <= r.json()["timing_ms"] < 1000
+
+
+# --- Хотфикс (оркестратор, полный прогон реального RAG): AnalogsWineItem.
+# winery_name теперь Optional — 92/1982 rich-ответов 500-ли pydantic
+# ValidationError, когда у вина боевого каталога винодельня не заполнена
+# (None, не отсутствующий ключ — mock-RAG этого не воспроизводил, там у всех
+# фикстур винодельня заполнена). ------------------------------------------
+
+def test_rich_mode_similar_wine_with_missing_winery_name_does_not_500(client: TestClient, monkeypatch):
+    """rozovyy-mirazh — низкая уверенность (MOCKPHOTO:weak:...) кладёт его
+    же карточку в `similar` через ровно тот же AnalogsWineItem(**item), что
+    и боевой /scan/photo (routers/scan.py). Временно зануляем винодельню
+    ПРЯМО в фикстуре (monkeypatch.setitem — откатится сам после теста) —
+    воспроизводит боевые данные без похода в реальный каталог."""
+    from app.rag.fixtures import WINES_BY_SLUG
+    monkeypatch.setitem(WINES_BY_SLUG["rozovyy-mirazh"], "winery_name", None)
+
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["similar"], "сценарий низкой уверенности обязан заполнить similar, как и до хотфикса"
+    item = next(w for w in body["similar"] if w["wine_id"] == "rozovyy-mirazh")
+    assert item["winery_name"] is None, "честный null, не пустая строка-заглушка"

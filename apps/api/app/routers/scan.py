@@ -47,6 +47,7 @@ from ..cv.service import PhotoScanResult, run_photo_scan
 from ..db import get_db
 from ..deps import get_image_index_dep, get_label_verifier_dep, get_retriever_dep
 from ..errors import ApiError
+from ..foreign_scan_lookup import resolve_foreign_analogs
 from ..models import Scan
 from ..rag.interface import Retriever
 from ..schemas import (
@@ -85,6 +86,16 @@ def scan_resolve(
     ]
     low_confidence = (not matches) or matches[0].confidence < settings.low_confidence_threshold
 
+    # agents/B7-foreign-analogs.md: каталог vines не дал НИ ОДНОГО совпадения
+    # (пустой matches, не просто низкая уверенность верхнего) — фолбэк на
+    # аналог по стилю/сорту, распознанному в тексте по pipeline/ref. Непустые
+    # matches — поведение не меняется вовсе (регрессия), даже если top
+    # confidence ниже порога.
+    analogs: list[AnalogsWineItem] = []
+    analog_reason: str | None = None
+    if not matches:
+        analogs, analog_reason = resolve_foreign_analogs(retriever, body.text, settings)
+
     db.add(Scan(
         # v0.2.1: гость — полноценная строка users, FK работает и на него.
         user_id=principal.id, query_text=body.text,
@@ -93,7 +104,10 @@ def scan_resolve(
     ))
     db.commit()
 
-    return ScanResolveResponse(matches=matches, low_confidence=low_confidence)
+    return ScanResolveResponse(
+        matches=matches, low_confidence=low_confidence,
+        analogs=analogs, analog_reason=analog_reason,
+    )
 
 
 @router.post("/ocr")

@@ -70,6 +70,16 @@ class ScanMatch(BaseModel):
 class ScanResolveResponse(BaseModel):
     matches: list[ScanMatch] = Field(max_length=5)
     low_confidence: bool
+    # agents/B7-foreign-analogs.md: фолбэк на пустых matches — узнанный по
+    # pipeline/ref (сорт/стиль) токен уходит в тот же резолвер стиля, что и
+    # /v1/analogs (routers/analogs.py), и возвращает российские аналоги.
+    # Пусто/None, когда токен не распознан — старое поведение не меняется.
+    # НЕ в contracts/openapi.yaml — контракты правит только оркестратор (см.
+    # reports/b7-foreign-analogs.md, "Предложения к контрактам"); задокумен-
+    # тированное исключение — tests/test_openapi_contract.py,
+    # _KNOWN_UNDOCUMENTED_RESPONSE_FIELDS.
+    analogs: list[AnalogsWineItem] = Field(default_factory=list)
+    analog_reason: str | None = None
 
 
 class WineResponse(BaseModel):
@@ -116,7 +126,14 @@ class AnalogsStyle(BaseModel):
 class AnalogsWineItem(BaseModel):
     wine_id: str
     name: str
-    winery_name: str
+    # Хотфикс (оркестратор, полный прогон реального RAG, 92/1982 rich-ответов
+    # 500-ли): ~92 вина боевого каталога не несут винодельню — было `str`
+    # (обязательное), pydantic ронял ValidationError на живом None ->
+    # HTTP 500 в rich-ответе /scan/photo (routers/scan.py, AnalogsWineItem(
+    # **item) для similar/analogs). Честный Optional, не пустая строка —
+    # пустая строка тоже была бы "фиксом", но исказила бы факт "винодельня
+    # неизвестна" под "винодельня — пустая строка".
+    winery_name: str | None = None
     region_name: str
 
 
