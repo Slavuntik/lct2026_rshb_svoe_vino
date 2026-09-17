@@ -18,7 +18,13 @@ pipeline/    подготовка данных: краулер каталога,
 contracts/   замороженные контракты: OpenAPI, схема БД, RAG-интерфейс, события, токены
 packages/rag поисковое ядро: гибрид BM25+вектора, реранкер, intent-роутинг,
              голд-сет и eval; порог отсечки калибруется и хранится в манифесте индекса
+packages/winescan второй движок распознавания (IMAGE_PROVIDER=winescan): детектор бутылки
+             OWLv2 с обучаемым выбором рамки, SigLIP 2 so400m в двух видах, мультиракурсная
+             галерея, проверка по локальным признакам, синтетика «у полки», парная оценка;
+             сравнение движков — docs/scan-engines.md
 packages/llm адаптер LLM с заменяемыми драйверами (mock/deepseek/gigachat/anthropic)
+tools/       сопровождение монорепо: sync_winescan.py — сверка и перенос пакета winescan
+             из его исходного репозитория (в SYNC.md пишется коммит источника)
 apps/api     FastAPI: /scan/resolve, /wines/{id}, /chat (SSE с цитатами), /analogs
 apps/web     веб-клиент (React + TS + Vite, PWA): скан, карточка, чат, лендинг
 apps/shell   Capacitor-оболочка + нативный OCR-плагин (Vision, кириллица)

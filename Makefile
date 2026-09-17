@@ -1,6 +1,10 @@
 # Свой Сомелье — корневой Makefile.
-# Единственная зона, откуда он управляет вещами, — qa/ (агент F, agents/F-qa-demo.md).
+# Зона qa/ (агент F, agents/F-qa-demo.md) — основная: демо-паки, e2e, оценка сканера.
 # Другие агенты видят этот файл, но не пишут в него (ORCHESTRATION.md, «своя зона»).
+#
+# Исключение появилось вместе со вторым движком распознавания: пакет packages/winescan
+# приехал из отдельного репозитория и синхронизируется скриптом, а не руками, поэтому его
+# цели живут здесь же — отдельным блоком в конце файла, ничего не меняя в зоне qa/.
 #
 # Главная цель — DoD агента F: демо-пак одной командой.
 #   make demo-pack WINERY=abrau-dyurso
@@ -13,7 +17,8 @@ PYTHON := qa/.venv/bin/python
 
 .PHONY: qa-venv demo-pack demo-pack-abrau demo-pack-second demo-pack-all \
         qa-test qa-test-network e2e-install qa-e2e qa-e2e-real qa-test-all qa-clean \
-        scan-eval-mock scan-mock-server case-script-rehearse
+        scan-eval-mock scan-mock-server case-script-rehearse \
+        winescan-test winescan-sync-check winescan-sync
 
 ## Однократная установка окружения qa/ (Python 3.12 через uv, см. qa/requirements.txt).
 ## Идемпотентна: повторный запуск не ломает уже готовое окружение.
@@ -103,3 +108,26 @@ case-script-rehearse:
 ## Генерированные паки — не исходники: чистая пересборка перед показом.
 qa-clean:
 	rm -rf qa/packs qa/scan-eval-runs
+
+## --- Пакет winescan: второй движок распознавания (docs/scan-engines.md) ---------------
+## Пакет приехал из отдельного репозитория и продолжает синхронизироваться с ним: правки
+## кода делаются там, сюда переносятся скриптом. Путь к источнику НЕ зашит в Makefile —
+## умолчание живёт в самом скрипте, а переменная передаётся, только если её задали:
+##   WINESCAN_SOURCE=/путь/к/репозиторию make winescan-sync-check
+WINESCAN_PY ?= python3
+WINESCAN_SOURCE ?=
+WINESCAN_SOURCE_ARG = $(if $(WINESCAN_SOURCE),--source "$(WINESCAN_SOURCE)")
+
+## Тесты пакета: ни GPU, ни моделей, ни данных кейса не требуют.
+## Кавычки обязательны: путь к интерпретатору может содержать пробел (проверено — без них
+## оболочка обрывает его на первом пробеле и цель падает с «not found»).
+winescan-test:
+	PYTHONPATH=packages/winescan "$(WINESCAN_PY)" -m pytest -q packages/winescan/tests
+
+## Что разошлось между пакетом и его источником (ненулевой код возврата — есть расхождения).
+winescan-sync-check:
+	$(WINESCAN_PY) tools/sync_winescan.py --check $(WINESCAN_SOURCE_ARG)
+
+## Перенести свежее состояние источника; коммит источника пишется в packages/winescan/SYNC.md.
+winescan-sync:
+	$(WINESCAN_PY) tools/sync_winescan.py --apply $(WINESCAN_SOURCE_ARG)
