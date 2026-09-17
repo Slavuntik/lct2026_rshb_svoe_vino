@@ -1,0 +1,10 @@
+{
+ "index_version": "case-20260918",
+ "f1_top1": 0.4,
+ "f1_top5": 0.356,
+ "match_rate": 0.402,
+ "raw_top1_rate_ungated": 0.646,
+ "raw_top5_rate_ungated": 0.831,
+ "eval_set": "case-synth-honest: 2054 позиции, per-slug сиды (фикс F4 9329042), all",
+ "measured_at": "2026-09-17T19:17:41.993733+00:00"
+}
