@@ -7,7 +7,7 @@
 позиции схлопываются" — на каждый slug оставляем максимум score среди его точек.
 
 `Match.gap` — отрыв ТОП-кандидата не от следующего по списку, а от первой позиции ВНЕ
-его "группы" близких скоров (см. `_cluster_by_score`). Near-dup позиции (та же
+его "группы" (см. `_gaps_to_next_family`/`_cluster_by_score`). Near-dup позиции (та же
 этикетка, разные год/категория — case.md) естественно попадают в одну группу: их
 эталонные фото визуально почти идентичны (иногда буквально один и тот же файл — см.
 aligote-barrel-2024/2025 в devfix/manifest.json), поэтому embedding-скор их не
@@ -15,6 +15,18 @@ aligote-barrel-2024/2025 в devfix/manifest.json), поэтому embedding-ск
 image-scan.md, "Пайплайн /scan/photo"; не входит в зону агента G). `gap` здесь —
 честный сигнал "как далеко до первого визуально непохожего конкурента", а не шумный
 артефакт от near-dup соседей по списку.
+
+v0.4.7 п.1 (agents/G4-family-gap.md, TODO-0 ревью 05): "группа" ТЕПЕРЬ определяется
+ПЕРЕПИСЬЮ near-dup семей кейса (`case-data/families.json`, F3 — см. `cv/families.py`),
+не эпсилон-цепочкой скоров — эпсилон-кластеризация (`_cluster_by_score`/
+`_gaps_to_next_group`, CV_GROUP_EPSILON) остаётся ТОЛЬКО фолбэком, когда переписи нет
+(файл отсутствует/пуст/не задан env `CV_FAMILIES_JSON`). Находка ночной волны
+(reviews/05-dataset-wave.md, TODO-0): на плотном каталоге (1982 визуально похожих
+вина) эпсилон-цепочка почти никогда не находит разрыв даже за много кандидатов —
+`gap` был `null` почти всегда, включая случаи, где top-1 явно "чужой" (не из ЧЕСТНОЙ
+near-dup семьи top-1, просто визуально похож на плотном каталоге). Семья по переписи
+не страдает от этого — конкурент ищется по факту членства, не по гладкости убывания
+скора.
 """
 from __future__ import annotations
 
@@ -24,7 +36,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from cv import config, imageio
+from cv import config, families, imageio
 from cv.augment import prepare_reference, render_synthetic_views
 from cv.encoder import SiglipEncoder
 from cv.normalize import normalize_query
@@ -72,6 +84,31 @@ def _gaps_to_next_group(sorted_scores: list[float], epsilon: float) -> list[floa
     return gaps
 
 
+def _gaps_to_next_family(
+    sorted_slugs: list[str], sorted_scores: list[float], family_by_slug: dict[str, str]
+) -> list[float | None]:
+    """v0.4.7 п.1: `gap[i]` = score[i] - score первого j>i, чей slug НЕ принадлежит
+    той же near-dup СЕМЬЕ переписи, что slug[i] (`family_by_slug`, см. `cv/families.py`).
+
+    Слаг без записи в переписи — семья "из одного себя": ЛЮБОЙ другой кандидат
+    (зарегистрированный в семье или нет) считается конкурентом, поэтому gap ищется
+    уже на следующем ранге. Это осознанно НЕ то же самое, что "непохожий скор" —
+    перепись может (и в кейсе часто будет) содержать соседей с почти идентичным
+    скором ВНЕ семьи top-1 (плотный каталог, TODO-0 ревью 05): семья по переписи —
+    факт курации F3, не производная от гладкости кривой скора."""
+    n = len(sorted_slugs)
+    gaps: list[float | None] = [None] * n
+    for i in range(n):
+        family_i = family_by_slug.get(sorted_slugs[i])
+        for j in range(i + 1, n):
+            family_j = family_by_slug.get(sorted_slugs[j])
+            same_family = family_i is not None and family_i == family_j
+            if not same_family:
+                gaps[i] = sorted_scores[i] - sorted_scores[j]
+                break
+    return gaps
+
+
 class ImageIndex:
     def __init__(
         self,
@@ -79,6 +116,7 @@ class ImageIndex:
         encoder: SiglipEncoder | None = None,
         collection: str | None = None,
         manifest_path: Path | None = None,
+        families_json: Path | None = None,
     ):
         self.store = store or get_store()
         self.encoder = encoder or SiglipEncoder()
@@ -99,6 +137,12 @@ class ImageIndex:
         # G3: agents/G3-real-index.md п.2 просит замер стадий боевой сборки). None до
         # первого build().
         self.last_build_stats: dict | None = None
+        # v0.4.7 п.1: near-dup семьи переписи для Match.gap — путь запоминаем как есть
+        # (может быть None -> резолвится лениво), сам словарь slug->family_id грузится
+        # ОДИН РАЗ при первом search() (см. _get_family_by_slug), не здесь — контракт
+        # брифа "семьи грузятся один раз лениво" и симметрия с LabelVerifier._ocr.
+        self._families_json = families_json
+        self._family_by_slug: dict[str, str] | None = None
 
     @property
     def index_version(self) -> str | None:
@@ -114,6 +158,20 @@ class ImageIndex:
             return None
         version = manifest.get("version")
         return version if isinstance(version, str) else None
+
+    def _get_family_by_slug(self) -> dict[str, str]:
+        """v0.4.7 п.1: near-dup семьи переписи, `slug -> family_id` (`cv/families.py`).
+        Лениво — путь резолвится ЗДЕСЬ, в момент первого вызова (не в `__init__`), так
+        `CV_FAMILIES_JSON`/`CASE_DATA_DIR`, выставленные ПОСЛЕ конструирования
+        `ImageIndex` (типичный порядок в тестах: создать индекс -> настроить env ->
+        искать), всё равно видны — тот же принцип отложенного резолва, что и у
+        `LabelVerifier._load()` для PaddleOCR. Результат кэшируется на инстансе
+        (`self._family_by_slug`) — файл переписи (сотни KB) не перечитывается на
+        каждый `search()`."""
+        if self._family_by_slug is None:
+            path = self._families_json or families.default_families_path()
+            self._family_by_slug = families.load_family_by_slug(path)
+        return self._family_by_slug
 
     # --- контракт ----------------------------------------------------------------
 
@@ -148,7 +206,18 @@ class ImageIndex:
                 best_by_slug[slug] = (score, view)
 
         ranked = sorted(best_by_slug.items(), key=lambda kv: kv[1][0], reverse=True)
-        gaps = _gaps_to_next_group([s for _slug, (s, _v) in ranked], config.GROUP_EPSILON)
+        scores_ranked = [s for _slug, (s, _v) in ranked]
+
+        # v0.4.7 п.1: конкурент для gap — первый кандидат НЕ из семьи top-1 по
+        # переписи (case-data/families.json), не первый скор-разрыв > эпсилона.
+        # Эпсилон-группировка (CV_GROUP_EPSILON) — ТОЛЬКО фолбэк, когда переписи
+        # нет (файл отсутствует/пуст/CV_FAMILIES_JSON не задан и дефолтного файла
+        # тоже нет) — контракт "ничего не ломая", прежнее поведение сохранено 1:1.
+        family_by_slug = self._get_family_by_slug()
+        if family_by_slug:
+            gaps = _gaps_to_next_family([slug for slug, _ in ranked], scores_ranked, family_by_slug)
+        else:
+            gaps = _gaps_to_next_group(scores_ranked, config.GROUP_EPSILON)
 
         return [
             Match(slug=slug, score=score, gap=gaps[i], view=view)

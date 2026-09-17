@@ -9,6 +9,8 @@
 """
 from __future__ import annotations
 
+import json
+
 import cv2
 import numpy as np
 import pytest
@@ -17,9 +19,12 @@ from cv.verify import (
     LabelVerifier,
     VerifyCandidate,
     _extract_categories,
+    _extract_color,
     _extract_volumes,
+    _extract_wine_type,
     _extract_years,
     match_candidates,
+    match_candidates_trace,
 )
 
 # --- match_candidates(): чистая функция, без OCR -----------------------------------
@@ -112,6 +117,150 @@ def test_extract_categories_matches_ru_and_latin_keywords():
     assert _extract_categories("сухое вино") == {"сухое"}
     assert _extract_categories("brut reserve") == {"брют", "резерв"}
     assert _extract_categories("ничего релевантного") == set()
+
+
+# --- тип вина / цвет (TODO-2, q2 — reports/g4-family-gap.md) ------------------------
+
+
+def test_extract_wine_type_distinguishes_muskat_from_muskatel():
+    """Найдено на q2: "мускат" — префикс строки символов "мускатель", но это ДВА
+    разных типа вина на реальных этикетках Массандры — граница слова (\\b) обязана
+    их различать, а не считать "мускат" совпавшим внутри "мускатель"."""
+    assert _extract_wine_type("мускатель белый") == {"мускатель"}
+    assert _extract_wine_type("мускат белый южнобережный") == {"мускат"}
+    assert _extract_wine_type("портвейн белый гурзуф") == {"портвейн"}
+    assert _extract_wine_type("совиньон блан") == set()
+
+
+def test_extract_color_recognizes_ru_forms():
+    assert _extract_color("мускатель белый") == {"белый"}
+    assert _extract_color("мускатель черный") == {"черный"}
+    assert _extract_color("вино белое") == {"белый"}
+    assert _extract_color("ничего релевантного") == set()
+
+
+def test_match_distinguishes_massandra_family_by_type_and_color():
+    """Точное воспроизведение q2 (Мускатель Массандра Белый, reports/g4-family-gap.md):
+    четыре near-dup соседа Массандры, OCR-текст — РЕАЛЬНЫЙ, снятый с
+    case-data/eval/queries/02eef911.webp прогоном LabelVerifier.read_text() (записан
+    в отчёте дословно). До правки категорий-типа/цвета ни один кандидат не получал
+    сигнала вообще (все 0 -> None). После — "мускатель"+"белый" совпадают ТОЛЬКО с
+    целевым слагом (2 очка), у остальных максимум 1 (тип ИЛИ цвет, не оба)."""
+    ocr_text = "25.09.25 1894 МУСКАТЕЛЬ MYC MACCAHAPA KPA БЕЛЫЙ ГОДУРОЖАЯ 2023"
+    candidates: list[VerifyCandidate] = [
+        _cand("massandra-portveyn-belyy-gurzuf-kokur-belyy-beloe-sladkoe-135", name="Портвейн Белый Гурзуф"),
+        _cand("massandra-muskat-belyy-yuzhnoberezhnyy-beloe-sladkoe-16", name="Мускат Белый Южнобережный"),
+        _cand("massandra-muskatel-chernyy-krasnye-sorta-vinograda-krasnoe-sladkoe-16", name="Мускатель черный"),
+        _cand("massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16", name="Мускатель белый"),
+    ]
+    assert match_candidates(ocr_text, candidates) == "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16"
+
+
+def test_match_candidates_trace_matches_match_candidates_decision():
+    """match_candidates_trace() делит _score_candidate() с match_candidates() —
+    решение ОБЯЗАНО совпадать, трассировка — не отдельная копия логики."""
+    ocr_text = "25.09.25 1894 МУСКАТЕЛЬ MYC MACCAHAPA KPA БЕЛЫЙ ГОДУРОЖАЯ 2023"
+    candidates: list[VerifyCandidate] = [
+        _cand("massandra-portveyn-belyy-gurzuf-kokur-belyy-beloe-sladkoe-135", name="Портвейн Белый Гурзуф"),
+        _cand("massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16", name="Мускатель белый"),
+    ]
+    decision, trace = match_candidates_trace(ocr_text, candidates)
+    assert decision == match_candidates(ocr_text, candidates)
+    assert trace["reason"] == "matched"
+    assert trace["ocr_tokens"]["wine_types"] == ["мускатель"]
+    assert trace["ocr_tokens"]["colors"] == ["белый"]
+    assert trace["ocr_tokens"]["years"] == [2023]
+    assert len(trace["per_candidate"]) == 2
+
+
+def test_match_candidates_trace_reports_reason_for_each_abstention_kind():
+    assert match_candidates_trace("2024 сухое", [])[1]["reason"] == "no_candidates"
+    assert match_candidates_trace("нечитаемый мусор без сигнала", [_cand("a", vintage=2024)])[1]["reason"] == (
+        "ocr_no_recognizable_tokens"
+    )
+    assert match_candidates_trace("вино урожая 2019 года", [_cand("a", vintage=2024), _cand("b", vintage=2025)])[1][
+        "reason"
+    ] == "no_candidate_scored"
+    tied = [_cand("a", name="Вино 2024"), _cand("b", name="Вино 2024, резерв")]
+    reason = match_candidates_trace("Вино 2024", tied)[1]["reason"]
+    assert reason == "ambiguous_tie"
+
+
+# --- CV_VERIFY_DEBUG (TODO-2, ревью 05) — трассировка verify() ----------------------
+
+
+def test_verify_debug_off_by_default_no_trace_log(monkeypatch, capsys, synthetic_bottle_image):
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.delenv("CV_VERIFY_DEBUG", raising=False)
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    v.verify(data, [])  # пустые кандидаты — не трогает OCR, самый дешёвый путь
+    assert "[cv.verify]" not in capsys.readouterr().err
+
+
+def test_verify_debug_logs_trace_on_empty_candidates_without_touching_ocr(monkeypatch, capsys, synthetic_bottle_image):
+    """Флаг включён, но кандидатов нет — лог обязан появиться (вызов был), а OCR
+    всё равно не трогается (та же гарантия, что и при выключенном флаге)."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setenv("CV_VERIFY_DEBUG", "1")
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, [])
+    assert result is None
+    assert v._ocr is None  # OCR-движок не тронут — как и при выключенном флаге
+
+    err = capsys.readouterr().err
+    assert "[cv.verify]" in err
+    line = next(line for line in err.splitlines() if "[cv.verify]" in line)
+    payload = json.loads(line.split("[cv.verify] ", 1)[1])
+    assert payload == {
+        "called": True, "candidates": [], "ocr_text": None, "reason": "no_candidates", "decision": None,
+    }
+
+
+def test_verify_debug_does_not_change_decision(monkeypatch, label_verifier):
+    """Контракт брифа: 'НЕ менять поведение при выключенном флаге' — а при
+    ВКЛЮЧЁННОМ решение обязано остаться ТЕМ ЖЕ, что и без него (трассировка —
+    побочный эффект в stderr, не альтернативная ветка принятия решения)."""
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+
+    ref = _make_bottle_label(2024)
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    monkeypatch.delenv("CV_VERIFY_DEBUG", raising=False)
+    without_debug = label_verifier.verify(data, _ALIGOTE_CANDIDATES)
+    monkeypatch.setenv("CV_VERIFY_DEBUG", "1")
+    with_debug = label_verifier.verify(data, _ALIGOTE_CANDIDATES)
+    assert without_debug == with_debug == "aligote-barrel-2024"
+
+
+def test_verify_debug_trace_contains_ocr_text_and_candidates(monkeypatch, capsys, label_verifier):
+    """Дословно то, что требует бриф: вызван ли, кандидаты (slug/name/vintage),
+    что распознал OCR (сырые строки) — всё в одной JSON-строке лога."""
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+
+    ref = _make_bottle_label(2024)
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    monkeypatch.setenv("CV_VERIFY_DEBUG", "1")
+    result = label_verifier.verify(data, _ALIGOTE_CANDIDATES)
+
+    err = capsys.readouterr().err
+    line = next(line for line in err.splitlines() if "[cv.verify]" in line)
+    payload = json.loads(line.split("[cv.verify] ", 1)[1])
+    assert payload["called"] is True
+    assert payload["decision"] == result == "aligote-barrel-2024"
+    assert payload["reason"] == "matched"
+    assert isinstance(payload["ocr_text"], str) and payload["ocr_text"]  # сырая строка OCR, не пусто
+    assert {c["slug"] for c in payload["candidates"]} == {"aligote-barrel-2024", "aligote-barrel-2025"}
+    assert all({"slug", "name", "vintage"} <= c.keys() for c in payload["candidates"])
+    assert 2024 in payload["ocr_tokens"]["years"]
 
 
 # --- LabelVerifier: конструктор ленивый, decode -> ValueError ------------------------

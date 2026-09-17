@@ -2,7 +2,9 @@
 - self-match >= 90% на дев-фикстурах (свежие holdout-ракурсы, другой seed, чем build);
 - near-dup пара (aligote-barrel-2024/2025) — в одной группе кандидатов;
 - add() без ребилда — новая позиция ищется сразу;
-- search() на битом файле -> ValueError, не 500-полуфабрикат.
+- search() на битом файле -> ValueError, не 500-полуфабрикат;
+- family-based gap (v0.4.7 п.1, agents/G4-family-gap.md) — Match.gap считается по
+  переписи near-dup семей (case-data/families.json), эпсилон — только фолбэк.
 
 Небольшой n (SMALL_N_VIEWS) и малая выборка слагов — реальный энкодер SigLIP2 не
 бесплатен по времени; полная self-check сводка на всех дев-фикстурах — `cv selfcheck`
@@ -11,12 +13,14 @@ near-dup пару, ради разумного времени прогона pyt
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from cv.augment import render_synthetic_views, save_synthetic_views
 from cv.encoder import SiglipEncoder
 from cv.imageio import encode_jpeg, load_image_file
-from cv.index import ImageIndex, Match, _cluster_by_score, _gaps_to_next_group
+from cv.index import ImageIndex, Match, _cluster_by_score, _gaps_to_next_family, _gaps_to_next_group
 from cv.selfcheck import is_acceptable_match
 from cv.store import QdrantStore
 
@@ -209,6 +213,96 @@ def test_gaps_to_next_group_skips_same_group_neighbors():
     assert gaps[3] is None  # последний элемент — дальше группы нет
 
 
+# --- family-based gap (v0.4.7 п.1, agents/G4-family-gap.md) — арифметика без энкодера ---
+
+
+def test_gaps_to_next_family_skips_same_family_neighbor():
+    """Пара одной семьи НЕ образует gap между собой (брифа, п.1) — конкурент ищется
+    ПОСЛЕ последнего члена семьи top-1, а не на соседнем ранге."""
+    slugs = ["a", "b", "c", "d"]
+    scores = [0.90, 0.89, 0.60, 0.10]
+    family_by_slug = {"a": "fam1", "b": "fam1"}  # a,b — одна семья; c,d вне переписи
+    gaps = _gaps_to_next_family(slugs, scores, family_by_slug)
+    assert gaps[0] == pytest.approx(0.90 - 0.60)  # НЕ 0.90-0.89 (b — та же семья, что a)
+    assert gaps[1] == pytest.approx(0.89 - 0.60)  # для b конкурент — тоже c (a — предыдущий, не сосед)
+    assert gaps[2] == pytest.approx(0.60 - 0.10)  # c не в переписи вообще — конкурент сразу
+    assert gaps[3] is None  # последний элемент — дальше конкурентов нет
+
+
+def test_gaps_to_next_family_stranger_forms_gap_even_at_tiny_score_delta():
+    """Чужак образует gap (брифа, п.1) — ДАЖЕ когда разница в скоре меньше
+    CV_GROUP_EPSILON (0.03): перепись важнее гладкости кривой скора. Это ровно
+    механизм q2 (reports/g4-family-gap.md): massandra-portveyn-belyy/-muskat-belyy
+    расходятся на 0.012 — эпсилон смолчал бы (< 0.03), перепись — нет (ни один не
+    зарегистрирован ни в одной семье, значит оба "семья из одного")."""
+    slugs = ["massandra-portveyn-belyy", "massandra-muskat-belyy"]
+    scores = [0.839, 0.827]  # ~0.012 разрыва — было бы одной эпсилон-группой
+    gaps = _gaps_to_next_family(slugs, scores, family_by_slug={})
+    assert gaps[0] == pytest.approx(0.012, abs=1e-6)
+    assert gaps[1] is None
+
+
+def test_gaps_to_next_family_ignores_unrelated_census_entries():
+    """Перепись непустая (есть семьи), но НИ ОДИН из ранжированных слагов в неё не
+    входит — каждый трактуется как "семья из одного", фолбэк на эпсилон не
+    включается (это по-прежнему family-aware путь, просто без совпадений)."""
+    slugs = ["p", "q", "r"]
+    scores = [0.83, 0.82, 0.81]
+    family_by_slug = {"unrelated-1": "fam9", "unrelated-2": "fam9"}
+    gaps = _gaps_to_next_family(slugs, scores, family_by_slug)
+    assert gaps[0] == pytest.approx(0.01)
+    assert gaps[1] == pytest.approx(0.01)
+    assert gaps[2] is None
+
+
+def test_gaps_to_next_family_real_family_wins_over_close_score_stranger():
+    """Семья по переписи побеждает near-dup ПО СКОРУ, если это разные слаги: b —
+    настоящая семья a (перепись), c — чужак, случайно оказавшийся ближе по скору,
+    чем a/b друг к другу. gap[a] обязан пропустить b (семья) И "увидеть" c, даже
+    хотя c скор-ближе к b, чем b к a."""
+    slugs = ["a", "b", "c"]
+    scores = [0.90, 0.70, 0.69]  # a-b разрыв большой, b-c крошечный
+    family_by_slug = {"a": "famX", "b": "famX"}
+    gaps = _gaps_to_next_family(slugs, scores, family_by_slug)
+    assert gaps[0] == pytest.approx(0.90 - 0.69)  # пропустили b (семья), дошли до c
+    assert gaps[1] == pytest.approx(0.70 - 0.69)  # b — чужак c
+
+
+def test_get_family_by_slug_empty_when_families_file_missing(tmp_path, shared_encoder):
+    """Регрессия (контракт: 'отсутствует/не задан -> текущий фолбэк, ничего не
+    ломая'): путь, указывающий в никуда, даёт пустой словарь -> search() обязан
+    откатиться на _gaps_to_next_group (эпсилон), не падать и не тихо считать всё
+    одной гигантской семьёй."""
+    index = ImageIndex(
+        store=QdrantStore(path=tmp_path / "qdrant"),
+        encoder=shared_encoder,
+        collection="fam_missing_test",
+        manifest_path=tmp_path / "manifest.json",
+        families_json=tmp_path / "no-such-families.json",
+    )
+    assert index._get_family_by_slug() == {}
+
+
+def test_family_by_slug_loaded_once_and_cached(tmp_path, shared_encoder):
+    """'Семьи грузятся один раз лениво' (брифа, п.1): второй вызов не должен снова
+    читать файл — проверяем через кэш на инстансе, не считая обращений к диску,
+    достаточно убедиться, что второй вызов отдаёт ТОТ ЖЕ объект (не новый парсинг)."""
+    families_path = tmp_path / "families.json"
+    families_path.write_text(json.dumps({"fam1": {"slugs": ["x", "y"]}}), encoding="utf-8")
+    index = ImageIndex(
+        store=QdrantStore(path=tmp_path / "qdrant"),
+        encoder=shared_encoder,
+        collection="fam_cache_test",
+        manifest_path=tmp_path / "manifest.json",
+        families_json=families_path,
+    )
+    first = index._get_family_by_slug()
+    assert first == {"x": "fam1", "y": "fam1"}
+    families_path.write_text(json.dumps({"fam1": {"slugs": ["x", "y", "z"]}}), encoding="utf-8")
+    second = index._get_family_by_slug()
+    assert second is first  # тот же кэш-объект — файл НЕ перечитан вопреки правке на диске
+
+
 def test_match_is_plain_dataclass_per_contract():
     m = Match(slug="x", score=0.5, gap=0.1, view="real")
     assert (m.slug, m.score, m.gap, m.view) == ("x", 0.5, 0.1, "real")
@@ -242,6 +336,30 @@ def test_build_labels_extra_real_angle_by_filename_not_position(tmp_path, shared
     points, _ = index.store.client.scroll(collection_name="view_label_test", limit=100, with_payload=True)
     views = sorted(p.payload["view"] for p in points)
     assert views == ["real", "real-2", "synth-1", "synth-2"]
+
+
+# --- G4 (agents/G4-family-gap.md): интеграция family-based gap на РЕАЛЬНОЙ переписи ---
+
+
+def test_search_uses_real_families_json_end_to_end(built_index, sample_refs):
+    """`built_index` не получает `families_json` явно -> дефолт (`CV_FAMILIES_JSON`
+    ИЛИ `$CASE_DATA_DIR/families.json`) резолвится лениво на первом `search()` — на
+    этой машине это РЕАЛЬНАЯ перепись F3 (`case-data/families.json`), которая
+    ДЕЙСТВИТЕЛЬНО регистрирует aligote-barrel-2024/2025 одной семьёй (проверено:
+    оба слага встречаются в её `slugs`). gap top-1 обязан пропустить сиблинга по
+    семье и указать на первого настоящего чужака среди остальных dev-фикстур —
+    не на near-dup соседа, даже при почти идентичном скоре."""
+    query_bytes = sample_refs["aligote-barrel-2024"].read_bytes()
+    matches = built_index.search(query_bytes, top_k=10)
+    slugs = [m.slug for m in matches]
+    assert "aligote-barrel-2025" in slugs  # всё ещё кандидат — near-dup routing не сломан
+
+    top1 = matches[0]
+    assert top1.slug == "aligote-barrel-2024"
+    non_family = [m for m in matches if m.slug not in ("aligote-barrel-2024", "aligote-barrel-2025")]
+    assert non_family, "нужен хотя бы один чужак в top_k для этого теста"
+    first_stranger = non_family[0]
+    assert top1.gap == pytest.approx(top1.score - first_stranger.score)
 
 
 def test_build_records_stage_timings(tmp_path, shared_encoder, sample_refs):
