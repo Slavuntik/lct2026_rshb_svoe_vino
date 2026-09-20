@@ -79,11 +79,32 @@ services:
       # compose.prod.yml. Драйвер psycopg[binary] пока не в apps/api/pyproject.toml.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       ENVIRONMENT: staging
+      # --- CV-стек — E3-do-ams3, по аналогии с compose.prod.yml (см. там подробные
+      # комментарии по каждой переменной/тому — здесь не дублируются построчно). -----------
+      IMAGE_PROVIDER: real
+      VERIFIER_PROVIDER: real
+      CV_DATA_DIR: /data/cv
+      CASE_DATA_DIR: /data/case
+      CV_ABS_FLOOR: "0.82"
+      CV_MARGIN_FLOOR: "0.02"
+      CV_VERIFY_PROXIMITY: "0.04"
+      HF_HOME: /data/models
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
     volumes:
       # Публикуется infra/scripts/publish-index.sh — см. RUNBOOK «Деплой индекса».
       - /opt/somelye/staging/rag-data/current:/data/rag:ro
       # ЧТЕНИЕ+ЗАПИСЬ, именованный том — см. подробное обоснование в compose.prod.yml.
       - fastembed_cache:/data/fastembed-cache
+      # --- CV: индекс/кэш моделей/метаданные кейса — см. compose.prod.yml для обоснования
+      # каждой строки (embedded Qdrant пишет .lock даже на чтение -> не :ro; hf_cache
+      # смонтирован ВТОРОЙ раз под /app/.paddlex — paddlex игнорирует HF_HOME, см. там же;
+      # case_data — сознательное добавление сверх буквального списка брифа). Отдельные
+      # volume'ы от prod (somelye_staging_* ниже) — свой independent слепок на этом же хосте.
+      - cv_index:/data/cv
+      - hf_cache:/data/models
+      - hf_cache:/app/.paddlex
+      - case_data:/data/case
     depends_on:
       postgres:
         condition: service_healthy
@@ -91,15 +112,21 @@ services:
         condition: service_started
     expose:
       - "8000"
-    mem_limit: 1536m
-    mem_reservation: 512m
+    # E3-do-ams3: было 1536m — тот же гарантированный OOM с реальным CV, что и у prod (см.
+    # compose.prod.yml). 4g, не 6g как у prod — staging системно легче по всем лимитам этого
+    # файла (nginx/qdrant/postgres тоже меньше prod), но CV-модели весят одинаково независимо
+    # от контура, поэтому запас взят не такой большой, как у prod, а не "как получится".
+    # То же ВНИМАНИЕ оркестратору про RUNBOOK.md «Память: как считали» — см. compose.prod.yml.
+    mem_limit: 4g
+    mem_reservation: 2g
     cpus: 1.0
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3).read()"]
+      # warm==true, не просто HTTP 200 — см. compose.prod.yml, то же обоснование дословно.
+      test: ["CMD", "python", "-c", "import json,sys,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3)); sys.exit(0 if d.get('warm') is True else 1)"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 90s
     logging:
       driver: json-file
       options: { max-size: "5m", max-file: "3" }
@@ -168,3 +195,10 @@ volumes:
     name: somelye_staging_nginx_cache
   fastembed_cache:
     name: somelye_staging_fastembed_cache
+  # --- CV (E3-do-ams3) — см. compose.prod.yml для обоснования "именованный том, не bind".
+  cv_index:
+    name: somelye_staging_cv_index
+  hf_cache:
+    name: somelye_staging_hf_cache
+  case_data:
+    name: somelye_staging_case_data

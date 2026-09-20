@@ -14,10 +14,36 @@
 #     ЗАРАНЕЕ (см. ниже) — не мешает текущей сборке (просто неиспользуемые файлы в образе),
 #     но избавляет от повторной правки Dockerfile, когда B добавит "rag" в зависимости.
 #
+# E3-do-ams3 (CV-стек в образе, платформа хоста раздачи — вопрос отдельного брифа): ДВЕ
+# НАХОДКИ по факту, не по брифу на слово —
+#   1. "rag" из COMMENT выше НИКОГДА не устанавливался. `apps/api/pyproject.toml` объявляет
+#      rag/cv только в `[project.optional-dependencies] integration` — а `uv sync` ниже до
+#      этой правки не звал `--extra integration` ни разу. COPY packages/rag клал исходники
+#      в образ, но БЕЗ uv sync с extra это мёртвые файлы: `import rag` падал бы
+#      ModuleNotFoundError и при RAG_PROVIDER=real, не только при IMAGE_PROVIDER=real —
+#      просто раньше это было не в фокусе (демо шло на моках/локально). `--extra integration`
+#      ниже чинит ОБА пробела разом (rag и cv лежат в одной extra-группе).
+#   2. CV-стек добавлен: `packages/cv` (torch, transformers, opencv, paddleocr, paddlepaddle,
+#      qdrant-client, sentencepiece, pillow-heif). Модели (SigLIP2 ~1.5 ГБ, PaddleOCR ~100 МБ)
+#      сюда НЕ запекаются — приезжают на volume `hf_cache` отдельным механизмом синхронизации
+#      с конкретным хостом раздачи (см. infra/compose.prod.yml, HF_HOME/HF_HUB_OFFLINE; способ
+#      доставки — предмет отдельного брифа, зависит от целевого хоста) — образ остаётся
+#      маленьким и переносимым независимо от того, какая версия индекса сейчас развёрнута.
+#   CPU-only torch: без правки `apps/api/pyproject.toml` (`[tool.uv.sources] torch` + новый
+#   `[[tool.uv.index]] name="pytorch-cpu" explicit=true`, marker `sys_platform=="linux"`) torch
+#   резолвился с обычного PyPI и на Linux тянул ПОЛНЫЙ CUDA-стек транзитивно (cuda-toolkit,
+#   nvidia-cudnn/-cusparselt/-nccl/-nvshmem-cu13, triton — ПРОВЕРЕНО ПО ФАКТУ: 19 пакетов
+#   ушли из `uv lock --upgrade-package torch` после правки, см. apps/api/pyproject.toml,
+#   комментарий там же) — на хосте БЕЗ GPU это чистый балласт поверх и без того тяжёлого
+#   колеса. paddlepaddle (не paddlepaddle-gpu) — уже CPU-сборка на обычном PyPI без правок,
+#   тоже проверено по uv.lock (ноль cuda-/nvidia- зависимостей в его записи).
+#
 # ОСТАЮЩИЙСЯ БЛОКЕР (см. reports/e-report.md, «Блокеры»): в apps/api/ на момент написания
 # ЭТОГО файла нет закоммиченного uv.lock — `uv sync --frozen` ниже не соберётся, пока агент B
 # (или оркестратор) не прогонит `uv lock` в apps/api и не закоммитит файл. Сам Dockerfile
 # менять для этого не нужно — он уже ждёт uv.lock по описанному ниже COPY.
+# [E3-do-ams3: уже неактуально — apps/api/uv.lock существует и закоммичен, `uv lock --check`
+#  зелёный на момент этой правки; блокер оставлен как есть — не моя зона его вычёркивать.]
 
 # syntax=docker/dockerfile:1.7
 
@@ -34,21 +60,40 @@ ENV UV_COMPILE_BYTECODE=1 \
 WORKDIR /build
 
 # 1) Только манифесты зависимостей — отдельный слой кэша, не инвалидируется правками кода.
+#    packages/cv добавлен рядом с llm/rag (E3-do-ams3) — path-зависимость "cv" из
+#    [tool.uv.sources], нужна физически на диске уже на этом шаге, иначе uv sync ниже
+#    не найдёт её (та же причина, по которой rag/llm копируются здесь же, не позже).
 COPY apps/api/pyproject.toml apps/api/uv.lock ./apps/api/
 COPY packages/llm ./packages/llm
 COPY packages/rag ./packages/rag
+COPY packages/cv ./packages/cv
 
 WORKDIR /build/apps/api
+# --extra integration — ставит rag+cv (и их тяжёлые ML-зависимости) поверх базовых.
+# CPU-only torch обеспечен на уровне apps/api/pyproject.toml/uv.lock (см. комментарий
+# выше и там), здесь ничего дополнительно указывать не нужно — uv sync просто читает
+# уже посчитанный uv.lock (--frozen: без пересчёта резолвинга внутри сборки образа).
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-install-project
+    uv sync --frozen --no-dev --extra integration --no-install-project
 
 # 2) Теперь код apps/api целиком и финальный sync (ставит сам проект).
 COPY apps/api ./
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-dev --extra integration
 
 # --- Рантайм-стадия: только venv + исходники, без uv и кэша сборки -----------------
 FROM python:3.12-slim AS runtime
+
+# libgomp1 (GNU OpenMP) — numpy/opencv-python-headless/paddlepaddle используют OpenMP для
+# многопоточных мат-ядер на CPU; python:3.12-slim его не несёт из коробки, отсутствие
+# всплывает как ImportError на "libgomp.so.1" ИМЕННО при первом реальном импорте torch/cv
+# на Linux (на macOS дев-машине не воспроизвести — там своя система рантайм-либ). Docker на
+# машине агента E3 НЕТ (см. reports/e3-do-ams3.md, «Чем валидировал») — этот пакет добавлен
+# по опыту с opencv/paddle на slim-образах, а не подтверждён реальной сборкой ЭТОГО образа.
+# Если первый реальный `docker build` всё же упадёт на другой недостающей .so — добавить
+# пакет сюда же, одной строкой, это самое дешёвое место для правки.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --system app && useradd --system --gid app --home-dir /app --create-home app
 
@@ -66,8 +111,14 @@ EXPOSE 8000
 
 # python есть гарантированно (это рантайм самого приложения) — не тянем curl/wget
 # только ради healthcheck, как это пришлось бы делать для qdrant/nginx образов.
+# E3-do-ams3: проверяем не только HTTP 200, но и JSON-поле warm==true — на IMAGE_PROVIDER=
+# real/VERIFIER_PROVIDER=real сервер честно отвечает 200 и с непрогретыми CV-моделями
+# (apps/api/app/cv/factory.py — прогрев не роняет старт), просто warm=false; здоровым контейнер
+# должен считаться, только когда сканер реально готов принимать боевые фото (compose.prod.yml
+# дублирует этот же тест в healthcheck: — при docker-compose-запуске побеждает ОН, этот
+# HEALTHCHECK — дефолт для `docker run` без compose).
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3).read()" || exit 1
+    CMD python -c "import json,sys,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3)); sys.exit(0 if d.get('warm') is True else 1)" || exit 1
 
 # Shell-форма — чтобы $APP_MODULE/$PORT раскрывались из ENV без пересборки образа.
 # --proxy-headers: за nginx (см. infra/nginx.conf) идёт X-Forwarded-*, uvicorn должен
