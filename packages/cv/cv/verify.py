@@ -45,6 +45,38 @@ routing апстрим в `apps/api` решил не звать OCR) — лог�
 задачи — см. reports/g4-family-gap.md, "q2"). Извлечение — по границе слова
 (`\\b...\\b`), не по вхождению подстроки: "мускат" НЕ обязан ложно совпадать внутри
 "мускатель" (разные, не вложенные категории на реальных этикетках Массандры).
+
+## Режим чтения текста запроса: детектор vs центральный кроп (agents/H1-cpu-path.md)
+
+`read_query_text()` (v0.4.12) кадрирует запрос ДО OCR двумя разными способами,
+переключается `CV_OCR_QUERY_MODE`:
+
+- `"detector"` (ДЕФОЛТ — включим `"center"` после приёмки живым API): как раньше,
+  бит-в-бит — `normalize_query()` (детектор этикетки `cv/normalize.py`: силуэт
+  бутылки → нижние 2/3 → развёртка цилиндра) на канонический квадрат
+  `NORM_SIZE_DEFAULT` (448), затем `read_text()` даунскейлит до `self.ocr_size`
+  (`CV_OCR_SIZE`, дефолт 320) перед движком.
+- `"center"`: без детектора вовсе — фиксированный центральный кроп ПОЛНОГО кадра
+  запроса, доли `CENTER_CROP` (0.15/0.05/0.85/0.98 по x0/y0/x1/y1) — ТЕ ЖЕ доли,
+  что видит VLM (`apps/api/app/cv/vision_llm.py::CENTER_CROP`) и офлайн-эксперимент
+  (`qa/real_photos_features.py::CWIDE`), — даунскейл до `self.center_size`
+  (`CV_OCR_CENTER_SIZE`, дефолт 640), см. `read_query_text_center()`.
+
+Основание (оркестратор, 21.09, офлайн на 62 живых фото каталога): детектор
+кадрирует ТУЖЕ, чем нужно OCR — мелкие слова этикетки (винодельня, сорт) часто
+обрезаются или остаются нечитаемыми при последующем даунскейле до 320px. Широкий
+кроп на 640px читает больше текста и при этом БЫСТРЕЕ (медиана 1.0 с против 1.7 с
+на Mac — детектор+развёртка цилиндра стоят своего времени, а сам кроп 640px везёт
+меньше пикселей в OCR, чем 448px с последующим даунскейлом до 320). 800px хуже 640
+(больше шума матчится как "текст"). Изолированный эффект на офлайн-прогоне: top-1
+75.8% → 83.9% (дальнейшие поправки — гомоглифы, гейт винодельни — накопительно
+поверх этого режима, см. cv/text_fusion.py и app/cv/service.py).
+
+`verify()` НЕ меняется этой правкой: её собственный fallback-путь (когда `ocr_text`
+не передан) по-прежнему использует `normalize_query()` напрямую, независимо от
+`CV_OCR_QUERY_MODE` — режим влияет только на то, что `read_query_text()` возвращает
+ВЫЗЫВАЮЩЕМУ коду (`app/cv/service.py`), а тот уже сам передаёт этот текст в
+`verify(ocr_text=...)` (v0.4.12, без изменений в этой волне).
 """
 from __future__ import annotations
 
@@ -131,6 +163,29 @@ _COLOR_KEYWORDS: dict[str, str] = {
 DEFAULT_SCORE_THRESH = 0.5  # ниже — OCR сам неуверен в строке, в токенизацию не пускаем
 DEFAULT_LANG = "ru"  # PaddleOCR: кириллица + латиница (цифры/латинские слова — общий алфавит)
 DEFAULT_OCR_SIZE = 320  # даунскейл перед OCR — доминирующий рычаг бюджета 700 мс, см. LabelVerifier.read_text
+
+# agents/H1-cpu-path.md: режим кадрирования read_query_text() — см. докстринг модуля,
+# "Режим чтения текста запроса". "detector" — старое поведение (normalize_query()),
+# "center" — центральный кроп кадра CENTER_CROP без детектора. Дефолт "detector" ПОКА
+# (переключаем после приёмки живым API) — не меняем поведение молча.
+DEFAULT_OCR_QUERY_MODE = "detector"
+DEFAULT_OCR_CENTER_SIZE = 640  # CV_OCR_CENTER_SIZE: 640 — плато замера (800 хуже, больше шума)
+# Доли ширины/высоты ПОЛНОГО кадра запроса (x0, y0, x1, y1) — центральная бутылка,
+# целиком видимая. ТЕ ЖЕ доли, что apps/api/app/cv/vision_llm.py::CENTER_CROP (вход
+# VLM) и qa/real_photos_features.py::CWIDE (офлайн-эксперимент) — намеренно один и
+# тот же кроп для всех трёх путей чтения этикетки.
+CENTER_CROP = (0.15, 0.05, 0.85, 0.98)
+
+
+def _center_crop(image_arr: np.ndarray) -> np.ndarray:
+    """Кроп центральной бутылки ПОЛНОГО кадра по долям `CENTER_CROP` — НЕ детектор
+    этикетки (`cv/normalize.py::detect_label_region`), просто фиксированные доли
+    ширины/высоты входного массива. `np.ascontiguousarray` — срез numpy не владеет
+    памятью непрерывно построчно, а `cv2.resize`/PaddleOCR ожидают C-contiguous вход
+    (тот же приём, что `qa/real_photos_features.py` для варианта "cwide")."""
+    h, w = image_arr.shape[:2]
+    x0, y0, x1, y1 = CENTER_CROP
+    return np.ascontiguousarray(image_arr[int(h * y0) : int(h * y1), int(w * x0) : int(w * x1)])
 
 
 class VerifyCandidate(TypedDict):
@@ -359,6 +414,8 @@ class LabelVerifier:
         lang: str = DEFAULT_LANG,
         score_thresh: float = DEFAULT_SCORE_THRESH,
         ocr_size: int = DEFAULT_OCR_SIZE,
+        query_mode: str = DEFAULT_OCR_QUERY_MODE,
+        center_size: int = DEFAULT_OCR_CENTER_SIZE,
     ):
         self.lang = lang
         self.score_thresh = score_thresh
@@ -366,6 +423,11 @@ class LabelVerifier:
         # На слабом CPU это доминирующая статья бюджета: ams3 ставит 256 (2.5 с против
         # 2.9 с при 320, тот же вердикт); 224 уже теряет текст — верификатор воздерживается.
         self.ocr_size = int(os.environ.get("CV_OCR_SIZE", ocr_size))
+        # agents/H1-cpu-path.md: режим read_query_text() ("detector"|"center", см.
+        # докстринг модуля) и сторона даунскейла центрального кропа в режиме "center"
+        # (НЕЗАВИСИМА от ocr_size выше — тот применяется только в режиме "detector").
+        self.ocr_query_mode = os.environ.get("CV_OCR_QUERY_MODE", query_mode).strip().lower()
+        self.center_size = int(os.environ.get("CV_OCR_CENTER_SIZE", center_size))
         self._ocr = None
 
     def _load(self) -> None:
@@ -400,20 +462,28 @@ class LabelVerifier:
             **extra,
         )
 
-    def read_text(self, image_arr: np.ndarray) -> str:
+    def read_text(self, image_arr: np.ndarray, *, size: int | None = None) -> str:
         """RGB ndarray -> распознанный текст (строки объединены пробелом), только
         куски с confidence >= `score_thresh`. Пустая строка, если OCR ничего не нашёл
         или сам движок упал (деградация, не исключение — см. `verify()`).
 
-        Даунскейл до `ocr_size` ПЕРЕД детекцией — доминирующий рычаг бюджета 700 мс:
-        детекция+распознавание PaddleOCR масштабируются с числом пикселей, а нужный
-        текст (год/объём/категория) остаётся читаемым и на уменьшенном кадре — замер
-        (см. reports/g-report.md): 448px ~800 мс, 320px ~420 мс, тот же текст, тот же
-        результат сопоставления."""
+        Даунскейл до `size` (по умолчанию `self.ocr_size`) ПЕРЕД детекцией —
+        доминирующий рычаг бюджета 700 мс: детекция+распознавание PaddleOCR
+        масштабируются с числом пикселей, а нужный текст (год/объём/категория)
+        остаётся читаемым и на уменьшенном кадре — замер (см. reports/g-report.md):
+        448px ~800 мс, 320px ~420 мс, тот же текст, тот же результат сопоставления.
+
+        `size` (agents/H1-cpu-path.md) — явное переопределение цели даунскейла,
+        НЕЗАВИСИМОЕ от `self.ocr_size`: `read_query_text_center()` передаёт
+        `self.center_size` (обычно 640, шире, чем ocr_size=320 детекторного режима) —
+        центральный кроп кадра крупнее нормализованного 448px-квадрата детектора, ему
+        нужна другая цель даунскейла. `None` (дефолт) — старое поведение 1:1,
+        `self.ocr_size`."""
         self._load()
+        target = self.ocr_size if size is None else size
         h, w = image_arr.shape[:2]
-        if max(h, w) > self.ocr_size:
-            scale = self.ocr_size / max(h, w)
+        if max(h, w) > target:
+            scale = target / max(h, w)
             image_arr = cv2.resize(
                 image_arr, (max(1, round(w * scale)), max(1, round(h * scale))), interpolation=cv2.INTER_AREA
             )
@@ -432,19 +502,37 @@ class LabelVerifier:
         kept = [t for t, s in zip(texts, scores) if s >= self.score_thresh]
         return " ".join(kept)
 
+    def read_query_text_center(self, image: bytes) -> str:
+        """Один проход OCR по ЦЕНТРАЛЬНОМУ кропу ПОЛНОГО кадра запроса (`_center_crop()`,
+        доли `CENTER_CROP`) — БЕЗ детектора этикетки `normalize_query()` (agents/
+        H1-cpu-path.md, см. докстринг модуля "Режим чтения текста запроса"). Даунскейл —
+        до `self.center_size` (CV_OCR_CENTER_SIZE), не `self.ocr_size` (тот — для режима
+        "detector"). `read_query_text()` вызывает этот метод при `self.ocr_query_mode ==
+        "center"`; вызывается и напрямую (например, qa-скриптами офлайн-эксперимента).
+        `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`, что и
+        `read_query_text()`/`verify()`."""
+        arr = imageio.decode_image(image)
+        cropped = _center_crop(arr)
+        return self.read_text(cropped, size=self.center_size)
+
     def read_query_text(self, image: bytes) -> str:
-        """Один проход OCR по запросу: decode -> `normalize_query()` (тот же
-        кроп этикетки, что видит `ImageIndex.search()`) -> `read_text()`.
+        """Один проход OCR по запросу: decode -> кроп -> `read_text()`. Кроп зависит
+        от `self.ocr_query_mode` (CV_OCR_QUERY_MODE, agents/H1-cpu-path.md):
+        `"detector"` (дефолт) — `normalize_query()` (тот же кроп этикетки, что видит
+        `ImageIndex.search()`), бит-в-бит старое поведение; `"center"` — делегирует
+        `read_query_text_center()` (центральный кроп кадра, без детектора).
 
         Публичный метод (contracts/image-scan.md v0.4.12, agents/B9-text-
         rerank-integration.md): apps/api читает текст этикетки запроса РОВНО
         ОДИН раз за запрос и переиспользует его и для `cv.text_rerank`
         (переранжирование top-K ANN-кандидатов текстом), и для `verify()`
-        (см. параметр `ocr_text` ниже) — вместо двух независимых проходов
-        PaddleOCR по одному и тому же нормализованному кропу (OCR —
-        доминирующая статья бюджета, 294/554 мс p50/p95 на Mac, см.
-        reports/g5-accuracy.md). `ValueError` на битые/пустые байты — тот же
-        `imageio.decode_image()`, что и раньше видел `verify()` первым шагом."""
+        (см. параметр `ocr_text` там) — вместо двух независимых проходов
+        PaddleOCR по одному и тому же кропу (OCR — доминирующая статья
+        бюджета, 294/554 мс p50/p95 на Mac, см. reports/g5-accuracy.md).
+        `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`,
+        что и раньше видел `verify()` первым шагом (оба режима)."""
+        if self.ocr_query_mode == "center":
+            return self.read_query_text_center(image)
         arr = imageio.decode_image(image)
         normalized = normalize_query(arr, enabled=True)
         return self.read_text(normalized)

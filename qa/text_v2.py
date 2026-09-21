@@ -3,10 +3,16 @@
 Отличия от cv.text_rerank (v1), найденные на размеченных реальных фото:
   1. Гомоглифы: OCR (eslav-модель) пишет кириллицу латинскими двойниками — CAMAPA=САМАРА,
      KPACHAA=КРАСНАЯ, ДЕHИCOB=ДЕНИСОВ (смешанный), PO3E=РОЗЕ. Токен получает вариант с
-     заменой двойников на кириллицу, дальше общая транслитерация в латиницу.
+     заменой двойников на кириллицу, дальше общая транслитерация в латиницу. agents/
+     H1-cpu-path.md: то же самое и для ГРЕЧЕСКИХ заглавных двойников пяти кириллических
+     букв без латинского аналога — Λ→Л, Γ→Г, Π→П, Δ→Д, Φ→Ф (OΛEΓ→ОЛЕГ).
   2. Потокенное нечёткое совпадение (обрезки CKАЛИСТ→скалистый, ОРМУЛА→формула) вместо
      одного token_set_ratio на всю строку.
   3. Без «безопасного гейта» по медиане IDF: на реальных фото он отсекал названия виноделен.
+
+СИНХРОНИЗИРУЙ homoglyph_variant()/_UP/_LOW/_DIG/_GREEK/_CYR/_LAT/_GRK с
+packages/cv/cv/text_fusion.py (боевой перенос этого прототипа) — agents/H1-cpu-path.md
+задача 2: правка гомоглифов вносится в ОБА файла одинаково.
 """
 from __future__ import annotations
 
@@ -20,20 +26,24 @@ from cv import text_rerank as tr
 _UP = dict(zip("ABCEHKMOPTXY", "АВСЕНКМОРТХУ"))
 _LOW = dict(zip("aceopxyu", "асеорхуи"))
 _DIG = {"3": "З", "0": "О", "6": "б"}
+# Греческие заглавные двойники пяти кириллических букв без латинского аналога (см.
+# докстринг модуля, п.1) — синхронно с packages/cv/cv/text_fusion.py::_GREEK.
+_GREEK = dict(zip("ΛΓΠΔΦ", "ЛГПДФ"))
 _CYR = re.compile(r"[а-яё]", re.I)
 _LAT = re.compile(r"[a-z]", re.I)
+_GRK = re.compile("[" + "".join(_GREEK) + "]")
 _YEAR = re.compile(r"^(19[5-9]\d|20[0-3]\d)$")
 
 
 def homoglyph_variant(tok: str) -> str | None:
     """Кириллический вариант токена или None, если замена неприменима."""
-    has_cyr, has_lat = bool(_CYR.search(tok)), bool(_LAT.search(tok))
+    has_cyr, has_lat, has_grk = bool(_CYR.search(tok)), bool(_LAT.search(tok)), bool(_GRK.search(tok))
     if has_lat and has_cyr:  # смешанный — латиница внутри кириллического слова
         return "".join(_UP.get(ch, _LOW.get(ch, ch)) for ch in tok)
-    if has_lat and not has_cyr:
+    if (has_lat or has_grk) and not has_cyr:
         letters = [ch for ch in tok if ch.isalpha()]
-        if letters and all(ch in _UP for ch in letters):  # только «двойниковые» заглавные
-            return "".join(_UP.get(ch, _DIG.get(ch, ch)) for ch in tok)
+        if letters and all(ch in _UP or ch in _GREEK for ch in letters):  # только «двойниковые» заглавные
+            return "".join(_UP.get(ch, _GREEK.get(ch, _DIG.get(ch, ch))) for ch in tok)
         if letters and all(ch in _UP or ch in _LOW for ch in letters) and any(ch in _DIG for ch in tok):
             return "".join(_UP.get(ch, _LOW.get(ch, _DIG.get(ch, ch))) for ch in tok)
     if not has_lat and has_cyr and any(ch in _DIG for ch in tok):  # PO3E-подобные с цифрой внутри

@@ -22,6 +22,13 @@ apps/api/app/cv/service.py про совместное включение обо
    даёт токену кириллический вариант ДО общей транслитерации `cv.text_rerank`
    (та уже конвертирует кириллицу→латиницу, но не умеет узнать латинский
    omglyph как кириллицу — "CAMAPA" транслитерируется в "camapa", а не "samara").
+   agents/H1-cpu-path.md (живые фото, 21.09): та же путаница бывает и с ГРЕЧЕСКИМИ
+   заглавными — ровно для пяти кириллических букв, у которых нет латинского
+   двойника, но есть графически неотличимый греческий (Λ→Л, Γ→Г, Π→П, Δ→Д, Φ→Ф;
+   `_GREEK` ниже) — «OΛEΓ» читается OCR как О-Λ-Е-Γ (O/E — уже латинские двойники
+   выше) и без греческой таблицы терял бы Λ/Γ целиком (не подстановка -> None,
+   токен вообще не превращался бы в «ОЛЕГ»). Изолированный вклад на офлайн-прогоне
+   (поверх центрального OCR-кропа): +3.2 п.п. top-1.
 3. **Потокенная нечёткость** (`token_sim`, ratio >= 0.8 ИЛИ префикс >= 5 символов
    — "CKАЛИСТ"→"скалистый" по обрезке OCR) вместо одного `token_set_ratio` на
    всю строку кандидата — устойчивее к тому, что OCR обрывает ИМЕННО различающее
@@ -55,6 +62,28 @@ apps/api/app/cv/service.py про совместное включение обо
 `rel` (`DEFAULT_TEXT_TOP_N`) — не весь каталог целиком (бюджет), но заметно шире
 top-5 ANN, которым ограничивался `cv.text_rerank`.
 
+## Гейт «не подтверждена винодельня» (agents/H1-cpu-path.md, живые фото, 21.09)
+
+Третья накопительная поправка CPU-пути (после центрального OCR-кропа и греческих
+гомоглифов, offline 87.1% -> 88.7% top-1): текст в ПОЛСИЛЫ (`unconfirmed_winery_w`,
+по умолчанию `×0.5` — параметр `CV_FUSION_OCR_UNCONFIRMED_W` в `app/cv/service.py`)
+для кандидата, у которого ВИНОДЕЛЬНЯ не подтверждена запросом — recall токенов
+ТОЛЬКО поля `winery` (отдельный `TextIndexV2(fields=("winery",))`, параметр
+`winery_index` ниже) строго меньше `winery_recall_floor` (0.5). Мотив: короткий
+зашумлённый OCR-текст живого фото иногда случайно набирает IDF-массу по названию/
+сорту у ЧУЖОЙ винодельни (общие слова вида "резерв", "крю", цвет/сахар) — если сама
+винодельня при этом текстом НЕ подтверждена, доверия к её текстовому сигналу меньше,
+и `rel` этого кандидата урезается ДО умножения на `w` (инвариант `final = cv + w*rel`
+сохраняется — в `rel` уже сидит урезанная величина, см. `fuse()`).
+
+Гейт применяется ТОЛЬКО когда вызывающий код передал `winery_index` (иначе — старое
+поведение 1:1, `unconfirmed_winery_w` по умолчанию 1.0 = "как сейчас" даже если
+индекс передан). Источник текста важен: `app/cv/service.py` передаёt `×0.5` ТОЛЬКО
+для `CV_FUSION_TEXT_SOURCE=ocr` — для VLM-источников (текст читает мультимодальная
+модель, не OCR) тот же гейт на офлайн-прогоне ВРЕДЕН (95.2% -> 93.5% top-1: VLM
+достаточно точна, чтобы урезание текста только теряло уже подтверждённый сигнал) —
+там передаётся `1.0` (без эффекта).
+
 ## Гейт уверенности (новый, независимый от `CV_ABS_FLOOR`/`CV_MARGIN_FLOOR`)
 
 Уверенно, если ОБА условия: (1) отрыв ИТОГОВОГО (`final`) скора top-1 от первого
@@ -86,21 +115,30 @@ from cv import text_rerank as tr
 _UP = dict(zip("ABCEHKMOPTXY", "АВСЕНКМОРТХУ"))
 _LOW = dict(zip("aceopxyu", "асеорхуи"))
 _DIG = {"3": "З", "0": "О", "6": "б"}
+# agents/H1-cpu-path.md: греческие заглавные двойники — ИМЕННО для пяти кириллических
+# букв без латинского двойника (Б/Г/Д/Л/П/Ф/Ц/Ч/Ш/Щ и т.д. не совпадают с латиницей
+# ни в одном начертании), но графически совпадающих с греческими: Λ→Л, Γ→Г, Π→П,
+# Δ→Д, Φ→Ф (замер «OΛEΓ»→ОЛЕГ, докстринг модуля, п.2). Список НЕ расширяется на
+# другие греческие буквы без отдельного измерения — так же, как _UP/_DIG не гадают
+# латинские двойники без подтверждённого прецедента OCR.
+_GREEK = dict(zip("ΛΓΠΔΦ", "ЛГПДФ"))
 _CYR = re.compile(r"[а-яё]", re.I)
 _LAT = re.compile(r"[a-z]", re.I)
+_GRK = re.compile("[" + "".join(_GREEK) + "]")  # детекция «есть греческая буква» — не только известные 5
 _YEAR = re.compile(r"^(19[5-9]\d|20[0-3]\d)$")
 
 
 def homoglyph_variant(tok: str) -> str | None:
     """Кириллический вариант токена или None, если замена неприменима (см. докстринг
-    модуля, п.2: CAMAPA/KPACHAA/ДЕHИCOB/PO3E-подобные написания OCR)."""
-    has_cyr, has_lat = bool(_CYR.search(tok)), bool(_LAT.search(tok))
+    модуля, п.2: CAMAPA/KPACHAA/ДЕHИCOB/PO3E-подобные написания OCR, плюс греческие
+    заглавные двойники — OΛEΓ-подобные, `_GREEK`)."""
+    has_cyr, has_lat, has_grk = bool(_CYR.search(tok)), bool(_LAT.search(tok)), bool(_GRK.search(tok))
     if has_lat and has_cyr:  # смешанный — латиница внутри кириллического слова
         return "".join(_UP.get(ch, _LOW.get(ch, ch)) for ch in tok)
-    if has_lat and not has_cyr:
+    if (has_lat or has_grk) and not has_cyr:
         letters = [ch for ch in tok if ch.isalpha()]
-        if letters and all(ch in _UP for ch in letters):  # только «двойниковые» заглавные
-            return "".join(_UP.get(ch, _DIG.get(ch, ch)) for ch in tok)
+        if letters and all(ch in _UP or ch in _GREEK for ch in letters):  # только «двойниковые» заглавные
+            return "".join(_UP.get(ch, _GREEK.get(ch, _DIG.get(ch, ch))) for ch in tok)
         if letters and all(ch in _UP or ch in _LOW for ch in letters) and any(ch in _DIG for ch in tok):
             return "".join(_UP.get(ch, _LOW.get(ch, _DIG.get(ch, ch))) for ch in tok)
     if not has_lat and has_cyr and any(ch in _DIG for ch in tok):  # PO3E-подобные с цифрой внутри
@@ -336,6 +374,9 @@ DEFAULT_GAP_FLOOR = 0.03
 DEFAULT_CV_FLOOR = 0.80
 DEFAULT_ANN_TOP_K = 50
 DEFAULT_TEXT_TOP_N = 30
+# agents/H1-cpu-path.md: гейт «не подтверждена винодельня» (см. докстринг модуля).
+DEFAULT_UNCONFIRMED_WINERY_W = 1.0  # 1.0 = как сейчас (нет эффекта) — CV_FUSION_UNCONFIRMED_WINERY_W
+DEFAULT_WINERY_RECALL_FLOOR = 0.5  # recall (не mass!) поля winery ниже этого -> «не подтверждена»
 
 
 @dataclass(frozen=True)
@@ -343,7 +384,10 @@ class FusedCandidate:
     slug: str
     final_score: float  # cv_score + w*rel — то, что видит UI/eval как `matches[i].score`
     cv_score: float  # НЕ blended — тот же смысл, что confidence.top1_score контракта
-    rel: float  # mass/max(mass) этого запроса — 0.0, если текст вообще не задел кандидата
+    rel: float  # mass/max(mass) этого запроса (0.0, если текст вообще не задел кандидата),
+    # УРЕЗАННЫЙ `unconfirmed_winery_w`, если винодельня кандидата не подтверждена (agents/
+    # H1-cpu-path.md, см. докстринг модуля) — инвариант final_score == cv_score + w*rel
+    # держится всегда, урезание сидит именно здесь, а не отдельным множителем снаружи.
 
 
 @dataclass(frozen=True)
@@ -379,6 +423,9 @@ def fuse(
     text_top_n: int = DEFAULT_TEXT_TOP_N,
     gap_floor: float = DEFAULT_GAP_FLOOR,
     cv_floor: float = DEFAULT_CV_FLOOR,
+    winery_index: "TextIndexV2 | None" = None,
+    unconfirmed_winery_w: float = DEFAULT_UNCONFIRMED_WINERY_W,
+    winery_recall_floor: float = DEFAULT_WINERY_RECALL_FLOOR,
 ) -> FusionResult:
     """Слияние CV + текст по всему каталогу (см. докстринг модуля).
 
@@ -397,7 +444,19 @@ def fuse(
     Слаг с текстовым сигналом, но БЕЗ эталона в индексе вообще (значит и без
     записи в `cv_scores`, даже после `extra_slugs`-фильтра) получает CV-заглушку
     `cv_top1 - cv_pad`, где `cv_top1 = max(cv_scores.values())` — иначе текст не
-    может поднять то, чего CV в принципе не видит (докстринг модуля, п. "cv")."""
+    может поднять то, чего CV в принципе не видит (докстринг модуля, п. "cv").
+
+    `winery_index`/`unconfirmed_winery_w`/`winery_recall_floor` (agents/H1-cpu-path.md,
+    см. докстринг модуля, "Гейт «не подтверждена винодельня»"): `winery_index` — ОТДЕЛЬНЫЙ
+    `TextIndexV2`, построенный ТОЛЬКО на поле `winery` (не смешивается с основным
+    `text_index`, у которого поля шире, см. `FUSION_FIELDS`) — `None` (дефолт) отключает
+    гейт целиком, бит-в-бит поведение до этой правки. Когда передан: кандидат, чей
+    RECALL (не mass — доля, не абсолютная величина) по `winery_index.scores(ocr_text)`
+    строго меньше `winery_recall_floor`, получает `rel`, умноженный на
+    `unconfirmed_winery_w` — ДО того, как `rel` идёт в `final_score = cv + w*rel`
+    (значит и до нормировки `top_mass` следующего кандидата эта нормировка не трогается:
+    `top_mass` считается по ОСНОВНОМУ, не по урезанному `rel`, чтобы шкала "на сколько я
+    близок к лучшему текстовому совпадению" оставалась общей для всех кандидатов)."""
     if not cv_scores:
         return FusionResult(ranked=[], gap=None, confident=False)
 
@@ -405,6 +464,11 @@ def fuse(
     mass_by_slug = dict(zip(text_index.slugs, mass)) if text_index.slugs else {}
     top_mass = max(mass) if mass else 0.0
     text_top = top_text_slugs(text_index, mass, text_top_n) if text_index.slugs else []
+
+    winery_recall_by_slug: dict[str, float] = {}
+    if winery_index is not None and winery_index.slugs:
+        winery_rec, _ = winery_index.scores(ocr_text)
+        winery_recall_by_slug = dict(zip(winery_index.slugs, winery_rec))
 
     universe = dict.fromkeys(cv_scores)
     for slug in text_top:
@@ -417,6 +481,8 @@ def fuse(
         if cv is None:
             cv = cv_top1 - cv_pad  # заглушка: слаг вне индекса, но текст его различил
         rel = (mass_by_slug.get(slug, 0.0) / top_mass) if top_mass > 0 else 0.0
+        if winery_recall_by_slug and winery_recall_by_slug.get(slug, 0.0) < winery_recall_floor:
+            rel *= unconfirmed_winery_w  # винодельня НЕ подтверждена текстом — текст в unconfirmed_winery_w силы
         candidates.append(FusedCandidate(slug=slug, final_score=cv + w * rel, cv_score=cv, rel=rel))
 
     candidates.sort(key=lambda c: c.final_score, reverse=True)

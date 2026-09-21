@@ -63,6 +63,41 @@ def test_homoglyph_variant_none_for_plain_cyrillic_word():
 
 
 # --------------------------------------------------------------------------------------
+# Греческие двойники OCR (agents/H1-cpu-path.md, живые фото 21.09) — Λ/Γ/Π/Δ/Φ, ровно
+# пять кириллических букв БЕЗ латинского двойника, но графически совпадающих с
+# греческими заглавными.
+# --------------------------------------------------------------------------------------
+
+
+def test_homoglyph_variant_greek_uppercase_doubles_become_cyrillic():
+    """Реальный замер: «OΛEΓ» (O/E — уже латинские двойники, Λ/Γ — греческие) -> ОЛЕГ."""
+    assert homoglyph_variant("OΛEΓ") == "ОЛЕГ"
+
+
+def test_homoglyph_variant_pure_greek_doubles_word():
+    """Все пять греческих двойников разом, без примеси латиницы."""
+    assert homoglyph_variant("ΛΓΠΔΦ") == "ЛГПДФ"
+
+
+def test_homoglyph_variant_unmapped_greek_letter_abstains():
+    """Ω — греческая буква ВНЕ подтверждённой пятёрки: одна известная (Λ) не даёт
+    права гадать про соседнюю неизвестную (Ω) — воздержание (None), не частичная
+    или ошибочная подстановка (та же дисциплина, что и у _UP/_DIG: только
+    подтверждённые измерением двойники, см. докстринг модуля)."""
+    assert homoglyph_variant("ΛΩ") is None
+
+
+def test_homoglyph_variant_greek_untouched_in_mixed_cyrillic_branch():
+    """Регресс: смешанная кириллица+латиница (`has_cyr and has_lat`) — ветка ДО
+    этой правки, `_GREEK` в ней не участвует намеренно (греческие двойники —
+    измеренный сценарий ТОЛЬКО для латински-читаемых обрывков вида "OΛEΓ", не для
+    смеси с уже-кириллицей). Греческая буква внутри такого токена просто проходит
+    НЕИЗМЕНЁННОЙ (как любой другой неизвестный символ этой ветки), остальные
+    правила (латинские двойники) работают как раньше."""
+    assert homoglyph_variant("винΛo") == "винΛо"  # только "o"->"о" (_LOW), Λ не тронут
+
+
+# --------------------------------------------------------------------------------------
 # query_tokens: сахар EN->RU, гомоглифы, фильтр коротких/цифровых токенов
 # --------------------------------------------------------------------------------------
 
@@ -78,6 +113,13 @@ def test_query_tokens_replaces_english_sugar_markers():
 def test_query_tokens_adds_homoglyph_variant_alongside_original():
     toks = query_tokens("CAMAPA")
     assert "samara" in toks  # транслит гомоглиф-варианта (САМАРА -> samara)
+
+
+def test_query_tokens_adds_greek_homoglyph_variant_alongside_original():
+    """agents/H1-cpu-path.md: тот же путь, что и латинские двойники — гомоглиф-
+    вариант ("ОЛЕГ") транслитерируется наравне с сырым токеном."""
+    toks = query_tokens("OΛEΓ")
+    assert "oleg" in toks  # транслит греческого гомоглиф-варианта (ОЛЕГ -> oleg)
 
 
 def test_query_tokens_keeps_year_even_if_short():
@@ -413,6 +455,125 @@ def test_fuse_ranked_covers_cv_union_text_top_n_universe():
     result = fuse({"cv-only": 0.85}, idx, "фанагория крю", text_top_n=5)
     slugs = {c.slug for c in result.ranked}
     assert slugs == {"cv-only", "text-only"}
+
+
+# --------------------------------------------------------------------------------------
+# Гейт «не подтверждена винодельня» (agents/H1-cpu-path.md, живые фото 21.09) —
+# третья накопительная поправка CPU-пути, offline 87.1% -> 88.7% top-1.
+# --------------------------------------------------------------------------------------
+
+
+def _winery_catalog() -> tuple[TextIndexV2, TextIndexV2]:
+    """(text_index на name+winery, winery_index ТОЛЬКО на winery) — тот же каталог
+    для обоих, как строит `app/cv/service.py::_run_photo_scan_fusion` (два разных
+    `_fusion_*_index()` из одного CSV)."""
+    catalog = _catalog({
+        "confirmed": {"name": "Крю Лермонт", "winery": "Фанагория"},
+        "unconfirmed": {"name": "Крю Лермонт Резерв", "winery": "Другая Винодельня"},
+    })
+    return TextIndexV2(catalog, fields=("name", "winery")), TextIndexV2(catalog, fields=("winery",))
+
+
+def test_fuse_winery_gate_has_no_effect_when_winery_index_not_passed():
+    """Регресс: НЕ передавать `winery_index` (дефолт `None`) — бит-в-бит поведение
+    до этой правки, никакого урезания, даже если бы кандидаты формально были
+    'неподтверждёнными'."""
+    text_idx, _winery_idx = _winery_catalog()
+    cv_scores = {"confirmed": 0.80, "unconfirmed": 0.80}
+    result = fuse(cv_scores, text_idx, "фанагория крю лермонт", w=0.2)
+    by_slug = {c.slug: c for c in result.ranked}
+    assert by_slug["unconfirmed"].rel == pytest.approx(0.587291291059816)
+
+
+def test_fuse_winery_gate_has_no_effect_with_default_weight_even_if_index_passed():
+    """`unconfirmed_winery_w` дефолт (`DEFAULT_UNCONFIRMED_WINERY_W` = 1.0, "как
+    сейчас") — передать `winery_index` БЕЗ явного веса не должно ничего менять."""
+    text_idx, winery_idx = _winery_catalog()
+    cv_scores = {"confirmed": 0.80, "unconfirmed": 0.80}
+    gated = fuse(cv_scores, text_idx, "фанагория крю лермонт", w=0.2, winery_index=winery_idx)
+    plain = fuse(cv_scores, text_idx, "фанагория крю лермонт", w=0.2)
+    by_slug_gated = {c.slug: c for c in gated.ranked}
+    by_slug_plain = {c.slug: c for c in plain.ranked}
+    for slug in ("confirmed", "unconfirmed"):
+        assert by_slug_gated[slug].rel == pytest.approx(by_slug_plain[slug].rel)
+
+
+def test_fuse_halves_rel_for_candidate_with_unconfirmed_winery():
+    """Основной сценарий брифа: запрос упоминает винодельню ОДНОГО кандидата
+    ("фанагория") — тот остаётся с полным `rel`; конкурент, чья винодельня НЕ
+    упомянута (recall=0.0 по полю winery, хоть и делит общие токены названия),
+    получает `rel`, урезанный `unconfirmed_winery_w`."""
+    text_idx, winery_idx = _winery_catalog()
+    cv_scores = {"confirmed": 0.80, "unconfirmed": 0.80}
+    result = fuse(
+        cv_scores, text_idx, "фанагория крю лермонт", w=0.2,
+        winery_index=winery_idx, unconfirmed_winery_w=0.5,
+    )
+    by_slug = {c.slug: c for c in result.ranked}
+    assert by_slug["confirmed"].rel == pytest.approx(1.0)  # винодельня подтверждена -> не урезан
+    assert by_slug["unconfirmed"].rel == pytest.approx(0.293645645529908)  # ровно половина plain-rel
+    assert by_slug["confirmed"].final_score > by_slug["unconfirmed"].final_score
+
+
+def test_fuse_winery_gate_keeps_final_score_invariant():
+    """`final_score == cv_score + w*rel` держится ДАЖЕ когда `rel` урезан гейтом —
+    урезание сидит внутри `rel`, не отдельным множителем поверх формулы (см.
+    докстринг `fuse()`/`FusedCandidate.rel`)."""
+    text_idx, winery_idx = _winery_catalog()
+    cv_scores = {"confirmed": 0.80, "unconfirmed": 0.80}
+    result = fuse(
+        cv_scores, text_idx, "фанагория крю лермонт", w=0.2,
+        winery_index=winery_idx, unconfirmed_winery_w=0.5,
+    )
+    for c in result.ranked:
+        assert c.final_score == pytest.approx(c.cv_score + 0.2 * c.rel)
+
+
+def test_fuse_winery_gate_recall_exactly_at_floor_counts_as_confirmed():
+    """brief: 'recall >= 0.5' подтверждает — граница НЕ урезается. Конструкция:
+    винодельня из двух токенов РАВНОГО IDF (по одному в каждом из двух слагов
+    каталога), запрос называет РОВНО один из них -> recall ТОЧНО 0.5."""
+    catalog = _catalog({"a": {"winery": "Альфа Бета"}, "b": {"winery": "Гамма Дельта"}})
+    text_idx = TextIndexV2(catalog, fields=("winery",))
+    winery_idx = TextIndexV2(catalog, fields=("winery",))
+    rec, _mass = winery_idx.scores("альфа")
+    assert dict(zip(winery_idx.slugs, rec))["a"] == 0.5  # граница ровно на полу, не окрест него
+
+    result = fuse(
+        {"a": 0.80, "b": 0.80}, text_idx, "альфа", w=0.2,
+        winery_index=winery_idx, unconfirmed_winery_w=0.5, winery_recall_floor=0.5,
+    )
+    by_slug = {c.slug: c for c in result.ranked}
+    assert by_slug["a"].rel == pytest.approx(1.0)  # recall==floor -> подтверждена, НЕ урезана
+
+
+def test_fuse_winery_gate_confirmation_uses_recall_not_raw_mass():
+    """Гейт использует RECALL (долю) индекса winery, не абсолютную IDF-массу:
+    'long-winery' (винодельня из ПЯТИ токенов, запрос называет только один) и
+    'short-winery' (винодельня из ОДНОГО токена, запрос называет его целиком)
+    набирают РАВНУЮ абсолютную массу по полю winery (один и тот же токен
+    matched с одинаковым IDF) — но recall различается кардинально (0.2 против
+    1.0). Если бы гейт ошибочно сравнивал массу, а не recall, оба считались бы
+    одинаково (не)подтверждёнными — на деле подтверждён только 'short-winery'."""
+    catalog = _catalog({
+        "long-winery": {"name": "Вино", "winery": "Первая Вторая Третья Четвертая Пятая"},
+        "short-winery": {"name": "Вино", "winery": "Шестая"},
+    })
+    text_idx = TextIndexV2(catalog, fields=("name", "winery"))
+    winery_idx = TextIndexV2(catalog, fields=("winery",))
+
+    rec, mass = winery_idx.scores("первая шестая")
+    rec_by_slug, mass_by_slug = dict(zip(winery_idx.slugs, rec)), dict(zip(winery_idx.slugs, mass))
+    assert mass_by_slug["long-winery"] == pytest.approx(mass_by_slug["short-winery"])  # равная масса
+    assert rec_by_slug["long-winery"] == pytest.approx(0.2)  # но recall РАЗНЫЙ
+    assert rec_by_slug["short-winery"] == pytest.approx(1.0)
+
+    result = fuse(
+        {"long-winery": 0.80, "short-winery": 0.80}, text_idx, "первая шестая", w=0.2,
+        winery_index=winery_idx, unconfirmed_winery_w=0.5,
+    )
+    by_slug = {c.slug: c for c in result.ranked}
+    assert by_slug["short-winery"].final_score > by_slug["long-winery"].final_score
 
 
 # --------------------------------------------------------------------------------------

@@ -553,3 +553,192 @@ def test_verify_ocr_text_overrides_what_the_photo_actually_shows(label_verifier)
     result = label_verifier.verify(data, candidates, ocr_text="урожай 2026 сухое")
 
     assert result == "aligote-barrel-2026", "решение обязано следовать ЗА ПЕРЕДАННЫМ текстом, не за фото"
+
+
+# --- agents/H1-cpu-path.md, задача 1: CV_OCR_QUERY_MODE/CV_OCR_CENTER_SIZE ----------
+#
+# Все тесты этого раздела — БЕЗ реального PaddleOCR (брифа п.4: "без сети, без
+# PaddleOCR в юнитах"): `_StubOCR` подменяет `self._ocr` НАПРЯМУЮ (обходит ленивую
+# `_load()`, у которой `if self._ocr is not None: return`), так что тестируется
+# только кадрирование/маршрутизация — какой МАССИВ и с какой целью даунскейла
+# доходит до движка, — а не сам PaddleOCR.
+
+
+class _StubOCR:
+    """Двойник PaddleOCR-движка: помнит форму каждого массива, который РЕАЛЬНО
+    дошёл бы до `predict()`, ничего не распознаёт (пустой список кандидатов текста —
+    `read_text()` тогда честно отдаёт "")."""
+
+    def __init__(self):
+        self.seen: list[np.ndarray] = []
+
+    def predict(self, image_arr):
+        self.seen.append(image_arr)
+        return []
+
+
+def _stubbed_verifier(**kwargs) -> tuple[LabelVerifier, _StubOCR]:
+    v = LabelVerifier(**kwargs)
+    stub = _StubOCR()
+    v._ocr = stub  # пропускаем _load() целиком — модель никогда не тронута
+    return v, stub
+
+
+def test_default_ocr_query_mode_is_detector():
+    """Дефолт брифа: 'дефолт пока detector, включим после приёмки' — молчаливой
+    смены поведения быть не должно."""
+    assert LabelVerifier().ocr_query_mode == "detector"
+
+
+def test_default_center_size_is_640():
+    assert LabelVerifier().center_size == 640
+
+
+def test_ocr_query_mode_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", "center")
+    assert LabelVerifier().ocr_query_mode == "center"
+
+
+def test_ocr_query_mode_env_var_is_case_and_whitespace_normalized(monkeypatch):
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", " CENTER \n")
+    assert LabelVerifier().ocr_query_mode == "center"
+
+
+def test_ocr_center_size_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_CENTER_SIZE", "800")
+    assert LabelVerifier().center_size == 800
+
+
+def test_center_crop_constant_pins_brief_fractions():
+    """Те же доли, что apps/api/app/cv/vision_llm.py::CENTER_CROP (вход VLM) и
+    qa/real_photos_features.py::CWIDE (офлайн-эксперимент) — намеренно один и тот
+    же кроп во всех трёх путях чтения этикетки (agents/H1-cpu-path.md)."""
+    from cv.verify import CENTER_CROP
+
+    assert CENTER_CROP == (0.15, 0.05, 0.85, 0.98)
+
+
+def test_center_crop_slices_full_frame_by_fixed_fractions():
+    from cv.verify import _center_crop
+
+    arr = np.arange(1000 * 2000 * 3, dtype=np.uint8).reshape(1000, 2000, 3)
+    cropped = _center_crop(arr)
+    assert cropped.shape == (930, 1400, 3)  # (0.98-0.05)*1000, (0.85-0.15)*2000
+    assert np.array_equal(cropped, arr[50:980, 300:1700])
+
+
+def test_read_text_size_param_overrides_ocr_size_downscale_target():
+    """agents/H1-cpu-path.md: `size=` — независимая цель даунскейла от
+    `self.ocr_size` (та используется только когда `size` не передан)."""
+    v, stub = _stubbed_verifier(ocr_size=320)
+    big = np.zeros((100, 2000, 3), dtype=np.uint8)
+
+    v.read_text(big, size=640)
+
+    assert stub.seen[0].shape == (32, 640, 3)  # 100*640/2000=32, широкая сторона -> 640
+
+
+def test_read_text_without_size_param_keeps_using_ocr_size():
+    """Регресс: старое поведение (без `size=`) не сдвинулось — цель даунскейла
+    по-прежнему `self.ocr_size`, бит-в-бит как до этой правки."""
+    v, stub = _stubbed_verifier(ocr_size=320)
+    big = np.zeros((100, 2000, 3), dtype=np.uint8)
+
+    v.read_text(big)
+
+    assert max(stub.seen[0].shape[:2]) == 320
+
+
+def test_read_query_text_center_feeds_full_frame_crop_not_detector_square():
+    """`CV_OCR_QUERY_MODE=center`: массив, дошедший до движка, — кроп ПОЛНОГО
+    кадра (930x1400 после CENTER_CROP), даунскейленный до `center_size` (640) —
+    НЕ квадрат 320x320, который даёт режим "detector" (см. следующий тест)."""
+    from cv.imageio import encode_jpeg
+
+    v, stub = _stubbed_verifier(query_mode="center", center_size=640)
+    data = encode_jpeg(np.zeros((1000, 2000, 3), dtype=np.uint8))
+
+    v.read_query_text(data)
+
+    assert stub.seen[0].shape == (425, 640, 3)  # 930x1400 -> downscale до максимума 640
+
+
+def test_read_query_text_detector_mode_feeds_normalized_square_regardless_of_input_shape():
+    """Режим "detector" (дефолт): `normalize_query()` ВСЕГДА отдаёт квадратный
+    канонический канвас (448x448 по умолчанию), какой бы ни была форма входа —
+    после даунскейла до `ocr_size` (320) движок видит 320x320, не форму входа."""
+    from cv.imageio import encode_jpeg
+
+    v, stub = _stubbed_verifier(query_mode="detector", ocr_size=320)
+    data = encode_jpeg(np.zeros((1000, 2000, 3), dtype=np.uint8))
+
+    v.read_query_text(data)
+
+    assert stub.seen[0].shape == (320, 320, 3)
+
+
+def test_read_query_text_center_on_corrupt_bytes_raises_value_error():
+    v = LabelVerifier(query_mode="center")
+    with pytest.raises(ValueError):
+        v.read_query_text_center(b"not an image, just garbage bytes 0123456789")
+    with pytest.raises(ValueError):
+        v.read_query_text_center(b"")
+
+
+def test_read_query_text_dispatches_to_center_when_mode_is_center(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import encode_jpeg
+
+    calls: list[bytes] = []
+
+    def _fake_center(self, image):
+        calls.append(image)
+        return "CENTER-RESULT"
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _fake_center)
+    v = LabelVerifier(query_mode="center")
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "CENTER-RESULT"
+    assert calls == [data]
+
+
+def test_read_query_text_does_not_dispatch_to_center_when_mode_is_detector(monkeypatch, synthetic_bottle_image):
+    """Регресс: дефолтный режим НЕ трогает `read_query_text_center()` вовсе —
+    маршрутизация однонаправленная, не пробует оба пути."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_center() не должен вызываться в режиме detector")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _boom)
+    v, _stub = _stubbed_verifier()  # дефолт "detector"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.read_query_text(data)  # не должно поднять AssertionError выше
+
+
+def test_verify_internal_fallback_ignores_ocr_query_mode(monkeypatch, synthetic_bottle_image):
+    """agents/H1-cpu-path.md п.1: 'Верификатор near-dup (verify) получает тот же
+    текст — как сейчас' — собственный fallback `verify()` (когда `ocr_text` не
+    передан) по-прежнему читает ЧЕРЕЗ `normalize_query()` (детектор), НЕЗАВИСИМО
+    от `CV_OCR_QUERY_MODE`. Режим влияет ТОЛЬКО на `read_query_text()`."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", "center")
+    calls: list[tuple[tuple[int, ...], int | None]] = []
+
+    def _fake_read_text(self, image_arr, *, size=None):
+        calls.append((image_arr.shape, size))
+        return ""
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+    v = LabelVerifier()
+    assert v.ocr_query_mode == "center"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.verify(data, [{"slug": "x", "name": "x", "vintage": None}])
+
+    assert len(calls) == 1
+    shape, size = calls[0]
+    assert shape == (448, 448, 3)  # normalize_query() дефолтный NORM_SIZE_DEFAULT — детектор, не центр-кроп
+    assert size is None  # verify() не передаёт size= — read_text() сам использует self.ocr_size
