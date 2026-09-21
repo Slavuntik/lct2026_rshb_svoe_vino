@@ -63,6 +63,14 @@ warm_up_image_index() теперь зовёт search(), не embed() — зао�
 и энкодер (search() вызывает его внутри себя), embed()-прогрев отдельно стал
 избыточен. Результат обоих прогревов — app.state.image_index_warm/
 label_verifier_warm; GET /healthz.warm — AND обоих.
+
+agents/H2-rapidocr-multiscale.md: warm_up_label_verifier() теперь греет ВЫБРАННЫЙ
+движок чтения текста запроса (`verifier.ocr_engine`, packages/cv/cv/verify.py) —
+"paddle" (дефолт) не изменился (холостой verify()); "rapid" греет
+`cv.ocr_rapid.RapidOcrReader` через `read_query_text()`, НЕ verify() (та на своём
+внутреннем fallback-пути всегда грузит PaddleOCR — прогрев через неё при rapid
+свёл бы на нет экономию RAM/времени старта, ради которой CV_OCR_ENGINE=rapid и
+существует). GET /healthz.warm не меняется — AND обоих прогревов, как раньше.
 """
 from __future__ import annotations
 
@@ -200,17 +208,31 @@ _WARMUP_VERIFY_CANDIDATES: list[VerifyCandidate] = [
 
 
 def warm_up_label_verifier(verifier: LabelVerifier, settings: Settings) -> bool:
-    """Холостой verify() заглушки СРАЗУ при старте — симметрично
-    warm_up_image_index(), но для PaddleOCR (packages/cv/cv/verify.py::
-    LabelVerifier._load(), ленивая загрузка на первый verify()). Прогревается
-    ТОЛЬКО при VERIFIER_PROVIDER=real (мок мгновенный, нечего греть — то же
-    правило, что и у image_index). Ошибка прогрева не роняет старт (см.
-    warm_up_image_index) — /healthz.warm сигнализирует состояние наружу (AND
-    обоих прогревов, см. app/routers/health.py)."""
+    """Холостой прогрев ВЫБРАННОГО движка чтения текста запроса СРАЗУ при старте —
+    симметрично warm_up_image_index(). Прогревается ТОЛЬКО при
+    VERIFIER_PROVIDER=real (мок мгновенный, нечего греть — то же правило, что и у
+    image_index). Ошибка прогрева не роняет старт (см. warm_up_image_index) —
+    /healthz.warm сигнализирует состояние наружу (AND обоих прогревов, см.
+    app/routers/health.py).
+
+    agents/H2-rapidocr-multiscale.md: `verifier.ocr_engine == "rapid"` — греет
+    `RapidOcrReader` через `read_query_text()` (`cv.verify.LabelVerifier.
+    read_query_text_rapid()`), а НЕ `verify()` — тот на своём внутреннем
+    fallback-пути (без `ocr_text`) ВСЕГДА грузит PaddleOCR, независимо от
+    `CV_OCR_ENGINE` (packages/cv/cv/verify.py, докстринг "Движок текста запроса"),
+    так что прогрев через `verify()` при rapid молча тащил бы PaddleOCR в память —
+    ровно та трата RAM/времени старта на дешёвом CPU, которую rapid должен
+    экономить (brief п.2). `getattr(..., "paddle")` — мягкий дефолт: двойники
+    тестов этого файла (без реального `LabelVerifier`) не несут `ocr_engine`
+    вовсе и обязаны сохранить СТАРОЕ поведение (`verify()`), не молча
+    переключиться на новую ветку."""
     if settings.verifier_provider != "real":
         return True
     try:
-        verifier.verify(_PLACEHOLDER_IMAGE, _WARMUP_VERIFY_CANDIDATES)
+        if getattr(verifier, "ocr_engine", "paddle") == "rapid":
+            verifier.read_query_text(_PLACEHOLDER_IMAGE)
+        else:
+            verifier.verify(_PLACEHOLDER_IMAGE, _WARMUP_VERIFY_CANDIDATES)
         return True
     except Exception:
         return False
