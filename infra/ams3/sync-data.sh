@@ -9,17 +9,24 @@ HOST="${1:?укажи хост ams3}"
 KEY="${2:-$HOME/.ssh/ci_do_ams3}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CASE="${CASE_DATA_DIR:-$ROOT/../case-data}"
+# Какой CV-индекс везти (каталог с qdrant/ внутри). По умолчанию — боевой packages/cv/data;
+# новый индекс (другой энкодер/эталоны) — CV_INDEX_DIR=packages/cv/data-d1 sync-data.sh <host>.
+CV_INDEX_DIR="${CV_INDEX_DIR:-$ROOT/packages/cv/data}"
 SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-%r@%h -o ControlPersist=300"
 DST="somelye@$HOST:/opt/somelye/data"
 put() { rsync -az -e "$SSH" "$@"; }
 
-echo "1/7 CV-индекс";          put --exclude '.lock' "$ROOT/packages/cv/data/qdrant/" "$DST/cv/qdrant/"
+echo "1/7 CV-индекс";          put --delete --exclude '.lock' "$CV_INDEX_DIR/qdrant/" "$DST/cv/qdrant/"
 echo "2/7 RAG-индекс";         put "$ROOT/packages/rag/data/" "$DST/rag/"
 echo "3/7 модели RAG";         put "$ROOT/packages/rag/.fastembed_cache/" "$DST/fastembed/"
 echo "4/7 SigLIP2";            $SSH "somelye@$HOST" 'mkdir -p /opt/somelye/data/models/hf/hub'
                                put "$HOME/.cache/huggingface/hub/models--google--siglip2-base-patch16-224" "$DST/models/hf/hub/"
+                               # base-384 — энкодер индекса с 21.09 (reports/g6-encoder.md: +6 п.п. top-1 на живых фото)
+                               put "$HOME/.cache/huggingface/hub/models--google--siglip2-base-patch16-384" "$DST/models/hf/hub/"
 echo "5/7 PaddleOCR";          put "$HOME/.paddlex/official_models" "$DST/models/paddlex/"
 echo "6/7 кейс и метрики";     put "$CASE/slug_refs.json" "$CASE/families.json" "$DST/case/"
+                               # сырой CSV каталога — текстовый индекс слияния CV+текст (cv/text_fusion.py)
+                               put "$CASE/strapi_output0709.csv" "$DST/case/"
                                put "$ROOT/qa/scan-eval-runs/case-20260918-honest/eval_report_snapshot.json" "$DST/eval_report_snapshot.json"
 # agents/B8-candidates-card.md (contracts/image-scan.md v0.4.11): фолбэк-карточка
 # кейс-слагов вне нашего RAG-каталога — case_catalog.json (apps/api/scripts/
