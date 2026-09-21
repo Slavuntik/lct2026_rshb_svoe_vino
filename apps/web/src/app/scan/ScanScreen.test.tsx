@@ -30,6 +30,18 @@ function confidentResponse(): ScanPhotoRichResponse {
     ocr_verified: true,
     timing_ms: 780,
     not_in_catalog: false,
+    // v0.4.11: поле есть всегда, но уверенный ответ его не рендерит — одна карточка, как было.
+    candidates: [
+      {
+        wine_id: wine.wine_id,
+        name: wine.source.name,
+        winery_name: wine.source.winery_name,
+        region_name: wine.source.region_name,
+        image_url: wine.source.image_url,
+        source_url: wine.source_url,
+        score: 0.94,
+      },
+    ],
     similar: [],
     analogs: [
       { wine_id: "severny-sklon-krasnostop-2021", name: "Красностоп Крепкий", winery_name: "Усадьба Северный Склон", region_name: "Северный склон" },
@@ -41,14 +53,52 @@ function notInCatalogResponse(): ScanPhotoRichResponse {
   return {
     slug: "",
     card: null,
-    confidence: { top1_score: 0.21, gap: 0.02, f1_top1: 0.87, f1_top5: 0.95 },
+    confidence: { top1_score: 0.79, gap: 0.015, f1_top1: 0.87, f1_top5: 0.95 },
     ocr_verified: false,
     timing_ms: 640,
     not_in_catalog: true,
+    // Фото + название + винодельня (contracts/image-scan.md v0.4.11) — WineResultChip.
+    candidates: [
+      {
+        wine_id: "dom-tihaya-buhta-brut-2022",
+        name: "Брют Резерв",
+        winery_name: "Дом Тихая Бухта",
+        region_name: "Тихая бухта",
+        image_url: "data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'/>",
+        source_url: "https://example.com/wines/dom-tihaya-buhta-brut-2022",
+        score: 0.79,
+      },
+      {
+        wine_id: "severny-sklon-riesling-poluslad-2023",
+        name: "Рислинг Полусладкий",
+        winery_name: "Усадьба Северный Склон",
+        region_name: "Северный склон",
+        image_url: "data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'/>",
+        source_url: "https://example.com/wines/severny-sklon-riesling-poluslad-2023",
+        score: 0.76,
+      },
+    ],
+    // Намеренно непусто: доказывает, что UI больше не читает similar для not_in_catalog
+    // (заменено candidates), а не просто "забыл" — см. тест ниже "не рендерит similar".
     similar: [{ wine_id: "dom-tihaya-buhta-brut-2022", name: "Брют Резерв", winery_name: "Дом Тихая Бухта", region_name: "Тихая бухта" }],
     analogs: [
       { wine_id: "sokoliny-utes-merlot-cabernet-2020", name: "Мерло-Каберне", winery_name: "Виноградники Соколиный Утёс", region_name: "Тихая бухта" },
     ],
+  };
+}
+
+/** Гейт not_in_catalog не меняется (v0.4.11, п.5): ниже пола candidates тоже может быть пуст. */
+function notInCatalogNoCandidatesResponse(): ScanPhotoRichResponse {
+  return {
+    slug: "",
+    card: null,
+    confidence: { top1_score: 0.32, gap: 0.01, f1_top1: 0.87, f1_top5: 0.95 },
+    ocr_verified: false,
+    timing_ms: 500,
+    not_in_catalog: true,
+    candidates: [],
+    similar: [],
+    analogs: [],
   };
 }
 
@@ -118,20 +168,57 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     await waitFor(() => expect(screen.getByText("CHAT_PROBE")).toBeInTheDocument());
   });
 
-  it("not_in_catalog — честное «нет в каталоге» + похожие и аналоги, без выдумки карточки", async () => {
+  it("not_in_catalog с candidates — «Возможно, это одно из:» с фото, без выдумки одной карточки (v0.4.11)", async () => {
     mockScanPhoto(notInCatalogResponse());
     renderScan();
     fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unknown-bottle.png")] } });
 
     const block = await screen.findByTestId("scan-not-in-catalog");
-    expect(within(block).getByText(/такого вина в каталоге нет/i)).toBeInTheDocument();
-    expect(within(block).getByText(/похожие вина/i)).toBeInTheDocument();
+    expect(within(block).getByText(/возможно, это одно из/i)).toBeInTheDocument();
+
+    const candidatesBlock = within(block).getByTestId("scan-candidates-block");
+    const candidateButtons = within(candidatesBlock).getAllByRole("button");
+    expect(candidateButtons).toHaveLength(2);
+    expect(within(candidatesBlock).getByText(/Брют Резерв/)).toBeInTheDocument();
+    expect(within(candidatesBlock).getByText(/Рислинг Полусладкий/)).toBeInTheDocument();
+    // фото (contracts/image-scan.md v0.4.11: "candidates ... фото, название, винодельня").
+    expect(within(candidatesBlock).getAllByRole("img").length).toBeGreaterThanOrEqual(2);
+
+    // similar в ответе непусто (см. notInCatalogResponse), но UI его больше не рендерит —
+    // candidates его заменил, честный остаток "такого вина нет" тоже не показан.
+    expect(within(block).queryByText(/похожие вина/i)).not.toBeInTheDocument();
+    expect(within(block).queryByText(/такого вина в каталоге нет/i)).not.toBeInTheDocument();
+
     // Честное объяснение выше по тексту тоже упоминает "аналоги из других виноделен" — это
     // ожидаемо (см. scan.notInCatalogMessage), поэтому здесь getAllByText, не getByText.
     expect(within(block).getAllByText(/аналоги из других виноделен/i).length).toBeGreaterThanOrEqual(1);
-    expect(within(block).getAllByRole("button").length).toBeGreaterThan(1);
+    expect(within(block).getAllByRole("button").length).toBeGreaterThan(candidateButtons.length);
 
     expect(screen.queryByTestId("scan-photo-result")).not.toBeInTheDocument();
+  });
+
+  it("тап по кандидату ведёт на карточку этого вина", async () => {
+    mockScanPhoto(notInCatalogResponse());
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unknown-bottle.png")] } });
+
+    const candidatesBlock = await screen.findByTestId("scan-candidates-block");
+    fireEvent.click(within(candidatesBlock).getByText(/Рислинг Полусладкий/));
+
+    await waitFor(() =>
+      expect(screen.getByText("WINE_CARD_PROBE:severny-sklon-riesling-poluslad-2023")).toBeInTheDocument(),
+    );
+  });
+
+  it("not_in_catalog без кандидатов — честное «такого вина в каталоге нет», без выдумки", async () => {
+    mockScanPhoto(notInCatalogNoCandidatesResponse());
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unknown-bottle.png")] } });
+
+    const block = await screen.findByTestId("scan-not-in-catalog");
+    expect(within(block).getByText(/такого вина в каталоге нет/i)).toBeInTheDocument();
+    expect(within(block).queryByTestId("scan-candidates-block")).not.toBeInTheDocument();
+    expect(within(block).queryByText(/возможно, это одно из/i)).not.toBeInTheDocument();
   });
 
   it("drag-and-drop фото запускает тот же поиск, что и выбор файла", async () => {

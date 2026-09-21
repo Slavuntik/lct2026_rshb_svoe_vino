@@ -69,4 +69,12 @@ describe("WineCardScreen", () => {
     renderCard("net-takogo-vina");
     expect(await screen.findByText(/не найдена/i)).toBeInTheDocument();
   });
+
+  it("фолбэк-карточка каталога кейса (v0.4.11, slug вне нашего RAG) — брендированная ссылка «Своё Вино»", async () => {
+    renderCard("case-shato-yuzhny-sklon-saperavi-2019");
+    await screen.findByText("Саперави Резерв");
+
+    const link = screen.getByRole("link", { name: /открыть на «своё вино»/i });
+    expect(link).toHaveAttribute("href", "https://vino-svoe.ru/wines/case-shato-yuzhny-sklon-saperavi-2019");
+  });
 });

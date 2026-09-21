@@ -134,6 +134,14 @@ export interface WineSource {
   description: string;
   public_rating: number | null;
   image_url: string;
+  /**
+   * v0.4.11 (contracts/image-scan.md): поле ЕСТЬ только у карточки-фолбэка каталога кейса
+   * (слага нет в нашем RAG) — её source несёт ровно {name, winery_name, region_name, grapes,
+   * color, category, description, image_url}, без sugar_category/vintage/abv_percent/
+   * serving_temp_c/food_pairings и т.д. WineCardContent рендерит category как честную замену
+   * бейджа sugar_category, когда его нет.
+   */
+  category?: string;
 }
 
 export interface WineDerived {
@@ -164,6 +172,25 @@ export interface ScanPhotoConfidence {
   f1_top5: number;
 }
 
+/**
+ * v0.4.11 (contracts/image-scan.md, разбор чата кейса 21.09): top-5 схлопнутых позиций
+ * ANN-поиска по убыванию score, обогащённые данными карточки (наш каталог, иначе фолбэк
+ * из каталога кейса). Показываются при not_in_catalog=true как «Возможно, это одно из:» —
+ * приватная проверка кейса содержит только вина каталога, поэтому именно этот список, а не
+ * абсолютный score, отвечает на вопрос «какое из них». score в UI не рендерится (тот же
+ * принцип, что confidence.top1_score — честная неуверенность живёт в самом факте показа
+ * списка, не в цифрах).
+ */
+export interface ScanCandidateWine {
+  wine_id: string;
+  name: string;
+  winery_name: string;
+  region_name: string;
+  image_url: string;
+  source_url: string;
+  score: number;
+}
+
 export interface ScanPhotoRichResponse {
   slug: string;
   card: WineCardResponse | null;
@@ -171,6 +198,8 @@ export interface ScanPhotoRichResponse {
   ocr_verified: boolean;
   timing_ms: number;
   not_in_catalog: boolean;
+  /** v0.4.11: поле есть всегда (не только при not_in_catalog) — см. ScanCandidateWine. */
+  candidates: ScanCandidateWine[];
   similar: AnalogWine[];
   analogs: AnalogWine[];
 }

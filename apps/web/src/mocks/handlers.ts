@@ -12,6 +12,7 @@ import type {
   LoginPayload,
   PostConsentPayload,
   RegisterPayload,
+  ScanCandidateWine,
   ScanPhotoRichResponse,
   ScanResolvePayload,
   ScanResolveResponse,
@@ -20,7 +21,7 @@ import type {
 } from "../lib/apiTypes";
 import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
 import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
-import { findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
+import { caseFallbackWines, findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
 import {
   applySwipe,
   createAccount,
@@ -148,6 +149,23 @@ function toAnalogWine(wine: WineFixture): AnalogWine {
   };
 }
 
+// v0.4.11: candidates — top-5 схлопнутых позиций ANN-поиска, обогащённые данными карточки
+// (agents/B8-candidates-card.md). Мок берёт данные из той же карточки, что отдал бы
+// GET /wines/{id} — source_url/image_url тут passthrough, не придуманный vino-svoe.ru-паттерн
+// (у наших фикстур source_url — example.com, и так оно и должно приехать от живого API,
+// когда candidate — позиция НАШЕГО каталога, а не фолбэка каталога кейса).
+function toCandidateWine(wine: WineFixture, score: number): ScanCandidateWine {
+  return {
+    wine_id: wine.wine_id,
+    name: wine.source.name,
+    winery_name: wine.source.winery_name,
+    region_name: wine.source.region_name,
+    image_url: wine.source.image_url,
+    source_url: wine.source_url,
+    score,
+  };
+}
+
 export const handlers: HttpHandler[] = [
   http.get(`${API}/healthz`, () => HttpResponse.json({ status: "ok", index_version: "mock-0.2.0" })),
 
@@ -261,13 +279,24 @@ export const handlers: HttpHandler[] = [
     }
 
     if (notInCatalog) {
+      // v0.4.9: не катастрофический провал абсолютного пола (CV_ABS_FLOOR=0.82) — реалистичнее
+      // для кейса margin-провал у самой границы: top1 близко к полу, gap меньше CV_MARGIN_FLOOR.
+      // Именно этот профиль и объясняет, почему честнее показать candidates, чем "нет в каталоге".
       return HttpResponse.json({
         slug: "",
         card: null,
-        confidence: { top1_score: 0.21, gap: 0.02, f1_top1: 0.87, f1_top5: 0.95 },
+        confidence: { top1_score: 0.79, gap: 0.015, f1_top1: 0.87, f1_top5: 0.95 },
         ocr_verified: false,
         timing_ms: 640,
         not_in_catalog: true,
+        candidates: [
+          toCandidateWine(wines[0], 0.79),
+          toCandidateWine(wines[3], 0.776),
+          // Один из трёх — позиция каталога КЕЙСА (её нет в нашем RAG, source_url на
+          // vino-svoe.ru): демонстрирует и фолбэк-лукап GET /wines/{id}, и ссылку
+          // «Открыть на «Своё Вино»» на настоящем клике, не только в юнит-тесте.
+          toCandidateWine(caseFallbackWines[0], 0.758),
+        ],
         similar: wines.slice(0, 2).map(toAnalogWine),
         analogs: wines.slice(2, 4).map(toAnalogWine),
       } satisfies ScanPhotoRichResponse);
@@ -282,6 +311,8 @@ export const handlers: HttpHandler[] = [
       ocr_verified: true,
       timing_ms: 780,
       not_in_catalog: false,
+      // Поле есть всегда (v0.4.11), но при уверенном ответе UI его не рендерит — одна карточка.
+      candidates: [toCandidateWine(wines[0], 0.94), toCandidateWine(wines[2], 0.63)],
       similar: wines.slice(1, 3).map(toAnalogWine),
       analogs: wines.slice(3, 5).map(toAnalogWine),
     } satisfies ScanPhotoRichResponse);

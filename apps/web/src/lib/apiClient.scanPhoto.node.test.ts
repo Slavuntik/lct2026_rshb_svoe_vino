@@ -37,6 +37,7 @@ function mockScanPhotoOnce() {
         ocr_verified: false,
         timing_ms: 500,
         not_in_catalog: false,
+        candidates: [],
         similar: [],
         analogs: [],
       } satisfies ScanPhotoRichResponse);

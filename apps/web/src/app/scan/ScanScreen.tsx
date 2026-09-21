@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { WineCardContent } from "../../components/WineCardContent";
+import { WineImage } from "../../components/WineImage";
 import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
-import type { AnalogWine, ScanMatch, ScanPhotoRichResponse, ScanResolveResponse } from "../../lib/apiTypes";
+import type {
+  AnalogWine,
+  ScanCandidateWine,
+  ScanMatch,
+  ScanPhotoRichResponse,
+  ScanResolveResponse,
+} from "../../lib/apiTypes";
 
 type ResolveOutcome = {
   matches: ScanMatch[];
@@ -14,11 +21,19 @@ type ResolveOutcome = {
   analogReason: string | null;
 } | null;
 
-function WineResultChip({ wine, onClick }: { wine: AnalogWine; onClick: () => void }) {
+/**
+ * v0.4.11: тот же компонент для similar/analogs (AnalogWine, без фото) и для candidates
+ * (ScanCandidateWine, с фото) — "in" различает форму без отдельного пропа-дискриминатора.
+ */
+function WineResultChip({ wine, onClick }: { wine: AnalogWine | ScanCandidateWine; onClick: () => void }) {
+  const imageUrl = "image_url" in wine ? wine.image_url : undefined;
   return (
     <button type="button" className="match-item" onClick={onClick}>
-      <span>
-        {wine.name} · {wine.winery_name}
+      <span className="match-item__main">
+        {imageUrl && <WineImage src={imageUrl} alt={wine.name} width={40} className="match-item__thumb" />}
+        <span>
+          {wine.name} · {wine.winery_name}
+        </span>
       </span>
       {wine.region_name && <span className="text-caption">{wine.region_name}</span>}
     </button>
@@ -241,16 +256,20 @@ export function ScanScreen() {
 
       {result && result.not_in_catalog && (
         <div className="card stack" data-testid="scan-not-in-catalog">
-          <h2>{t("scan.notInCatalogTitle")}</h2>
-          <p>{t("scan.notInCatalogMessage")}</p>
-          {result.similar.length > 0 && (
-            <>
-              <p className="field__label">{t("scan.similarWinesTitle")}</p>
+          {result.candidates.length > 0 ? (
+            <div className="stack" data-testid="scan-candidates-block">
+              <h2>{t("scan.candidatesTitle")}</h2>
+              <p className="text-small">{t("scan.candidatesSubtitle")}</p>
               <div className="match-list">
-                {result.similar.map((wine) => (
+                {result.candidates.map((wine) => (
                   <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
                 ))}
               </div>
+            </div>
+          ) : (
+            <>
+              <h2>{t("scan.notInCatalogTitle")}</h2>
+              <p>{t("scan.notInCatalogMessage")}</p>
             </>
           )}
           {result.analogs.length > 0 && (

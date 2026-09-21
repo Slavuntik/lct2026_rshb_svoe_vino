@@ -401,6 +401,19 @@ input:focus-visible {
   border-color: var(--accent);
 }
 
+/* v0.4.11: фото у карточек-кандидатов (candidates), similar/analogs — по-прежнему без фото. */
+.match-item__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.match-item__thumb {
+  flex-shrink: 0;
+  border-radius: var(--radius);
+}
+
 /* --- чат --- */
 
 .chat-log {

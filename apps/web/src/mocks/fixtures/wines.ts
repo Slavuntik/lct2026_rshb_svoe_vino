@@ -246,6 +246,58 @@ export const wines: WineFixture[] = [
   },
 ];
 
+// v0.4.11 (contracts/image-scan.md): демо-позиция каталога КЕЙСА — слага нет в нашем RAG,
+// поэтому в бою GET /wines/{id} строит card фолбэком из case_catalog.json (agents/B8), а не
+// из основного каталога выше. Здесь — мок того же лукапа (findWineBySlug ниже смотрит сюда
+// вторым списком), полной WineCardResponse-формы (мок всегда отдаёт полную форму; УРЕЗАННУЮ
+// форму настоящего фолбэка — {name, winery_name, region_name, grapes, color, category,
+// description, image_url} в source, {} в derived — отдельно проверяет защитный рендер
+// WineCardContent на синтетическом объекте в components/WineCardContent.test.tsx, ровно как
+// он реально прилетит непроверенным payload'ом в apiClient.ts: `return payload as T`).
+// Единственное, что здесь по-настоящему отличается от основных 6 вин — source_url на
+// vino-svoe.ru: именно он включает ссылку «Открыть на «Своё Вино»» в WineCardContent.
+export const caseFallbackWines: WineFixture[] = [
+  {
+    wine_id: "case-shato-yuzhny-sklon-saperavi-2019",
+    searchTerms: [],
+    source: {
+      name: "Саперави Резерв",
+      winery: "shato-yuzhny-sklon",
+      winery_name: "Шато Южный Склон",
+      region: "yuzhny-sklon",
+      region_name: "Южный склон",
+      grapes: ["Саперави"],
+      color: "красное",
+      category: "красное сухое",
+      sugar_category: "сухое",
+      color_in_glass: "тёмно-гранатовый",
+      vintage: 2019,
+      abv_percent: 13.5,
+      serving_temp_c: [16, 18],
+      food_pairings: ["Мясо и стейки", "Твёрдые сыры"],
+      description: "Ежевика и чёрный перец, плотная структура — демо-позиция каталога кейса, не нашего RAG.",
+      public_rating: null,
+      image_url: bottlePlaceholderDataUri(RED),
+    },
+    derived: {
+      style_tags: ["каталог кейса"],
+      sensory: {
+        sweetness: 0.03,
+        acidity: 0.5,
+        tannin: 0.7,
+        body: 0.75,
+        oak: 0.3,
+        aromatic_intensity: 0.5,
+        bubbles: 0,
+        confidence: 0.6,
+      },
+      reference_style_matches: [],
+    },
+    source_url: "https://vino-svoe.ru/wines/case-shato-yuzhny-sklon-saperavi-2019",
+    similar: [],
+  },
+];
+
 export function findWineBySlug(slug: string): WineFixture | undefined {
-  return wines.find((wine) => wine.wine_id === slug);
+  return wines.find((wine) => wine.wine_id === slug) ?? caseFallbackWines.find((wine) => wine.wine_id === slug);
 }
