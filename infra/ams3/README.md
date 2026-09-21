@@ -73,6 +73,8 @@ Secrets → New repository secret:
 | `AMS3_SSH_KEY` | приватная половина ключа CI целиком, со строками BEGIN/END: `pbcopy < ~/.ssh/ci_do_ams3` |
 | `AMS3_KNOWN_HOSTS` | вывод `ssh-keyscan 89.110.72.101` целиком |
 | `GIGACHAT_AUTH_KEY` | *необязательный* — авторизационный ключ GigaChat; есть → «Сомелье» на GigaChat |
+| `VISION_LLM_URL` | *необязательный* — адрес OpenAI-совместимого шлюза GPU-сервера (`https://…/v1`); вместе с ключом включает чтение этикетки моделью |
+| `VISION_LLM_KEY` | *необязательный* — ключ шлюза. Оба значения едут на сервер через stdin, в репозитории их нет (репозиторий публичный) |
 
 Пользователь `somelye` зашит в `push-release.sh` — отдельный секрет не нужен. Без секретов
 workflow не падает, а вежливо пропускает выкат (джоба `guard`).
@@ -122,3 +124,18 @@ curl -s http://<ams3>/v1/metrics/scan   # F1 top-1/top-5 последнего п
 ```
 
 При `OOM` в `journalctl` — убавить `MemoryMax` в юните (VPN всегда в приоритете), не наоборот.
+
+
+## Индекс base-384 и слияние с текстом этикетки (с 21.09)
+
+Индекс собран на Mac (`packages/cv/data-d1`, энкодер `google/siglip2-base-patch16-384`, эталоны после
+чистки D1). Перенос на сервер — тем же `sync-data.sh`, указав индекс:
+
+```bash
+CV_INDEX_DIR=packages/cv/data-d1 infra/ams3/sync-data.sh 89.110.72.101
+```
+
+Скрипт везёт и модель base-384 (1.4 ГБ), и сырой CSV каталога для текстового индекса. В
+`somelye.env` стенда — строки `CV_MODEL`, `CV_FUSION*` из `somelye.env.example`. Чтение этикетки
+моделью на GPU-сервере включается секретами `VISION_LLM_URL` + `VISION_LLM_KEY`; без них слияние
+работает на тексте PaddleOCR (~76% top-1 на живых фото против 52% без слияния).
