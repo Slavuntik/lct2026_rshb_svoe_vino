@@ -37,6 +37,8 @@ def main():
     ap.add_argument("--ocr", default="crop320,crop640,full640")
     ap.add_argument("--dump", action="store_true", help="построчно: истина, CV top-1, лучшая схема")
     ap.add_argument("--served", nargs="*", default=[], help="JSONL qa/real_photos_serve.py — сравнить на той же разметке")
+    ap.add_argument("--choose", nargs="*", default=[], help="JSONL vlm-lab/choose.py ({photo, slug}) — top-1 выбора VLM")
+    ap.add_argument("--only", default="", help="подстрока: печатать только схемы, содержащие её (плюс SERVED/CHOOSE)")
     a = ap.parse_args()
 
     labels = load_labels(set(a.conf.split(",")))
@@ -54,6 +56,15 @@ def main():
         S["maxall"] = allv.max(axis=0)
         S["meanall"] = allv.mean(axis=0)
         S["maxcrops"] = np.max(np.stack([sims[f"{c}_{m}"] for c in crops for m in ("norm", "raw")]), axis=0)
+    # base-384 (выгрузка G6 + qemb_base384): features/sims384_*.npy в том же порядке слагов
+    s384 = {f.stem[8:]: np.load(f) for f in FEAT.glob("sims384_*.npy")}
+    if s384:
+        S["b384_norm"] = s384["norm"]
+        S["b384_max"] = np.maximum(s384["norm"], s384["raw"])
+        S["b384_maxall"] = np.stack(list(s384.values())).max(axis=0)
+        S["b384_meanall"] = np.stack(list(s384.values())).mean(axis=0)
+        S["ens_max"] = np.maximum(S["max"], S["b384_max"])
+        S["ens_mean"] = (S["max"] + S["b384_max"]) / 2
 
     catalog = tr.load_catalog_text(BASE / "strapi_output0709.csv")
     idf = tr.build_idf(catalog)
@@ -177,10 +188,10 @@ def main():
                         lambda p, v=v, kind=kind, mode=mode, w=w: np.argsort(-(cv_full(kind, p) + w * v2vec(v, p, mode)), kind="stable"))
 
     for v in ocr:
-        for kind in [k for k in ("max", "meanall") if k in S]:
-            for fs in ("nwgcs", "nws"):
-                for mode in ("rel", "geo"):
-                    for pad in ("median", "p99", "top-0.06", "top-0.03"):
+        for kind in [k for k in ("max", "meanall", "b384_max", "b384_maxall", "b384_meanall", "ens_max", "ens_mean") if k in S]:
+            for fs in ("nwgcs",):
+                for mode in ("rel",):
+                    for pad in ("p99", "top-0.03"):
                         for w in (0.1, 0.2, 0.3):
                             run(f"v3_{v}_{kind}_{fs}_{mode}_{pad}_w{w}",
                                 lambda p, v=v, kind=kind, fs=fs, mode=mode, pad=pad, w=w:
@@ -204,11 +215,28 @@ def main():
         results.append((f"SERVED:{Path(sp).stem}" + (f" (нет {len(missing)})" if missing else ""), *full,
                         served_eval(halves["A"])[0], served_eval(halves["B"])[0]))
 
+    for cp in a.choose:
+        rows = {json.loads(l)["photo"]: json.loads(l) for l in Path(cp).read_text().splitlines() if l.strip()}
+
+        def choose_eval(subset):
+            hit = fam1 = 0
+            for p in subset:
+                got, truth = rows.get(p, {}).get("slug"), labels[p]["true_slug"]
+                hit += got == truth
+                fam1 += got == truth or (truth in fam_by and fam_by.get(got) == fam_by[truth])
+            n = max(len(subset), 1)
+            return hit / n, hit / n, fam1 / n
+        miss = [p for p in in_cat if p not in rows]
+        full = choose_eval(in_cat)
+        results.append((f"CHOOSE:{Path(cp).stem}" + (f" (нет {len(miss)})" if miss else ""), *full,
+                        choose_eval(halves["A"])[0], choose_eval(halves["B"])[0]))
+
     results.sort(key=lambda r: -r[1])
     print(f"{'схема':42s} {'top1':>6s} {'top5':>6s} {'сем1':>6s} {'A':>6s} {'B':>6s}")
     base = [r for r in results if r[0] == "cv_norm"][0]
-    served_rows = [r for r in results if r[0].startswith("SERVED")]
-    for r in [base] + served_rows + results[:25]:
+    served_rows = [r for r in results if r[0].startswith(("SERVED", "CHOOSE"))]
+    pool = [r for r in results if a.only in r[0]] if a.only else results
+    for r in [base] + served_rows + pool[:25]:
         print(f"{r[0]:42s} {r[1]:6.1%} {r[2]:6.1%} {r[3]:6.1%} {r[4]:6.1%} {r[5]:6.1%}")
     (FEAT / "eval_results.json").write_text(json.dumps(results, ensure_ascii=False, indent=0))
 
