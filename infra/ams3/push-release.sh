@@ -21,7 +21,7 @@ SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/some
   echo "нет сборки веба — cd apps/web && VITE_API_MODE=real VITE_THEME=portal npm run build"; exit 1; }
 
 echo "код ($(git -C "$ROOT" rev-parse --short "$REF")) →"
-git -C "$ROOT" archive --format=tar "$REF" apps/api packages contracts infra pipeline/ref | gzip \
+git -C "$ROOT" archive --format=tar "$REF" apps/api packages contracts infra pipeline/ref pipeline/catalog pipeline/build | gzip \
   | $SSH "somelye@$HOST" 'rm -rf /opt/somelye/app/* /opt/somelye/app/.[!.]* 2>/dev/null; mkdir -p /opt/somelye/app; tar xzf - -C /opt/somelye/app'
 
 echo "веб →"

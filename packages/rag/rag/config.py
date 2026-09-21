@@ -13,7 +13,16 @@ DEFAULT_GOLDSET_PATH = Path(
 )
 
 # --- Источник данных (vines, read-only) ---------------------------------
-VINES_ROOT = Path(os.environ.get("RAG_VINES_ROOT", "/Users/vyacheslavfokin/ClaudeWorkspace/vines"))
+# Дефолт — копия справочников и каталога ВНУТРИ репозитория (pipeline/), чтобы сервис
+# поднимался на любой машине. Прежний дефолт был абсолютным путём дев-машины и ронял
+# старт на сервере (FileNotFoundError на reference_styles.yaml при деплое на ams3);
+# файлы pipeline/ref и vines/ref побайтово совпадают. Внешний рабочий каталог vines
+# (со свежими выгрузками краулера) по-прежнему подключается через RAG_VINES_ROOT.
+_REPO_PIPELINE = PACKAGE_ROOT.parent.parent / "pipeline"   # <репозиторий>/pipeline
+_DEFAULT_VINES_ROOT = _REPO_PIPELINE if (_REPO_PIPELINE / "ref").is_dir() else Path(
+    "/Users/vyacheslavfokin/ClaudeWorkspace/vines"
+)
+VINES_ROOT = Path(os.environ.get("RAG_VINES_ROOT", str(_DEFAULT_VINES_ROOT)))
 BUILD_DIR = Path(os.environ.get("RAG_BUILD_DIR", str(VINES_ROOT / "build")))
 CATALOG_DIR = Path(os.environ.get("RAG_CATALOG_DIR", str(VINES_ROOT / "catalog")))
 REF_DIR = Path(os.environ.get("RAG_REF_DIR", str(VINES_ROOT / "ref")))
