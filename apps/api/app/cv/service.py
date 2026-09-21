@@ -56,11 +56,30 @@ v0.4.11 (агент B8, разбор чата кейса 21.09): PhotoScanResult
 и у `card`/GET /wines/{id}, см. app/rag/cards.py::build_wine_card). UI
 показывает это поле при not_in_catalog=true ("Возможно, это одно из:") —
 поле в ответе есть ВСЕГДА, ровно тот же принцип, что и у matches.
+
+v0.4.12 (G5 `packages/cv/cv/text_rerank.py`, встраивание — agents/B9-text-
+rerank-integration.md): при `settings.cv_text_rerank` — ОДИН проход OCR по
+запросу (`verifier.read_query_text()`, тот же кроп `normalize_query()`, что
+видит `ImageIndex.search()`) СРАЗУ после ANN, ДО near-dup routing ниже;
+`cv.text_rerank.rerank_top_k()` переранжировывает top-K `matches` этим
+текстом (текст кандидата — каталог кейса `app/rag/case_catalog.py`,
+фолбэк — наш RAG-каталог, см. `_text_rerank_catalog_entry`) — меняется
+ТОЛЬКО порядок списка `matches`, каждый `Match` несёт СВОИ исходные
+score/gap/view (не blended-скор: пороги гейта CV_ABS_FLOOR/CV_MARGIN_FLOOR
+ниже читают top.score/top.gap ТОГО матча, что теперь на позиции 0 — сама
+калибровка порогов этой правкой не тронута). Тот же `ocr_text` передаётся
+`verifier.verify()` (near-dup routing, см. ниже) — второго прохода OCR нет.
+`ocr_text=None` (флаг выключен, дефолт) — `verify()` ведёт себя бит-в-бит
+как раньше, читает OCR сам. Реордер `matches` происходит ДО того, как из
+него строятся `candidates`/`_match_items`/`top`/`candidate_slugs` — flat
+(best_guess_slug) и rich (slug/matches/candidates) поэтому автоматически
+согласованы (один и тот же переранжированный список, контракт §v0.4.12 п.4).
 """
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Iterable
 
 from ..config import Settings
@@ -240,6 +259,114 @@ def _suggest_similar_and_analogs(
     return similar, analogs
 
 
+# --------------------------------------------------------------------------
+# v0.4.12: текстовое переранжирование top-K (G5 packages/cv/cv/text_rerank.py,
+# встраивание — agents/B9-text-rerank-integration.md). Ленивый импорт
+# `cv.text_rerank` (не на верху модуля) — тот же принцип, что `app/cv/
+# factory.py` уже применяет к `cv.index`/`cv.verify`: apps/api НЕ требует
+# тяжёлый пакет packages/cv (torch/paddleocr транзитивно через его
+# pyproject.toml) в базовой установке, пока CV_TEXT_RERANK=0 (дефолт) — ни
+# один тест базового свода этот импорт не трогает вовсе.
+# --------------------------------------------------------------------------
+
+
+def _import_text_rerank():
+    try:
+        from cv import text_rerank  # packages/cv, зона G5/G6 — только читаем отсюда
+    except ImportError as exc:
+        raise RuntimeError(
+            "CV_TEXT_RERANK=1, но пакет packages/cv не установлен в это "
+            "окружение (uv sync --extra integration в apps/api). Пока не "
+            "нужен — оставьте CV_TEXT_RERANK=0 (дефолт)."
+        ) from exc
+    return text_rerank
+
+
+@lru_cache(maxsize=8)
+def _text_rerank_idf(case_data_dir: str):
+    """IDF по ВСЕМУ каталогу кейса (`case_catalog.json`, `app/rag/
+    case_catalog.py::all_slugs()`) — корпусная статистика "редкий токен vs
+    стоп-слово-подобный" нужна на большом словаре, не на 5-10 кандидатах
+    одного запроса (см. `cv.text_rerank.build_idf`/`has_distinctive_token`).
+    Кэш ключуется строкой `case_data_dir` (тот же паттерн, что `app/rag/
+    case_catalog.py::_load_catalog(path_str)` и `app/cv/case_catalog.py::
+    _load_mapping(path_str)`) — вызывающий код передаёт `str(rag_case_catalog.
+    case_data_dir())`, так что разные `CASE_DATA_DIR` в разных тестах не
+    видят чужой кэш. Пустой/отсутствующий каталог -> пустой словарь IDF ->
+    `text_score()` отдаёт 0.0 для всех (каталог тоже пуст) — переранжирование
+    честно вырождается в no-op, не падает (см. `all_slugs()`)."""
+    text_rerank = _import_text_rerank()
+    catalog: dict[str, object] = {}
+    for slug in rag_case_catalog.all_slugs():
+        wine = rag_case_catalog.lookup(slug)
+        if wine is None:
+            continue
+        catalog[slug] = text_rerank.CatalogText(
+            slug=slug, name=wine.name, winery=wine.winery_name,
+            grape=" ".join(wine.grapes), region=wine.region_name,
+        )
+    return text_rerank.build_idf(catalog)
+
+
+def _text_rerank_catalog_entry(retriever: Retriever, slug: str, text_rerank_module):
+    """Текст ОДНОГО кандидата для переранжирования — контракт §v0.4.12 п.3:
+    каталог кейса (`app/rag/case_catalog.py`, name/winery_name/grapes/
+    region_name) ПЕРВЫМ делом, фолбэк — наш каталог (RAG, `retriever.
+    get_by_id()`) — ровно тот же порядок источников, что уже использует
+    `_candidate_item()` выше для карточки `candidates` (v0.4.11). Слаг,
+    неизвестный НИГДЕ, — честная деградация: `CatalogText` с пустыми полями
+    (`text_score()` тогда отдаёт 0.0 для него — не участвует в переранжировании,
+    не роняет остальных кандидатов)."""
+    case_wine = rag_case_catalog.lookup(slug)
+    if case_wine is not None:
+        return text_rerank_module.CatalogText(
+            slug=slug, name=case_wine.name, winery=case_wine.winery_name,
+            grape=" ".join(case_wine.grapes), region=case_wine.region_name,
+        )
+    candidate = retriever.get_by_id(slug)
+    if candidate is not None and candidate.kind == "wine":
+        source = candidate.meta["source"]
+        grapes = source.get("grapes")
+        grape_text = " ".join(grapes) if isinstance(grapes, list) else (grapes or "")
+        return text_rerank_module.CatalogText(
+            slug=slug,
+            name=source.get("name") or "",
+            winery=source.get("winery_name") or "",
+            grape=grape_text,
+            region=source.get("region_name") or "",
+        )
+    return text_rerank_module.CatalogText(slug=slug)
+
+
+def _apply_text_rerank(
+    matches: list[Match], ocr_text: str, retriever: Retriever, settings: Settings
+) -> list[Match]:
+    """contracts/image-scan.md v0.4.12: `cv.text_rerank.rerank_top_k()` по
+    top-`CV_TEXT_RERANK_K` схлопнутых `matches`, вес `CV_TEXT_RERANK_W`,
+    безопасный гейт `min_token_idf` (медиана IDF каталога, рекомендация G5 —
+    см. `cv.text_rerank.distinctive_idf_threshold`). Меняет ТОЛЬКО порядок —
+    возвращает те же объекты `Match` (score/gap/view нетронуты), просто
+    переставленные; пустой `ocr_text` -> `rerank_top_k` возвращает вход как
+    есть (text_score=0 для всех, стабильная сортировка не меняет порядок,
+    см. докстринг `rerank_top_k`)."""
+    if not matches:
+        return matches
+    text_rerank_module = _import_text_rerank()
+    idf = _text_rerank_idf(str(rag_case_catalog.case_data_dir()))
+    catalog = {
+        m.slug: _text_rerank_catalog_entry(retriever, m.slug, text_rerank_module)
+        for m in matches[: settings.cv_text_rerank_k]
+    }
+    ranked = [(m.slug, m.score) for m in matches]
+    reranked = text_rerank_module.rerank_top_k(
+        ranked, ocr_text, catalog, idf,
+        k=settings.cv_text_rerank_k, w=settings.cv_text_rerank_w,
+        min_token_idf=text_rerank_module.distinctive_idf_threshold(idf),
+    )
+    by_slug = {m.slug: m for m in matches}
+    return [by_slug[slug] for slug, _score in reranked]
+
+
 def run_photo_scan(
     *,
     image_bytes: bytes,
@@ -260,6 +387,18 @@ def run_photo_scan(
             timing_ms=int((time.monotonic() - t0) * 1000),
             matches=[], candidates=[],
         )
+
+    # v0.4.12: ОДИН проход OCR по запросу, ДО near-dup routing ниже —
+    # переранжирование top-K трогает ВЕСЬ `matches` (не только near-dup
+    # ветку), поэтому `ocr_text` читается здесь и переиспользуется near-dup
+    # верификатором дальше (см. `verifier.verify(..., ocr_text=ocr_text)`
+    # ниже) — второго прохода OCR на этот же запрос нет. Выключенный флаг
+    # (дефолт) оставляет `ocr_text=None` -> `verify()` читает OCR сам, бит-
+    # в-бит старое поведение (contracts/image-scan.md v0.4.12 п.1-2).
+    ocr_text: str | None = None
+    if settings.cv_text_rerank:
+        ocr_text = verifier.read_query_text(image_bytes)
+        matches = _apply_text_rerank(matches, ocr_text, retriever, settings)
 
     top = matches[0]
     chosen_slug = top.slug
@@ -298,8 +437,12 @@ def run_photo_scan(
 
     if len(candidate_slugs) > 1:
         # v0.4.4: verify() хочет метаданные каталога (name/vintage), не
-        # голые slug'и — см. _verify_candidates().
-        verified = verifier.verify(image_bytes, _verify_candidates(retriever, candidate_slugs))
+        # голые slug'и — см. _verify_candidates(). v0.4.12: ocr_text=None,
+        # если text_rerank выключен (дефолт) -> verify() читает OCR сам,
+        # ровно как раньше; иначе — переиспользует уже прочитанный текст.
+        verified = verifier.verify(
+            image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text=ocr_text,
+        )
         if verified is not None and verified in candidate_slugs:
             chosen_slug = verified
             ocr_verified = True

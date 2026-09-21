@@ -432,23 +432,58 @@ class LabelVerifier:
         kept = [t for t, s in zip(texts, scores) if s >= self.score_thresh]
         return " ".join(kept)
 
-    def verify(self, image: bytes, candidates: list[VerifyCandidate]) -> str | None:
-        """Контракт (image-scan.md v0.4.4). `image` — ЗАПРОС целиком (как в `ImageIndex.
-        search()`), не предварительно вырезанный регион — `verify()` сам нормализует.
+    def read_query_text(self, image: bytes) -> str:
+        """Один проход OCR по запросу: decode -> `normalize_query()` (тот же
+        кроп этикетки, что видит `ImageIndex.search()`) -> `read_text()`.
+
+        Публичный метод (contracts/image-scan.md v0.4.12, agents/B9-text-
+        rerank-integration.md): apps/api читает текст этикетки запроса РОВНО
+        ОДИН раз за запрос и переиспользует его и для `cv.text_rerank`
+        (переранжирование top-K ANN-кандидатов текстом), и для `verify()`
+        (см. параметр `ocr_text` ниже) — вместо двух независимых проходов
+        PaddleOCR по одному и тому же нормализованному кропу (OCR —
+        доминирующая статья бюджета, 294/554 мс p50/p95 на Mac, см.
+        reports/g5-accuracy.md). `ValueError` на битые/пустые байты — тот же
+        `imageio.decode_image()`, что и раньше видел `verify()` первым шагом."""
+        arr = imageio.decode_image(image)
+        normalized = normalize_query(arr, enabled=True)
+        return self.read_text(normalized)
+
+    def verify(
+        self, image: bytes, candidates: list[VerifyCandidate], ocr_text: str | None = None
+    ) -> str | None:
+        """Контракт (image-scan.md v0.4.4; параметр `ocr_text` — v0.4.12).
+        `image` — ЗАПРОС целиком (как в `ImageIndex.search()`), не
+        предварительно вырезанный регион — `verify()` сам нормализует (или
+        переиспользует уже прочитанный текст, см. `ocr_text` ниже).
+
+        `ocr_text` (v0.4.12, agents/B9-text-rerank-integration.md): когда
+        apps/api уже прочитал текст этого же запроса для `cv.text_rerank`
+        (тем же кропом `normalize_query()`, через `read_query_text()` выше) —
+        повторный проход PaddleOCR на РОВНО ТОТ ЖЕ нормализованный кроп был
+        бы чистой потерей бюджета. Если передан (не `None`) — используется
+        КАК ЕСТЬ, `read_text()` НЕ вызывается вообще (пустая строка `""` —
+        валидное значение "передан, но нечего сопоставлять", тоже не трогает
+        OCR — отличается от `None`, означающего "не передан, прочитай сам").
+        `None` (дефолт, отсутствие аргумента) — старое поведение, БИТ В БИТ:
+        `arr` декодируется и используется ТОЧНО так же, как до этого параметра.
 
         `CV_VERIFY_DEBUG=1` (TODO-2, ревью 05) — структурированный лог в stderr на
         каждый вызов (см. докстринг модуля, "Трассировка"). Флаг проверяется В НАЧАЛЕ
         и НЕ меняет ничего в основной ветке: при выключенном флаге код после этой
         проверки идентичен версии до правки (тот же `match_candidates()`, тот же
         порядок вызовов, без дополнительной работы)."""
-        arr = imageio.decode_image(image)  # ValueError на битые/пустые байты — до OCR
+        arr = imageio.decode_image(image)  # ValueError на битые/пустые байты — до OCR, как раньше
         debug = _verify_debug_enabled()
         if not candidates:
             if debug:
                 _log_verify_trace(candidates=[], ocr_text=None, trace={"reason": "no_candidates", "decision": None})
             return None
-        normalized = normalize_query(arr, enabled=True)
-        text = self.read_text(normalized)
+        if ocr_text is not None:
+            text = ocr_text  # v0.4.12: переиспользуем — read_text() (OCR) не вызывается
+        else:
+            normalized = normalize_query(arr, enabled=True)
+            text = self.read_text(normalized)
         if not debug:
             return match_candidates(text, candidates)
         decision, trace = match_candidates_trace(text, candidates)

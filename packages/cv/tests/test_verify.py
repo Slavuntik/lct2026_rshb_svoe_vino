@@ -289,6 +289,128 @@ def test_verify_returns_none_immediately_on_empty_candidates(synthetic_bottle_im
     assert v._ocr is None  # пустой список кандидатов проверяется ДО обращения к OCR-движку
 
 
+# --- v0.4.12 (agents/B9-text-rerank-integration.md): `ocr_text` — переиспользование
+# текста, прочитанного один раз apps/api для cv.text_rerank, без повторного OCR ------
+#
+# Все тесты ниже, где `ocr_text` ПЕРЕДАН, намеренно используют ДЕШЁВОЕ синтетическое
+# фото (`synthetic_bottle_image`) и свежий `LabelVerifier()` — реальный движок PaddleOCR
+# в этих сценариях не должен грузиться ВООБЩЕ (см. `v._ocr is None`), поэтому его
+# отсутствие не влияет на результат: сама суть параметра в том, что фото не читается.
+
+
+def test_verify_with_ocr_text_never_touches_read_text(monkeypatch, synthetic_bottle_image):
+    """Явный `ocr_text` -> `read_text()` (реальный OCR-проход) не вызывается вовсе —
+    решение принимается ровно по переданной строке. `monkeypatch` на `read_text`
+    бросает исключение при вызове, так что любой (даже случайный) вызов OCR уронит тест."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться, когда ocr_text передан")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="сухое 2024 0.75л")
+
+    assert result == "aligote-barrel-2024"
+    assert v._ocr is None  # движок ни разу не тронут — не только read_text() не звался
+
+
+def test_verify_empty_string_ocr_text_is_provided_not_none(monkeypatch, synthetic_bottle_image):
+    """`ocr_text=""` — ВАЛИДНОЕ значение "передано, но нечего сопоставлять" (отличается
+    от `None` = "не передано, прочитай сам"): OCR не вызывается, решение — воздержание
+    (как `match_candidates("", ...)`), а не попытка прочитать текст заново."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться — ocr_text передан (пустой, но не None)")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="")
+
+    assert result is None
+    assert v._ocr is None
+
+
+def test_verify_without_ocr_text_argument_still_calls_read_text(monkeypatch, synthetic_bottle_image):
+    """Бит-в-бит регресс на старое поведение: БЕЗ параметра (2-позиционный вызов, как
+    до этой волны) `verify()` по-прежнему сам вызывает `read_text()` — ровно один раз.
+    `read_text` замокан (не настоящий PaddleOCR) — тест быстрый, проверяет ФАКТ вызова
+    и то, что его результат реально используется для решения, а не сам движок OCR."""
+    from cv.imageio import encode_jpeg
+
+    calls: list[np.ndarray] = []
+
+    def _fake_read_text(self, image_arr):
+        calls.append(image_arr)
+        return "2024"
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES)  # старая, 2-позиционная сигнатура
+
+    assert result == "aligote-barrel-2024"
+    assert len(calls) == 1, "read_text() обязан вызваться РОВНО один раз, когда ocr_text не передан"
+
+
+def test_verify_ocr_text_none_default_matches_omitting_the_argument(monkeypatch, synthetic_bottle_image):
+    """`ocr_text=None` явно передан -> тот же результат, что и при полном отсутствии
+    аргумента (дефолт) — `None` не самостоятельная ветка, а именно значение по
+    умолчанию (contracts/image-scan.md v0.4.12: "старое поведение без параметра —
+    бит в бит")."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setattr(LabelVerifier, "read_text", lambda self, image_arr: "2025")
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    omitted = v.verify(data, _ALIGOTE_CANDIDATES)
+    explicit_none = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text=None)
+
+    assert omitted == explicit_none == "aligote-barrel-2025"
+
+
+def test_verify_on_corrupt_bytes_raises_value_error_even_with_ocr_text_given():
+    """decode -> ValueError остаётся ПЕРВЫМ шагом независимо от `ocr_text` — битые
+    байты не долетают до сопоставления, даже если текст уже на руках у вызывающего."""
+    v = LabelVerifier()
+    with pytest.raises(ValueError):
+        v.verify(b"not an image, just garbage bytes 0123456789", _ALIGOTE_CANDIDATES, ocr_text="2024")
+
+
+def test_verify_debug_trace_reports_provided_ocr_text_verbatim_without_ocr(
+    monkeypatch, capsys, synthetic_bottle_image
+):
+    """CV_VERIFY_DEBUG=1 + `ocr_text` передан -> трассировка несёт РОВНО переданную
+    строку (не заново прочитанную), и движок OCR по-прежнему не тронут."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться в debug-режиме, когда ocr_text передан")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+    monkeypatch.setenv("CV_VERIFY_DEBUG", "1")
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="сухое 2024 0.75л")
+
+    assert result == "aligote-barrel-2024"
+    assert v._ocr is None
+
+    err = capsys.readouterr().err
+    line = next(line for line in err.splitlines() if "[cv.verify]" in line)
+    payload = json.loads(line.split("[cv.verify] ", 1)[1])
+    assert payload["ocr_text"] == "сухое 2024 0.75л"
+    assert payload["decision"] == "aligote-barrel-2024"
+
+
 # --- Интеграция с реальным PaddleOCR: DoD брифа (near-dup год, воздержание, бюджет) --
 #
 # aligote-barrel-2024/2025 в devfix — буквально один и тот же файл фото (одна этикетка,
@@ -376,3 +498,58 @@ def test_verify_p95_latency_budget(label_verifier):
 
     report = benchmark(label_verifier, [data], _ALIGOTE_CANDIDATES, n=8)
     assert report["p95_ms"] <= 700, f"verify() p95={report['p95_ms']}ms превышает бюджет 700мс: {report}"
+
+
+# --- v0.4.12 (agents/B9-text-rerank-integration.md): read_query_text() — реальный
+# PaddleOCR, DoD "публичный метод чтения текста запроса, переиспользуемый ocr_text" ---
+
+
+def test_read_query_text_equals_manual_normalize_and_read_text_pipeline(label_verifier):
+    """`read_query_text()` — ровно decode -> normalize_query() -> read_text(), тот же
+    кроп, что видит verify() изнутри без ocr_text. Сравниваем с РУЧНЫМ повторением тех
+    же трёх шагов на том же фото — обязаны дать побитово одинаковую строку."""
+    from cv import imageio
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+    from cv.normalize import normalize_query
+
+    ref = _make_bottle_label(2024)
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    via_public_method = label_verifier.read_query_text(data)
+
+    arr = imageio.decode_image(data)
+    normalized = normalize_query(arr, enabled=True)
+    via_manual_steps = label_verifier.read_text(normalized)
+
+    assert via_public_method == via_manual_steps
+    assert "2024" in via_public_method
+
+
+def test_verify_ocr_text_overrides_what_the_photo_actually_shows(label_verifier):
+    """Сильное доказательство "OCR не повторяется": фото реально несёт год 2025
+    (читаемый ракурс) — не в этом кандидатском словаре. Если бы verify() читал OCR
+    заново, он честно получил бы 2025 и воздержался (2025 не в списке кандидатов ниже
+    — только 2024/2026). Передаём заведомо ДРУГОЙ текст (2026) явным `ocr_text` — решение
+    обязано последовать за ПЕРЕДАННЫМ текстом, а не за тем, что реально на фото."""
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+
+    ref = _make_bottle_label(2025)  # фото реально показывает 2025
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    # Санити: реальный OCR этого фото читает именно 2025, не 2026 — иначе тест
+    # ничего не доказывает (могло бы случайно совпасть).
+    real_text = label_verifier.read_query_text(data)
+    assert "2025" in real_text
+    assert "2026" not in real_text
+
+    candidates: list[VerifyCandidate] = [
+        {"slug": "aligote-barrel-2024", "name": "Алиготе Баррель", "vintage": 2024},
+        {"slug": "aligote-barrel-2026", "name": "Алиготе Баррель", "vintage": 2026},
+    ]
+    result = label_verifier.verify(data, candidates, ocr_text="урожай 2026 сухое")
+
+    assert result == "aligote-barrel-2026", "решение обязано следовать ЗА ПЕРЕДАННЫМ текстом, не за фото"

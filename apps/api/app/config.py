@@ -191,6 +191,35 @@ class Settings:
     low_confidence_threshold: float = field(
         default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
     )
+    # v0.4.12 (G5 cv/text_rerank.py, встраивание — agents/B9-text-rerank-
+    # integration.md): переранжирование top-K схлопнутых ANN-кандидатов
+    # OCR-текстом этикетки запроса поверх cv_score. Дефолт ВЫКЛЮЧЕН
+    # (контракт: "Дефолт в коде — выключено; на машинах демо включается env
+    # после замера задержки") — в отличие от verify() (который читает OCR
+    # только на near-dup routing), text_rerank читает OCR НА КАЖДЫЙ запрос,
+    # так что несёт собственный бюджет (Mac +0.3-0.55 с, ams3 CPU до ~5-6 с
+    # p95 при лимите скрипта 10 с — reports/g5-accuracy.md) независимо от
+    # near-dup. Тот же OCR-текст переиспользуется verify() (см.
+    # app/cv/service.py) — второго прохода OCR при включённом флаге нет.
+    cv_text_rerank: bool = field(
+        default_factory=lambda: _bool_env("CV_TEXT_RERANK", False)
+    )
+    cv_text_rerank_k: int = field(
+        # v0.4.12: top-K кандидатов, которых касается переранжирование (хвост
+        # списка после k — как есть, старым cv_score/порядком, см. cv/
+        # text_rerank.py::rerank_top_k). Рекомендация G5 (holdout n=374,
+        # reports/g5-accuracy.md): K=5.
+        default_factory=lambda: int(os.environ.get("CV_TEXT_RERANK_K", "5"))
+    )
+    cv_text_rerank_w: float = field(
+        # v0.4.12: вес текстового сигнала в итоговом скоре (final = cv_score +
+        # w*text_score). Рекомендация G5: w=0.01 — заметно только когда OCR
+        # прочитал различающий токен каталога (safe-gate min_token_idf,
+        # cv.text_rerank.has_distinctive_token), иначе text_score=0 и порядок
+        # CV не меняется вовсе (защита от ~30% "непустого, но бессодержательного"
+        # OCR-мусора синтетики — см. reports/g5-accuracy.md).
+        default_factory=lambda: float(os.environ.get("CV_TEXT_RERANK_W", "0.01"))
+    )
     # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
     # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,
     # reference_styles}.yaml, зона пайплайна, ТОЛЬКО ЧТЕНИЕ отсюда. Путь —
