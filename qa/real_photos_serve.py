@@ -30,6 +30,7 @@ def main():
     ap.add_argument("--api", default="http://127.0.0.1:8765")
     ap.add_argument("--out", required=True)
     ap.add_argument("--timeout", type=float, default=60)
+    ap.add_argument("--flat-only", action="store_true", help="только /v1/eval/predict (метрика), без rich")
     a = ap.parse_args()
     out = Path(a.out)
     done = {json.loads(l)["photo"] for l in out.read_text().splitlines() if l.strip()} if out.exists() else set()
@@ -41,6 +42,10 @@ def main():
             try:
                 flat, row["flat_ms"] = post(f"{a.api}/v1/eval/predict", p, a.timeout)
                 row["flat_slug"] = flat.get("slug") if isinstance(flat, dict) else flat[0].get("slug")
+                if a.flat_only:
+                    fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+                    fh.flush()
+                    continue
                 rich, row["rich_ms"] = post(f"{a.api}/v1/scan/photo", p, a.timeout)
                 row.update(slug=rich.get("slug"), not_in_catalog=rich.get("not_in_catalog"),
                            ocr_verified=rich.get("ocr_verified"), timing_ms=rich.get("timing_ms"),
