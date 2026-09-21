@@ -147,7 +147,7 @@ def test_scan_flat_default_env_yields_to_explicit_query_param(client: TestClient
     assert r.status_code == 200
     assert set(r.json().keys()) == {
         "slug", "card", "confidence", "ocr_verified", "timing_ms",
-        "not_in_catalog", "similar", "analogs", "matches",
+        "not_in_catalog", "similar", "analogs", "matches", "candidates",
     }  # rich-форма — explicit ?flat=0 пересилил env-дефолт
 
 
@@ -159,7 +159,7 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     body = r.json()
     assert set(body.keys()) == {
         "slug", "card", "confidence", "ocr_verified", "timing_ms",
-        "not_in_catalog", "similar", "analogs", "matches",
+        "not_in_catalog", "similar", "analogs", "matches", "candidates",
     }
     assert body["slug"] == "shato-vymysel-cabernet"
 
@@ -924,3 +924,156 @@ def test_rich_mode_analog_with_none_name_dropped_none_region_kept(client: TestCl
     assert all(w["wine_id"] != "rozovyy-mirazh" for w in r2.json()["similar"]), (
         "безымянный аналог обязан быть отброшен, а не ронять rich в 500"
     )
+
+
+# --- v0.4.11 (агент B8): candidates — top-5 позиций, обогащённых карточкой ---
+# (contracts/image-scan.md, "разбор чата кейса 21.09"; отчёт волны —
+# reports/b8-candidates-card.md). В отличие от `matches` (голый {slug, score}
+# для eval), это карточка-сводка для UI ("Возможно, это одно из:") — данные
+# из НАШЕГО каталога первым делом, иначе из каталога кейса
+# (app/rag/case_catalog.py) — та же деградация, что и у `card`/GET /wines/{id}.
+
+def test_candidates_field_enriched_from_our_catalog_for_confident_match(client: TestClient):
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert len(body["candidates"]) == 1
+    c = body["candidates"][0]
+    assert set(c.keys()) == {
+        "wine_id", "name", "winery_name", "region_name", "image_url", "source_url", "score",
+    }
+    assert c["wine_id"] == "shato-vymysel-cabernet"
+    assert c["name"] == "Шато Вымысел Каберне Совиньон"
+    assert c["winery_name"] == "Шато Вымысел"
+    assert c["region_name"] == "Кубань"
+    assert c["image_url"] == "https://example.com/mock-catalog/img/shato-vymysel-cabernet.webp"
+    assert c["source_url"] == "https://example.com/mock-catalog/wines/shato-vymysel-cabernet"
+    assert c["score"] == body["confidence"]["top1_score"] == body["matches"][0]["score"]
+
+
+def test_candidates_field_present_even_when_not_in_catalog(client: TestClient):
+    """Контракт: "Поле есть всегда" — UI решает, когда его показать
+    (not_in_catalog=true, "Возможно, это одно из:"), бэкенд не скрывает
+    данные заранее (тот же принцип, что и у matches, v0.4.3)."""
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+    body = r.json()
+    assert body["not_in_catalog"] is True
+    assert body["candidates"]
+    assert body["candidates"][0]["wine_id"] == "rozovyy-mirazh"
+    assert body["candidates"][0]["name"] == "Розовый Мираж"
+
+
+def test_candidates_is_empty_when_ann_finds_nothing(client: TestClient):
+    r = _photo(client, b"MOCKPHOTO:unknown", flat=False)
+    assert r.json()["candidates"] == []
+
+
+def test_candidates_align_with_matches_in_order_slug_and_score(client: TestClient, app):
+    """`candidates` — тот же top-K, что и `matches`, просто обогащённый:
+    1:1 по длине/порядку/score, wine_id совпадает со slug матча."""
+    app.state.image_index = _CloseScoresNoSharedFamilyImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert len(body["candidates"]) == len(body["matches"]) == 5
+    assert [c["wine_id"] for c in body["candidates"]] == [m["slug"] for m in body["matches"]]
+    assert [c["score"] for c in body["candidates"]] == [m["score"] for m in body["matches"]]
+
+
+def test_candidates_fall_back_to_case_catalog_when_rag_does_not_know_slug(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаг НАРОЧНО отсутствует в app/rag/fixtures.py::WINES — ровно сценарий
+    контракта (122/2054 кейс-слагов вне нашего каталога). image_url/
+    source_url обязаны следовать конвенции фолбэка (case-thumbs / vino-svoe.ru),
+    не нашей mock-витрине."""
+    (tmp_path / "case_catalog.json").write_text(json.dumps({
+        "mapping": {
+            "case-massandra-muskatel-belyy": {
+                "name": "Мускатель белый", "winery_name": "Массандра", "region_name": "Крым",
+            },
+        },
+    }, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _CaseOnlySlugImageIndex:
+        index_version = "case-only-slug-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [Match(slug="case-massandra-muskatel-belyy", score=0.91, gap=0.3, view="real")]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _CaseOnlySlugImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    assert body["candidates"] == [{
+        "wine_id": "case-massandra-muskatel-belyy",
+        "name": "Мускатель белый",
+        "winery_name": "Массандра",
+        "region_name": "Крым",
+        "image_url": "/v1/case-thumbs/case-massandra-muskatel-belyy.webp",
+        "source_url": "https://vino-svoe.ru/wines/case-massandra-muskatel-belyy",
+        "score": 0.91,
+    }]
+
+
+def test_candidates_degrade_honestly_when_slug_unknown_everywhere(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаг не резолвится НИ нашим RAG, НИ каталогом кейса (пустой
+    CASE_DATA_DIR — не полагаемся на то, что на этой машине его там правда
+    нет, см. tests/test_case_catalog.py) — честная деградация, не 500."""
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _UnknownEverywhereImageIndex:
+        index_version = "unknown-everywhere-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [Match(slug="totally-unknown-slug", score=0.8, gap=0.3, view="real")]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _UnknownEverywhereImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+
+    assert r.json()["candidates"] == [{
+        "wine_id": "totally-unknown-slug",
+        "name": "totally-unknown-slug",
+        "winery_name": None,
+        "region_name": None,
+        "image_url": None,
+        "source_url": "https://vino-svoe.ru/wines/totally-unknown-slug",
+        "score": 0.8,
+    }]
+
+
+def test_candidates_uses_slug_fallback_when_rag_name_is_explicitly_none(client: TestClient, monkeypatch):
+    """Хотфикс (эта волна): `.get("name", slug)` дефолтит только на
+    ОТСУТСТВУЮЩИЙ ключ, не на явный None (боевой каталог несёт его у
+    единичных позиций — тот же класс дыры, что и у AnalogsWineItem.name в
+    similar/analogs). `ScanCandidateItem.name` обязателен — без `or slug`
+    здесь был бы 500 pydantic ValidationError, не тихая деградация."""
+    from app.rag.fixtures import WINES_BY_SLUG
+    monkeypatch.setitem(WINES_BY_SLUG["rozovyy-mirazh"], "name", None)
+
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+
+    assert r.status_code == 200, r.text
+    c = next(c for c in r.json()["candidates"] if c["wine_id"] == "rozovyy-mirazh")
+    assert c["name"] == "rozovyy-mirazh"

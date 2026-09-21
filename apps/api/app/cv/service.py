@@ -48,6 +48,14 @@ baseline F показал, что без top-5 в живом API F1-top5 eval-р
 самим ImageIndex.search() (contracts/image-scan.md; см. packages/cv/cv/
 index.py::search() — best_by_slug оставляет один Match на slug), здесь только
 берём готовый список как есть.
+
+v0.4.11 (агент B8, разбор чата кейса 21.09): PhotoScanResult.candidates —
+тот же top-5, что и matches, но КАЖДАЯ позиция обогащена карточкой
+(name/winery_name/region_name/image_url/source_url) — из нашего каталога
+(RAG), иначе из каталога кейса (`app/rag/case_catalog.py`, тот же фолбэк, что
+и у `card`/GET /wines/{id}, см. app/rag/cards.py::build_wine_card). UI
+показывает это поле при not_in_catalog=true ("Возможно, это одно из:") —
+поле в ответе есть ВСЕГДА, ровно тот же принцип, что и у matches.
 """
 from __future__ import annotations
 
@@ -56,6 +64,7 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 from ..config import Settings
+from ..rag import case_catalog as rag_case_catalog
 from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
 from . import case_catalog
@@ -75,6 +84,7 @@ class PhotoScanResult:
     similar: list[dict] = field(default_factory=list)
     analogs: list[dict] = field(default_factory=list)
     matches: list[dict] = field(default_factory=list)  # v0.4.3: top-5 {slug, score} для eval F1-top5
+    candidates: list[dict] = field(default_factory=list)  # v0.4.11: top-5 позиций, обогащённых карточкой
 
 
 def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
@@ -89,6 +99,68 @@ def _match_items(matches: list[Match], limit: int = 5) -> list[dict]:
     """v0.4.3: {slug, score} по убыванию, независимо от `top_k`, с которым был
     вызван поиск — контракт фиксирует именно top-5 для eval, а не "top_k"."""
     return [{"slug": m.slug, "score": m.score} for m in matches[:limit]]
+
+
+def _candidate_item(retriever: Retriever, slug: str, score: float) -> dict:
+    """v0.4.11 (агент B8): один элемент `candidates` — карточка-сводка для
+    слага, не голый {slug, score} (то — `_match_items` выше, для eval).
+    Источник данных — НАША карточка (RAG) первым делом, иначе каталог кейса
+    — ровно тот же порядок источников и та же честная деградация, что и
+    `build_wine_card()` (app/rag/cards.py) для card/GET /wines/{id}:
+    контракт требует ту же енричментную логику, не отдельную копию."""
+    candidate = retriever.get_by_id(slug)
+    if candidate is not None and candidate.kind == "wine":
+        source = candidate.meta["source"]
+        return {
+            "wine_id": slug,
+            # Хотфикс по прецеденту AnalogsWineItem (routers/scan.py, similar/
+            # analogs): `.get("name", slug)` дефолтит ТОЛЬКО на отсутствующий
+            # ключ, не на явный None (боевой каталог его несёт у единичных
+            # позиций) — `ScanCandidateItem.name` обязателен, `or slug`
+            # закрывает оба случая разом, без отдельного фильтра ниже по
+            # стеку (в отличие от similar/analogs, кандидат никогда не
+            # отбрасывается — это тот же список, что matches, порядок и
+            # длина обязаны совпадать 1:1).
+            "name": source.get("name") or slug,
+            "winery_name": source.get("winery_name") or None,
+            "region_name": source.get("region_name") or None,
+            "image_url": source.get("image_url"),
+            "source_url": candidate.url,
+            "score": score,
+        }
+
+    case_wine = rag_case_catalog.lookup(slug)
+    if case_wine is not None:
+        return {
+            "wine_id": slug,
+            "name": case_wine.name,
+            "winery_name": case_wine.winery_name or None,
+            "region_name": case_wine.region_name or None,
+            "image_url": rag_case_catalog.thumb_url(slug),
+            "source_url": rag_case_catalog.source_url(slug),
+            "score": score,
+        }
+
+    # Честная деградация: слаг не резолвится НИГДЕ (ни наш RAG, ни каталог
+    # кейса не знают его) — тот же принцип, что и в _verify_candidates ниже:
+    # не роняем rich-ответ, отдаём голый slug вместо имени. source_url всё
+    # равно строим по конвенции "Своего Вина" — приватная проверка кейса
+    # содержит ТОЛЬКО вина из каталога кейса (case.md), так что CV в
+    # принципе не должен находить слаги вне его — этот путь чисто защитный.
+    return {
+        "wine_id": slug, "name": slug, "winery_name": None, "region_name": None,
+        "image_url": None, "source_url": rag_case_catalog.source_url(slug), "score": score,
+    }
+
+
+def _candidate_items(retriever: Retriever, matches: list[Match], limit: int = 5) -> list[dict]:
+    """v0.4.11 (контракт §1): top-5 схлопнутых позиций, обогащённых карточкой
+    — присутствует в rich-ответе ВСЕГДА (не только при not_in_catalog — тот
+    же принцип, что и у `matches`/v0.4.3: UI решает, когда показывать,
+    бэкенд не скрывает данные заранее). `matches` уже схлопнуты в позиции
+    самим ImageIndex.search() — здесь только берём top-`limit` как есть и
+    обогащаем каждую карточкой."""
+    return [_candidate_item(retriever, m.slug, m.score) for m in matches[:limit]]
 
 
 def _verify_candidates(retriever: Retriever, slugs: list[str]) -> list[VerifyCandidate]:
@@ -186,12 +258,16 @@ def run_photo_scan(
             best_guess_slug=None, slug=None, card=None, top1_score=None, gap=None,
             ocr_verified=False, not_in_catalog=True,
             timing_ms=int((time.monotonic() - t0) * 1000),
-            matches=[],
+            matches=[], candidates=[],
         )
 
     top = matches[0]
     chosen_slug = top.slug
     ocr_verified = False
+    # v0.4.11: candidates считаются от СЫРОГО top-K, независимо от исхода
+    # confident/not_in_catalog ниже (см. докстринг _candidate_items) — та же
+    # дисциплина, что и у matches (v0.4.3).
+    candidates = _candidate_items(retriever, matches)
 
     # v0.4.8 (контракт, закрытие TODO-2 — диагноз "Мускатель Массандра" q2,
     # reports/g4-family-gap.md): кандидаты верификатора отбираются ПО БЛИЗОСТИ
@@ -289,4 +365,5 @@ def run_photo_scan(
         similar=similar,
         analogs=analogs,
         matches=_match_items(matches),
+        candidates=candidates,
     )

@@ -54,6 +54,7 @@ from ..rag.interface import Retriever
 from ..schemas import (
     AnalogsWineItem,
     PhotoMatchItem,
+    ScanCandidateItem,
     ScanConfidence,
     ScanMatch,
     ScanPhotoFlatResponse,
@@ -283,4 +284,7 @@ async def scan_photo(
         # v0.4.3 (пробел нашёл F): top-5 сырых ANN-позиций для eval F1-top5,
         # UI не рендерит (см. докстринг PhotoMatchItem/ScanPhotoRichResponse).
         matches=[PhotoMatchItem(**item) for item in result.matches],
+        # v0.4.11: top-5 кандидатов, обогащённых карточкой ("Возможно, это
+        # одно из:" при not_in_catalog) — см. докстринг ScanCandidateItem.
+        candidates=[ScanCandidateItem(**item) for item in result.candidates],
     )

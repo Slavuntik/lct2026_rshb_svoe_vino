@@ -227,6 +227,24 @@ class PhotoMatchItem(BaseModel):
     score: float
 
 
+class ScanCandidateItem(BaseModel):
+    """v0.4.11 (агент B8): top-5 схлопнутых позиций при неуверенности —
+    "возможно, это одно из" (та же капа top-5, что и у `PhotoMatchItem`, но
+    это уже КАРТОЧКА-СВОДКА, не голый {slug, score} для eval). Данные — из
+    нашей карточки (RAG), иначе из каталога кейса (`app/rag/case_catalog.py`)
+    — та же деградация, что и у `card`/`GET /wines/{id}`
+    (см. app/rag/cards.py::build_wine_card, app/cv/service.py::_candidate_item).
+    winery_name/region_name/image_url — Optional по тому же прецеденту, что
+    AnalogsWineItem выше (реальный каталог не всегда знает винодельню/регион)."""
+    wine_id: str
+    name: str
+    winery_name: str | None = None
+    region_name: str | None = None
+    image_url: str | None = None
+    source_url: str
+    score: float
+
+
 class ScanPhotoRichResponse(BaseModel):
     slug: str | None
     card: dict | None = None
@@ -240,6 +258,11 @@ class ScanPhotoRichResponse(BaseModel):
     # исключительно eval-раннеру (без этого поля F1-top5 через живой API
     # вырождается в F1-top1). flat-режим (ScanPhotoFlatResponse) не меняется.
     matches: list[PhotoMatchItem] = Field(default_factory=list, max_length=5)
+    # v0.4.11: top-5 кандидатов при неуверенности, обогащённых карточкой.
+    # Поле есть ВСЕГДА (не только при not_in_catalog=true) — тот же принцип,
+    # что и у matches: UI решает, когда его показывать ("Возможно, это одно
+    # из:" при not_in_catalog), бэкенд не скрывает данные заранее.
+    candidates: list[ScanCandidateItem] = Field(default_factory=list, max_length=5)
 
 
 class ScanMetricsResponse(BaseModel):

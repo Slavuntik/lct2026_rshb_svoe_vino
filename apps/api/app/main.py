@@ -17,6 +17,7 @@ from .rag.factory import get_retriever
 from .routers import (
     analogs,
     auth,
+    case_thumbs,
     chat,
     consents,
     eval as eval_router,
@@ -86,6 +87,7 @@ def create_app() -> FastAPI:
         waitlist.router,
         profile.router,
         metrics.router,
+        case_thumbs.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
 

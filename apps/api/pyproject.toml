@@ -18,6 +18,14 @@ dependencies = [
     "rapidfuzz>=3.9",
     "psycopg[binary]>=3.1",
     "llm",
+    # agents/B8-candidates-card.md: scripts/build_case_thumbs.py ресайзит
+    # эталоны кейса офлайн (длинная сторона 480px, webp q=80) — рантайм API
+    # (app/routers/case_thumbs.py) Pillow не использует вовсе, только
+    # статически раздаёт уже готовые файлы. Уже приходил транзитивно через
+    # "cv" (integration extra, packages/cv/pyproject.toml) — здесь объявлен
+    # напрямую, чтобы скрипт был runnable и на базовом `uv sync` (без
+    # --extra integration, который тянет тяжёлый torch+packages/cv).
+    "pillow>=10.4",
 ]
 
 [project.optional-dependencies]

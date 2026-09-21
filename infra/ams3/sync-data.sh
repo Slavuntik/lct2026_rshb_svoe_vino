@@ -13,13 +13,20 @@ SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/some
 DST="somelye@$HOST:/opt/somelye/data"
 put() { rsync -az -e "$SSH" "$@"; }
 
-echo "1/6 CV-индекс";          put --exclude '.lock' "$ROOT/packages/cv/data/qdrant/" "$DST/cv/qdrant/"
-echo "2/6 RAG-индекс";         put "$ROOT/packages/rag/data/" "$DST/rag/"
-echo "3/6 модели RAG";         put "$ROOT/packages/rag/.fastembed_cache/" "$DST/fastembed/"
-echo "4/6 SigLIP2";            $SSH "somelye@$HOST" 'mkdir -p /opt/somelye/data/models/hf/hub'
+echo "1/7 CV-индекс";          put --exclude '.lock' "$ROOT/packages/cv/data/qdrant/" "$DST/cv/qdrant/"
+echo "2/7 RAG-индекс";         put "$ROOT/packages/rag/data/" "$DST/rag/"
+echo "3/7 модели RAG";         put "$ROOT/packages/rag/.fastembed_cache/" "$DST/fastembed/"
+echo "4/7 SigLIP2";            $SSH "somelye@$HOST" 'mkdir -p /opt/somelye/data/models/hf/hub'
                                put "$HOME/.cache/huggingface/hub/models--google--siglip2-base-patch16-224" "$DST/models/hf/hub/"
-echo "5/6 PaddleOCR";          put "$HOME/.paddlex/official_models" "$DST/models/paddlex/"
-echo "6/6 кейс и метрики";     put "$CASE/slug_refs.json" "$CASE/families.json" "$DST/case/"
+echo "5/7 PaddleOCR";          put "$HOME/.paddlex/official_models" "$DST/models/paddlex/"
+echo "6/7 кейс и метрики";     put "$CASE/slug_refs.json" "$CASE/families.json" "$DST/case/"
                                put "$ROOT/qa/scan-eval-runs/case-20260918-honest/eval_report_snapshot.json" "$DST/eval_report_snapshot.json"
+# agents/B8-candidates-card.md (contracts/image-scan.md v0.4.11): фолбэк-карточка
+# кейс-слагов вне нашего RAG-каталога — case_catalog.json (apps/api/scripts/
+# build_case_catalog.py) и превью thumbs/ (apps/api/scripts/build_case_thumbs.py),
+# оба читает apps/api из ТОГО ЖЕ $CASE_DATA_DIR/... что и slug_refs.json выше
+# (server: /opt/somelye/data/case, somelye.env.example) — тот же put в "$DST/case/".
+echo "7/7 карточка кейса";     put "$CASE/case_catalog.json" "$DST/case/"
+                               put "$CASE/thumbs/" "$DST/case/thumbs/"
 
 echo "индекс на сервере:"; $SSH "somelye@$HOST" 'cat /opt/somelye/data/cv/qdrant/manifest.json; du -sh /opt/somelye/data'

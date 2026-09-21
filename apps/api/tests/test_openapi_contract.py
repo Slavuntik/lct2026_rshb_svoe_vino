@@ -21,7 +21,26 @@ _HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head"}
 # contracts/image-scan.md пишет пути в прозе как `METHOD /v1/path` в
 # backticks (не OpenAPI YAML) — например "`POST /v1/scan/photo`",
 # "`GET /v1/metrics/scan`".
-_MD_PATH_RE = re.compile(r"`(GET|POST|PUT|PATCH|DELETE)\s+(/v1/[a-zA-Z0-9/_-]+)`")
+#
+# v0.4.11 (агент B8): добавлены "{", "}", "." к алфавиту пути — новый пункт
+# контракта пишет путь с параметром и расширением дословно как
+# "`GET /v1/case-thumbs/{slug}.webp`" (contracts/image-scan.md). Старый
+# алфавит без этих трёх символов не долетал до закрывающего backtick вообще
+# (символ "{" не входит в class, `findall` для этой строки возвращал ПУСТО —
+# не "неправильный путь", а "путь не найден нигде"), так что путь был
+# невидим тесту ПОЛНОСТЬЮ: не required (test_contract_paths_and_methods_
+# are_all_implemented молчал), но и не extra — ровно до того момента, пока
+# `app/routers/case_thumbs.py` не завёл реальный путь "/v1/case-thumbs/
+# {slug}.webp" в схеме приложения, из-за чего его начинал ловить
+# test_contract_paths_match_app_exactly_no_undocumented_extras ("путей,
+# которых нет в контракте") — притом что контракт эту ручку уже дословно
+# описывает, просто регэксп не мог её распарсить. Расширение алфавита — фикс
+# ПАРСЕРА (файл в зоне агента, не в contracts/), а не правка контракта: текст
+# contracts/image-scan.md не менялся ни на символ, только то, что тест из
+# него теперь способен вычитать. Проверено вручную (см. reports/
+# b8-candidates-card.md): ни один ДРУГОЙ backtick-путь файла не содержит "{",
+# "}" или "." — расширение не меняет разбор ни одной существовавшей строки.
+_MD_PATH_RE = re.compile(r"`(GET|POST|PUT|PATCH|DELETE)\s+(/v1/[a-zA-Z0-9/_.{}-]+)`")
 
 
 def _load_openapi_contract_paths() -> dict[str, set[str]]:
