@@ -36,13 +36,14 @@ agents/B3-eval-route.md — `flat_scan_response()` ниже несёт ровн�
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from ..config import Settings, get_settings_dep
 from ..cv.eval_report import read_eval_report
 from ..cv.interface import ImageIndex, LabelVerifier
+from ..cv.archive import archive_scan_safe
 from ..cv.service import PhotoScanResult, run_photo_scan
 from ..db import get_db
 from ..deps import get_image_index_dep, get_label_verifier_dep, get_retriever_dep
@@ -218,6 +219,7 @@ async def flat_scan_response(
 @router.post("/photo")
 async def scan_photo(
     request: Request,
+    background_tasks: BackgroundTasks,
     image: UploadFile | None = File(default=None),
     flat: bool | None = Query(
         default=None,
@@ -256,6 +258,16 @@ async def scan_photo(
         raise ApiError(400, "validation_error", f"Не удалось обработать изображение: {exc}") from exc
 
     _record_photo_scan(db, principal, len(data), result, best_effort=False)
+
+    # v0.4.10: архив сканов для контрольной выборки — только rich (интерфейс); flat и
+    # /v1/eval/predict не архивируются: через них идёт приватная выборка кейсодержателя.
+    # Фоновая задача выполняется после отправки ответа и не влияет на время скана.
+    if settings.scan_archive_dir:
+        background_tasks.add_task(
+            archive_scan_safe, settings.scan_archive_dir, data, result,
+            abs_floor=settings.cv_abs_floor,
+            index_version=getattr(image_index, "index_version", None),
+        )
 
     return ScanPhotoRichResponse(
         slug=result.slug,

@@ -146,7 +146,7 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
 
   it("тихая подпись про фото — не чекбокс согласия", () => {
     renderScan();
-    expect(screen.getByText(/фото используется только для поиска и не сохраняется/i)).toBeInTheDocument();
+    expect(screen.getByText(/фото сохраняется, чтобы улучшать распознавание/i)).toBeInTheDocument();
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 });

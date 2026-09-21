@@ -216,6 +216,11 @@ class Settings:
         # случай, не отмена самого параметра.
         default_factory=lambda: _bool_env("SCAN_FLAT_DEFAULT", False)
     )
+    scan_archive_dir: str | None = field(
+        # v0.4.10: каталог архива сканов из интерфейса (стенд собирает фото для
+        # контрольной выборки). Не задан — ничего не сохраняется (дефолт dev/тестов).
+        default_factory=lambda: os.environ.get("SCAN_ARCHIVE_DIR") or None
+    )
     rate_limit_window_seconds: int = field(
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
     )
