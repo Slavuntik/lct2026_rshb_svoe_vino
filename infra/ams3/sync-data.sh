@@ -12,11 +12,16 @@ CASE="${CASE_DATA_DIR:-$ROOT/../case-data}"
 # Какой CV-индекс везти (каталог с qdrant/ внутри). По умолчанию — боевой packages/cv/data;
 # новый индекс (другой энкодер/эталоны) — CV_INDEX_DIR=packages/cv/data-d1 sync-data.sh <host>.
 CV_INDEX_DIR="${CV_INDEX_DIR:-$ROOT/packages/cv/data}"
+# Куда на сервере (подкаталог /opt/somelye/data). Новый индекс везём в ОТДЕЛЬНЫЙ каталог и
+# переключаем CV_DATA_DIR в somelye.env — работающий стенд читает старый до рестарта:
+#   CV_INDEX_DIR=packages/cv/data-d1 CV_INDEX_DST=cv-d1 sync-data.sh <host>
+CV_INDEX_DST="${CV_INDEX_DST:-cv}"
 SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-%r@%h -o ControlPersist=300"
 DST="somelye@$HOST:/opt/somelye/data"
 put() { rsync -az -e "$SSH" "$@"; }
 
-echo "1/7 CV-индекс";          put --delete --exclude '.lock' "$CV_INDEX_DIR/qdrant/" "$DST/cv/qdrant/"
+echo "1/7 CV-индекс";          $SSH "somelye@$HOST" "mkdir -p /opt/somelye/data/$CV_INDEX_DST/qdrant"
+                               put --delete --exclude '.lock' "$CV_INDEX_DIR/qdrant/" "$DST/$CV_INDEX_DST/qdrant/"
 echo "2/7 RAG-индекс";         put "$ROOT/packages/rag/data/" "$DST/rag/"
 echo "3/7 модели RAG";         put "$ROOT/packages/rag/.fastembed_cache/" "$DST/fastembed/"
 echo "4/7 SigLIP2";            $SSH "somelye@$HOST" 'mkdir -p /opt/somelye/data/models/hf/hub'
