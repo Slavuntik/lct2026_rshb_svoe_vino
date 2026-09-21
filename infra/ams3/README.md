@@ -60,11 +60,21 @@ bash infra/ams3/push-release.sh <ams3>                       # код + веб +
 - **Индекс после пересборки на Mac:** `sync-data.sh <ams3>` → `ssh somelye@<ams3> 'sudo systemctl restart somelye-api'`.
 - **Откат:** `DEPLOY_REF=<коммит> bash infra/ams3/push-release.sh <ams3>`.
 
-## Секреты GitHub (репозиторные)
+## Секреты GitHub
 
-`AMS3_HOST` — адрес сервера · `AMS3_SSH_USER` — `somelye` · `AMS3_SSH_KEY` — приватная половина
-ключа CI · `AMS3_KNOWN_HOSTS` — вывод `ssh-keyscan <ams3>`. Без них workflow не падает, а вежливо
-пропускает выкат (джоба `guard`).
+Ровно три, тип **Secrets** (не Variables — workflow читает `secrets.*`, переменная из Variables
+придёт пустой), уровень **Repository** (не Environment — деплой-джоба не объявляет
+`environment:`, секреты окружения ей не видны). Settings → Secrets and variables → Actions →
+Secrets → New repository secret:
+
+| Имя | Значение |
+|---|---|
+| `AMS3_HOST` | `89.110.72.101` |
+| `AMS3_SSH_KEY` | приватная половина ключа CI целиком, со строками BEGIN/END: `pbcopy < ~/.ssh/ci_do_ams3` |
+| `AMS3_KNOWN_HOSTS` | вывод `ssh-keyscan 89.110.72.101` целиком |
+
+Пользователь `somelye` зашит в `push-release.sh` — отдельный секрет не нужен. Без секретов
+workflow не падает, а вежливо пропускает выкат (джоба `guard`).
 
 ## Диагностика
 
