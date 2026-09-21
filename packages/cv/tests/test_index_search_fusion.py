@@ -38,6 +38,13 @@ class _ShapeKeyedEncoder:
             return self._norm_vec
         return self._raw_vec
 
+    def encode_batch(self, images: list[np.ndarray], use_cache: bool = True) -> list[list[float]]:
+        """agents/H2-rapidocr-multiscale.md п.4: `embed_fusion_query()` кодирует ОДНИМ
+        батчем (`SiglipEncoder.encode_batch()`), не N отдельными вызовами `encode()` —
+        тот же тривиальный цикл, что настоящий `cv.encoder.SiglipEncoder.encode_batch()`
+        (не батчит инференс по-настоящему, просто единая точка вызова)."""
+        return [self.encode(im, use_cache=use_cache) for im in images]
+
 
 def _unit(vec: list[float]) -> list[float]:
     arr = np.asarray(vec, dtype=np.float64)
@@ -324,3 +331,132 @@ def test_point_id_helper_still_importable():
     тест импорта, не переизобретение test_store.py."""
     assert point_id("a::real") == point_id("a::real")
     assert point_id("a::real") != point_id("b::real")
+
+
+# --------------------------------------------------------------------------------------
+# agents/H2-rapidocr-multiscale.md п.4: CV_FUSION_CROPS=2|8 — embed_fusion_query()
+# возвращает N векторов (2 дефолт, 8 = + три центральных кропа cwide/cmid/ctight ×
+# как есть/normalize_query), search_fusion(vectors=...) принимает любой N.
+# --------------------------------------------------------------------------------------
+
+
+class _ShapeRecordingEncoder:
+    """Помнит форму (H, W) КАЖДОГО массива, переданного `encode_batch()` за ОДИН
+    вызов — проверяет, что `embed_fusion_query()` (а) кодирует одним батчем, не N
+    отдельными вызовами `encode()`, и (б) строит именно те кропы (в том порядке),
+    что заявлены `FUSION_EXTRA_CROPS`. Векторы-заглушки различимы по индексу, сама
+    модель здесь не нужна."""
+
+    def __init__(self):
+        self.batch_calls: list[list[tuple[int, int]]] = []
+
+    def encode(self, image: np.ndarray, use_cache: bool = True) -> list[float]:
+        raise AssertionError("embed_fusion_query() обязан звать encode_batch(), не encode() поштучно")
+
+    def encode_batch(self, images: list[np.ndarray], use_cache: bool = True) -> list[list[float]]:
+        self.batch_calls.append([tuple(im.shape[:2]) for im in images])
+        return [[float(i)] for i in range(len(images))]
+
+
+def _index_with_spy(tmp_path, spy, **overrides) -> ImageIndex:
+    store = QdrantStore(path=tmp_path / "qdrant")
+    return ImageIndex(
+        store=store, encoder=spy, collection="fusion_crops_test",
+        manifest_path=tmp_path / "manifest.json", families_json=tmp_path / "no-families.json",
+        **overrides,
+    )
+
+
+def test_fusion_crops_default_is_2(tmp_path):
+    index = _index_with_spy(tmp_path, _ShapeRecordingEncoder())
+    assert index.fusion_crops == 2
+
+
+def test_fusion_crops_constructor_param_overrides_default(tmp_path):
+    index = _index_with_spy(tmp_path, _ShapeRecordingEncoder(), fusion_crops=8)
+    assert index.fusion_crops == 8
+
+
+def test_fusion_crops_env_var_overrides_constructor_default(tmp_path, monkeypatch):
+    """Тот же принцип живого резолва в конструкторе, что `LabelVerifier.ocr_query_mode`
+    (packages/cv/cv/verify.py) — env выставлен ДО конструктора, побеждает дефолт."""
+    monkeypatch.setenv("CV_FUSION_CROPS", "8")
+    index = _index_with_spy(tmp_path, _ShapeRecordingEncoder(), fusion_crops=2)
+    assert index.fusion_crops == 8
+
+
+def test_embed_fusion_query_default_two_crops_single_batch_call(tmp_path, query_image_bytes):
+    spy = _ShapeRecordingEncoder()
+    index = _index_with_spy(tmp_path, spy)
+
+    vectors = index.embed_fusion_query(query_image_bytes)
+
+    assert len(vectors) == 2
+    assert len(spy.batch_calls) == 1, "ОДИН вызов encode_batch(), не N отдельных encode()"
+    assert len(spy.batch_calls[0]) == 2
+
+
+def test_embed_fusion_query_eight_crops_shapes_match_fusion_extra_crops_fractions(tmp_path, query_image_bytes):
+    """Порядок и формы всех 8 массивов, реально дошедших до энкодера: [кроп
+    детектора (канонический квадрат normalize_query), весь кадр как есть] + для
+    КАЖДОГО из cwide/cmid/ctight (в порядке `FUSION_EXTRA_CROPS`) — [кроп как
+    есть, тот же кроп через normalize_query]."""
+    from cv.imageio import decode_image
+    from cv.index import FUSION_EXTRA_CROPS
+
+    spy = _ShapeRecordingEncoder()
+    index = _index_with_spy(tmp_path, spy, fusion_crops=8)
+
+    vectors = index.embed_fusion_query(query_image_bytes)
+
+    assert len(vectors) == 8
+    assert len(spy.batch_calls) == 1, "8 кропов — тоже ОДИН батч-вызов, не восемь"
+    arr = decode_image(query_image_bytes)
+    h, w = arr.shape[:2]
+    expected = [(NORM_SIZE_DEFAULT, NORM_SIZE_DEFAULT), (h, w)]
+    for x0, y0, x1, y1 in FUSION_EXTRA_CROPS.values():
+        expected.append((int(h * y1) - int(h * y0), int(w * x1) - int(w * x0)))  # "как есть"
+        expected.append((NORM_SIZE_DEFAULT, NORM_SIZE_DEFAULT))  # через normalize_query
+    assert spy.batch_calls[0] == expected
+
+
+def test_search_fusion_eight_crops_still_finds_per_slug_max_across_all_vectors(tmp_path, query_image_bytes):
+    """CV_FUSION_CROPS=8: `search_fusion()` обязан работать по ВСЕМ 8 векторам, не
+    только по первым двум (регресс на распаковку `norm_vec, raw_vec = vectors`,
+    которая жёстко требовала ровно 2 элемента ДО этой правки) — тот же принцип
+    per-slug максимума, что `test_search_fusion_max_combines_norm_and_raw_views`."""
+    norm_vec, raw_vec = _unit([1, 0, 0]), _unit([0, 1, 0])
+    store = QdrantStore(path=tmp_path / "qdrant")
+    _upsert_slug(store, "fusion_test", "norm-favorite", {"real": norm_vec})
+    _upsert_slug(store, "fusion_test", "raw-favorite", {"real": raw_vec})
+
+    index = ImageIndex(
+        store=store, encoder=_ShapeKeyedEncoder(norm_vec, raw_vec), collection="fusion_test",
+        manifest_path=tmp_path / "manifest.json", families_json=tmp_path / "no-families.json",
+        fusion_crops=8,
+    )
+    vectors = index.embed_fusion_query(query_image_bytes)
+    assert len(vectors) == 8
+
+    matches = index.search_fusion(None, top_k=5, vectors=vectors)
+    by_slug = {m.slug: m.score for m in matches}
+    assert by_slug["norm-favorite"] == pytest.approx(1.0)
+    assert by_slug["raw-favorite"] == pytest.approx(1.0)
+
+
+def test_search_fusion_eight_crops_extra_slug_recovery_still_works(tmp_path, query_image_bytes):
+    """`_exact_scores_for_slugs()` (extra_slugs-добор) тоже обязан принять
+    8-элементный `vectors` — та же логика "слаг вне ANN-топа находится точным
+    скором", что `test_search_fusion_extra_slug_missing_from_collection_is_silently_absent`,
+    только числом векторов 8, не 2."""
+    norm_vec, raw_vec = _unit([1, 0, 0]), _unit([0, 1, 0])
+    store = QdrantStore(path=tmp_path / "qdrant")
+    _upsert_slug(store, "fusion_test", "only-slug", {"real": norm_vec})
+    index = ImageIndex(
+        store=store, encoder=_ShapeKeyedEncoder(norm_vec, raw_vec), collection="fusion_test",
+        manifest_path=tmp_path / "manifest.json", families_json=tmp_path / "no-families.json",
+        fusion_crops=8,
+    )
+    matches = index.search_fusion(query_image_bytes, top_k=5, extra_slugs=["never-indexed-slug"])
+    assert "never-indexed-slug" not in {m.slug for m in matches}
+    assert {m.slug for m in matches} == {"only-slug"}

@@ -31,6 +31,7 @@ near-dup семьи top-1, просто визуально похож на пл�
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from dataclasses import dataclass
@@ -50,6 +51,22 @@ from cv.store import QdrantStore, get_store
 # векторов идёт минуты — "запускай фоном, следи за прогрессом", agents/G3-real-index.md
 # — молчаливый долгий процесс неотличим от зависшего).
 _BUILD_PROGRESS_EVERY = 500
+
+# --- CV_FUSION: 2|8 query-векторов (agents/H2-rapidocr-multiscale.md, п.4) -----------
+# 2 (дефолт) — оригинальные G7-векторы: кроп детектора (normalize_query) + весь кадр.
+# 8 добавляет три центральных кропа ПОЛНОГО кадра (cwide/cmid/ctight) × (как есть, через
+# normalize_query) — 2 + 3*2 = 8. Доли — ТЕ ЖЕ, что офлайн-эксперимент
+# `qa/real_photos_qemb.py::CROPS` и (только "cwide") `cv.verify.CENTER_CROP` — намеренно
+# продублированы здесь литералами, а не импортированы, той же дисциплиной "синхронизируй
+# руками", что `cv.text_fusion._GREEK` держит в паре с `qa/text_v2.py` (см. их докстринги):
+# cv.index — ANN-поиск, cv.verify — OCR-верификатор, у модулей нет причины знать друг о
+# друге ради одной тройки чисел.
+DEFAULT_FUSION_CROPS = 2
+FUSION_EXTRA_CROPS: dict[str, tuple[float, float, float, float]] = {
+    "cwide": (0.15, 0.05, 0.85, 0.98),  # == cv.verify.CENTER_CROP
+    "cmid": (0.25, 0.20, 0.75, 0.90),
+    "ctight": (0.30, 0.35, 0.70, 0.85),
+}
 
 
 @dataclass
@@ -121,10 +138,17 @@ class ImageIndex:
         collection: str | None = None,
         manifest_path: Path | None = None,
         families_json: Path | None = None,
+        fusion_crops: int | None = None,
     ):
         self.store = store or get_store()
         self.encoder = encoder or SiglipEncoder()
         self.collection = collection or config.COLLECTION_NAME
+        # agents/H2-rapidocr-multiscale.md, п.4: CV_FUSION_CROPS — 2 (дефолт) | 8
+        # query-векторов слияния, см. embed_fusion_query()/FUSION_EXTRA_CROPS выше.
+        # Читается ЖИВЬЁМ здесь (тест может monkeypatch.setenv() ДО конструктора) —
+        # тот же принцип живого резолва в конструкторе, что `LabelVerifier.ocr_query_mode`
+        # (packages/cv/cv/verify.py), не замороженная при импорте константа cv.config.
+        self.fusion_crops = int(os.environ.get("CV_FUSION_CROPS", fusion_crops if fusion_crops is not None else DEFAULT_FUSION_CROPS))
         # Манифест по умолчанию — РЯДОМ С ДАННЫМИ ЭТОГО КОНКРЕТНОГО store (self.store.path),
         # не отдельная глобальная config.MANIFEST_PATH. Та резолвится как модульная константа
         # ОДИН РАЗ при первом импорте cv.config — не видит env/аргументы, выставленные ПОСЛЕ
@@ -230,13 +254,31 @@ class ImageIndex:
 
     # --- CV_FUSION (agents/G7-text-fusion.md) --------------------------------------
 
-    def embed_fusion_query(self, image: bytes, *, normalize: bool = True) -> tuple[list[float], list[float]]:
-        """Два query-вектора слияния — (нормализованный кроп этикетки, весь кадр) — БЕЗ поиска.
+    def embed_fusion_query(self, image: bytes, *, normalize: bool = True) -> tuple[list[float], ...]:
+        """N query-векторов слияния — БЕЗ поиска (agents/G7-text-fusion.md, N=2
+        расширено до N∈{2,8} agents/H2-rapidocr-multiscale.md п.4, см. `self.fusion_crops`/
+        `FUSION_EXTRA_CROPS`). N=2 (дефолт `CV_FUSION_CROPS=2`) — оригинальные G7-векторы:
+        (нормализованный кроп этикетки, весь кадр). N=8 (`CV_FUSION_CROPS=8`) добавляет
+        три центральных кропа ПОЛНОГО кадра (`FUSION_EXTRA_CROPS` — cwide/cmid/ctight) ×
+        (как есть, через `normalize_query`) — 2 + 3*2 = 8 векторов; мелкие слова этикетки
+        читаются на более тесных кропах, крупный визуальный облик — на кропе детектора/
+        целом кадре (тот же мотив, что двухмасштабный `cv.ocr_rapid`).
+
         Отдельно от `search_fusion()`, чтобы вызывающий код мог считать эмбеддинги
         параллельно с ожиданием текста этикетки (VLM/OCR) и затем передать их в
-        `search_fusion(vectors=...)` — без повторного кодирования. `ValueError` на битые байты."""
+        `search_fusion(vectors=...)` — без повторного кодирования. Кодирование ОДНИМ
+        батчем (`SiglipEncoder.encode_batch()`), не N отдельными вызовами `encode()` —
+        одна точка входа для обоих режимов 2/8, без частично задублированного кода.
+        `ValueError` на битые байты (decode_image, как раньше)."""
         arr = imageio.decode_image(image)
-        return self.encoder.encode(normalize_query(arr, enabled=normalize)), self.encoder.encode(arr)
+        crops: list[np.ndarray] = [normalize_query(arr, enabled=normalize), arr]
+        if self.fusion_crops >= 8:
+            h, w = arr.shape[:2]
+            for x0, y0, x1, y1 in FUSION_EXTRA_CROPS.values():
+                crop = np.ascontiguousarray(arr[int(h * y0) : int(h * y1), int(w * x0) : int(w * x1)])
+                crops.append(crop)  # "как есть"
+                crops.append(normalize_query(crop, enabled=normalize))  # через normalize_query
+        return tuple(self.encoder.encode_batch(crops))
 
     def search_fusion(
         self,
@@ -245,18 +287,20 @@ class ImageIndex:
         top_k: int = 50,
         extra_slugs: Iterable[str] = (),
         normalize: bool = True,
-        vectors: tuple[list[float], list[float]] | None = None,
+        vectors: tuple[list[float], ...] | None = None,
     ) -> list[Match]:
-        """CV-скоры для боевого слияния CV+текст (`cv/text_fusion.py`, brief п.5):
-        максимум по ДВУМ входам запроса — нормализованный кроп этикетки (как
-        `search()`) И весь кадр БЕЗ нормализации (сырой decode, letterbox/детектор
-        не участвуют — `encoder.encode()` сам делает препроцессинг под модель, см.
-        `cv/encoder.py`) — на реальных фото детектор этикетки часто берёт не то
-        (блики, ракурс, теснота полки), а весь кадр иногда несёт больше сигнала.
+        """CV-скоры для боевого слияния CV+текст (`cv/text_fusion.py`, brief G7 п.5):
+        максимум по N входам запроса (`embed_fusion_query()`, N=2 или 8 — agents/
+        H2-rapidocr-multiscale.md п.4) — нормализованный кроп этикетки (как `search()`),
+        весь кадр БЕЗ нормализации (сырой decode, letterbox/детектор не участвуют —
+        `encoder.encode()` сам делает препроцессинг под модель, см. `cv/encoder.py`) и,
+        при 8 кропах, три дополнительных центральных кропа × (как есть/normalize_query)
+        — на реальных фото детектор этикетки часто берёт не то (блики, ракурс, теснота
+        полки), а весь кадр или более тесный/широкий кроп иногда несёт больше сигнала.
 
         Кандидаты на выходе — ОБЪЕДИНЕНИЕ: (а) top-`top_k` схлопнутых позиций по
         ЭТОМУ комбинированному скору (те же ANN-оверфетч/схлопывание/gap, что
-        `search()`, просто по двум запросам разом) и (б) `extra_slugs` — точным
+        `search()`, просто по N запросам разом) и (б) `extra_slugs` — точным
         ФИЛЬТРОВАННЫМ запросом к Qdrant (payload `slug`, `MatchAny`), не оценкой
         через ANN-топ: текстовые кандидаты вне CV top-K (brief п.1 — "верного вина
         часто нет в CV top-10") иначе были бы вообще не видны слиянию. Slug, у
@@ -268,16 +312,14 @@ class ImageIndex:
         `gap` считается ТЕМ ЖЕ способом, что `search()` (семьи переписи/эпсилон-
         фолбэк) — на случай, если вызывающему коду нужен обычный CV-ranking по
         этому комбинированному скору без текста вовсе."""
-        if vectors is not None:  # уже посчитаны `embed_fusion_query()` (параллельно с чтением текста)
-            norm_vec, raw_vec = vectors
-        else:
+        if vectors is None:
             if image is None:
                 raise ValueError("search_fusion: нужны либо байты изображения, либо vectors")
-            norm_vec, raw_vec = self.embed_fusion_query(image, normalize=normalize)
+            vectors = self.embed_fusion_query(image, normalize=normalize)
 
         combined: dict[str, tuple[float, str]] = {}
         overfetch = max(top_k * config.SEARCH_OVERFETCH, top_k + 10)
-        for vector in (norm_vec, raw_vec):
+        for vector in vectors:  # per-slug максимум по ВСЕМ векторам (N=2 либо N=8)
             raw = self.store.search(self.collection, vector, top_k=overfetch)
             for _point_id, score, payload in raw:
                 slug = payload.get("slug")
@@ -293,7 +335,7 @@ class ImageIndex:
 
         missing = [s for s in dict.fromkeys(extra_slugs) if s not in combined]
         if missing:
-            exact = self._exact_scores_for_slugs(missing, (norm_vec, raw_vec))
+            exact = self._exact_scores_for_slugs(missing, vectors)
             combined.update(exact)
             keep |= set(exact)
         keep |= {s for s in extra_slugs if s in combined}
@@ -314,11 +356,12 @@ class ImageIndex:
         ]
 
     def _exact_scores_for_slugs(
-        self, slugs: list[str], vectors: tuple[list[float], list[float]]
+        self, slugs: list[str], vectors: tuple[list[float], ...]
     ) -> dict[str, tuple[float, str]]:
         """Точный (не ANN) CV-скор для КОНКРЕТНОГО множества slug'ов — Qdrant
         `scroll()` по payload-фильтру `slug in (...)` (MatchAny), максимум косинуса
-        среди переданных query-векторов по КАЖДОЙ точке позиции (реальный + все
+        среди переданных query-векторов (ЛЮБОЕ число — 2 или 8, agents/
+        H2-rapidocr-multiscale.md п.4) по КАЖДОЙ точке позиции (реальный + все
         synth-ракурсы). Векторы в коллекции и `vectors` оба уже L2-нормированы
         (`cv/encoder.py::encode()`) на Distance.COSINE — скалярное произведение
         численно равно тому же косинусу, что отдаёт `store.search()` (не отдельная,
