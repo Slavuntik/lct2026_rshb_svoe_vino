@@ -35,6 +35,10 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
+
+import numpy as np
+from qdrant_client.models import FieldCondition, Filter, MatchAny
 
 from cv import config, families, imageio
 from cv.augment import prepare_reference, render_synthetic_views
@@ -223,6 +227,117 @@ class ImageIndex:
             Match(slug=slug, score=score, gap=gaps[i], view=view)
             for i, (slug, (score, view)) in enumerate(ranked[:top_k])
         ]
+
+    # --- CV_FUSION (agents/G7-text-fusion.md) --------------------------------------
+
+    def search_fusion(
+        self,
+        image: bytes,
+        *,
+        top_k: int = 50,
+        extra_slugs: Iterable[str] = (),
+        normalize: bool = True,
+    ) -> list[Match]:
+        """CV-скоры для боевого слияния CV+текст (`cv/text_fusion.py`, brief п.5):
+        максимум по ДВУМ входам запроса — нормализованный кроп этикетки (как
+        `search()`) И весь кадр БЕЗ нормализации (сырой decode, letterbox/детектор
+        не участвуют — `encoder.encode()` сам делает препроцессинг под модель, см.
+        `cv/encoder.py`) — на реальных фото детектор этикетки часто берёт не то
+        (блики, ракурс, теснота полки), а весь кадр иногда несёт больше сигнала.
+
+        Кандидаты на выходе — ОБЪЕДИНЕНИЕ: (а) top-`top_k` схлопнутых позиций по
+        ЭТОМУ комбинированному скору (те же ANN-оверфетч/схлопывание/gap, что
+        `search()`, просто по двум запросам разом) и (б) `extra_slugs` — точным
+        ФИЛЬТРОВАННЫМ запросом к Qdrant (payload `slug`, `MatchAny`), не оценкой
+        через ANN-топ: текстовые кандидаты вне CV top-K (brief п.1 — "верного вина
+        часто нет в CV top-10") иначе были бы вообще не видны слиянию. Slug, у
+        которого нет ни одной точки в коллекции вовсе (нет эталона в индексе) —
+        просто отсутствует на выходе; заглушка `cv_top1-CV_PAD` для таких слагов —
+        забота вызывающего кода (`cv.text_fusion.fuse()`), не эта функция (та
+        честно возвращает только то, что реально нашла).
+
+        `gap` считается ТЕМ ЖЕ способом, что `search()` (семьи переписи/эпсилон-
+        фолбэк) — на случай, если вызывающему коду нужен обычный CV-ranking по
+        этому комбинированному скору без текста вовсе."""
+        arr = imageio.decode_image(image)  # ValueError на битые байты — до любой другой работы
+        norm_vec = self.encoder.encode(normalize_query(arr, enabled=normalize))
+        raw_vec = self.encoder.encode(arr)
+
+        combined: dict[str, tuple[float, str]] = {}
+        overfetch = max(top_k * config.SEARCH_OVERFETCH, top_k + 10)
+        for vector in (norm_vec, raw_vec):
+            raw = self.store.search(self.collection, vector, top_k=overfetch)
+            for _point_id, score, payload in raw:
+                slug = payload.get("slug")
+                if slug is None:
+                    continue
+                view = payload.get("view", "?")
+                cur = combined.get(slug)
+                if cur is None or score > cur[0]:
+                    combined[slug] = (score, view)
+
+        ann_ranked = sorted(combined.items(), key=lambda kv: kv[1][0], reverse=True)
+        keep = {slug for slug, _ in ann_ranked[:top_k]}
+
+        missing = [s for s in dict.fromkeys(extra_slugs) if s not in combined]
+        if missing:
+            exact = self._exact_scores_for_slugs(missing, (norm_vec, raw_vec))
+            combined.update(exact)
+            keep |= set(exact)
+        keep |= {s for s in extra_slugs if s in combined}
+
+        ranked = sorted(((s, v) for s, v in combined.items() if s in keep), key=lambda kv: kv[1][0], reverse=True)
+        slugs_ranked = [s for s, _ in ranked]
+        scores_ranked = [v[0] for _, v in ranked]
+
+        family_by_slug = self._get_family_by_slug()
+        if family_by_slug:
+            gaps = _gaps_to_next_family(slugs_ranked, scores_ranked, family_by_slug)
+        else:
+            gaps = _gaps_to_next_group(scores_ranked, config.GROUP_EPSILON)
+
+        return [
+            Match(slug=slug, score=score, gap=gaps[i], view=view)
+            for i, (slug, (score, view)) in enumerate(ranked)
+        ]
+
+    def _exact_scores_for_slugs(
+        self, slugs: list[str], vectors: tuple[list[float], list[float]]
+    ) -> dict[str, tuple[float, str]]:
+        """Точный (не ANN) CV-скор для КОНКРЕТНОГО множества slug'ов — Qdrant
+        `scroll()` по payload-фильтру `slug in (...)` (MatchAny), максимум косинуса
+        среди переданных query-векторов по КАЖДОЙ точке позиции (реальный + все
+        synth-ракурсы). Векторы в коллекции и `vectors` оба уже L2-нормированы
+        (`cv/encoder.py::encode()`) на Distance.COSINE — скалярное произведение
+        численно равно тому же косинусу, что отдаёт `store.search()` (не отдельная,
+        рассинхронизированная метрика). `scroll()`, не `query_points()` (ANN): для
+        небольшого явного множества slug'ов (единицы-десятки, brief — "текст
+        top-30") это ТОЧНО, не приближение через ANN-топ с фильтром поверх."""
+        if not slugs or not self.store.client.collection_exists(self.collection):
+            return {}
+        flt = Filter(must=[FieldCondition(key="slug", match=MatchAny(any=slugs))])
+        qvecs = [np.asarray(v, dtype=np.float32) for v in vectors]
+        out: dict[str, tuple[float, str]] = {}
+        offset = None
+        while True:
+            points, offset = self.store.client.scroll(
+                self.collection, scroll_filter=flt, limit=512, offset=offset,
+                with_vectors=True, with_payload=True,
+            )
+            for p in points:
+                payload = p.payload or {}
+                slug = payload.get("slug")
+                if slug is None:
+                    continue
+                vec = np.asarray(p.vector, dtype=np.float32)
+                score = max(float(np.dot(vec, qv)) for qv in qvecs)
+                view = payload.get("view", "?")
+                cur = out.get(slug)
+                if cur is None or score > cur[0]:
+                    out[slug] = (score, view)
+            if offset is None:
+                break
+        return out
 
     def build(self, refs: dict[str, list[str]], version: str) -> None:
         """slug -> список путей [эталон, ...] (эталон + синтетические ракурсы, контракт).

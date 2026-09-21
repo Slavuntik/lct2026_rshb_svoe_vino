@@ -80,6 +80,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
 from typing import Iterable
 
 from ..config import Settings
@@ -234,10 +235,15 @@ def _wine_item(retriever: Retriever, slug: str) -> dict | None:
 
 
 def _suggest_similar_and_analogs(
-    retriever: Retriever, matches: list[Match], best_slug: str
+    retriever: Retriever, slugs: Iterable[str], best_slug: str
 ) -> tuple[list[dict], list[dict]]:
+    """`slugs` — тот же top-K, что и `matches`/`candidates`, просто голые slug'и
+    (v0.4.13, CV_FUSION: слияние строит свой ранжированный список кандидатов,
+    не `list[Match]` — см. `_run_photo_scan_fusion` ниже; сигнатура обобщена на
+    `Iterable[str]`, вызывающий код без слияния передаёт `m.slug for m in matches`
+    как раньше, поведение не меняется)."""
     similar: list[dict] = []
-    for slug in _dedupe_preserve_order(m.slug for m in matches):
+    for slug in _dedupe_preserve_order(slugs):
         item = _wine_item(retriever, slug)
         if item:
             similar.append(item)
@@ -367,6 +373,171 @@ def _apply_text_rerank(
     return [by_slug[slug] for slug, _score in reranked]
 
 
+# --------------------------------------------------------------------------
+# CV_FUSION (agents/G7-text-fusion.md): боевое слияние CV (кроп + весь кадр) +
+# текстовый поиск по ВСЕМУ каталогу кейса (cv/text_fusion.py) — независимый путь
+# от _apply_text_rerank выше (contracts/image-scan.md не трогается; см. брифа
+# "Не делать" — "контракт не правь"). Ленивый импорт `cv.text_fusion`/`cv.families`
+# — тот же принцип, что `_import_text_rerank()`: apps/api не должен требовать
+# packages/cv (torch/paddleocr транзитивно), пока CV_FUSION=0 (дефолт).
+# --------------------------------------------------------------------------
+
+
+def _import_cv_fusion_deps():
+    try:
+        from cv import families as cv_families
+        from cv import text_fusion
+        from cv import text_rerank as tr
+    except ImportError as exc:
+        raise RuntimeError(
+            "CV_FUSION=1, но пакет packages/cv не установлен в это окружение "
+            "(uv sync --extra integration в apps/api). Пока не нужен — оставьте "
+            "CV_FUSION=0 (дефолт)."
+        ) from exc
+    return cv_families, text_fusion, tr
+
+
+@lru_cache(maxsize=4)
+def _fusion_text_index(catalog_csv: str):
+    """`cv.text_fusion.TextIndexV2` по ВСЕМУ каталогу CSV кейса — строится один
+    раз на процесс на каждый путь (см. докстринг `cv.text_fusion.load_catalog_index`
+    — тот же паттерн ключевания строкой, что `_text_rerank_idf` ниже/выше:
+    разные `CV_CASE_CATALOG_CSV`/`CASE_DATA_DIR` в разных тестах не видят чужой
+    кэш)."""
+    _, text_fusion, _ = _import_cv_fusion_deps()
+    return text_fusion.load_catalog_index(catalog_csv)
+
+
+@lru_cache(maxsize=4)
+def _fusion_family_by_slug(families_json: str):
+    """near-dup семьи переписи (`case-data/families.json`) для family-based
+    `gap` слияния (`cv.text_fusion._family_gap`) — ТА ЖЕ перепись, что `cv/
+    index.py::ImageIndex._get_family_by_slug()` использует для обычного `Match.
+    gap` (см. `cv/families.py`), загружена отдельно здесь: `fuse()` работает на
+    голых `{slug: score}`, не на `ImageIndex`, и не имеет доступа к приватному
+    кэшу конкретного инстанса индекса."""
+    cv_families, _, _ = _import_cv_fusion_deps()
+    return cv_families.load_family_by_slug(Path(families_json))
+
+
+def _run_photo_scan_fusion(
+    *,
+    image_bytes: bytes,
+    image_index: ImageIndex,
+    verifier: LabelVerifier,
+    retriever: Retriever,
+    settings: Settings,
+    top_k: int,
+    t0: float,
+) -> PhotoScanResult:
+    """contracts/image-scan.md НЕ описывает CV_FUSION (флаг вне контракта, см.
+    reports/g7-text-fusion.md "Предложения к контракту") — эта ветка ПОЛНОСТЬЮ
+    заменяет обычный путь `run_photo_scan` (ANN-топ / near-dup-by-proximity /
+    _apply_text_rerank) своей собственной логикой, когда `settings.cv_fusion`
+    истинно; `cv_text_rerank` в этом случае НЕ применяется — две независимые
+    формулы поверх одного top1 не имеют согласованного смысла вместе (brief
+    G7, задача 3: "если включены оба — действует слияние").
+
+    OCR читается РОВНО ОДИН раз за запрос (`verifier.read_query_text()`, тот
+    же принцип дисциплины, что v0.4.12) и переиспользуется и текстовым индексом
+    (`cv.text_fusion.fuse()`), и near-dup верификатором ниже (`CV_FUSION_VERIFY`).
+    """
+    cv_families, text_fusion, tr = _import_cv_fusion_deps()
+
+    ocr_text = verifier.read_query_text(image_bytes)
+    text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
+    family_by_slug = _fusion_family_by_slug(str(cv_families.default_families_path()))
+
+    text_top = text_fusion.text_top_slugs_for_ocr(text_index, ocr_text, text_fusion.DEFAULT_TEXT_TOP_N)
+    # v0.4.13 (brief G7 п.2): CV-скор — max(нормализованный кроп, весь кадр),
+    # кандидаты — CV top-K ∪ текстовые extra_slugs (точным фильтрованным
+    # запросом Qdrant, не ANN-топ — см. `ImageIndex.search_fusion()`).
+    fusion_matches = image_index.search_fusion(
+        image_bytes, top_k=text_fusion.DEFAULT_ANN_TOP_K, extra_slugs=text_top,
+    )
+
+    if not fusion_matches:
+        # "CV обязателен, OCR — усилитель" (contracts/image-scan.md) — CV не
+        # нашла вообще ничего (индекс пуст/битый) -> честный not_in_catalog,
+        # текст сам по себе кандидатов не создаёт (см. cv.text_fusion.fuse()).
+        return PhotoScanResult(
+            best_guess_slug=None, slug=None, card=None, top1_score=None, gap=None,
+            ocr_verified=False, not_in_catalog=True,
+            timing_ms=int((time.monotonic() - t0) * 1000),
+            matches=[], candidates=[],
+        )
+
+    cv_scores = {m.slug: m.score for m in fusion_matches}
+    result = text_fusion.fuse(
+        cv_scores, text_index, ocr_text, family_by_slug=family_by_slug,
+        w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
+    )
+    ranked_top = result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
+
+    chosen_slug = ranked_top[0].slug
+    ocr_verified = False
+    candidates = [_candidate_item(retriever, c.slug, c.final_score) for c in ranked_top]
+
+    # brief G7 задача 3: верификатор near-dup поверх слияния — ТОЛЬКО за
+    # CV_FUSION_VERIFY (дефолт выключен, замерены оба варианта — reports/
+    # g7-text-fusion.md). Отбор кандидатов — той же дисциплиной, что путь без
+    # слияния (v0.4.8: близость СЫРОГО CV-скора, cv_verify_proximity, cap
+    # top-5) — near-dup различение принципиально CV-визуальный феномен (одна
+    # этикетка, разный год/категория), поэтому близость мерится по `cv_score`
+    # компоненте fused-кандидатов, не по blended `final_score`.
+    if settings.cv_fusion_verify:
+        top1_cv = ranked_top[0].cv_score
+        candidate_slugs = _dedupe_preserve_order(
+            c.slug for c in ranked_top if (top1_cv - c.cv_score) <= settings.cv_verify_proximity
+        )[:5]
+        if len(candidate_slugs) > 1:
+            verified = verifier.verify(
+                image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text=ocr_text,
+            )
+            if verified is not None and verified in candidate_slugs:
+                chosen_slug = verified
+                ocr_verified = True
+
+    best_guess_slug = chosen_slug
+    # `result.confident` (cv.text_fusion.fuse()) — ЧИСТЫЙ гейт слияния (brief G7:
+    # gap(final)>=CV_FUSION_GAP_FLOOR, или доминирование, И cv_score(top1)>=
+    # CV_FUSION_CV_FLOOR) — `fuse()` считается ДО verify() и ничего не знает про
+    # OCR-верификацию near-dup. Финальное решение здесь ДОБАВЛЯЕТ тот же обход,
+    # что и путь без слияния (v0.4.5, комментарий ниже в non-fusion ветке этого
+    # файла): успешная OCR-верификация (`ocr_verified`) обходит ИМЕННО проверку
+    # по марже/gap, не по полу — маленький `gap` между near-dup членами ОДНОЙ
+    # семьи (например, "Мускатель белый/чёрный" — одна этикетка) и есть определение
+    # неоднозначности, ради которой verify() вообще вызывается (CV_FUSION_VERIFY);
+    # без этого обхода successfully-verified near-dup ответы всегда проваливали бы
+    # gap_floor и уходили в not_in_catalog, обесценивая сам смысл верификатора.
+    confident = ranked_top[0].cv_score >= settings.cv_fusion_cv_floor and (
+        ocr_verified or result.gap is None or result.gap >= settings.cv_fusion_gap_floor
+    )
+
+    card = build_wine_card(retriever, chosen_slug) if confident else None
+    similar: list[dict] = []
+    analogs: list[dict] = []
+    if not confident:
+        similar, analogs = _suggest_similar_and_analogs(
+            retriever, (c.slug for c in ranked_top), ranked_top[0].slug,
+        )
+
+    return PhotoScanResult(
+        best_guess_slug=best_guess_slug,
+        slug=chosen_slug if confident else None,
+        card=card,
+        top1_score=ranked_top[0].cv_score,  # brief G7 п.3: CV-скор top-1, НЕ final
+        gap=result.gap,
+        ocr_verified=ocr_verified,
+        not_in_catalog=not confident,
+        timing_ms=int((time.monotonic() - t0) * 1000),
+        similar=similar,
+        analogs=analogs,
+        matches=[{"slug": c.slug, "score": c.final_score} for c in ranked_top],
+        candidates=candidates,
+    )
+
+
 def run_photo_scan(
     *,
     image_bytes: bytes,
@@ -377,6 +548,12 @@ def run_photo_scan(
     top_k: int = 5,
 ) -> PhotoScanResult:
     t0 = time.monotonic()
+
+    if settings.cv_fusion:
+        return _run_photo_scan_fusion(
+            image_bytes=image_bytes, image_index=image_index, verifier=verifier,
+            retriever=retriever, settings=settings, top_k=top_k, t0=t0,
+        )
 
     matches = image_index.search(image_bytes, top_k=top_k)  # ValueError на битом файле — не ловим, пусть роутер решает код ответа
 
@@ -494,7 +671,7 @@ def run_photo_scan(
     similar: list[dict] = []
     analogs: list[dict] = []
     if not confident:
-        similar, analogs = _suggest_similar_and_analogs(retriever, matches, top.slug)
+        similar, analogs = _suggest_similar_and_analogs(retriever, (m.slug for m in matches), top.slug)
 
     return PhotoScanResult(
         best_guess_slug=best_guess_slug,

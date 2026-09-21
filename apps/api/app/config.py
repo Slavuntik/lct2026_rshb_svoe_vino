@@ -220,6 +220,44 @@ class Settings:
         # OCR-мусора синтетики — см. reports/g5-accuracy.md).
         default_factory=lambda: float(os.environ.get("CV_TEXT_RERANK_W", "0.01"))
     )
+    # agents/G7-text-fusion.md: боевое слияние CV (кроп этикетки + весь кадр) +
+    # текстовый поиск по ВСЕМУ каталогу кейса (не только top-K ANN, в отличие от
+    # cv_text_rerank выше — см. cv/text_fusion.py, докстринг модуля, "Основание").
+    # Дефолт ВЫКЛЮЧЕН до приёмки через живой API на размеченных реальных фото
+    # (reports/g7-text-fusion.md) — та же дисциплина, что cv_text_rerank (v0.4.12).
+    # Если включены ОБА флага — действует слияние (cv_text_rerank целиком
+    # обходится, near-dup routing тоже — см. app/cv/service.py::run_photo_scan),
+    # не складываются друг на друга: две независимые формулы поверх одного и
+    # того же top1 не имеют согласованного смысла вместе.
+    cv_fusion: bool = field(
+        default_factory=lambda: _bool_env("CV_FUSION", False)
+    )
+    cv_fusion_w: float = field(
+        # brief G7: final = cv + W*rel, W=0.2 — плато на разметке 100 живых фото
+        # (обе половины выборки согласны), см. cv/text_fusion.py::DEFAULT_W.
+        default_factory=lambda: float(os.environ.get("CV_FUSION_W", "0.2"))
+    )
+    cv_fusion_gap_floor: float = field(
+        # brief G7: уверенно, если отрыв ИТОГОВОГО (fused) скора top-1 от первого
+        # кандидата ДРУГОЙ near-dup семьи >= это значение (или такого кандидата
+        # нет вовсе — доминирование, та же трактовка null-gap, что v0.4.7 §2 для
+        # обычного гейта). Независимый гейт от CV_MARGIN_FLOOR (та шкала — на
+        # СЫРОМ CV score, эта — на final=cv+w*rel).
+        default_factory=lambda: float(os.environ.get("CV_FUSION_GAP_FLOOR", "0.03"))
+    )
+    cv_fusion_cv_floor: float = field(
+        # brief G7: И CV-скор (НЕ blended-final) top-1 >= это значение. Независимый
+        # пол от CV_ABS_FLOOR (та же роль, разное число — калибровано на слиянии,
+        # не на голом ANN) — см. cv/text_fusion.py::fuse().
+        default_factory=lambda: float(os.environ.get("CV_FUSION_CV_FLOOR", "0.80"))
+    )
+    cv_fusion_verify: bool = field(
+        # brief G7: near-dup OCR-верификатор (cv_verify_proximity, тот же порог,
+        # что путь без слияния) поверх итогового топ-5 слияния — ВЫКЛЮЧЕН по
+        # умолчанию даже когда cv_fusion=True (см. reports/g7-text-fusion.md:
+        # замерены оба варианта, свой бюджет на дополнительный verify()).
+        default_factory=lambda: _bool_env("CV_FUSION_VERIFY", False)
+    )
     # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
     # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,
     # reference_styles}.yaml, зона пайплайна, ТОЛЬКО ЧТЕНИЕ отсюда. Путь —
