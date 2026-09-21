@@ -362,7 +362,10 @@ class LabelVerifier:
     ):
         self.lang = lang
         self.score_thresh = score_thresh
-        self.ocr_size = ocr_size
+        # CV_OCR_SIZE — сторона кадра, подаваемого в OCR. Дефолт 320 (замер дев-машины).
+        # На слабом CPU это доминирующая статья бюджета: ams3 ставит 256 (2.5 с против
+        # 2.9 с при 320, тот же вердикт); 224 уже теряет текст — верификатор воздерживается.
+        self.ocr_size = int(os.environ.get("CV_OCR_SIZE", ocr_size))
         self._ocr = None
 
     def _load(self) -> None:
@@ -373,11 +376,23 @@ class LabelVerifier:
         # Детект/развёртка документа и текстовой ориентации нам не нужны — normalize_query()
         # уже кадрировал и выпрямил этикетку; отключение этих стадий — заметная часть бюджета
         # 700 мс (см. reports/g-report.md, замеры).
+        # Модели детектора/распознавателя — через env, дефолт оставлен движку (на дев-машине
+        # это server-детектор, и он там укладывается в бюджет). На слабом CPU прод-бокса
+        # server-детектор стоит секунды: хак-стенд ams3 ставит CV_OCR_DET_MODEL=
+        # PP-OCRv5_mobile_det. Имена моделей — те же, что PaddleOCR кэширует в PADDLE_PDX_CACHE_HOME.
+        extra: dict[str, str] = {}
+        det_model = os.environ.get("CV_OCR_DET_MODEL")
+        rec_model = os.environ.get("CV_OCR_REC_MODEL")
+        if det_model:
+            extra["text_detection_model_name"] = det_model
+        if rec_model:
+            extra["text_recognition_model_name"] = rec_model
         self._ocr = PaddleOCR(
             lang=self.lang,
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=False,
+            **extra,
         )
 
     def read_text(self, image_arr: np.ndarray) -> str:
