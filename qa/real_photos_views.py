@@ -16,10 +16,15 @@ LAB = F.parent
 ap = argparse.ArgumentParser()
 ap.add_argument("--tag", default="base224")
 ap.add_argument("--conf", default="sure,likely")
+# G6 (agents/G6-bigger-encoder.md, доп. задание оркестратора 21.09): сравнение энкодеров-
+# кандидатов на реальных фото — своя выгрузка qdrant (qa/g6_dump_qdrant_vectors.py) вместо
+# боевой index_vectors.npy/index_meta.json. Default не меняется (обратная совместимость).
+ap.add_argument("--vectors", default=None, help="кастомная выгрузка векторов индекса (default: боевой index_vectors.npy)")
+ap.add_argument("--meta", default=None, help="кастомные метаданные индекса (default: боевой index_meta.json)")
 a = ap.parse_args()
 
-V = np.load(F / "index_vectors.npy")
-meta = json.loads((F / "index_meta.json").read_text())
+V = np.load(Path(a.vectors) if a.vectors else (F / "index_vectors.npy"))
+meta = json.loads((Path(a.meta) if a.meta else (F / "index_meta.json")).read_text())
 vslugs = np.array(meta["slugs"])
 views = np.array(meta["views"])
 uniq = sorted(set(meta["slugs"]))
