@@ -12,13 +12,26 @@
 
 ## Данные
 
-- Фото: `case-data/real-photos/*.webp` (сортировка по имени; часть 1 — фото 1–50, часть 2 — 51–100).
+- Фото: `case-data/real-photos/*.webp` (нумерация по `index.csv`; часть 1 — 001–050, часть 2 — 051–100).
   Число в начале имени — вероятно, уверенность их текущего сканера, к истине отношения не имеет.
 - Предсказания нашей системы (подсказка, НЕ истина): `case-data/real-photos-predictions.jsonl` —
   top-10 {slug, score} и `ocr_text`.
 - Каталог кейса: `case-data/case_catalog.json` → ключ `mapping`: slug → {name, winery_name,
   region_name, grapes, color, category, description}. 2103 вина.
-- Превью эталонов: `case-data/thumbs/<slug>.webp` (есть у 2054 слагов).
+- Превью эталонов: `case-data/thumbs/<slug>.webp` (есть у 2054 слагов; у ~49 слагов превью нет —
+  такие вина CV найти не может в принципе, только по тексту).
+- Подготовленные кадры (оркестратор): `case-data/real-photos-labels/index.csv` (n → имя файла),
+  `real-photos-labels/view/NNN.jpg` — весь кадр 1568 px, `real-photos-labels/crop/NNN.jpg` — центр
+  кадра крупнее (этикетка). Мелкий текст можно докропать самому через PIL из оригинала
+  `case-data/real-photos/<имя>.webp` (3024×4032), результат класть в `real-photos-labels/tmp/`.
+- Поиск по каталогу — общий инструмент (не пиши свой):
+  `/Users/vyacheslavfokin/ClaudeWorkspace/vines/svoy-somelye/packages/cv/.venv/bin/python
+  /Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data/real-photos-labels/search_catalog.py "запрос"`
+  плюс `--winery "табия"` (все вина винодельни) и `--slug <slug>` (полная карточка + путь к превью).
+
+Калибровка (проверено оркестратором): 001 — Фанагория «Лекиф» (ΛΗΚΥΘΟΣ), розовое, надпись прямо на
+стекле; «Лекифа» нет ни в каталоге, ни в сыром CSV → `NONE`, sure. Реальные фото тяжёлые: ценники,
+соседние бутылки, блики, надписи на стекле — цель всегда центральная бутылка.
 
 ## Протокол на каждое фото (строго по порядку)
 
@@ -41,7 +54,7 @@
 ## Выход
 
 `case-data/real-photos-labels/part<N>.csv`, колонки:
-`photo,true_slug,confidence,label_text,our_top1,in_our_top10,notes`
+`n,photo,true_slug,confidence,label_text,our_top1,in_our_top10,notes` (CSV с кавычками, пиши через модуль csv)
 (`label_text` — что прочитано с этикетки своими глазами; `in_our_top10` — true/false/na для NONE).
 
 Отчёт (≤ 20 строк): сколько sure/likely/unsure/NONE, в скольких случаях истина в нашем top-1 и
