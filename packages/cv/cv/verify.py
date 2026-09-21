@@ -77,6 +77,31 @@ routing апстрим в `apps/api` решил не звать OCR) — лог�
 `CV_OCR_QUERY_MODE` — режим влияет только на то, что `read_query_text()` возвращает
 ВЫЗЫВАЮЩЕМУ коду (`app/cv/service.py`), а тот уже сам передаёт этот текст в
 `verify(ocr_text=...)` (v0.4.12, без изменений в этой волне).
+
+## Движок текста запроса: PaddleOCR vs RapidOCR (agents/H2-rapidocr-multiscale.md)
+
+Третье измерение (ортогональное `CV_OCR_QUERY_MODE` выше) — переключатель
+`CV_OCR_ENGINE` (`"paddle"` дефолт, пока не приняли живым API; `"rapid"`):
+
+- `"paddle"`: бит-в-бит то, что описано выше (`CV_OCR_QUERY_MODE` решает detector/
+  center, движок — PaddleOCR через `read_text()`/`_load()`).
+- `"rapid"`: `read_query_text()` ВСЕГДА читает центральный кроп (`CENTER_CROP`, те
+  же доли) через `cv.ocr_rapid.RapidOcrReader` (ONNX Runtime, два масштаба
+  `CV_OCR_RAPID_SIZES` объединяются пробелом) — `CV_OCR_QUERY_MODE` в этом режиме
+  НЕ читается вовсе: у быстрого движка нет офлайн-обоснования для форка на
+  детекторный кроп (H1 изучал детектор/центр только для PaddleOCR). Основание
+  (reports/cpu-path-study.md, 62 живых фото): RapidOCR читает кроп 640px за 0.34с
+  против 4.0с у PaddleOCR на слабом CPU (не зависит от бага oneDNN paddlepaddle
+  3.3.1), а объединение текстов 640+960px даёт 90.3%/93.5% top-1 (2/8 кропов CV)
+  против 85.5% боевого PaddleOCR-пути.
+
+**PaddleOCR НЕ грузится вовсе, пока `CV_OCR_ENGINE=rapid`**, если только `verify()`
+не понадобился её СОБСТВЕННЫЙ проход OCR (fallback-путь без `ocr_text`, см. выше —
+он всегда PaddleOCR, независимо от `CV_OCR_ENGINE`): экономия RAM и времени старта
+на дешёвом CPU — прогрев (`app/cv/factory.py::warm_up_label_verifier`) греет
+ВЫБРАННЫЙ движок (RapidOCR через `read_query_text()`, не `verify()`), а не всегда
+PaddleOCR. В слиянии (`CV_FUSION=1`) c `CV_FUSION_VERIFY=0` (дефолт) `verify()`
+вообще не вызывается — PaddleOCR тогда не грузится за весь процесс ни разу.
 """
 from __future__ import annotations
 
@@ -170,6 +195,9 @@ DEFAULT_OCR_SIZE = 320  # даунскейл перед OCR — доминиру
 # (переключаем после приёмки живым API) — не меняем поведение молча.
 DEFAULT_OCR_QUERY_MODE = "detector"
 DEFAULT_OCR_CENTER_SIZE = 640  # CV_OCR_CENTER_SIZE: 640 — плато замера (800 хуже, больше шума)
+# agents/H2-rapidocr-multiscale.md: CV_OCR_ENGINE — см. докстринг модуля, "Движок текста
+# запроса". "paddle" ПОКА (дефолт до приёмки живым API) — не переключаем поведение молча.
+DEFAULT_OCR_ENGINE = "paddle"
 # Доли ширины/высоты ПОЛНОГО кадра запроса (x0, y0, x1, y1) — центральная бутылка,
 # целиком видимая. ТЕ ЖЕ доли, что apps/api/app/cv/vision_llm.py::CENTER_CROP (вход
 # VLM) и qa/real_photos_features.py::CWIDE (офлайн-эксперимент) — намеренно один и
@@ -416,6 +444,8 @@ class LabelVerifier:
         ocr_size: int = DEFAULT_OCR_SIZE,
         query_mode: str = DEFAULT_OCR_QUERY_MODE,
         center_size: int = DEFAULT_OCR_CENTER_SIZE,
+        engine: str = DEFAULT_OCR_ENGINE,
+        rapid_sizes: tuple[int, ...] | None = None,
     ):
         self.lang = lang
         self.score_thresh = score_thresh
@@ -428,7 +458,24 @@ class LabelVerifier:
         # (НЕЗАВИСИМА от ocr_size выше — тот применяется только в режиме "detector").
         self.ocr_query_mode = os.environ.get("CV_OCR_QUERY_MODE", query_mode).strip().lower()
         self.center_size = int(os.environ.get("CV_OCR_CENTER_SIZE", center_size))
+        # agents/H2-rapidocr-multiscale.md: CV_OCR_ENGINE ("paddle"|"rapid", см. докстринг
+        # модуля "Движок текста запроса") и масштабы RapidOCR (CV_OCR_RAPID_SIZES,
+        # "640,960" -> (640, 960)) — читается ЖИВЬЁМ здесь (тест может monkeypatch.setenv()
+        # ДО конструктора), тот же принцип, что ocr_query_mode выше. Импорт cv.ocr_rapid
+        # ЗДЕСЬ (внутри __init__, не на верху модуля) дешёвый — сам модуль не тянет
+        # rapidocr/onnxruntime на своём верху (см. его докстринг) — но остаётся ленивым
+        # относительно ЭТОГО модуля, разрывая порядковую хрупкость взаимного импорта
+        # (cv.ocr_rapid импортирует CENTER_CROP/_center_crop ИЗ cv.verify на своём верху).
+        self.ocr_engine = os.environ.get("CV_OCR_ENGINE", engine).strip().lower()
+        from cv.ocr_rapid import DEFAULT_RAPID_SIZES, parse_sizes
+
+        raw_rapid_sizes = os.environ.get("CV_OCR_RAPID_SIZES")
+        if raw_rapid_sizes is not None:
+            self.rapid_sizes = parse_sizes(raw_rapid_sizes)
+        else:
+            self.rapid_sizes = tuple(rapid_sizes) if rapid_sizes is not None else DEFAULT_RAPID_SIZES
         self._ocr = None
+        self._rapid = None  # cv.ocr_rapid.RapidOcrReader, создаётся лениво _rapid_reader()
 
     def _load(self) -> None:
         if self._ocr is not None:
@@ -515,12 +562,44 @@ class LabelVerifier:
         cropped = _center_crop(arr)
         return self.read_text(cropped, size=self.center_size)
 
+    def _rapid_reader(self):
+        """`cv.ocr_rapid.RapidOcrReader` на self, создаётся один раз (agents/
+        H2-rapidocr-multiscale.md, п.1 — "ленивая загрузка, один экземпляр движка на
+        масштаб"). Импорт `cv.ocr_rapid` ЗДЕСЬ (внутри метода) — см. комментарий в
+        `__init__` про порядок импорта: `cv.ocr_rapid` сам импортирует `CENTER_CROP`/
+        `_center_crop` ИЗ этого модуля на своём верху."""
+        if self._rapid is None:
+            from cv.ocr_rapid import RapidOcrReader
+
+            self._rapid = RapidOcrReader(sizes=self.rapid_sizes)
+        return self._rapid
+
+    def read_query_text_rapid(self, image: bytes) -> str:
+        """Один проход RapidOCR (`cv.ocr_rapid.RapidOcrReader`, все `self.rapid_sizes`
+        масштабов объединены пробелом) по ЦЕНТРАЛЬНОМУ кропу ПОЛНОГО кадра запроса —
+        симметрично `read_query_text_center()`, но с движком RapidOCR вместо PaddleOCR
+        (agents/H2-rapidocr-multiscale.md, см. докстринг модуля "Движок текста
+        запроса"). НЕТ отдельного детекторного режима: RapidOCR-путь не читает
+        `self.ocr_query_mode` вовсе (H1 изучал detector/center только для PaddleOCR).
+        `read_query_text()` вызывает этот метод при `self.ocr_engine == "rapid"`;
+        вызывается и напрямую (прогрев `app/cv/factory.py::warm_up_label_verifier`,
+        qa-скрипты). `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`,
+        что и остальные методы чтения текста запроса. Сбой самого движка RapidOCR
+        (импорт/конструктор/распознавание) деградирует до пустой строки ВНУТРИ
+        `RapidOcrReader` (warning, не исключение) — не поднимается сюда."""
+        arr = imageio.decode_image(image)
+        return self._rapid_reader().read_center(arr)
+
     def read_query_text(self, image: bytes) -> str:
-        """Один проход OCR по запросу: decode -> кроп -> `read_text()`. Кроп зависит
-        от `self.ocr_query_mode` (CV_OCR_QUERY_MODE, agents/H1-cpu-path.md):
-        `"detector"` (дефолт) — `normalize_query()` (тот же кроп этикетки, что видит
-        `ImageIndex.search()`), бит-в-бит старое поведение; `"center"` — делегирует
-        `read_query_text_center()` (центральный кроп кадра, без детектора).
+        """Один проход OCR по запросу: decode -> кроп -> распознавание. Движок и кроп
+        зависят от `self.ocr_engine`/`self.ocr_query_mode` (agents/H1-cpu-path.md,
+        agents/H2-rapidocr-multiscale.md, см. докстринг модуля "Движок текста запроса"):
+        `self.ocr_engine == "rapid"` — делегирует `read_query_text_rapid()` (RapidOCR,
+        всегда центральный кроп, `self.ocr_query_mode` НЕ читается в этой ветке вовсе);
+        иначе (дефолт `"paddle"`) — `self.ocr_query_mode`: `"detector"` (дефолт) —
+        `normalize_query()` (тот же кроп этикетки, что видит `ImageIndex.search()`),
+        бит-в-бит старое поведение; `"center"` — делегирует `read_query_text_center()`
+        (центральный кроп кадра, без детектора, но PaddleOCR).
 
         Публичный метод (contracts/image-scan.md v0.4.12, agents/B9-text-
         rerank-integration.md): apps/api читает текст этикетки запроса РОВНО
@@ -530,7 +609,9 @@ class LabelVerifier:
         PaddleOCR по одному и тому же кропу (OCR — доминирующая статья
         бюджета, 294/554 мс p50/p95 на Mac, см. reports/g5-accuracy.md).
         `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`,
-        что и раньше видел `verify()` первым шагом (оба режима)."""
+        что и раньше видел `verify()` первым шагом (все режимы)."""
+        if self.ocr_engine == "rapid":
+            return self.read_query_text_rapid(image)
         if self.ocr_query_mode == "center":
             return self.read_query_text_center(image)
         arr = imageio.decode_image(image)

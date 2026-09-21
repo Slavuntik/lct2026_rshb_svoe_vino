@@ -742,3 +742,206 @@ def test_verify_internal_fallback_ignores_ocr_query_mode(monkeypatch, synthetic_
     shape, size = calls[0]
     assert shape == (448, 448, 3)  # normalize_query() дефолтный NORM_SIZE_DEFAULT — детектор, не центр-кроп
     assert size is None  # verify() не передаёт size= — read_text() сам использует self.ocr_size
+
+
+# --- agents/H2-rapidocr-multiscale.md, задача 2: CV_OCR_ENGINE/CV_OCR_RAPID_SIZES ---
+#
+# Все тесты этого раздела — БЕЗ реального RapidOCR (брифа п.5: "юнит-тесты не должны
+# требовать rapidocr/onnxruntime") — движок подменяется напрямую (`v._rapid = ...`)
+# или методы диспетчеризации — monkeypatch, та же дисциплина, что H1-раздел выше
+# применяет к PaddleOCR/`_StubOCR`.
+
+
+def test_default_ocr_engine_is_paddle():
+    """Дефолт брифа: 'paddle до приёмки' — молчаливой смены поведения быть не должно."""
+    assert LabelVerifier().ocr_engine == "paddle"
+
+
+def test_ocr_engine_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_ENGINE", "rapid")
+    assert LabelVerifier().ocr_engine == "rapid"
+
+
+def test_ocr_engine_env_var_is_case_and_whitespace_normalized(monkeypatch):
+    monkeypatch.setenv("CV_OCR_ENGINE", " RAPID \n")
+    assert LabelVerifier().ocr_engine == "rapid"
+
+
+def test_default_rapid_sizes_is_640_960():
+    assert LabelVerifier().rapid_sizes == (640, 960)
+
+
+def test_rapid_sizes_env_var_overrides_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_RAPID_SIZES", "640,800,960")
+    assert LabelVerifier().rapid_sizes == (640, 800, 960)
+
+
+def test_rapid_sizes_constructor_param_overrides_default():
+    assert LabelVerifier(rapid_sizes=(960,)).rapid_sizes == (960,)
+
+
+def test_rapid_sizes_env_var_overrides_constructor_param(monkeypatch):
+    monkeypatch.setenv("CV_OCR_RAPID_SIZES", "1280")
+    assert LabelVerifier(rapid_sizes=(640,)).rapid_sizes == (1280,)
+
+
+def test_read_query_text_dispatches_to_rapid_when_engine_is_rapid(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import encode_jpeg
+
+    calls: list[bytes] = []
+
+    def _fake_rapid(self, image):
+        calls.append(image)
+        return "RAPID-RESULT"
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_rapid", _fake_rapid)
+    v = LabelVerifier(engine="rapid")
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "RAPID-RESULT"
+    assert calls == [data]
+
+
+def test_read_query_text_does_not_dispatch_to_rapid_when_engine_is_paddle(monkeypatch, synthetic_bottle_image):
+    """Регресс: дефолтный движок "paddle" НЕ трогает `read_query_text_rapid()` вовсе."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_rapid() не должен вызываться в режиме paddle")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_rapid", _boom)
+    v, _stub = _stubbed_verifier()  # дефолт "paddle"/"detector"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.read_query_text(data)  # не должно поднять AssertionError выше
+
+
+def test_read_query_text_rapid_mode_ignores_center_query_mode_setting(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md п.2: `CV_OCR_ENGINE=rapid` не читает
+    `CV_OCR_QUERY_MODE` вовсе — даже явный 'center' (или 'detector') не должен
+    маршрутизировать в `read_query_text_center()` (тот — PaddleOCR)."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_center() (PaddleOCR) не должен вызываться в режиме rapid")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _boom)
+    calls: list[bytes] = []
+    monkeypatch.setattr(
+        LabelVerifier, "read_query_text_rapid", lambda self, image: (calls.append(image), "ok")[1]
+    )
+    v = LabelVerifier(engine="rapid", query_mode="center")  # оба режима заданы явно
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "ok"
+    assert calls == [data]
+
+
+def test_read_query_text_rapid_decodes_and_delegates_to_reader_read_center(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import decode_image, encode_jpeg
+
+    class _StubReader:
+        def __init__(self):
+            self.seen: list[np.ndarray] = []
+
+        def read_center(self, arr):
+            self.seen.append(arr)
+            return "ok"
+
+    v = LabelVerifier(engine="rapid")
+    stub = _StubReader()
+    v._rapid = stub  # пропускаем _rapid_reader()/реальный RapidOcrReader целиком
+    data = encode_jpeg(synthetic_bottle_image)
+
+    result = v.read_query_text_rapid(data)
+
+    assert result == "ok"
+    assert len(stub.seen) == 1
+    assert np.array_equal(stub.seen[0], decode_image(data))
+
+
+def test_read_query_text_rapid_on_corrupt_bytes_raises_value_error():
+    v = LabelVerifier(engine="rapid")
+    with pytest.raises(ValueError):
+        v.read_query_text_rapid(b"not an image, just garbage bytes 0123456789")
+    with pytest.raises(ValueError):
+        v.read_query_text_rapid(b"")
+
+
+def test_rapid_reader_created_lazily_once_and_cached(monkeypatch):
+    """Брифа п.1: 'ленивая загрузка, один экземпляр движка на масштаб' — на уровне
+    LabelVerifier это означает ОДИН `RapidOcrReader` на инстанс верификатора,
+    переиспользуемый между вызовами, не пересоздаваемый каждый раз."""
+    import cv.ocr_rapid as ocr_rapid_module
+
+    construct_calls = {"n": 0}
+
+    class _StubReader:
+        def __init__(self, sizes):
+            construct_calls["n"] += 1
+            self.sizes = sizes
+
+        def read_center(self, arr):
+            return ""
+
+    monkeypatch.setattr(ocr_rapid_module, "RapidOcrReader", _StubReader)
+    v = LabelVerifier(engine="rapid", rapid_sizes=(640, 960))
+
+    r1 = v._rapid_reader()
+    r2 = v._rapid_reader()
+
+    assert r1 is r2
+    assert construct_calls["n"] == 1
+    assert r1.sizes == (640, 960)
+
+
+def test_read_query_text_rapid_never_touches_paddleocr_load(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md: 'PaddleOCR при rapid НЕ грузится на
+    прогреве' — на уровне `read_query_text()` это значит `_load()`/`self._ocr`
+    (PaddleOCR) вообще не затрагиваются в режиме rapid."""
+    from cv.imageio import encode_jpeg
+
+    class _StubReader:
+        def read_center(self, arr):
+            return "стаб-текст"
+
+    def _boom(self):
+        raise AssertionError("_load() (PaddleOCR) не должен вызываться в режиме rapid")
+
+    monkeypatch.setattr(LabelVerifier, "_load", _boom)
+    v = LabelVerifier(engine="rapid")
+    v._rapid = _StubReader()
+    data = encode_jpeg(synthetic_bottle_image)
+
+    text = v.read_query_text(data)
+
+    assert text == "стаб-текст"
+    assert v._ocr is None  # PaddleOCR так и не тронут
+
+
+def test_verify_internal_fallback_ignores_ocr_engine(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md: verify()'s собственный fallback (когда
+    `ocr_text` не передан) ВСЕГДА PaddleOCR через `normalize_query()`, независимо
+    от `CV_OCR_ENGINE=rapid` — та же дисциплина, что H1 уже установил для
+    `CV_OCR_QUERY_MODE` (см. `test_verify_internal_fallback_ignores_ocr_query_mode`
+    выше). Режим/движок влияют ТОЛЬКО на `read_query_text()`."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setenv("CV_OCR_ENGINE", "rapid")
+    calls: list[tuple[tuple[int, ...], int | None]] = []
+
+    def _fake_read_text(self, image_arr, *, size=None):
+        calls.append((image_arr.shape, size))
+        return ""
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+    v = LabelVerifier()
+    assert v.ocr_engine == "rapid"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.verify(data, [{"slug": "x", "name": "x", "vintage": None}])
+
+    assert len(calls) == 1
+    shape, size = calls[0]
+    assert shape == (448, 448, 3)  # normalize_query() — fallback verify() никогда не берёт RapidOCR
+    assert size is None
