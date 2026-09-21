@@ -32,7 +32,12 @@ VARIANTS = {
     "full640": ("full", 640),
     "full960": ("full", 960),
     "full1280": ("full", 1280),
+    # центральный кроп бутылки (тот же, что уходит VLM: доли 0.15/0.05/0.85/0.98) — без детектора
+    "cwide640": ("cwide", 640),
+    "cwide800": ("cwide", 800),
+    "cwide1024": ("cwide", 1024),
 }
+CWIDE = (0.15, 0.05, 0.85, 0.98)
 
 
 def load_full(path: Path) -> np.ndarray:
@@ -109,6 +114,11 @@ def main():
                     continue
                 if src == "norm":
                     arr = normalize_query(imageio.decode_image(p.read_bytes()), enabled=True)
+                elif src == "cwide":
+                    full = load_full(p)
+                    h, w = full.shape[:2]
+                    x0, y0, x1, y1 = CWIDE
+                    arr = np.ascontiguousarray(full[int(h * y0):int(h * y1), int(w * x0):int(w * x1)])
                 else:
                     arr = load_full(p)
                 t = time.time()
