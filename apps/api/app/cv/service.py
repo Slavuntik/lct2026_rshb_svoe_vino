@@ -414,6 +414,18 @@ def _fusion_text_index(catalog_csv: str):
 
 
 @lru_cache(maxsize=4)
+def _fusion_winery_index(catalog_csv: str):
+    """agents/H1-cpu-path.md: `cv.text_fusion.TextIndexV2` ТОЛЬКО по полю `winery` —
+    для гейта «не подтверждена винодельня» (`cv.text_fusion.fuse(winery_index=...)`).
+    ОТДЕЛЬНЫЙ индекс/кэш от `_fusion_text_index` выше (тот несёт `FUSION_FIELDS`
+    целиком — name+winery+grape+category+sugar, непригоден для recall ИМЕННО поля
+    winery) — тот же паттерн ключевания строкой по `catalog_csv`, тот же честный
+    выход на отсутствующий CSV (пустой индекс, см. `load_catalog_index`)."""
+    _, text_fusion, _ = _import_cv_fusion_deps()
+    return text_fusion.load_catalog_index(catalog_csv, fields=("winery",))
+
+
+@lru_cache(maxsize=4)
 def _fusion_family_by_slug(families_json: str):
     """near-dup семьи переписи (`case-data/families.json`) для family-based
     `gap` слияния (`cv.text_fusion._family_gap`) — ТА ЖЕ перепись, что `cv/
@@ -503,6 +515,7 @@ def _run_photo_scan_fusion(
 
     label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(image_bytes, image_index, verifier, settings)
     text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
+    winery_index = _fusion_winery_index(str(tr.default_catalog_csv_path()))
     family_by_slug = _fusion_family_by_slug(str(cv_families.default_families_path()))
 
     text_top = text_fusion.text_top_slugs_for_ocr(text_index, label_text, text_fusion.DEFAULT_TEXT_TOP_N)
@@ -524,10 +537,22 @@ def _run_photo_scan_fusion(
             matches=[], candidates=[],
         )
 
+    # agents/H1-cpu-path.md: гейт «не подтверждена винодельня» — ТОЛЬКО для источника
+    # "ocr" (самый шумный из трёх; offline 87.1% -> 88.7% top-1), НЕ для vlm*-источников
+    # (там тот же гейт вреден на offline-прогоне, 95.2% -> 93.5% — см. cv/text_fusion.py
+    # докстринг и app/config.py::cv_fusion_ocr_unconfirmed_w). `text_source` — уже
+    # РАЗРЕШЁННЫЙ источник (после фолбэка vlm*->ocr в `_fusion_text_and_vectors` выше),
+    # не сырой `settings.cv_fusion_text_source` — если VLM не ответила и слияние в
+    # итоге идёт на тексте OCR, гейт применяется тоже (важно качество текста, который
+    # РЕАЛЬНО участвует в этом запросе, не то, что было настроено).
+    unconfirmed_winery_w = (
+        settings.cv_fusion_ocr_unconfirmed_w if text_source == "ocr" else settings.cv_fusion_unconfirmed_winery_w
+    )
     cv_scores = {m.slug: m.score for m in fusion_matches}
     result = text_fusion.fuse(
         cv_scores, text_index, label_text, family_by_slug=family_by_slug,
         w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
+        winery_index=winery_index, unconfirmed_winery_w=unconfirmed_winery_w,
     )
     ranked_top = result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
 

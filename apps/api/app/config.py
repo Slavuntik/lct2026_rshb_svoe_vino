@@ -258,6 +258,24 @@ class Settings:
         # замерены оба варианта, свой бюджет на дополнительный verify()).
         default_factory=lambda: _bool_env("CV_FUSION_VERIFY", False)
     )
+    # agents/H1-cpu-path.md (живые фото, 21.09): вес текстового сигнала (`rel` в
+    # cv.text_fusion.fuse()) для кандидата, у которого ВИНОДЕЛЬНЯ не подтверждена
+    # запросом (recall индекса только по полю winery < 0.5) — гейт третьей накопительной
+    # поправки CPU-пути (87.1% -> 88.7% offline top-1). Общий/дефолтный вес — 1.0 (как
+    # сейчас, без эффекта); `app/cv/service.py::_run_photo_scan_fusion` использует его
+    # ТОЛЬКО для источников текста, отличных от "ocr" (vlm/vlm_local/vlm_both) — на
+    # офлайн-прогоне гейт там ВРЕДЕН (95.2% -> 93.5%), см. cv_fusion_ocr_unconfirmed_w
+    # ниже для источника "ocr".
+    cv_fusion_unconfirmed_winery_w: float = field(
+        default_factory=lambda: float(os.environ.get("CV_FUSION_UNCONFIRMED_WINERY_W", "1.0"))
+    )
+    cv_fusion_ocr_unconfirmed_w: float = field(
+        # agents/H1-cpu-path.md: вес text-сигнала для неподтверждённой винодельни,
+        # СПЕЦИАЛЬНО когда text_source этого запроса — "ocr" (PaddleOCR, самый шумный
+        # источник текста трёх): 0.5 — "текст в полсилы" (offline 87.1% -> 88.7% top-1,
+        # изолированный вклад третьей накопительной поправки).
+        default_factory=lambda: float(os.environ.get("CV_FUSION_OCR_UNCONFIRMED_W", "0.5"))
+    )
     # Источник текста этикетки для слияния (21.09, оркестратор):
     #   "ocr"       — PaddleOCR (read_query_text);
     #   "vlm"       — мультимодальная модель на GPU-сервере через шлюз (VISION_LLM_URL);
