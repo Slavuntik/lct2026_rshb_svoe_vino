@@ -29,7 +29,10 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq nginx rsync curl ca-certificates openssl >/dev/null
+# libgl1/libglib2.0 — системные зависимости OpenCV (paddleocr тянет НЕ headless-сборку cv2:
+# без них падает `ImportError: libGL.so.1`), libgomp1 — рантайм OpenMP для torch.
+apt-get install -y -qq nginx rsync curl ca-certificates openssl libgl1 libgomp1 >/dev/null
+apt-get install -y -qq libglib2.0-0t64 >/dev/null 2>&1 || apt-get install -y -qq libglib2.0-0 >/dev/null
 
 if ! id "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir "$BASE" --shell /bin/bash "$APP_USER"
