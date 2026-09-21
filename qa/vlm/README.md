@@ -9,6 +9,7 @@
 | `read_labels_gw.py` | чтение этикеток моделью на GPU-сервере → `features/ocr_<tag>.jsonl` (`--prompt fields` — боевой промпт) |
 | `read_labels.py` | то же локальной Qwen3-VL-4B через MLX (Python API) |
 | `choose_gw.py`, `choose.py` | модель выбирает вино среди top-K кандидатов слияния (итог: хуже слияния для top-1, но «ответ совпал с top-1 слияния» — лучший сигнал уверенности для UI) |
+| `read_labels_ollama.py` | то же для моделей в Ollama (замер gemma3:4b: 85.5% против 95.2% у Qwen3-VL-4B, 6.9 с против ~3 с — не берём) |
 | `verify_text_gw.py` | текстовая сверка прочитанных полей с карточкой (без картинки) — слабее выбора по фото |
 
 Оценка — `qa/real_photos_eval.py --ocr <tag>`, совмещение двух моделей — `qa/real_photos_two_readers.py`.
