@@ -438,11 +438,15 @@ def _fusion_text_and_vectors(
     PaddleOCR читается всегда (фолбэк и вход near-dup верификатора). Модели — по
     `CV_FUSION_TEXT_SOURCE`: "vlm" — GPU-сервер (шлюз), "vlm_local" — локальная MLX-модель,
     "vlm_both" — обе, их тексты склеиваются (замер: обе вместе 96.8% против 95.2% у каждой).
-    CV-эмбеддинги считаются в этом же потоке, пока текст читается. Модель не ответила за
-    `VISION_LLM_TIMEOUT_S` (+1 с запаса), ошиблась или вернула пустые поля — её вклад
-    пропускается; не ответила ни одна — слияние идёт на тексте OCR.
+    CV-эмбеддинги считаются в этом же потоке, пока текст читается. Модель не ответила к
+    общему дедлайну `VISION_LLM_TIMEOUT_S` от начала чтения, ошиблась или вернула пустые
+    поля — её вклад пропускается; не ответила ни одна — слияние идёт на тексте OCR.
     Источник в ответе: "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr"."""
     mode = settings.cv_fusion_text_source
+    # Общий дедлайн от начала чтения, а не таймаут на каждую модель: скрипт проверки режет
+    # запрос на 10 с, а у шлюза длинный хвост (p95 ~9.8 с на приёмке 21.09) — кто не
+    # успел к дедлайну, просто не участвует (в vlm_both локальная 4B отвечает за ~3 с).
+    deadline = time.monotonic() + settings.vision_llm_timeout_s
     readers: dict[str, object] = {}
     if mode in ("vlm", "vlm_both") and settings.vision_llm_url and settings.vision_llm_key:
         readers["vlm"] = _FUSION_TEXT_POOL.submit(
@@ -462,8 +466,8 @@ def _fusion_text_and_vectors(
     got: dict[str, str] = {}
     for name, fut in readers.items():
         try:
-            text = fut.result(timeout=settings.vision_llm_timeout_s + 1.0)
-        except Exception:  # noqa: BLE001 — таймаут ожидания/сбой потока: без вклада этой модели
+            text = fut.result(timeout=max(0.0, deadline - time.monotonic()))
+        except Exception:  # noqa: BLE001 — не успела к дедлайну/сбой потока: без вклада этой модели
             text = ""
         if text.strip():
             got[name] = text

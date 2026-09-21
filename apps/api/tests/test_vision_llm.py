@@ -215,5 +215,5 @@ def test_hanging_model_is_abandoned_after_timeout(client: TestClient, app, tmp_p
     _fake_readers(monkeypatch, remote_text="Табия Победа", delay_s=3.0)
     t = time.monotonic()
     r = _photo(client, b"MOCKPHOTO:x", flat=True)
-    assert time.monotonic() - t < 2.5  # не ждём зависшую модель дольше таймаута (+1 с запаса)
+    assert time.monotonic() - t < 1.5  # не ждём зависшую модель дольше общего дедлайна
     assert r.json() == {"slug": "tabiya-roze"}  # решил текст OCR

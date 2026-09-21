@@ -281,7 +281,9 @@ class Settings:
         default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_MODEL", "mlx-community/Qwen3-VL-4B-Instruct-4bit")
     )
     vision_llm_timeout_s: float = field(
-        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "7"))
+        # общий дедлайн чтения этикетки моделями от начала запроса; 6.5 с оставляют запас до
+        # 10 с скрипта проверки на CV, слияние и карточку (приёмка 21.09: хвост шлюза до 10 с)
+        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "6.5"))
     )
     vision_llm_image_size: int = field(
         # 1024 — замер на живых фото: 768 заметно хуже по точности при выигрыше ~0.5 с
