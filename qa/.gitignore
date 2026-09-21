@@ -1,6 +1,12 @@
 # Рантайм-артефакты qa/ — не деликты, генерируются заново при каждом прогоне.
 # .venv/, __pycache__/, *.pyc уже покрыты корневым .gitignore; здесь — то, что специфично qa/.
 .pytest_cache/
+
+# Кэш qa/accuracy_lab.py (agents/G5-accuracy.md): CV top-20 (3 варианта кропа) + OCR
+# (2 варианта) по 2054 синтетическим фото + результаты свипов — дорогой, но полностью
+# восстановимый прогоном `accuracy_lab.py cache` (см. докстринг модуля); не деликт,
+# тот же принцип, что scan-eval-runs/* ниже. Ключевые цифры — в reports/g5-accuracy.md.
+.cache/
 e2e/.dev-server.log
 e2e/.api-server.log
 e2e/.qa-real-run.db
