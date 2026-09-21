@@ -50,9 +50,10 @@ def _enable_fusion(app, tmp_path, monkeypatch, *, catalog_rows=None, families=No
     app.state.settings = dataclasses.replace(app.state.settings, cv_fusion=True, **overrides)
     # lru_cache модулей слияния — сбрасываем между тестами, ключ (str-путь) и так
     # уникален per-tmp_path, но подчищаем явно ради безопасности при повторных путях.
-    from app.cv.service import _fusion_family_by_slug, _fusion_text_index
+    from app.cv.service import _fusion_colors, _fusion_family_by_slug, _fusion_text_index
     _fusion_text_index.cache_clear()
     _fusion_family_by_slug.cache_clear()
+    _fusion_colors.cache_clear()
 
 
 class _FusionImageIndex:

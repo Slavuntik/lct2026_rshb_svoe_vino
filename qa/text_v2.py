@@ -32,7 +32,8 @@ _LOW = dict(zip("aceopxyui", "асеорхуии"))
 _DIG = {"3": "З", "0": "О", "6": "б"}
 # Греческие заглавные двойники пяти кириллических букв без латинского аналога (см.
 # докстринг модуля, п.1) — синхронно с packages/cv/cv/text_fusion.py::_GREEK.
-_GREEK = dict(zip("ΛΓΠΔΦ", "ЛГПДФ"))
+_GREEK = dict(zip("ΛΓΠΔΦΑΒΕΗΚΜΟΡΤΥΧ", "ЛГПДФАВЕНКМОРТУХ"))  # синхронно с cv/text_fusion.py (22.09)
+_GREEK_TABLE = str.maketrans(_GREEK)
 _CYR = re.compile(r"[а-яё]", re.I)
 _LAT = re.compile(r"[a-z]", re.I)
 _GRK = re.compile("[" + "".join(_GREEK) + "]")
@@ -78,6 +79,12 @@ def query_tokens(ocr_text: str) -> set[str]:
         hv = homoglyph_variant(raw)
         if hv:
             variants.append(hv)
+        greek = raw.translate(_GREEK_TABLE)  # «ОΛΕΓ» (кириллица + греческий) -> «ОЛЕГ»
+        if greek != raw:
+            variants.append(greek)
+            hv2 = homoglyph_variant(greek)
+            if hv2:
+                variants.append(hv2)
         for v in variants:
             for t in tr.tokenize(v):
                 if t.isdigit() and not _YEAR.match(t):

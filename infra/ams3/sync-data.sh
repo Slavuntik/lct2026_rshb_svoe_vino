@@ -32,7 +32,7 @@ echo "5/7 PaddleOCR";          put "$HOME/.paddlex/official_models" "$DST/models
 echo "6/7 кейс и метрики";     put "$CASE/slug_refs.json" "$CASE/families.json" "$DST/case/"
                                # сырой CSV каталога — текстовый индекс слияния CV+текст (cv/text_fusion.py)
                                put "$CASE/strapi_output0709.csv" "$DST/case/"
-                               put "$ROOT/qa/scan-eval-runs/case-20260918-honest/eval_report_snapshot.json" "$DST/eval_report_snapshot.json"
+                               put "$ROOT/qa/scan-eval-runs/real-photos-stand-hack-v6/eval_report_snapshot.json" "$DST/eval_report_snapshot.json"
 # agents/B8-candidates-card.md (contracts/image-scan.md v0.4.11): фолбэк-карточка
 # кейс-слагов вне нашего RAG-каталога — case_catalog.json (apps/api/scripts/
 # build_case_catalog.py) и превью thumbs/ (apps/api/scripts/build_case_thumbs.py),

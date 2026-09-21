@@ -27,6 +27,8 @@ from cv.text_fusion import (
     text_top_slugs_for_ocr,
     token_sim,
     top_text_slugs,
+    text_color,
+    color_by_slug,
 )
 from cv.text_rerank import CatalogText
 
@@ -620,3 +622,65 @@ def test_default_constants_pin_brief_values():
     assert DEFAULT_ANN_TOP_K == 50
     assert DEFAULT_TEXT_TOP_N == 30
     assert FUSION_FIELDS == ("name", "winery", "grape", "category", "sugar")
+
+
+# --------------------------------------------------------------------------------------
+# 22.09 (оркестратор, разбор промахов стенда hack-v6): полная греческая таблица,
+# перевод греческих букв ДО разбора токена; штраф за противоречие цвета этикетки
+# --------------------------------------------------------------------------------------
+
+
+def test_query_tokens_mixed_cyrillic_and_greek_token_reads_oleg():
+    """Реальный текст RapidOCR: «ОΛΕΓ» — кириллическая О, греческие Λ, Ε, Γ. Раньше смешанный
+    кириллица+греческий токен не брала ни одна ветка homoglyph_variant(); два фото «Табия —
+    Олег» терялись."""
+    assert "oleg" in query_tokens("ТАБИЯ ОΛΕΓ")
+    assert "oleg" in query_tokens("OΛEΓ")  # прежний случай — латинские O/E + греческие Λ/Γ
+
+
+def test_text_color_needs_exactly_one_color_word():
+    assert text_color("МУСКАТЕЛЬ БЕЛЫЙ 2023") == "white"
+    assert text_color("Blanc de Blancs white") == "white"
+    assert text_color("Красная стрелка розовое") is None  # два цвета — не гадаем
+    assert text_color("") is None
+
+
+def test_color_by_slug_reads_category_field():
+    idx = TextIndexV2(
+        _catalog({"w": {"name": "Мускатель белый"}, "r": {"name": "Мускатель розовый"}, "o": {"name": "Оранж"}}),
+        fields=("name",),
+        extra={"w": {"category": "Белое", "sugar": ""}, "r": {"category": "Розовое", "sugar": ""}, "o": {"category": "Оранжевое", "sugar": ""}},
+    )
+    assert color_by_slug(idx) == {"w": "white", "r": "rose"}  # оранжевое — без цвета
+
+
+def _two_wines_same_name_different_color():
+    """Одна линейка, одинаковое НАЗВАНИЕ, цвет — только в поле «Категория» каталога (как у
+    «Мускатель» Массандры до чистки названий): текст обоих кандидатов совпадает, различить
+    их может только слово цвета на этикетке."""
+    return TextIndexV2(
+        _catalog({"w": {"name": "Мускатель", "winery": "Массандра"},
+                  "r": {"name": "Мускатель", "winery": "Массандра"}}),
+        fields=("name", "winery"),
+        extra={"w": {"category": "Белое", "sugar": ""}, "r": {"category": "Розовое", "sugar": ""}},
+    )
+
+
+def test_fuse_color_penalty_demotes_candidate_contradicting_label_color():
+    idx = _two_wines_same_name_different_color()
+    cv_scores = {"w": 0.85, "r": 0.87}
+    text = "МАССАНДРА МУСКАТЕЛЬ БЕЛЫЙ 2023"
+    without = fuse(cv_scores, idx, text, w=0.3)
+    assert without.ranked[0].slug == "r"  # текст одинаков, без штрафа CV решает в пользу розового
+    with_pen = fuse(cv_scores, idx, text, w=0.3, colors=color_by_slug(idx), color_penalty=0.05)
+    assert with_pen.ranked[0].slug == "w"
+    by_slug = {c.slug: c for c in with_pen.ranked}
+    assert by_slug["r"].final_score == pytest.approx(without.ranked[0].final_score - 0.05)
+
+
+def test_fuse_color_penalty_inactive_without_color_word_or_zero_penalty():
+    idx = _two_wines_same_name_different_color()
+    colors = color_by_slug(idx)
+    a = fuse({"w": 0.85, "r": 0.87}, idx, "МУСКАТЕЛЬ 2023", w=0.3, colors=colors, color_penalty=0.05)
+    b = fuse({"w": 0.85, "r": 0.87}, idx, "МУСКАТЕЛЬ БЕЛЫЙ 2023", w=0.3, colors=colors, color_penalty=0.0)
+    assert a.ranked[0].slug == "r" and b.ranked[0].slug == "r"

@@ -269,6 +269,12 @@ class Settings:
     cv_fusion_unconfirmed_winery_w: float = field(
         default_factory=lambda: float(os.environ.get("CV_FUSION_UNCONFIRMED_WINERY_W", "1.0"))
     )
+    cv_fusion_color_penalty: float = field(
+        # 22.09: штраф кандидату, чей цвет (колонка «Категория» каталога) противоречит слову цвета
+        # на этикетке, когда в тексте найден РОВНО один цвет (cv/text_fusion.py::text_color).
+        # Замер на 62 живых фото: OCR-путь 56 → 57, пути с VLM-текстом без изменений при 0.03–0.08.
+        default_factory=lambda: float(os.environ.get("CV_FUSION_COLOR_PENALTY", "0.05"))
+    )
     cv_fusion_ocr_unconfirmed_w: float = field(
         # agents/H1-cpu-path.md: вес text-сигнала для неподтверждённой винодельни,
         # СПЕЦИАЛЬНО когда text_source этого запроса — "ocr" (PaddleOCR, самый шумный

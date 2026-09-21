@@ -15,17 +15,23 @@ ap.add_argument("--model", default="gemma3:4b")
 ap.add_argument("--tag", default="gemma3_4b")
 ap.add_argument("--url", default="http://localhost:11434/v1")
 ap.add_argument("--limit", type=int, default=0)
+ap.add_argument("--images-dir", default="", help="готовые кропы NNN.jpg (порядок photos.json) вместо центрального кропа кадра")
 ap.add_argument("--size", type=int, default=1024, help="длинная сторона кропа центральной бутылки")
 ap.add_argument("--max-tokens", type=int, default=150)
 a = ap.parse_args()
 out = F / f"ocr_{a.tag}.jsonl"
 done = {json.loads(l)["photo"] for l in out.read_text().splitlines() if l.strip()} if out.exists() else set()
-photos = [p for p in json.loads((F / "photos.json").read_text()) if p not in done]
+ALL = json.loads((F / "photos.json").read_text())
+photos = [p for p in ALL if p not in done]
 if a.limit:
     photos = photos[: a.limit]
 for name in photos:
-    im = ImageOps.exif_transpose(Image.open(SRC / name)).convert("RGB"); w, h = im.size
-    im = im.crop((int(w * .15), int(h * .05), int(w * .85), int(h * .98))); im.thumbnail((a.size, a.size))
+    if a.images_dir:
+        im = Image.open(Path(a.images_dir) / f"{ALL.index(name) + 1:03d}.jpg").convert("RGB")
+    else:
+        im = ImageOps.exif_transpose(Image.open(SRC / name)).convert("RGB"); w, h = im.size
+        im = im.crop((int(w * .15), int(h * .05), int(w * .85), int(h * .98)))
+    im.thumbnail((a.size, a.size))
     buf = io.BytesIO(); im.save(buf, format="JPEG", quality=90)
     body = {"model": a.model, "temperature": 0, "max_tokens": a.max_tokens, "messages": [{"role": "user", "content": [
         {"type": "text", "text": PROMPT},

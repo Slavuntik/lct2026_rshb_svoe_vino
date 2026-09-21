@@ -414,6 +414,14 @@ def _fusion_text_index(catalog_csv: str):
 
 
 @lru_cache(maxsize=4)
+def _fusion_colors(catalog_csv: str):
+    """slug -> цвет вина по каталогу кейса — для штрафа за противоречие цвета этикетки
+    (`cv.text_fusion.fuse(colors=..., color_penalty=...)`); тот же кэш по пути CSV, что у индексов."""
+    _, text_fusion, _ = _import_cv_fusion_deps()
+    return text_fusion.color_by_slug(_fusion_text_index(catalog_csv))
+
+
+@lru_cache(maxsize=4)
 def _fusion_winery_index(catalog_csv: str):
     """agents/H1-cpu-path.md: `cv.text_fusion.TextIndexV2` ТОЛЬКО по полю `winery` —
     для гейта «не подтверждена винодельня» (`cv.text_fusion.fuse(winery_index=...)`).
@@ -553,6 +561,7 @@ def _run_photo_scan_fusion(
         cv_scores, text_index, label_text, family_by_slug=family_by_slug,
         w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
         winery_index=winery_index, unconfirmed_winery_w=unconfirmed_winery_w,
+        colors=_fusion_colors(str(tr.default_catalog_csv_path())), color_penalty=settings.cv_fusion_color_penalty,
     )
     ranked_top = result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
 

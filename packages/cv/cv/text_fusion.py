@@ -130,7 +130,14 @@ _DIG = {"3": "З", "0": "О", "6": "б"}
 # Δ→Д, Φ→Ф (замер «OΛEΓ»→ОЛЕГ, докстринг модуля, п.2). Список НЕ расширяется на
 # другие греческие буквы без отдельного измерения — так же, как _UP/_DIG не гадают
 # латинские двойники без подтверждённого прецедента OCR.
-_GREEK = dict(zip("ΛΓΠΔΦ", "ЛГПДФ"))
+# 22.09 (оркестратор, разбор промахов стенда hack-v6): пяти букв мало — RapidOCR пишет «ОΛΕΓ»
+# с греческой Ε (и кириллической О в том же токене): токен смешанный кириллица+греческий,
+# ни одна ветка homoglyph_variant() его не брала, оба фото «Табия — Олег» терялись. Таблица
+# расширена на все заглавные греческие буквы, графически неотличимые от кириллицы (Α Β Ε Η Κ Μ
+# Ο Ρ Τ Υ Χ), а перевод делается ДО разбора вариантов (`_greek_to_cyr` в query_tokens) — любая
+# смесь алфавитов приводится к кириллице. Замер на 62 живых фото: 54 → 56 (CPU-путь, 2 кропа).
+_GREEK = dict(zip("ΛΓΠΔΦΑΒΕΗΚΜΟΡΤΥΧ", "ЛГПДФАВЕНКМОРТУХ"))
+_GREEK_TABLE = str.maketrans(_GREEK)
 _CYR = re.compile(r"[а-яё]", re.I)
 _LAT = re.compile(r"[a-z]", re.I)
 _GRK = re.compile("[" + "".join(_GREEK) + "]")  # детекция «есть греческая буква» — не только известные 5
@@ -182,6 +189,12 @@ def query_tokens(ocr_text: str) -> set[str]:
         hv = homoglyph_variant(raw)
         if hv:
             variants.append(hv)
+        greek = raw.translate(_GREEK_TABLE)  # «ОΛΕΓ» (кириллица + греческий) -> «ОЛЕГ»
+        if greek != raw:
+            variants.append(greek)
+            hv2 = homoglyph_variant(greek)  # «OΛEΓ» с ЛАТИНСКИМИ O/E -> после перевода смешанный токен
+            if hv2:
+                variants.append(hv2)
         for v in variants:
             for t in tr.tokenize(v):
                 if t.isdigit() and not _YEAR.match(t):
@@ -251,6 +264,7 @@ class TextIndexV2:
         extra: dict[str, dict[str, str]] | None = None,
     ):
         """extra: slug -> {поле: текст} для полей вне CatalogText (category, sugar)."""
+        self.extra = extra or {}  # нужен `color_by_slug()` — цвет кандидата из поля category
         self.slugs = list(catalog)
         self.doc_tokens: list[set[str]] = []
         df: dict[str, int] = {}
@@ -406,6 +420,36 @@ class FusionResult:
     confident: bool  # гейт: gap floor (или доминирование) И cv_score(top1) >= cv_floor
 
 
+# Цвет вина, прочитанный с этикетки, против цвета кандидата (22.09, оркестратор): «Мускатель белый»
+# уходил в «Мускатель розовый» — OCR читал «БЕЛЫЙ», но CV перевешивала. Если в тексте найдено слово
+# РОВНО ОДНОГО цвета, кандидаты с другим ИЗВЕСТНЫМ цветом (колонка «Категория» CSV) штрафуются.
+# Замер на 62 живых фото: OCR-путь 56 → 57, пути с VLM-текстом без изменений при штрафе 0.03–0.08.
+_COLOR_WORDS = {
+    "white": re.compile(r"\b(бел(ое|ый|ая)|white|blanc)\b", re.I),
+    "red": re.compile(r"\b(красн(ое|ый|ая)|red|rouge)\b", re.I),
+    "rose": re.compile(r"\b(розов(ое|ый|ая)|розе|rose|rosé)\b", re.I),
+}
+_CATEGORY_COLOR = {"белое": "white", "красное": "red", "розовое": "rose"}
+DEFAULT_COLOR_PENALTY = 0.0  # 0 = выключено; apps/api передаёт CV_FUSION_COLOR_PENALTY (дефолт 0.05)
+
+
+def text_color(text: str) -> str | None:
+    """Цвет вина по тексту этикетки: "white" | "red" | "rose", если найден РОВНО один; иначе None
+    (нет слов цвета или их несколько — «розовое» рядом с «Красная стрелка» и т.п. — не гадаем)."""
+    found = {c for c, rx in _COLOR_WORDS.items() if rx.search(text or "")}
+    return next(iter(found)) if len(found) == 1 else None
+
+
+def color_by_slug(index: "TextIndexV2") -> dict[str, str]:
+    """slug -> "white" | "red" | "rose" по полю category каталога (оранжевое/пусто — без цвета)."""
+    out: dict[str, str] = {}
+    for slug, fields in (getattr(index, "extra", None) or {}).items():
+        c = _CATEGORY_COLOR.get((fields.get("category") or "").strip().lower())
+        if c:
+            out[slug] = c
+    return out
+
+
 def _family_gap(ranked: list[FusedCandidate], family_by_slug: dict[str, str]) -> float | None:
     """Тот же принцип, что `cv.index._gaps_to_next_family` (перепись `families.json`,
     "семья из одного себя" для незарегистрированного слага), но по `final_score`
@@ -435,6 +479,8 @@ def fuse(
     winery_index: "TextIndexV2 | None" = None,
     unconfirmed_winery_w: float = DEFAULT_UNCONFIRMED_WINERY_W,
     winery_recall_floor: float = DEFAULT_WINERY_RECALL_FLOOR,
+    colors: dict[str, str] | None = None,
+    color_penalty: float = DEFAULT_COLOR_PENALTY,
 ) -> FusionResult:
     """Слияние CV + текст по всему каталогу (см. докстринг модуля).
 
@@ -479,6 +525,8 @@ def fuse(
         winery_rec, _ = winery_index.scores(ocr_text)
         winery_recall_by_slug = dict(zip(winery_index.slugs, winery_rec))
 
+    label_color = text_color(ocr_text) if (color_penalty and colors) else None
+
     universe = dict.fromkeys(cv_scores)
     for slug in text_top:
         universe.setdefault(slug, None)
@@ -492,7 +540,10 @@ def fuse(
         rel = (mass_by_slug.get(slug, 0.0) / top_mass) if top_mass > 0 else 0.0
         if winery_recall_by_slug and winery_recall_by_slug.get(slug, 0.0) < winery_recall_floor:
             rel *= unconfirmed_winery_w  # винодельня НЕ подтверждена текстом — текст в unconfirmed_winery_w силы
-        candidates.append(FusedCandidate(slug=slug, final_score=cv + w * rel, cv_score=cv, rel=rel))
+        final = cv + w * rel
+        if label_color and colors and colors.get(slug, label_color) != label_color:
+            final -= color_penalty  # цвет кандидата противоречит слову цвета на этикетке
+        candidates.append(FusedCandidate(slug=slug, final_score=final, cv_score=cv, rel=rel))
 
     candidates.sort(key=lambda c: c.final_score, reverse=True)
     gap = _family_gap(candidates, family_by_slug or {})

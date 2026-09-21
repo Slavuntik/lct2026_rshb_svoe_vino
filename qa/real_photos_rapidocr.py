@@ -16,6 +16,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--sizes", default="640,960")
 ap.add_argument("--det", default="mobile", choices=["mobile", "server"])
 ap.add_argument("--score", type=float, default=0.5)
+ap.add_argument("--images-dir", default="", help="готовые кропы NNN.jpg (порядок photos.json) вместо центрального кропа кадра")
+ap.add_argument("--prefix", default="rapid", help="префикс тега выходного файла")
 a = ap.parse_args()
 photos = json.loads((F / "photos.json").read_text())
 for size in [int(s) for s in a.sizes.split(",")]:
@@ -24,12 +26,16 @@ for size in [int(s) for s in a.sizes.split(",")]:
                            "Det.model_type": ModelType.MOBILE if a.det == "mobile" else ModelType.SERVER,
                            "Rec.lang_type": LangRec.ESLAV, "Rec.ocr_version": OCRVersion.PPOCRV5,
                            "Rec.model_type": ModelType.MOBILE})
-    tag = f"rapid_{size}" + ("" if a.det == "mobile" else "_srv")
+    tag = f"{a.prefix}_{size}" + ("" if a.det == "mobile" else "_srv")
     out = F / f"ocr_{tag}.jsonl"
     with out.open("w", encoding="utf-8") as fh:
-        for name in photos:
-            im = ImageOps.exif_transpose(Image.open(SRC / name)).convert("RGB"); w, h = im.size
-            im = im.crop((int(w * .15), int(h * .05), int(w * .85), int(h * .98))); im.thumbnail((size, size))
+        for n, name in enumerate(photos, 1):
+            if a.images_dir:
+                im = Image.open(Path(a.images_dir) / f"{n:03d}.jpg").convert("RGB")
+            else:
+                im = ImageOps.exif_transpose(Image.open(SRC / name)).convert("RGB"); w, h = im.size
+                im = im.crop((int(w * .15), int(h * .05), int(w * .85), int(h * .98)))
+            im.thumbnail((size, size))
             t = time.time(); r = eng(np.asarray(im)); ms = round((time.time() - t) * 1000)
             txts = [x for x, s in zip(r.txts or [], r.scores or []) if s >= a.score] if r is not None and r.txts else []
             fh.write(json.dumps({"photo": name, "text": " ".join(txts), "ms": ms}, ensure_ascii=False) + "\n")
