@@ -30,12 +30,13 @@ def main():
     ap.add_argument("--api", default="http://127.0.0.1:8765")
     ap.add_argument("--out", required=True)
     ap.add_argument("--timeout", type=float, default=60)
+    ap.add_argument("--src", default=str(SRC), help="каталог с фото (по умолчанию — case-data/real-photos на Mac)")
     ap.add_argument("--flat-only", action="store_true", help="только /v1/eval/predict (метрика), без rich")
     a = ap.parse_args()
     out = Path(a.out)
     done = {json.loads(l)["photo"] for l in out.read_text().splitlines() if l.strip()} if out.exists() else set()
     with out.open("a", encoding="utf-8") as fh:
-        for i, p in enumerate(sorted(SRC.glob("*.webp")), 1):
+        for i, p in enumerate(sorted(Path(a.src).glob("*.webp")), 1):
             if p.name in done:
                 continue
             row = {"photo": p.name}
