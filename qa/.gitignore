@@ -71,5 +71,5 @@ case-census-run/
 
 # ИСКЛЮЧЕНИЕ (оркестратор, 2026-09-22): первый замер на ЖИВЫХ фото организаторов, снятый на
 # самом стенде — снимок метрик для /v1/metrics/scan и README; фото и разметка остаются вне git.
-!scan-eval-runs/real-photos-stand-hack-v6/
-!scan-eval-runs/real-photos-stand-hack-v6/**
+!scan-eval-runs/real-photos-stand/
+!scan-eval-runs/real-photos-stand/**
