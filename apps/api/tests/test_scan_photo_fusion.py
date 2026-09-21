@@ -75,8 +75,14 @@ class _FusionImageIndex:
         self.search_calls += 1
         return self._plain_matches
 
-    def search_fusion(self, image: bytes, *, top_k: int = 50, extra_slugs=()) -> list[Match]:
-        self.search_fusion_calls.append({"top_k": top_k, "extra_slugs": list(extra_slugs)})
+    def embed_fusion_query(self, image: bytes, *, normalize: bool = True):
+        if not image or image.startswith(b"not an image"):
+            raise ValueError("битые байты")
+        self.embed_fusion_calls = getattr(self, "embed_fusion_calls", 0) + 1
+        return [1.0], [0.0]
+
+    def search_fusion(self, image: bytes | None, *, top_k: int = 50, extra_slugs=(), vectors=None) -> list[Match]:
+        self.search_fusion_calls.append({"top_k": top_k, "extra_slugs": list(extra_slugs), "vectors": vectors})
         return self._fusion_matches
 
     def build(self, refs, version) -> None:

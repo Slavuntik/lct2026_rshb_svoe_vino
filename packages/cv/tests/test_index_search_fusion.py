@@ -90,6 +90,28 @@ def test_search_fusion_max_combines_norm_and_raw_views(tmp_path, query_image_byt
     assert by_slug["raw-favorite"] == pytest.approx(1.0)
 
 
+def test_search_fusion_with_precomputed_vectors_equals_plain_call(tmp_path, query_image_bytes):
+    """`embed_fusion_query()` + `search_fusion(vectors=...)` (эмбеддинги параллельно с чтением
+    текста этикетки) обязаны давать РОВНО тот же результат, что обычный вызов, и не
+    кодировать картинку повторно (image=None допустим, когда vectors переданы)."""
+    norm_vec, raw_vec = _unit([1, 0, 0]), _unit([0, 1, 0])
+    store = QdrantStore(path=tmp_path / "qdrant")
+    _upsert_slug(store, "fusion_test", "norm-favorite", {"real": norm_vec})
+    _upsert_slug(store, "fusion_test", "raw-favorite", {"real": _unit([0, 0.6, 0.8])})
+
+    index = ImageIndex(
+        store=store, encoder=_ShapeKeyedEncoder(norm_vec, raw_vec), collection="fusion_test",
+        manifest_path=tmp_path / "manifest.json", families_json=tmp_path / "no-families.json",
+    )
+    plain = index.search_fusion(query_image_bytes, top_k=5)
+    vectors = index.embed_fusion_query(query_image_bytes)
+    assert vectors == (norm_vec, raw_vec)
+    reused = index.search_fusion(None, top_k=5, vectors=vectors)
+    assert [(m.slug, round(m.score, 6)) for m in reused] == [(m.slug, round(m.score, 6)) for m in plain]
+    with pytest.raises(ValueError):
+        index.search_fusion(None, top_k=5)
+
+
 def test_search_fusion_slug_matching_neither_view_scores_low(tmp_path, query_image_bytes):
     norm_vec, raw_vec = _unit([1, 0, 0]), _unit([0, 1, 0])
     orthogonal = _unit([0, 0, 1])

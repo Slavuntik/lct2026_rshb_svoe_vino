@@ -230,13 +230,22 @@ class ImageIndex:
 
     # --- CV_FUSION (agents/G7-text-fusion.md) --------------------------------------
 
+    def embed_fusion_query(self, image: bytes, *, normalize: bool = True) -> tuple[list[float], list[float]]:
+        """Два query-вектора слияния — (нормализованный кроп этикетки, весь кадр) — БЕЗ поиска.
+        Отдельно от `search_fusion()`, чтобы вызывающий код мог считать эмбеддинги
+        параллельно с ожиданием текста этикетки (VLM/OCR) и затем передать их в
+        `search_fusion(vectors=...)` — без повторного кодирования. `ValueError` на битые байты."""
+        arr = imageio.decode_image(image)
+        return self.encoder.encode(normalize_query(arr, enabled=normalize)), self.encoder.encode(arr)
+
     def search_fusion(
         self,
-        image: bytes,
+        image: bytes | None,
         *,
         top_k: int = 50,
         extra_slugs: Iterable[str] = (),
         normalize: bool = True,
+        vectors: tuple[list[float], list[float]] | None = None,
     ) -> list[Match]:
         """CV-скоры для боевого слияния CV+текст (`cv/text_fusion.py`, brief п.5):
         максимум по ДВУМ входам запроса — нормализованный кроп этикетки (как
@@ -259,9 +268,12 @@ class ImageIndex:
         `gap` считается ТЕМ ЖЕ способом, что `search()` (семьи переписи/эпсилон-
         фолбэк) — на случай, если вызывающему коду нужен обычный CV-ranking по
         этому комбинированному скору без текста вовсе."""
-        arr = imageio.decode_image(image)  # ValueError на битые байты — до любой другой работы
-        norm_vec = self.encoder.encode(normalize_query(arr, enabled=normalize))
-        raw_vec = self.encoder.encode(arr)
+        if vectors is not None:  # уже посчитаны `embed_fusion_query()` (параллельно с чтением текста)
+            norm_vec, raw_vec = vectors
+        else:
+            if image is None:
+                raise ValueError("search_fusion: нужны либо байты изображения, либо vectors")
+            norm_vec, raw_vec = self.embed_fusion_query(image, normalize=normalize)
 
         combined: dict[str, tuple[float, str]] = {}
         overfetch = max(top_k * config.SEARCH_OVERFETCH, top_k + 10)

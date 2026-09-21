@@ -78,6 +78,7 @@ score/gap/view (не blended-скор: пороги гейта CV_ABS_FLOOR/CV_M
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -87,7 +88,7 @@ from ..config import Settings
 from ..rag import case_catalog as rag_case_catalog
 from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
-from . import case_catalog
+from . import case_catalog, vision_llm
 from .interface import ImageIndex, LabelVerifier, Match, VerifyCandidate
 
 
@@ -105,6 +106,10 @@ class PhotoScanResult:
     analogs: list[dict] = field(default_factory=list)
     matches: list[dict] = field(default_factory=list)  # v0.4.3: top-5 {slug, score} для eval F1-top5
     candidates: list[dict] = field(default_factory=list)  # v0.4.11: top-5 позиций, обогащённых карточкой
+    # CV_FUSION: чем читали этикетку ("vlm" | "ocr") и что прочитали — для архива сканов
+    # и отладки; в HTTP-ответ не выводятся (контракт не меняется).
+    text_source: str | None = None
+    label_text: str | None = None
 
 
 def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
@@ -420,6 +425,54 @@ def _fusion_family_by_slug(families_json: str):
     return cv_families.load_family_by_slug(Path(families_json))
 
 
+# Потоки для чтения этикетки параллельно с CV-эмбеддингами (VLM — сетевой запрос,
+# PaddleOCR — CPU): общий пул на процесс, не на запрос.
+_FUSION_TEXT_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-text")
+
+
+def _fusion_text_and_vectors(
+    image_bytes: bytes, image_index: ImageIndex, verifier: LabelVerifier, settings: Settings,
+) -> tuple[str, str, str, tuple[list[float], list[float]]]:
+    """(текст для слияния, источник, текст OCR, CV-векторы) — всё параллельно.
+
+    PaddleOCR читается всегда (фолбэк и вход near-dup верификатора). Модели — по
+    `CV_FUSION_TEXT_SOURCE`: "vlm" — GPU-сервер (шлюз), "vlm_local" — локальная MLX-модель,
+    "vlm_both" — обе, их тексты склеиваются (замер: обе вместе 96.8% против 95.2% у каждой).
+    CV-эмбеддинги считаются в этом же потоке, пока текст читается. Модель не ответила за
+    `VISION_LLM_TIMEOUT_S` (+1 с запаса), ошиблась или вернула пустые поля — её вклад
+    пропускается; не ответила ни одна — слияние идёт на тексте OCR.
+    Источник в ответе: "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr"."""
+    mode = settings.cv_fusion_text_source
+    readers: dict[str, object] = {}
+    if mode in ("vlm", "vlm_both") and settings.vision_llm_url and settings.vision_llm_key:
+        readers["vlm"] = _FUSION_TEXT_POOL.submit(
+            vision_llm.read_label, image_bytes,
+            url=settings.vision_llm_url, key=settings.vision_llm_key, model=settings.vision_llm_model,
+            timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
+        )
+    if mode in ("vlm_local", "vlm_both") and settings.vision_llm_local_url:
+        readers["vlm_local"] = _FUSION_TEXT_POOL.submit(
+            vision_llm.read_label, image_bytes,
+            url=settings.vision_llm_local_url, key=None, model=settings.vision_llm_local_model,
+            timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
+        )
+    f_ocr = _FUSION_TEXT_POOL.submit(verifier.read_query_text, image_bytes)
+    vectors = image_index.embed_fusion_query(image_bytes)  # ValueError на битых байтах — как раньше
+    ocr_text = f_ocr.result()
+    got: dict[str, str] = {}
+    for name, fut in readers.items():
+        try:
+            text = fut.result(timeout=settings.vision_llm_timeout_s + 1.0)
+        except Exception:  # noqa: BLE001 — таймаут ожидания/сбой потока: без вклада этой модели
+            text = ""
+        if text.strip():
+            got[name] = text
+    if not got:
+        return ocr_text, "ocr", ocr_text, vectors
+    source = "vlm_both" if len(got) == 2 else next(iter(got))
+    return " ".join(got[k] for k in ("vlm", "vlm_local") if k in got), source, ocr_text, vectors
+
+
 def _run_photo_scan_fusion(
     *,
     image_bytes: bytes,
@@ -444,16 +497,16 @@ def _run_photo_scan_fusion(
     """
     cv_families, text_fusion, tr = _import_cv_fusion_deps()
 
-    ocr_text = verifier.read_query_text(image_bytes)
+    label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(image_bytes, image_index, verifier, settings)
     text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
     family_by_slug = _fusion_family_by_slug(str(cv_families.default_families_path()))
 
-    text_top = text_fusion.text_top_slugs_for_ocr(text_index, ocr_text, text_fusion.DEFAULT_TEXT_TOP_N)
+    text_top = text_fusion.text_top_slugs_for_ocr(text_index, label_text, text_fusion.DEFAULT_TEXT_TOP_N)
     # v0.4.13 (brief G7 п.2): CV-скор — max(нормализованный кроп, весь кадр),
     # кандидаты — CV top-K ∪ текстовые extra_slugs (точным фильтрованным
     # запросом Qdrant, не ANN-топ — см. `ImageIndex.search_fusion()`).
     fusion_matches = image_index.search_fusion(
-        image_bytes, top_k=text_fusion.DEFAULT_ANN_TOP_K, extra_slugs=text_top,
+        None, top_k=text_fusion.DEFAULT_ANN_TOP_K, extra_slugs=text_top, vectors=vectors,
     )
 
     if not fusion_matches:
@@ -469,7 +522,7 @@ def _run_photo_scan_fusion(
 
     cv_scores = {m.slug: m.score for m in fusion_matches}
     result = text_fusion.fuse(
-        cv_scores, text_index, ocr_text, family_by_slug=family_by_slug,
+        cv_scores, text_index, label_text, family_by_slug=family_by_slug,
         w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
     )
     ranked_top = result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
@@ -535,6 +588,8 @@ def _run_photo_scan_fusion(
         analogs=analogs,
         matches=[{"slug": c.slug, "score": c.final_score} for c in ranked_top],
         candidates=candidates,
+        text_source=text_source,
+        label_text=label_text,
     )
 
 

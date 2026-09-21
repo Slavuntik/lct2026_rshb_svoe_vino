@@ -258,6 +258,35 @@ class Settings:
         # замерены оба варианта, свой бюджет на дополнительный verify()).
         default_factory=lambda: _bool_env("CV_FUSION_VERIFY", False)
     )
+    # Источник текста этикетки для слияния (21.09, оркестратор):
+    #   "ocr"       — PaddleOCR (read_query_text);
+    #   "vlm"       — мультимодальная модель на GPU-сервере через шлюз (VISION_LLM_URL);
+    #   "vlm_local" — локальная модель (Qwen3-VL-4B на MLX, VISION_LLM_LOCAL_URL);
+    #   "vlm_both"  — обе параллельно, тексты склеиваются в один запрос слияния.
+    # Замер на 62 живых фото из каталога (индекс base-384 после чистки эталонов, W=0.3):
+    # OCR ~71–75%, 4B 95.2%, 27B 95.2%, обе 96.8% top-1 (app/cv/vision_llm.py). PaddleOCR
+    # читается всегда параллельно и остаётся фолбэком: ни одна модель не ответила за
+    # таймаут, ошибка или пустые поля — слияние идёт на тексте OCR.
+    cv_fusion_text_source: str = field(
+        default_factory=lambda: os.environ.get("CV_FUSION_TEXT_SOURCE", "ocr").strip().lower()
+    )
+    # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
+    # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
+    # попадают. TLS проверяется штатно.
+    vision_llm_url: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_URL") or None)
+    vision_llm_key: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_KEY") or None, repr=False)
+    vision_llm_model: str = field(default_factory=lambda: os.environ.get("VISION_LLM_MODEL", "qwen3.8-27b"))
+    vision_llm_local_url: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_URL") or None)
+    vision_llm_local_model: str = field(
+        default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_MODEL", "mlx-community/Qwen3-VL-4B-Instruct-4bit")
+    )
+    vision_llm_timeout_s: float = field(
+        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "7"))
+    )
+    vision_llm_image_size: int = field(
+        # 1024 — замер на живых фото: 768 заметно хуже по точности при выигрыше ~0.5 с
+        default_factory=lambda: int(os.environ.get("VISION_LLM_IMAGE_SIZE", "1024"))
+    )
     # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
     # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,
     # reference_styles}.yaml, зона пайплайна, ТОЛЬКО ЧТЕНИЕ отсюда. Путь —
