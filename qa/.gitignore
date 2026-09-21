@@ -42,6 +42,10 @@ scan-eval-runs/case-20260918-honest/*
 !scan-eval-runs/case-20260918-honest/report.md
 !scan-eval-runs/case-20260918-honest/README.md
 !scan-eval-runs/case-20260918-honest/eval_report_snapshot.json
+!scan-eval-runs/ams3-parity-sample/
+scan-eval-runs/ams3-parity-sample/*
+!scan-eval-runs/ams3-parity-sample/README.md
+!scan-eval-runs/ams3-parity-sample/report.md
 
 # Синтетические «полевые» фото сканера (агент F2, qa/gen_synthetic_scan_photos.py) +
 # локальный CV-индекс, построенный поверх них (qa/run_cv_index_baseline.py) — оба
