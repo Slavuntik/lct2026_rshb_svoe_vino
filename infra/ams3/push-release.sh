@@ -28,5 +28,14 @@ echo "веб →"
 tar -czf - -C "$ROOT/apps/web/dist" . \
   | $SSH "somelye@$HOST" 'rm -rf /opt/somelye/web/* 2>/dev/null; mkdir -p /opt/somelye/web; tar xzf - -C /opt/somelye/web'
 
+# Ключ GigaChat из секрета GitHub (GIGACHAT_AUTH_KEY) — едет через stdin, а не аргументом:
+# так его не видно ни в списке процессов, ни в командной строке на сервере. Нет секрета —
+# конфиг сервера не трогаем (остаётся то, что там уже стоит, например LLM_PROVIDER=mock).
+if [ -n "${GIGACHAT_AUTH_KEY:-}" ]; then
+  printf '%s\n' "$GIGACHAT_AUTH_KEY" | $SSH "somelye@$HOST" \
+    'read -r k; f=/opt/somelye/somelye.env; sed -i "/^GIGACHAT_AUTH_KEY=/d; /^LLM_PROVIDER=/d" "$f"; printf "LLM_PROVIDER=gigachat\nGIGACHAT_AUTH_KEY=%s\n" "$k" >> "$f"'
+  echo "ключ GigaChat из секрета установлен на сервере (LLM_PROVIDER=gigachat)"
+fi
+
 [ "${PUSH_ONLY:-0}" = 1 ] && { echo "код и веб залиты, deploy пропущен (PUSH_ONLY=1)"; exit 0; }
 $SSH "somelye@$HOST" 'bash /opt/somelye/app/infra/ams3/deploy.sh'

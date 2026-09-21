@@ -62,7 +62,7 @@ bash infra/ams3/push-release.sh <ams3>                       # код + веб +
 
 ## Секреты GitHub
 
-Ровно три, тип **Secrets** (не Variables — workflow читает `secrets.*`, переменная из Variables
+Три обязательных и один необязательный, тип **Secrets** (не Variables — workflow читает `secrets.*`, переменная из Variables
 придёт пустой), уровень **Repository** (не Environment — деплой-джоба не объявляет
 `environment:`, секреты окружения ей не видны). Settings → Secrets and variables → Actions →
 Secrets → New repository secret:
@@ -72,6 +72,7 @@ Secrets → New repository secret:
 | `AMS3_HOST` | `89.110.72.101` |
 | `AMS3_SSH_KEY` | приватная половина ключа CI целиком, со строками BEGIN/END: `pbcopy < ~/.ssh/ci_do_ams3` |
 | `AMS3_KNOWN_HOSTS` | вывод `ssh-keyscan 89.110.72.101` целиком |
+| `GIGACHAT_AUTH_KEY` | *необязательный* — авторизационный ключ GigaChat; есть → «Сомелье» на GigaChat |
 
 Пользователь `somelye` зашит в `push-release.sh` — отдельный секрет не нужен. Без секретов
 workflow не падает, а вежливо пропускает выкат (джоба `guard`).
@@ -100,7 +101,11 @@ bash infra/ams3/pull-scans.sh 89.110.72.101
 
 1. developers.sber.ru → GigaChat API → создать проект → скопировать **авторизационный ключ**.
    Физлицо — scope `GIGACHAT_API_PERS` (стоит по умолчанию, есть бесплатный лимит токенов).
-2. Ключ поставить на сервер, не показывая его никому: скопировать в буфер и выполнить
+2. **Основной путь — секрет GitHub.** Settings → Secrets and variables → Actions → New repository
+   secret: `GIGACHAT_AUTH_KEY` = ключ. При следующем выкате (тег `hack-v*` или Run workflow)
+   CI передаст его на сервер через stdin и включит `LLM_PROVIDER=gigachat`. Нет секрета — LLM на
+   сервере не трогается. Ротация ключа — заменить секрет и перевыкатить.
+3. Запасной путь без CI — поставить ключ вручную из буфера обмена:
 
 ```bash
 pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^LLM_PROVIDER=/d; /^GIGACHAT_AUTH_KEY=/d" /opt/somelye/somelye.env; printf "LLM_PROVIDER=gigachat\nGIGACHAT_AUTH_KEY=%s\n" "$k" >> /opt/somelye/somelye.env; sudo /usr/bin/systemctl restart somelye-api'

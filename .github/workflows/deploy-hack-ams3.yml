@@ -5,7 +5,8 @@ name: Deploy hack stand (ams3)
 # somelye (без sudo, кроме рестарта своего сервиса); данные и модели сюда не входят —
 # их доставляет infra/ams3/sync-data.sh. Процедура с нуля — infra/ams3/README.md.
 #
-# Секреты репозитория: AMS3_HOST, AMS3_SSH_KEY (приватный ключ CI), AMS3_KNOWN_HOSTS.
+# Секреты репозитория: AMS3_HOST, AMS3_SSH_KEY (приватный ключ CI), AMS3_KNOWN_HOSTS;
+# необязательный GIGACHAT_AUTH_KEY — ключ российской LLM для «Сомелье».
 
 on:
   workflow_dispatch:
@@ -82,4 +83,6 @@ jobs:
       - name: Выкат и healthz-гейт
         env:
           HOST: ${{ secrets.AMS3_HOST }}
+          # Необязательный: есть — стенд переключается на GigaChat с этим ключом; нет — LLM не трогается.
+          GIGACHAT_AUTH_KEY: ${{ secrets.GIGACHAT_AUTH_KEY }}
         run: bash infra/ams3/push-release.sh "$HOST" ~/.ssh/ams3_ci
