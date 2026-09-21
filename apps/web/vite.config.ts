@@ -12,6 +12,11 @@ const API_BASE_PATH = "/v1";
 // VITE_API_MODE=mock|real переключает источник данных (см. src/lib/env.ts).
 export default defineConfig({
   plugins: [react()],
+  // OCR-плагин подключён file:-зависимостью (симлинк в apps/shell), и его импорт
+  // @capacitor/core иначе разрешается из apps/shell/node_modules — в CI его нет
+  // (там ставится только apps/web). dedupe + paths в tsconfig.app.json заставляют
+  // брать собственную копию веба; вдобавок это исключает две копии ядра в бандле.
+  resolve: { dedupe: ["@capacitor/core"] },
   server: {
     port: 5173,
     // VITE_API_MODE=real: транспорт до локального agents/B (uvicorn на :8000 по его брифу).
