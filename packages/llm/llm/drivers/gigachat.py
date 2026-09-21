@@ -4,9 +4,12 @@ env: GIGACHAT_AUTH_URL (default офиц. OAuth-эндпоинт Sber), GIGACHAT
 (base64 "client_id:client_secret", как выдаёт кабинет GigaChat API),
 GIGACHAT_SCOPE (default GIGACHAT_API_PERS), LLM_BASE_URL (default
 https://gigachat.devices.sberbank.ru/api/v1), LLM_MODEL (default GigaChat),
-GIGACHAT_VERIFY_SSL (default "true"; в проде Sber часто требует свой
-корневой сертификат — управляется явным флагом, небезопасный дефолт не
-ставим).
+GIGACHAT_CA_BUNDLE (путь к PEM с корневым сертификатом Минцифры «Russian Trusted
+Root CA»: цепочки ngw/gigachat.devices.sberbank.ru упираются в него, в стандартных
+хранилищах его нет — без бандла TLS-проверка падает с «self-signed certificate in
+chain»; бандл применяется ТОЛЬКО к клиенту GigaChat, остальной трафик ему не доверяет),
+GIGACHAT_VERIFY_SSL (default "true"; "false" отключает проверку совсем — только для
+отладки, бандл предпочтительнее).
 
 Токен кэшируется в памяти процесса и обновляется по истечении.
 """
@@ -44,7 +47,7 @@ class GigaChatLLM:
         scope: str,
         base_url: str,
         model: str,
-        verify_ssl: bool = True,
+        verify_ssl: bool | str = True,
         timeout: float = DEFAULT_TIMEOUT,
         transport: httpx.BaseTransport | None = None,
     ) -> None:
@@ -59,9 +62,12 @@ class GigaChatLLM:
 
     @classmethod
     def from_env(cls) -> "GigaChatLLM":
-        verify = os.environ.get("GIGACHAT_VERIFY_SSL", "true").strip().lower() not in (
+        verify: bool | str = os.environ.get("GIGACHAT_VERIFY_SSL", "true").strip().lower() not in (
             "0", "false", "no",
         )
+        ca_bundle = os.environ.get("GIGACHAT_CA_BUNDLE")
+        if verify and ca_bundle:
+            verify = ca_bundle
         return cls(
             auth_url=os.environ.get("GIGACHAT_AUTH_URL", DEFAULT_AUTH_URL),
             auth_key=os.environ.get("GIGACHAT_AUTH_KEY"),

@@ -93,6 +93,21 @@ workflow не падает, а вежливо пропускает выкат (�
 bash infra/ams3/pull-scans.sh 89.110.72.101
 ```
 
+## Подключение GigaChat (российская LLM для хака)
+
+Сертификат Минцифры уже стоит (`/opt/somelye/certs/russian_trusted_root_ca.pem`, отпечаток сверен
+по двум источникам) и применяется только к клиенту GigaChat. API Сбера с этого сервера доступен.
+
+1. developers.sber.ru → GigaChat API → создать проект → скопировать **авторизационный ключ**.
+   Физлицо — scope `GIGACHAT_API_PERS` (стоит по умолчанию, есть бесплатный лимит токенов).
+2. Ключ поставить на сервер, не показывая его никому: скопировать в буфер и выполнить
+
+```bash
+pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^LLM_PROVIDER=/d; /^GIGACHAT_AUTH_KEY=/d" /opt/somelye/somelye.env; printf "LLM_PROVIDER=gigachat\nGIGACHAT_AUTH_KEY=%s\n" "$k" >> /opt/somelye/somelye.env; sudo /usr/bin/systemctl restart somelye-api'
+```
+
+Вернуть заглушку — `LLM_PROVIDER=mock` в том же файле и рестарт.
+
 ## Диагностика
 
 ```bash

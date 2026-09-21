@@ -117,7 +117,7 @@ def test_anthropic_chat_splits_system_and_parses_content_blocks():
 
     llm = AnthropicLLM(
         base_url="https://api.anthropic.com", api_key="ak-test",
-        model="claude-3-5-haiku-latest", transport=httpx.MockTransport(handler),
+        model="claude-sonnet-5", transport=httpx.MockTransport(handler),
     )
     assert llm.chat(MESSAGES) == "Каберне [1]"
 
@@ -134,7 +134,7 @@ def test_anthropic_chat_stream_reads_content_block_deltas():
 
     llm = AnthropicLLM(
         base_url="https://api.anthropic.com", api_key="ak-test",
-        model="claude-3-5-haiku-latest", transport=httpx.MockTransport(handler),
+        model="claude-sonnet-5", transport=httpx.MockTransport(handler),
     )
     assert "".join(llm.chat_stream(MESSAGES)) == "Каберне подойдёт [1]"
 
@@ -173,3 +173,47 @@ def test_gigachat_missing_auth_key_raises_llm_unavailable():
     )
     with pytest.raises(LLMUnavailable):
         llm.chat(MESSAGES)
+
+
+def _spy_httpx_client(monkeypatch) -> dict:
+    captured: dict = {}
+    real_client = httpx.Client
+
+    def spy(*args, **kwargs):
+        captured.update(kwargs)
+        return real_client(*args, **{**kwargs, "verify": True})
+
+    monkeypatch.setattr("llm.drivers.gigachat.httpx.Client", spy)
+    monkeypatch.setenv("GIGACHAT_AUTH_KEY", "test-key")
+    return captured
+
+
+def test_gigachat_ca_bundle_scopes_trust_to_gigachat_client(monkeypatch):
+    """Корень Минцифры доверяется только клиенту GigaChat — через путь к PEM, а не отключением проверки."""
+    from llm.drivers.gigachat import GigaChatLLM
+
+    captured = _spy_httpx_client(monkeypatch)
+    monkeypatch.setenv("GIGACHAT_CA_BUNDLE", "/opt/somelye/certs/russian_trusted_root_ca.pem")
+    monkeypatch.delenv("GIGACHAT_VERIFY_SSL", raising=False)
+    GigaChatLLM.from_env()
+    assert captured["verify"] == "/opt/somelye/certs/russian_trusted_root_ca.pem"
+
+
+def test_gigachat_verify_ssl_false_wins_over_bundle(monkeypatch):
+    from llm.drivers.gigachat import GigaChatLLM
+
+    captured = _spy_httpx_client(monkeypatch)
+    monkeypatch.setenv("GIGACHAT_CA_BUNDLE", "/opt/somelye/certs/russian_trusted_root_ca.pem")
+    monkeypatch.setenv("GIGACHAT_VERIFY_SSL", "false")
+    GigaChatLLM.from_env()
+    assert captured["verify"] is False
+
+
+def test_gigachat_defaults_to_system_trust_without_bundle(monkeypatch):
+    from llm.drivers.gigachat import GigaChatLLM
+
+    captured = _spy_httpx_client(monkeypatch)
+    monkeypatch.delenv("GIGACHAT_CA_BUNDLE", raising=False)
+    monkeypatch.delenv("GIGACHAT_VERIFY_SSL", raising=False)
+    GigaChatLLM.from_env()
+    assert captured["verify"] is True
