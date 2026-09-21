@@ -138,4 +138,16 @@ CV_INDEX_DIR=packages/cv/data-d1 infra/ams3/sync-data.sh 89.110.72.101
 Скрипт везёт и модель base-384 (1.4 ГБ), и сырой CSV каталога для текстового индекса. В
 `somelye.env` стенда — строки `CV_MODEL`, `CV_FUSION*` из `somelye.env.example`. Чтение этикетки
 моделью на GPU-сервере включается секретами `VISION_LLM_URL` + `VISION_LLM_KEY`; без них слияние
-работает на тексте PaddleOCR (~76% top-1 на живых фото против 52% без слияния).
+работает на тексте RapidOCR (~82-90% top-1 на живых фото — см. ниже; было ~76% с PaddleOCR).
+
+## RapidOCR вместо PaddleOCR для текста слияния (agents/H2-rapidocr-multiscale.md, с 21.09)
+
+`CV_OCR_ENGINE=rapid` (`somelye.env.example`) переключает `read_query_text()` (текст
+слияния/OCR-фолбэк, когда VLM не ответила) на RapidOCR (ONNX Runtime, детектор+распознаватель
+PP-OCRv5 mobile, `CV_OCR_RAPID_SIZES=640,960` — объединение двух масштабов текстом) — на этом
+4-vCPU боксе ~0.34 с на кроп 640px против 4.0 с у PaddleOCR (не зависит от бага oneDNN выше).
+PaddleOCR при этом НЕ грузится в процесс вовсе, пока `CV_FUSION_VERIFY` не включён (=0 дефолт на
+стенде) — near-dup verify() всё ещё PaddleOCR, но он на стенде не вызывается. `deploy.sh`
+предзагружает модели RapidOCR (сеть на ams3 есть) идемпотентно ДО рестарта сервиса — первый
+боевой запрос не должен ловить холодное скачивание. `CV_FUSION_CROPS=2` (не 8 — бюджет 4 vCPU,
+см. `somelye.env.example`).

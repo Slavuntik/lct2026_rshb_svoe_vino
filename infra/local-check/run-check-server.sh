@@ -3,11 +3,17 @@
 # http://127.0.0.1:8080/v1/eval/predict. Здесь — лучшая конфигурация на Mac (Apple Silicon):
 #   CV base-384 (индекс после чистки эталонов, packages/cv/data-d1) + текст этикетки от ДВУХ
 #   моделей параллельно: локальная Qwen3-VL-4B (служба ~/ClaudeWorkspace/local-vlm, :8093) и
-#   27B на нашем GPU-сервере (шлюз). Не успела модель к дедлайну — работает вторая или PaddleOCR.
+#   27B на нашем GPU-сервере (шлюз). Не успела модель к дедлайну — работает вторая или RapidOCR
+#   (agents/H2-rapidocr-multiscale.md — фолбэк был PaddleOCR, теперь быстрее и не хуже по
+#   точности на этом же кадре).
 # Приёмка 21.09 (62 живых фото из каталога): обе модели — top-1 95.2%, медиана 5.3 с.
 #
 # Адрес и ключ шлюза — из файла вне репозитория (по умолчанию vines/vlm-lab/.env, chmod 600,
 # строки LLM_GATEWAY_URL=... и LLM_GATEWAY_KEY=...). Нет файла — только локальная модель.
+#
+# CV_OCR_ENGINE=rapid + CV_FUSION_CROPS=8 (agents/H2-rapidocr-multiscale.md): бюджет на Mac
+# заметно свободнее, чем на ams3 (4 vCPU) — 8 кропов CV + двухмасштабный RapidOCR как фолбэк
+# укладываются с запасом, точность выше (офлайн 93.5% против 90.3% у 2 кропов).
 #
 # Использование: infra/local-check/run-check-server.sh        (порт 8080)
 #                PORT=8081 TEXT_SOURCE=vlm_local infra/local-check/run-check-server.sh
@@ -28,6 +34,8 @@ exec env \
   CASE_DATA_DIR="$CASE" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false \
   LLM_PROVIDER=mock \
   CV_FUSION=1 CV_FUSION_W=0.3 CV_FUSION_TEXT_SOURCE="${TEXT_SOURCE:-vlm_both}" \
+  CV_OCR_ENGINE="${OCR_ENGINE:-rapid}" CV_OCR_RAPID_SIZES="${OCR_RAPID_SIZES:-640,960}" \
+  CV_FUSION_CROPS="${FUSION_CROPS:-8}" \
   VISION_LLM_URL="${LLM_GATEWAY_URL:-}" VISION_LLM_KEY="${LLM_GATEWAY_KEY:-}" \
   VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.5}" \
   .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "${PORT:-8080}"
