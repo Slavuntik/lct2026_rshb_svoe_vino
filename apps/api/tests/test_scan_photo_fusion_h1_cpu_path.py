@@ -112,7 +112,9 @@ def test_winery_gate_only_applies_when_resolved_source_is_ocr_not_vlm(
             )
         else:
             app.state.label_verifier = _SpyLabelVerifier(ocr_text="")  # OCR сам не читает ничего
-            monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: _OCR_TEXT)
+            # Тимлид 22.09 (расширение брифа scan-budget, п.8): подмена целится в
+            # read_label_or_raise() — см. test_scan_photo_text_source_log.py.
+            monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: _OCR_TEXT)
             _enable_fusion(
                 app, tmp_path, monkeypatch, catalog_rows=_CATALOG_ROWS,
                 cv_fusion_w=0.2, cv_fusion_text_source="vlm",

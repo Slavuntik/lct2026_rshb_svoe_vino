@@ -87,6 +87,31 @@ def test_sidecar_text_source_is_null_outside_fusion(archive_dir):
     assert meta["label_text"] is None
 
 
+def test_sidecar_carries_local_model_agreement_fields(archive_dir):
+    """Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) —
+    сравнение локального/модельного ответов слияния попадает в сайдкар архива
+    (для офлайн-анализа ml-lead), None вне CV_FUSION."""
+    archive_scan(
+        str(archive_dir), b"MOCKPHOTO:shato-vymysel-cabernet",
+        _result(local_slug="needs-ocr", model_slug="cv-favorite", answers_agree=False, chosen_answer_side="model"),
+        abs_floor=0.82, index_version="v",
+    )
+    [meta] = _sidecars(archive_dir, "confident")
+    assert meta["local_slug"] == "needs-ocr"
+    assert meta["model_slug"] == "cv-favorite"
+    assert meta["answers_agree"] is False
+    assert meta["chosen_answer_side"] == "model"
+
+
+def test_sidecar_local_model_agreement_fields_are_null_outside_fusion(archive_dir):
+    archive_scan(str(archive_dir), b"MOCKPHOTO:shato-vymysel-cabernet", _result(), abs_floor=0.82, index_version="v")
+    [meta] = _sidecars(archive_dir, "confident")
+    assert meta["local_slug"] is None
+    assert meta["model_slug"] is None
+    assert meta["answers_agree"] is None
+    assert meta["chosen_answer_side"] is None
+
+
 def test_low_score_scan_goes_to_failed_bucket(archive_client, archive_dir):
     r = _photo(archive_client, b"MOCKPHOTO:weak:shato-vymysel-cabernet")
     assert r.json()["not_in_catalog"] is True

@@ -9,6 +9,13 @@ _fusion_text_and_vectors`). Офлайн-замер (reports/ml-lead-plan.md, 62
 end-to-end тест через `/v1/scan/photo`, замыкающий проводку Settings -> service.py
 -> `cv.text_fusion.fuse()` (переиспользует обвязку test_scan_photo_fusion.py, тот
 же приём кросс-импорта, что test_scan_photo_fusion_h1_cpu_path.py).
+
+Прямые вызовы `_fusion_text_and_vectors()` ниже не передают `t0` — необязательный
+параметр (тимлид 22.09, расширение брифа scan-budget), дефолт `None` -> дедлайн
+считается от входа в функцию, старое поведение этих юнитов не меняется. Подмена
+модели теперь целится в `vision_llm.read_label_or_raise()` (`read_label()` —
+тонкая обёртка над ней, см. `app/cv/vision_llm.py`, предохранитель `_ModelBreaker`
+в `app/cv/service.py` различает через неё сбой шлюза и честный пустой ответ).
 """
 from __future__ import annotations
 
@@ -73,7 +80,7 @@ def test_no_model_answers_ocr_is_the_fallback_text_regardless_of_flag():
 
 def test_model_answered_flag_off_text_is_model_only_as_before(monkeypatch):
     """"Модель ответила + флаг выключен → как сейчас (текст = только модель)"."""
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
     settings = _settings(
         cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",
         cv_fusion_merge_model_text=False,
@@ -88,7 +95,7 @@ def test_model_answered_flag_off_text_is_model_only_as_before(monkeypatch):
 
 def test_model_answered_flag_on_text_is_model_plus_ocr_joined_by_space(monkeypatch):
     """"Модель ответила + флаг включён → текст = модель + OCR через пробел"."""
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
     settings = _settings(
         cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",
         cv_fusion_merge_model_text=True,
@@ -104,7 +111,7 @@ def test_model_answered_flag_on_text_is_model_plus_ocr_joined_by_space(monkeypat
 def test_text_source_does_not_depend_on_merge_flag(monkeypatch):
     """"text_source не зависит от флага" — один и тот же source что при
     включённом, что при выключенном флаге, для одного и того же набора ответивших моделей."""
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
     base = dict(cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid")
     _, source_off, _, _ = service_module._fusion_text_and_vectors(
         b"photo", _FakeFusionIndexForTextVectors(), _FakeVerifierForTextVectors("OCR"),
@@ -118,7 +125,7 @@ def test_text_source_does_not_depend_on_merge_flag(monkeypatch):
 
 
 def test_both_models_answered_source_is_vlm_both_with_or_without_merge(monkeypatch):
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ")
     base = dict(
         cv_fusion_text_source="vlm_both",
         vision_llm_url="http://fake-gateway.invalid", vision_llm_key="fake-key",
@@ -135,7 +142,7 @@ def test_both_models_answered_source_is_vlm_both_with_or_without_merge(monkeypat
 def test_empty_ocr_text_with_flag_on_leaves_no_trailing_space(monkeypatch):
     """OCR не прочитал ничего — при включённом флаге текст остаётся РОВНО текстом
     модели, без хвостового пробела от склейки с пустой строкой."""
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
     settings = _settings(
         cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",
         cv_fusion_merge_model_text=True,
@@ -168,7 +175,7 @@ def test_http_merge_flag_lets_ocr_promote_candidate_over_model_text_favorite(
     idx = _FusionImageIndex([_m("cv-favorite", 0.80), _m("needs-ocr", 0.79)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="Уникальная Винодельня")
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА")
 
     def _scores(*, merge: bool) -> dict[str, float]:
         _enable_fusion(

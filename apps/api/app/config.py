@@ -304,6 +304,25 @@ class Settings:
     cv_fusion_merge_model_text: bool = field(
         default_factory=lambda: _bool_env("CV_FUSION_MERGE_MODEL_TEXT", False)
     )
+    # Тимлид 22.09 (расширение брифа scan-budget, п.9, решение Вячеслава "модель и
+    # локальный путь стартуют одновременно ... ответила — выбираем лучший"): на ТЕХ ЖЕ
+    # CV-векторах `app/cv/service.py::_run_photo_scan_fusion` теперь всегда считает ДВА
+    # полных ответа слияния — "локальный" (CV + текст OCR, без модели) и "модельный"
+    # (текущая склейка, см. cv_fusion_merge_model_text выше) — и выбирает между ними по
+    # этой настройке. Оба слага/согласие/выбор пишутся во внутренние поля
+    # PhotoScanResult (не в контракт), архив и INFO-лог — для офлайн-сравнения ml-lead
+    # даже пока дефолт не меняет видимый ответ.
+    #   "merge"          — дефолт, ответ = модельный, БИТ В БИТ старое поведение
+    #                        (переключаем на другое значение только после офлайн-проверки
+    #                        ml-lead).
+    #   "max_score"       — больший итоговый (final_score) скор top-1 побеждает.
+    #   "agree_else_llm"  — слаги совпали -> тот же ответ; разошлись -> модельный.
+    #   "agree_else_cv"   — слаги совпали -> тот же ответ; разошлись -> та сторона, чей
+    #                        top-1 CV-скор (не final) выше.
+    # Неизвестное значение — честно как "merge" (см. _choose_fusion_result).
+    cv_fusion_choose: str = field(
+        default_factory=lambda: os.environ.get("CV_FUSION_CHOOSE", "merge").strip().lower()
+    )
     # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
     # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
     # попадают. TLS проверяется штатно.
@@ -356,13 +375,54 @@ class Settings:
         default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_MODEL", "mlx-community/Qwen3-VL-4B-Instruct-4bit")
     )
     vision_llm_timeout_s: float = field(
-        # общий дедлайн чтения этикетки моделями от начала запроса; 6.5 с оставляют запас до
-        # 10 с скрипта проверки на CV, слияние и карточку (приёмка 21.09: хвост шлюза до 10 с)
-        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "6.5"))
+        # Тимлид 22.09 (расширение брифа scan-budget, решение Вячеслава: "модель и
+        # локальный путь стартуют одновременно; модель не ответила за 6 с — отдаём
+        # локальный ответ"): 6.5 -> 6.0, и дедлайн — ОТ НАЧАЛА ЗАПРОСА (`t0`
+        # run_photo_scan(), тот же якорь, что CV_SCAN_BUDGET_S ниже), а не от входа
+        # в _fusion_text_and_vectors() — см. её докстринг. Раньше здесь стоял тот же
+        # комментарий "от начала запроса", но КОД считал иначе (входа в функцию) —
+        # это и была часть корня хвоста задержек (reports/devops-hack-v13.md,
+        # p50/p95/max 4.4/6.6/9.1с) — теперь комментарий и код совпадают.
+        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "6.0"))
     )
     vision_llm_image_size: int = field(
         # 1024 — замер на живых фото: 768 заметно хуже по точности при выигрыше ~0.5 с
         default_factory=lambda: int(os.environ.get("VISION_LLM_IMAGE_SIZE", "1024"))
+    )
+    vision_llm_breaker_fails: int = field(
+        # Тимлид 22.09, расширение брифа scan-budget (п.8): предохранитель НА КАЖДУЮ
+        # модель отдельно (шлюз "vlm" и локальная "vlm_local" — свой счётчик у каждой,
+        # см. app/cv/service.py::_ModelBreaker/_MODEL_BREAKERS) — столько таймаутов/
+        # сбоев ПОДРЯД открывают его: следующие сканы пропускают ЭТУ модель без
+        # ожидания дедлайна, пока не истечёт VISION_LLM_BREAKER_COOLDOWN_S.
+        default_factory=lambda: int(os.environ.get("VISION_LLM_BREAKER_FAILS", "3"))
+    )
+    vision_llm_breaker_cooldown_s: float = field(
+        # Тимлид 22.09 (п.8): пауза перед ОДНИМ пробным сканом после открытия
+        # предохранителя — успех закрывает его, неудача открывает заново на
+        # столько же секунд.
+        default_factory=lambda: float(os.environ.get("VISION_LLM_BREAKER_COOLDOWN_S", "60"))
+    )
+    cv_scan_budget_s: float = field(
+        # Задача тимлида 22.09 (страховка лимита 10с приватной проверки, reports/
+        # devops-hack-v13.md: на стенде 4 vCPU хвост p50/p95/max 4.4/6.6/9.1с — разбор
+        # тимлида: фото №1-2 сразу после рестарта (холодный путь) и фото, совпавшие с
+        # параллельными запросами чата (холодная загрузка RAG-эмбеддера на тех же
+        # ядрах; префилл длинного RAG-промпта на том же GPU-шлюзе)). Общий бюджет ОТ
+        # НАЧАЛА ОБРАБОТКИ ЗАПРОСА (`t0` в `run_photo_scan()`), НЕ от входа в
+        # отдельный шаг — для ДВУХ мест: (1) ожидание OCR в CV_FUSION-ветке
+        # (`_fusion_text_and_vectors`) — раньше `f_ocr.result()` ждала БЕЗ таймаута
+        # вовсе; (2) ожидание near-dup verify() (`_verify_with_budget`,
+        # собственный OCR-проход) — раньше НЕ ИМЕЛО таймаута вообще, ни в
+        # CV_FUSION-ветке, ни в обычном пути `run_photo_scan()` (находка тимлида
+        # 22.09 — rich-фото 41.8_22-08-2026_20-56-40.webp 14.6с на сервере против
+        # 3.4с у flat того же фото: verify() — общий шаг для flat/rich, ничем не
+        # ограниченный раньше). 7.5с — запас до внешнего лимита 10с на слияние/
+        # карточку/сериализацию ответа. `_verify_with_budget()` применяется в ОБОИХ
+        # путях (`CV_FUSION=1` и обычном) — там она заменяет прежний прямой вызов
+        # `verifier.verify()`; ожидание OCR в текстовой ветке — только при
+        # `CV_FUSION=1` (вне слияния текст читается иначе, см. `cv_text_rerank`).
+        default_factory=lambda: float(os.environ.get("CV_SCAN_BUDGET_S", "7.5"))
     )
     # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
     # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,

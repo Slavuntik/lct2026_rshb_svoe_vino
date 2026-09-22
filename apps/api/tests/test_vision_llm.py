@@ -25,8 +25,18 @@ def _jpeg(w: int = 300, h: int = 400) -> bytes:
 class _Resp:
     def __init__(self, payload: dict):
         self._data = json.dumps(payload).encode()
+        self._sent = False
 
-    def read(self):
+    def read(self, amt=None):
+        # Тимлид 22.09 (расширение брифа scan-budget, п.7): read_label_or_raise()
+        # теперь читает тело ЧАНКАМИ (`resp.read(_READ_CHUNK_BYTES)`, см.
+        # app/cv/vision_llm.py::_read_response_within_deadline) — не одним
+        # безаргументным `resp.read()`, как раньше. Настоящий `http.client.
+        # HTTPResponse.read(amt)` отдаёт данные ОДНИМ куском (тело короче amt)
+        # и `b""` на EOF при следующем вызове — воспроизводим ровно это.
+        if self._sent:
+            return b""
+        self._sent = True
         return self._data
 
     def __enter__(self):
@@ -155,7 +165,10 @@ def _fake_readers(monkeypatch, *, remote_text="", local_text="", delay_s=0.0):
             time.sleep(delay_s)
         return local_text if url.startswith("http://127.0.0.1") else remote_text
 
-    monkeypatch.setattr(vision_llm, "read_label", fake)
+    # Тимлид 22.09 (расширение брифа scan-budget, п.8): _fusion_text_and_vectors()
+    # зовёт read_label_or_raise() (различает сбой шлюза и честный пустой ответ для
+    # предохранителя _ModelBreaker), read_label() — тонкая обёртка над ней.
+    monkeypatch.setattr(vision_llm, "read_label_or_raise", fake)
     return calls
 
 

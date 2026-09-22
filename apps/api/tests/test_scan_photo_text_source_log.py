@@ -50,7 +50,11 @@ def test_rich_scan_logs_vlm_local_source_when_model_answers(client: TestClient, 
     idx = _FusionImageIndex([_m("shato-vymysel-cabernet", 0.90), _m("far-rival", 0.30)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="")
-    monkeypatch.setattr(service_module.vision_llm, "read_label", lambda *a, **kw: "ТЕКСТ МОДЕЛИ, НЕ ЛОГИРОВАТЬ")
+    # Тимлид 22.09 (расширение брифа scan-budget, п.8): _fusion_text_and_vectors()
+    # теперь зовёт read_label_or_raise() (различает сбой шлюза и честный пустой
+    # ответ для предохранителя _ModelBreaker) — read_label() лишь тонкая обёртка
+    # над ней, подмена должна целиться в реальный вызов.
+    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ, НЕ ЛОГИРОВАТЬ")
     _enable_fusion(
         app, tmp_path, monkeypatch,
         cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",

@@ -89,6 +89,14 @@ def archive_scan(
         # reports/backend-text-source.md, архитектор не спрошен.
         "text_source": result.text_source,
         "label_text": result.label_text,
+        # Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) —
+        # сравнение локального (CV+OCR) и модельного (текущая склейка) ответов
+        # слияния, посчитанных на тех же CV-векторах; None вне CV_FUSION. Для
+        # офлайн-анализа ml-lead ("Дефолт переключим после оффлайн-проверки").
+        "local_slug": result.local_slug,
+        "model_slug": result.model_slug,
+        "answers_agree": result.answers_agree,
+        "chosen_answer_side": result.chosen_answer_side,
         "not_in_catalog": result.not_in_catalog,
         "matches": result.matches[:5],
         "timing_ms": result.timing_ms,

@@ -77,6 +77,8 @@ score/gap/view (не blended-скор: пороги гейта CV_ABS_FLOOR/CV_M
 """
 from __future__ import annotations
 
+import logging
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -90,6 +92,8 @@ from ..rag.cards import build_wine_card
 from ..rag.interface import Retriever
 from . import case_catalog, vision_llm
 from .interface import ImageIndex, LabelVerifier, Match, VerifyCandidate
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -110,6 +114,16 @@ class PhotoScanResult:
     # и отладки; в HTTP-ответ не выводятся (контракт не меняется).
     text_source: str | None = None
     label_text: str | None = None
+    # Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) — служебное
+    # сравнение "локального" (CV+OCR, без модели) и "модельного" (текущая склейка)
+    # ответов слияния, посчитанных на ОДНИХ И ТЕХ ЖЕ CV-векторах. НЕ в контракте
+    # (routers/scan.py не читает эти поля в HTTP-ответ) — только архив/лог/офлайн-
+    # анализ ml-lead. Все четыре None вне CV_FUSION (обычный путь run_photo_scan()
+    # их не трогает — дефолты дataclass).
+    local_slug: str | None = None  # top-1 локального (CV+OCR) слияния
+    model_slug: str | None = None  # top-1 модельного (текущая склейка) слияния
+    answers_agree: bool | None = None  # local_slug == model_slug (None — если какой-то из них None)
+    chosen_answer_side: str | None = None  # "local" | "model" — какой ответ реально ушёл наружу
 
 
 def _dedupe_preserve_order(slugs: Iterable[str]) -> list[str]:
@@ -455,60 +469,210 @@ def _fusion_family_by_slug(families_json: str):
     return cv_families.load_family_by_slug(Path(families_json))
 
 
-# Потоки для чтения этикетки параллельно с CV-эмбеддингами (VLM — сетевой запрос,
-# PaddleOCR — CPU): общий пул на процесс, не на запрос.
-_FUSION_TEXT_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-text")
+# Тимлид 22.09 (расширение брифа scan-budget, п.7): ДВА РАЗНЫХ пула — OCR (CPU-
+# работа: read_query_text()/verify()) и модели (сетевые запросы к VLM-шлюзу/
+# локальному серверу). Раньше был один общий `_FUSION_TEXT_POOL` — зависший
+# запрос к шлюзу (см. `_read_response_within_deadline` в vision_llm.py:
+# "медленная выдача" не ловится сокет-таймаутом) мог занять поток, которого
+# ждёт read_query_text() СЛЕДУЮЩЕГО запроса (тот же процесс, тот же пул) —
+# теперь это два независимых ресурса, сетевой затор не крадёт поток у CPU-OCR.
+_FUSION_OCR_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-ocr")
+_FUSION_MODEL_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-model")
+
+
+class _ModelBreaker:
+    """Предохранитель на ОДНУ модель ("vlm" или "vlm_local" — см. `_MODEL_BREAKERS`
+    ниже, свой экземпляр на каждую) — тимлид 22.09, расширение брифа scan-budget
+    (п.8, решение Вячеслава: "любые сбои пользователь не замечает ни ошибкой, ни
+    задержкой"). `VISION_LLM_BREAKER_FAILS` сбоев/таймаутов ПОДРЯД -> открыт на
+    `VISION_LLM_BREAKER_COOLDOWN_S` секунд: `allow()` возвращает False, скан этой
+    модели вообще не пробует (не тратит поток `_FUSION_MODEL_POOL`, не ждёт
+    дедлайн) — сразу идёт локальным путём. Пауза истекла -> РОВНО один пробный
+    скан (см. `allow()`): успех (`record_success`) закрывает предохранитель,
+    неудача (`record_failure`) открывает заново на новый cooldown.
+
+    "Ровно один" пробный скан под конкуренцией: первый вызов `allow()` ПОСЛЕ
+    истечения паузы сам, атомарно под локом, ОТОДВИГАЕТ `_opened_until` вперёд
+    (как если бы уже переоткрылся) — конкурентные вызовы в ту же миллисекунду
+    видят предохранитель всё ещё "открытым" и не лезут пробовать модель тоже;
+    исход пробного скана подтверждает (закрывает) или обновляет (переоткрывает)
+    это временное состояние. Потокобезопасен (свой `Lock` — сканы разных
+    запросов работают из разных потоков `_FUSION_MODEL_POOL`)."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._consecutive_failures = 0
+        self._opened_until: float | None = None
+
+    def allow(self, *, cooldown_s: float) -> bool:
+        with self._lock:
+            if self._opened_until is None:
+                return True
+            now = time.monotonic()
+            if now < self._opened_until:
+                return False
+            self._opened_until = now + cooldown_s  # пробный скан — см. докстринг класса
+            return True
+
+    def record_success(self, *, name: str) -> None:
+        with self._lock:
+            was_tripped = self._consecutive_failures > 0 or self._opened_until is not None
+            self._consecutive_failures = 0
+            self._opened_until = None
+        if was_tripped:
+            logger.info("cv_fusion: предохранитель модели %s закрыт — успешный ответ", name)
+
+    def record_failure(self, *, name: str, fails_threshold: int, cooldown_s: float) -> None:
+        with self._lock:
+            self._consecutive_failures += 1
+            trip = self._consecutive_failures >= fails_threshold
+            failures = self._consecutive_failures
+            if trip:
+                self._opened_until = time.monotonic() + cooldown_s
+        if trip:
+            logger.warning(
+                "cv_fusion: предохранитель модели %s открыт на %.0fс после %d сбоев/таймаутов подряд",
+                name, cooldown_s, failures,
+            )
+
+
+_MODEL_BREAKERS: dict[str, _ModelBreaker] = {"vlm": _ModelBreaker(), "vlm_local": _ModelBreaker()}
+
+
+def _reset_model_breakers() -> None:
+    """Только для тестов — предохранители держат состояние НА ПРОЦЕСС (модульный
+    словарь), между тестами его нужно явно сбрасывать (тот же приём, что
+    `_fusion_text_index.cache_clear()` и соседи в tests/test_scan_photo_fusion.py)."""
+    for breaker in _MODEL_BREAKERS.values():
+        with breaker._lock:
+            breaker._consecutive_failures = 0
+            breaker._opened_until = None
+
+
+def _verify_with_budget(
+    verifier: LabelVerifier, image_bytes: bytes, candidates: list[VerifyCandidate],
+    ocr_text: str | None, deadline: float,
+) -> str | None:
+    """Near-dup `verify()` — СВОЙ OCR-проход (`packages/cv/cv/verify.py`), раньше БЕЗ
+    какого-либо таймаута вовсе — тимлид 22.09, находка при расширении брифа
+    scan-budget: rich-фото `41.8_22-08-2026_20-56-40.webp` заняло 14.6с на сервере
+    против 3.4с у flat того же фото; `verify()` — общий шаг ДЛЯ ОБОИХ режимов
+    ответа (flat и rich зовут один и тот же `run_photo_scan()`), ничем не
+    ограниченный раньше — реальный кандидат в объяснение разрыва (наравне с
+    совпадением по времени с параллельным запросом чата, см. отчёт).
+
+    Отправляется в `_FUSION_OCR_POOL` (тот же ресурс, что `read_query_text()` —
+    тоже CPU-OCR, не сеть — см. `_fusion_text_and_vectors`) и ждётся не дольше
+    остатка `deadline` — ТОГО ЖЕ бюджета (`t0 + CV_SCAN_BUDGET_S`), что и OCR
+    текстовой ветки: "весь запрос", не отдельный шаг со своим бюджетом. Не
+    успел/бросил исключение -> `None`, WARNING без содержимого (ни фото, ни
+    текста, ни кандидатов) — вызывающий код остаётся на top-1 ANN/слияния БЕЗ
+    OCR-верификации (контракт уже предусматривает `None` как честный исход
+    "не смог разлить", см. докстринг `LabelVerifier.verify()`). Поток НЕ
+    отменяется (Python не умеет прервать блокирующий вызов в чужом потоке) —
+    доработает в фоне пула, тот же риск/компромисс, что у OCR текстовой ветки
+    (см. reports/ml-eng-scan-budget.md, оценка "съедает ли ядра")."""
+    fut = _FUSION_OCR_POOL.submit(verifier.verify, image_bytes, candidates, ocr_text=ocr_text)
+    try:
+        return fut.result(timeout=max(0.0, deadline - time.monotonic()))
+    except Exception:  # noqa: BLE001 — не успел к бюджету/сбой потока: честно "не смог разлить"
+        logger.warning("cv_fusion: near-dup verify() не уложился в бюджет — кандидат остаётся без OCR-верификации")
+        return None
 
 
 def _fusion_text_and_vectors(
     image_bytes: bytes, image_index: ImageIndex, verifier: LabelVerifier, settings: Settings,
+    t0: float | None = None,
 ) -> tuple[str, str, str, tuple[list[float], list[float]]]:
     """(текст для слияния, источник, текст OCR, CV-векторы) — всё параллельно.
 
-    PaddleOCR читается всегда (фолбэк и вход near-dup верификатора). Модели — по
+    PaddleOCR/RapidOCR читается всегда (фолбэк и вход near-dup верификатора). Модели — по
     `CV_FUSION_TEXT_SOURCE`: "vlm" — GPU-сервер (шлюз), "vlm_local" — локальная MLX-модель,
     "vlm_both" — обе, их тексты склеиваются (замер: обе вместе 96.8% против 95.2% у каждой).
-    CV-эмбеддинги считаются в этом же потоке, пока текст читается. Модель не ответила к
-    общему дедлайну `VISION_LLM_TIMEOUT_S` от начала чтения, ошиблась или вернула пустые
-    поля — её вклад пропускается; не ответила ни одна — слияние идёт на тексте OCR.
-    Источник в ответе: "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr".
+    CV-эмбеддинги считаются в этом же потоке, пока текст читается. Источник в ответе:
+    "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr".
+
+    Тимлид 22.09 (страховка лимита 10с приватной проверки, reports/devops-hack-v13.md:
+    хвост p50/p95/max 4.4/6.6/9.1с на стенде 4 vCPU) + расширение (решение Вячеслава:
+    "модель и локальный путь стартуют одновременно; модель не ответила за 6 с — отдаём
+    локальный ответ; ответила — выбираем лучший; любые сбои пользователь не замечает ни
+    ошибкой, ни задержкой"):
+
+    - `CV_SCAN_BUDGET_S` (`settings.cv_scan_budget_s`) — бюджет ожидания OCR, ОТ НАЧАЛА
+      ОБРАБОТКИ ЗАПРОСА (`t0`, передан вызывающим `run_photo_scan()`), НЕ от входа в эту
+      функцию (раньше `ocr_text = f_ocr.result()` ждала БЕЗ таймаута вовсе — реальный
+      риск зависания сверх лимита 10с под конкуренцией за CPU). `t0=None` (юниты, зовущие
+      эту функцию напрямую) — старое поведение, дедлайн от входа в функцию.
+    - `VISION_LLM_TIMEOUT_S` (`settings.vision_llm_timeout_s`, дефолт 6.0) — дедлайн
+      КАЖДОЙ модели, ТОЖЕ от `t0` (раньше считался от входа в функцию — терял время,
+      уже потраченное на шаги ДО текстовой ветки).
+    - Свой предохранитель НА КАЖДУЮ модель (`_MODEL_BREAKERS`, см. `_ModelBreaker`) —
+      `VISION_LLM_BREAKER_FAILS` сбоев/таймаутов подряд открывают его на
+      `VISION_LLM_BREAKER_COOLDOWN_S`: следующие сканы пропускают ЭТУ модель БЕЗ отправки
+      запроса вовсе (не тратят дедлайн, не занимают поток `_FUSION_MODEL_POOL`).
+    - OCR и модели читаются РАЗНЫМИ пулами (`_FUSION_OCR_POOL`/`_FUSION_MODEL_POOL`) —
+      зависший запрос к шлюзу не крадёт поток у CPU-OCR следующего скана.
+    - Любое исключение/таймаут ЛЮБОГО источника — WARNING без содержимого фото/текста,
+      наружу ничего не бросается: не успел OCR -> текст модели, если она ответила,
+      иначе только CV (`label_text=""`); не ответила ни одна модель -> текст OCR (как
+      раньше). Поток, который мы перестали ждать, НЕ отменяется (Python не умеет
+      прервать блокирующий вызов в чужом потоке) — продолжает работать в фоне пула,
+      см. `reports/ml-eng-scan-budget.md` про оценку риска "съедает ли ядра следующего
+      запроса" и предложенную меру.
 
     agents/ML-1-*.md (задача 1): `settings.cv_fusion_merge_model_text` (дефолт
     выключен) — когда включён И хотя бы одна модель ответила, OCR ДОБАВЛЯЕТСЯ к
     тексту модели(ей) через пробел, а не служит только фолбэком на случай "не
-    ответила НИ ОДНА модель" (та ветка ниже не меняется). Замер offline на 62
-    живых фото: "vlm"+OCR 96.8% против 95.2% у одной "vlm" (reports/ml-lead-plan.md,
-    тот же потолок, что "vlm"+"gwf1024" вдвоём без OCR). Флаг не влияет на
-    `source` (по-прежнему только "какая модель ответила") и не влияет на
-    `ocr_text` — третий элемент кортежа, отдельное поле, которое видит
-    near-dup verify()."""
+    ответила НИ ОДНА модель" (та ветка ниже не меняется). Флаг не влияет на
+    `source` и не влияет на `ocr_text` — третий элемент кортежа, отдельное поле,
+    которое видит near-dup verify()."""
     mode = settings.cv_fusion_text_source
-    # Общий дедлайн от начала чтения, а не таймаут на каждую модель: скрипт проверки режет
-    # запрос на 10 с, а у шлюза длинный хвост (p95 ~9.8 с на приёмке 21.09) — кто не
-    # успел к дедлайну, просто не участвует (в vlm_both локальная 4B отвечает за ~3 с).
-    deadline = time.monotonic() + settings.vision_llm_timeout_s
+    effective_t0 = time.monotonic() if t0 is None else t0
+    scan_deadline = effective_t0 + settings.cv_scan_budget_s
+    model_deadline = effective_t0 + settings.vision_llm_timeout_s
+    fails_threshold = settings.vision_llm_breaker_fails
+    cooldown_s = settings.vision_llm_breaker_cooldown_s
+
     readers: dict[str, object] = {}
-    if mode in ("vlm", "vlm_both") and settings.vision_llm_url and settings.vision_llm_key:
-        readers["vlm"] = _FUSION_TEXT_POOL.submit(
-            vision_llm.read_label, image_bytes,
+    if (
+        mode in ("vlm", "vlm_both") and settings.vision_llm_url and settings.vision_llm_key
+        and _MODEL_BREAKERS["vlm"].allow(cooldown_s=cooldown_s)
+    ):
+        readers["vlm"] = _FUSION_MODEL_POOL.submit(
+            vision_llm.read_label_or_raise, image_bytes,
             url=settings.vision_llm_url, key=settings.vision_llm_key, model=settings.vision_llm_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
-    if mode in ("vlm_local", "vlm_both") and settings.vision_llm_local_url:
-        readers["vlm_local"] = _FUSION_TEXT_POOL.submit(
-            vision_llm.read_label, image_bytes,
+    if (
+        mode in ("vlm_local", "vlm_both") and settings.vision_llm_local_url
+        and _MODEL_BREAKERS["vlm_local"].allow(cooldown_s=cooldown_s)
+    ):
+        readers["vlm_local"] = _FUSION_MODEL_POOL.submit(
+            vision_llm.read_label_or_raise, image_bytes,
             url=settings.vision_llm_local_url, key=None, model=settings.vision_llm_local_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
-    f_ocr = _FUSION_TEXT_POOL.submit(verifier.read_query_text, image_bytes)
+    f_ocr = _FUSION_OCR_POOL.submit(verifier.read_query_text, image_bytes)
     vectors = image_index.embed_fusion_query(image_bytes)  # ValueError на битых байтах — как раньше
-    ocr_text = f_ocr.result()
+    try:
+        ocr_text = f_ocr.result(timeout=max(0.0, scan_deadline - time.monotonic()))
+    except Exception:  # noqa: BLE001 — не успел к бюджету/сбой потока: сливаем без OCR
+        logger.warning(
+            "cv_fusion: OCR не уложился в CV_SCAN_BUDGET_S=%.1fс (с начала запроса прошло %.2fс) "
+            "— ответ без OCR-текста",
+            settings.cv_scan_budget_s, time.monotonic() - effective_t0,
+        )
+        ocr_text = ""
+
     got: dict[str, str] = {}
     for name, fut in readers.items():
         try:
-            text = fut.result(timeout=max(0.0, deadline - time.monotonic()))
-        except Exception:  # noqa: BLE001 — не успела к дедлайну/сбой потока: без вклада этой модели
+            text = fut.result(timeout=max(0.0, model_deadline - time.monotonic()))
+        except Exception:  # noqa: BLE001 — не успела к дедлайну/сбой потока/HTTP-ошибка шлюза
+            _MODEL_BREAKERS[name].record_failure(name=name, fails_threshold=fails_threshold, cooldown_s=cooldown_s)
             text = ""
+        else:
+            _MODEL_BREAKERS[name].record_success(name=name)  # пустой, но ЧЕСТНЫЙ ответ — не сбой
         if text.strip():
             got[name] = text
     if not got:
@@ -517,6 +681,36 @@ def _fusion_text_and_vectors(
     model_text = " ".join(got[k] for k in ("vlm", "vlm_local") if k in got)
     label_text = f"{model_text} {ocr_text}".strip() if settings.cv_fusion_merge_model_text else model_text
     return label_text, source, ocr_text, vectors
+
+
+def _choose_fusion_result(model_result, local_result, mode: str) -> tuple[object, str]:
+    """(результат, "model"|"local") — тимлид 22.09, расширение брифа scan-budget
+    (п.9, `CV_FUSION_CHOOSE`, решение Вячеслава: "модель и локальный путь стартуют
+    одновременно ... ответила — выбираем лучший"). `model_result`/`local_result` —
+    `cv.text_fusion.FusionResult`, посчитанные `_run_photo_scan_fusion()` на ОДНИХ
+    И ТЕХ ЖЕ CV-векторах/кандидатной вселенной, разным текстом (модельный/склеенный
+    против чистого OCR) — см. её докстринг.
+
+    `mode="merge"` (дефолт) — ответ БИТ В БИТ как раньше (`model_result`),
+    НЕЗАВИСИМО от `local_result` (тот всё равно посчитан вызывающим кодом — для
+    сравнения в архиве/логе/офлайн-анализа ml-lead, просто не влияет на выбор, пока
+    дефолт не переключён). Пустой `ranked` с одной из сторон (кандидатная
+    вселенная `fuse()` не может быть пустой, пока `cv_scores` непуст — вызывающий
+    код это уже проверил до вызова, но защита остаётся на случай будущих
+    изменений) — эта сторона просто проигрывает."""
+    if mode == "merge" or not local_result.ranked:
+        return model_result, "model"
+    if not model_result.ranked:
+        return local_result, "local"
+    if mode == "max_score":
+        if local_result.ranked[0].final_score > model_result.ranked[0].final_score:
+            return local_result, "local"
+        return model_result, "model"
+    if local_result.ranked[0].slug == model_result.ranked[0].slug:
+        return model_result, "model"  # согласны — форма ответа от модельной стороны, слаг тот же
+    if mode == "agree_else_cv" and local_result.ranked[0].cv_score > model_result.ranked[0].cv_score:
+        return local_result, "local"
+    return model_result, "model"  # agree_else_llm (расхождение) И неизвестный mode — честный фолбэк
 
 
 def _run_photo_scan_fusion(
@@ -543,19 +737,31 @@ def _run_photo_scan_fusion(
     """
     cv_families, text_fusion, tr = _import_cv_fusion_deps()
 
-    label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(image_bytes, image_index, verifier, settings)
+    label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(
+        image_bytes, image_index, verifier, settings, t0,
+    )
     text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
     winery_index = _fusion_winery_index(
         str(tr.default_catalog_csv_path()), str(text_fusion.default_winery_aliases_path()),
     )
     family_by_slug = _fusion_family_by_slug(str(cv_families.default_families_path()))
 
-    text_top = text_fusion.text_top_slugs_for_ocr(text_index, label_text, text_fusion.DEFAULT_TEXT_TOP_N)
+    # Тимлид 22.09 (расширение брифа scan-budget, п.9): кандидатная вселенная —
+    # ОБЪЕДИНЕНИЕ текстовых extra_slugs ОБОИХ текстов (модельного/склеенного
+    # `label_text` И чистого `ocr_text`), не только модельного, как раньше — иначе
+    # "локальный" ответ ниже (fuse() с ocr_text) мог бы не видеть кандидата,
+    # которого нашёл ТОЛЬКО OCR-текст (search_fusion() уже вызывается один раз,
+    # на "тех же векторах", а не дважды — решение Вячеслава).
+    text_top_model = text_fusion.text_top_slugs_for_ocr(text_index, label_text, text_fusion.DEFAULT_TEXT_TOP_N)
+    text_top_local = (
+        text_fusion.text_top_slugs_for_ocr(text_index, ocr_text, text_fusion.DEFAULT_TEXT_TOP_N) if ocr_text else []
+    )
+    extra_slugs = _dedupe_preserve_order([*text_top_model, *text_top_local])
     # v0.4.13 (brief G7 п.2): CV-скор — max(нормализованный кроп, весь кадр),
     # кандидаты — CV top-K ∪ текстовые extra_slugs (точным фильтрованным
     # запросом Qdrant, не ANN-топ — см. `ImageIndex.search_fusion()`).
     fusion_matches = image_index.search_fusion(
-        None, top_k=text_fusion.DEFAULT_ANN_TOP_K, extra_slugs=text_top, vectors=vectors,
+        None, top_k=text_fusion.DEFAULT_ANN_TOP_K, extra_slugs=extra_slugs, vectors=vectors,
     )
 
     if not fusion_matches:
@@ -569,25 +775,49 @@ def _run_photo_scan_fusion(
             matches=[], candidates=[],
         )
 
-    # agents/H1-cpu-path.md: гейт «не подтверждена винодельня» — ТОЛЬКО для источника
-    # "ocr" (самый шумный из трёх; offline 87.1% -> 88.7% top-1), НЕ для vlm*-источников
-    # (там тот же гейт вреден на offline-прогоне, 95.2% -> 93.5% — см. cv/text_fusion.py
-    # докстринг и app/config.py::cv_fusion_ocr_unconfirmed_w). `text_source` — уже
-    # РАЗРЕШЁННЫЙ источник (после фолбэка vlm*->ocr в `_fusion_text_and_vectors` выше),
-    # не сырой `settings.cv_fusion_text_source` — если VLM не ответила и слияние в
-    # итоге идёт на тексте OCR, гейт применяется тоже (важно качество текста, который
-    # РЕАЛЬНО участвует в этом запросе, не то, что было настроено).
-    unconfirmed_winery_w = (
-        settings.cv_fusion_ocr_unconfirmed_w if text_source == "ocr" else settings.cv_fusion_unconfirmed_winery_w
-    )
     cv_scores = {m.slug: m.score for m in fusion_matches}
-    result = text_fusion.fuse(
-        cv_scores, text_index, label_text, family_by_slug=family_by_slug,
-        w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
-        winery_index=winery_index, unconfirmed_winery_w=unconfirmed_winery_w,
-        colors=_fusion_colors(str(tr.default_catalog_csv_path())), color_penalty=settings.cv_fusion_color_penalty,
+    colors = _fusion_colors(str(tr.default_catalog_csv_path()))
+
+    def _fuse_with_text(text: str, text_src: str):
+        # agents/H1-cpu-path.md: гейт «не подтверждена винодельня» — ТОЛЬКО для
+        # источника "ocr" (самый шумный из трёх; offline 87.1% -> 88.7% top-1), НЕ
+        # для vlm*-источников (там тот же гейт вреден на offline-прогоне, 95.2% ->
+        # 93.5% — см. cv/text_fusion.py докстринг и app/config.py::
+        # cv_fusion_ocr_unconfirmed_w).
+        unconfirmed_w = (
+            settings.cv_fusion_ocr_unconfirmed_w if text_src == "ocr" else settings.cv_fusion_unconfirmed_winery_w
+        )
+        return text_fusion.fuse(
+            cv_scores, text_index, text, family_by_slug=family_by_slug,
+            w=settings.cv_fusion_w, gap_floor=settings.cv_fusion_gap_floor, cv_floor=settings.cv_fusion_cv_floor,
+            winery_index=winery_index, unconfirmed_winery_w=unconfirmed_w,
+            colors=colors, color_penalty=settings.cv_fusion_color_penalty,
+        )
+
+    # Тимлид 22.09 (расширение брифа scan-budget, п.9, решение Вячеслава: "модель и
+    # локальный путь стартуют одновременно ... ответила — выбираем лучший"): ДВА
+    # полных ответа слияния на ОДНИХ И ТЕХ ЖЕ CV-векторах/кандидатной вселенной —
+    # `model_result` (`text_source` — уже РАЗРЕШЁННЫЙ источник, после фолбэка
+    # vlm*->ocr в `_fusion_text_and_vectors` выше, не сырой
+    # `settings.cv_fusion_text_source`: гейт винодельни должен видеть текст, который
+    # РЕАЛЬНО участвует в этом запросе) и `local_result` (ВСЕГДА "ocr" — чистый
+    # OCR, без модели, независимо от того, что решил `CV_FUSION_TEXT_SOURCE`).
+    # Считаются ОБА всегда (не только когда CV_FUSION_CHOOSE!="merge") — офлайн-
+    # сравнение ml-lead нужно собирать уже сейчас, пока дефолт "merge" не меняет
+    # видимый ответ ни на бит.
+    model_result = _fuse_with_text(label_text, text_source)
+    local_result = _fuse_with_text(ocr_text, "ocr")
+    local_slug = local_result.ranked[0].slug if local_result.ranked else None
+    model_slug = model_result.ranked[0].slug if model_result.ranked else None
+    answers_agree = (local_slug == model_slug) if (local_slug is not None and model_slug is not None) else None
+
+    chosen_result, chosen_side = _choose_fusion_result(model_result, local_result, settings.cv_fusion_choose)
+    logger.info(
+        "cv_fusion: local=%s model=%s agree=%s choose=%s chosen=%s",
+        local_slug, model_slug, answers_agree, settings.cv_fusion_choose, chosen_side,
     )
-    ranked_top = result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
+
+    ranked_top = chosen_result.ranked[:top_k]  # v0.4.3/v0.4.11: matches/candidates — top-5, score=final
 
     chosen_slug = ranked_top[0].slug
     ocr_verified = False
@@ -599,23 +829,28 @@ def _run_photo_scan_fusion(
     # слияния (v0.4.8: близость СЫРОГО CV-скора, cv_verify_proximity, cap
     # top-5) — near-dup различение принципиально CV-визуальный феномен (одна
     # этикетка, разный год/категория), поэтому близость мерится по `cv_score`
-    # компоненте fused-кандидатов, не по blended `final_score`.
+    # компоненте fused-кандидатов, не по blended `final_score`. Тимлид 22.09
+    # (находка при расширении брифа scan-budget): verify() теперь идёт через
+    # `_verify_with_budget()` — свой OCR-проход раньше не имел таймаута ВООБЩЕ
+    # (см. её докстринг), дедлайн — ОСТАТОК того же `CV_SCAN_BUDGET_S`, что и у
+    # OCR текстовой ветки (весь запрос, не отдельный шаг).
     if settings.cv_fusion_verify:
         top1_cv = ranked_top[0].cv_score
         candidate_slugs = _dedupe_preserve_order(
             c.slug for c in ranked_top if (top1_cv - c.cv_score) <= settings.cv_verify_proximity
         )[:5]
         if len(candidate_slugs) > 1:
-            verified = verifier.verify(
-                image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text=ocr_text,
+            verified = _verify_with_budget(
+                verifier, image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text,
+                t0 + settings.cv_scan_budget_s,
             )
             if verified is not None and verified in candidate_slugs:
                 chosen_slug = verified
                 ocr_verified = True
 
     best_guess_slug = chosen_slug
-    # `result.confident` (cv.text_fusion.fuse()) — ЧИСТЫЙ гейт слияния (brief G7:
-    # gap(final)>=CV_FUSION_GAP_FLOOR, или доминирование, И cv_score(top1)>=
+    # `chosen_result.confident` (cv.text_fusion.fuse()) — ЧИСТЫЙ гейт слияния (brief
+    # G7: gap(final)>=CV_FUSION_GAP_FLOOR, или доминирование, И cv_score(top1)>=
     # CV_FUSION_CV_FLOOR) — `fuse()` считается ДО verify() и ничего не знает про
     # OCR-верификацию near-dup. Финальное решение здесь ДОБАВЛЯЕТ тот же обход,
     # что и путь без слияния (v0.4.5, комментарий ниже в non-fusion ветке этого
@@ -626,7 +861,7 @@ def _run_photo_scan_fusion(
     # без этого обхода successfully-verified near-dup ответы всегда проваливали бы
     # gap_floor и уходили в not_in_catalog, обесценивая сам смысл верификатора.
     confident = ranked_top[0].cv_score >= settings.cv_fusion_cv_floor and (
-        ocr_verified or result.gap is None or result.gap >= settings.cv_fusion_gap_floor
+        ocr_verified or chosen_result.gap is None or chosen_result.gap >= settings.cv_fusion_gap_floor
     )
 
     card = build_wine_card(retriever, chosen_slug) if confident else None
@@ -642,7 +877,7 @@ def _run_photo_scan_fusion(
         slug=chosen_slug if confident else None,
         card=card,
         top1_score=ranked_top[0].cv_score,  # brief G7 п.3: CV-скор top-1, НЕ final
-        gap=result.gap,
+        gap=chosen_result.gap,
         ocr_verified=ocr_verified,
         not_in_catalog=not confident,
         timing_ms=int((time.monotonic() - t0) * 1000),
@@ -650,8 +885,16 @@ def _run_photo_scan_fusion(
         analogs=analogs,
         matches=[{"slug": c.slug, "score": c.final_score} for c in ranked_top],
         candidates=candidates,
-        text_source=text_source,
-        label_text=label_text,
+        # Тимлид 22.09 (п.9): text_source/label_text отражают ту сторону, что РЕАЛЬНО
+        # выбрана (chosen_side) — "merge" (дефолт) всегда "model", поэтому здесь
+        # БИТ В БИТ старое поведение; при "local" — честно "ocr"/ocr_text, а не
+        # модельные значения, которые на самом деле не повлияли на ответ.
+        text_source=text_source if chosen_side == "model" else "ocr",
+        label_text=label_text if chosen_side == "model" else ocr_text,
+        local_slug=local_slug,
+        model_slug=model_slug,
+        answers_agree=answers_agree,
+        chosen_answer_side=chosen_side,
     )
 
 
@@ -828,8 +1071,13 @@ def run_photo_scan(
         # голые slug'и — см. _verify_candidates(). v0.4.12: ocr_text=None,
         # если text_rerank выключен (дефолт) -> verify() читает OCR сам,
         # ровно как раньше; иначе — переиспользует уже прочитанный текст.
-        verified = verifier.verify(
-            image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text=ocr_text,
+        # Тимлид 22.09 (находка при расширении брифа scan-budget: verify() —
+        # общий шаг ДЛЯ ОБОИХ режимов ответа, flat/rich, раньше без таймаута
+        # вовсе ни здесь, ни в CV_FUSION-ветке) — тот же `_verify_with_budget()`,
+        # тот же бюджет `CV_SCAN_BUDGET_S` от t0, что и в `_run_photo_scan_fusion`.
+        verified = _verify_with_budget(
+            verifier, image_bytes, _verify_candidates(retriever, candidate_slugs), ocr_text,
+            t0 + settings.cv_scan_budget_s,
         )
         if verified is not None and verified in candidate_slugs:
             chosen_slug = verified
