@@ -139,6 +139,51 @@ describe("ChatScreen — SSE-парсер и честные отказы", () =>
     expect(refusal.textContent).toMatch(/не нашли достаточно надёжных источников/i);
   });
 
+  /**
+   * Приоритет 4 (qa-manual-hack-v16.md §4.3, задача тимлида 23.09): на вопрос без данных о
+   * конкретном вине честный отказ сопровождался 8 нерелевантными цитатами — путает жюри.
+   * Эмулируем худший случай для клиента: сервер успевает прислать citation-события ДО
+   * refusal-события на тот же ответ (порядок событий — на усмотрение сервера, контракт его
+   * не фиксирует). Цитаты не должны просочиться в отказ ни при каком порядке доставки.
+   */
+  it("честный отказ (refusal) не показывает цитаты, даже если сервер прислал их до refusal-события (qa-manual §4.3, регресс)", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockImplementation(async (_payload, onEvent) => {
+      const events: ChatStreamEvent[] = [
+        {
+          type: "citation",
+          n: 1,
+          chunk_id: "article-unrelated-1",
+          url: "https://vino-svoe.ru/articles/unrelated-1",
+          quote: "Цитата не по теме вопроса",
+        },
+        {
+          type: "citation",
+          n: 2,
+          chunk_id: "article-unrelated-2",
+          url: "https://vino-svoe.ru/articles/unrelated-2",
+          quote: "Ещё одна цитата не по теме",
+        },
+        { type: "refusal", reason: "no_results" },
+      ];
+      for (const event of events) onEvent(event);
+    });
+
+    try {
+      renderChat();
+      sendMessage("расскажи про вино Союз-Вино");
+
+      const refusal = await screen.findByTestId("chat-refusal");
+      expect(refusal.textContent).toMatch(/не нашли достаточно надёжных источников/i);
+      // Ни цитатных бейджей [n], ни блока «Источники» — честный отказ без "доказательств".
+      expect(screen.queryByRole("button", { name: /^\[\d+\]/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /^\[\d+\]/ })).not.toBeInTheDocument();
+      expect(screen.queryByTestId("chat-sources-block")).not.toBeInTheDocument();
+      expect(screen.queryByText("Источники")).not.toBeInTheDocument();
+    } finally {
+      chatSpy.mockRestore();
+    }
+  });
+
   it("режим «аналог импортного»: POST /analogs вместо /chat, результат кликабелен", async () => {
     renderChat();
 

@@ -79,6 +79,25 @@ describe("LandingPage — 18+ интерстициал перед гостевы
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByText("APP_PROBE")).toBeInTheDocument());
   });
+
+  /**
+   * Задача тимлида 23.09 (qa-manual-hack-v16.md §1): на живом стенде подтверждение возраста
+   * показалось отсутствующим — одного клика по CTA хватало, чтобы localStorage уже нёс
+   * landing_age_ack=1. Живая проверка на ЭТОЙ сессии (чистый localStorage, apps/web dev-сборка)
+   * не воспроизвела дефект: интерстициал открывается корректно, ack остаётся не выставлен до
+   * явного ответа. Разбор среды qa-manual: "браузер этой сессии за день мог использовать другой
+   * агент/роль... 100% чистый профиль не проверял" — согласуется с тем, что найдено здесь.
+   * Тест ниже фиксирует ИМЕННО тот сценарий регрессии: один клик по CTA САМ ПО СЕБЕ не должен
+   * выставлять ack, пока пользователь не ответил на вопрос модалки.
+   */
+  it("один клик по CTA не подтверждает возраст сам по себе — ack ставится только явным ответом (qa-manual §1, регресс)", () => {
+    renderLanding();
+    fireEvent.click(screen.getByRole("button", { name: /попробовать в браузере/i }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(storage.hasSeenLandingAgeGate()).toBe(false);
+    expect(screen.queryByText("APP_PROBE")).not.toBeInTheDocument();
+  });
 });
 
 describe("LandingPage — SEO-минимум", () => {

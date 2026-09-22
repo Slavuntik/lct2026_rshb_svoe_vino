@@ -54,7 +54,9 @@ describe("WineCardScreen", () => {
       renderCard("tihaya-buhta-chardonnay-reserve-2023");
       await screen.findByText("Шардоне Резерв");
 
-      fireEvent.click(screen.getByRole("button", { name: "severny-sklon-riesling-poluslad-2023" }));
+      // Первая позиция в фикстуре similar (mocks/fixtures/wines.ts) — severny-sklon-riesling-
+      // poluslad-2023; кнопка подписана честной порядковой подписью, не слагом (см. тест ниже).
+      fireEvent.click(screen.getByRole("button", { name: "Похожее вино 1" }));
 
       await waitFor(() => expect(screen.getByText("Рислинг Полусладкий")).toBeInTheDocument());
       const viewed = events.filter((e) => e.name === "wine_card_viewed");
@@ -65,6 +67,26 @@ describe("WineCardScreen", () => {
     } finally {
       restore();
     }
+  });
+
+  it("«Похожие вина» не показывают сырой слаг вместо названия (qa-manual-hack-v16.md §5.1, регресс)", async () => {
+    renderCard("tihaya-buhta-chardonnay-reserve-2023");
+    await screen.findByText("Шардоне Резерв");
+
+    // Фикстура несёт similar: ["severny-sklon-riesling-poluslad-2023", "dom-tihaya-buhta-brut-2022"]
+    // (mocks/fixtures/wines.ts) — ни один из этих слагов не должен всплыть видимым текстом,
+    // и ни в одном атрибуте (title/aria-*): часть QA-тулинга вычисляет accessible name из
+    // title раньше текста узла — слаг в title тихо вернул бы регресс в том же инструменте.
+    expect(screen.getByRole("heading", { name: "Похожие вина" })).toBeInTheDocument();
+    expect(screen.queryByText("severny-sklon-riesling-poluslad-2023")).not.toBeInTheDocument();
+    expect(screen.queryByText("dom-tihaya-buhta-brut-2022")).not.toBeInTheDocument();
+
+    const first = screen.getByRole("button", { name: "Похожее вино 1" });
+    const second = screen.getByRole("button", { name: "Похожее вино 2" });
+    expect(first).toBeInTheDocument();
+    expect(second).toBeInTheDocument();
+    expect(first).not.toHaveAttribute("title");
+    expect(second).not.toHaveAttribute("title");
   });
 
   it("несуществующее вино — честное «не найдено», без падения экрана", async () => {

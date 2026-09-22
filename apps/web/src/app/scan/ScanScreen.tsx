@@ -178,7 +178,10 @@ export function ScanScreen() {
   const [outcome, setOutcome] = useState<ResolveOutcome>(null);
 
   // --- «Что подать» по фото блюда (задача тимлида 22.09) ---
-  const [dishStatus, setDishStatus] = useState<"idle" | "loading" | "error">("idle");
+  // loadingPhoto/loadingCategory разведены задачей тимлида 23.09 (qa-manual-hack-v16.md §2):
+  // один "loading" на оба пути давал лоадер "Распознаём блюдо…" даже когда фото не было вовсе
+  // (ручной чип категории — обычный запрос /v1/pairing/dish, без единого пикселя на входе).
+  const [dishStatus, setDishStatus] = useState<"idle" | "loadingPhoto" | "loadingCategory" | "error">("idle");
   const [dishResult, setDishResult] = useState<DishPairingResponse | null>(null);
 
   // --- «Похоже по вкусу» (contracts/post-scan.md v1.0 §2) ---
@@ -226,7 +229,7 @@ export function ScanScreen() {
     setResult(null);
     setPhotoStatus("idle");
     setDishResult(null);
-    setDishStatus("loading");
+    setDishStatus("loadingPhoto");
     track("scan_started", { mode: "web_upload" });
 
     try {
@@ -300,7 +303,7 @@ export function ScanScreen() {
    * чипы) — DishPairingPayload.dish остаётся для будущей итерации, если она появится. */
   async function submitDishCorrection(category: string) {
     setDishResult(null);
-    setDishStatus("loading");
+    setDishStatus("loadingCategory");
     try {
       const response = await apiClient.pairingDish({ category });
       setDishResult(response);
@@ -460,7 +463,9 @@ export function ScanScreen() {
         <p>{dragActive ? t("scan.dropHintActive") : t("scan.dropHint")}</p>
         <p className="text-small">{t("scan.dropOrChoose")}</p>
         <label className="field">
-          <span className="visually-hidden">{t("scan.photoLabel")}</span>
+          {/* Задача тимлида 23.09 (qa-manual-hack-v16.md §2): зона загрузки общая для обоих
+              режимов, но подпись поля — своя для «Блюдо», не бутылочное «Фото этикетки». */}
+          <span className="visually-hidden">{scanMode === "dish" ? t("scan.dishPhotoLabel") : t("scan.photoLabel")}</span>
           {/* capture=environment — подсказка мобильным браузерам открыть камеру сразу */}
           <input
             ref={fileInputRef}
@@ -475,13 +480,17 @@ export function ScanScreen() {
           {t("scan.choosePhoto")}
         </button>
         <p className="text-caption" style={{ marginTop: "var(--space-3)" }}>
-          {t("scan.quietPhotoCaption")}
+          {scanMode === "dish" ? t("scan.dishPhotoCaption") : t("scan.quietPhotoCaption")}
         </p>
       </div>
 
       {scanMode === "bottle" && photoStatus === "searching" && <p className="text-small">{t("scan.photoSearching")}</p>}
       {scanMode === "bottle" && photoStatus === "error" && <p className="field__error">{t("scan.photoError")}</p>}
-      {scanMode === "dish" && dishStatus === "loading" && <p className="text-small">{t("scan.dishSearching")}</p>}
+      {/* loadingPhoto — реальное фотораспознавание (VLM/CV), loadingCategory — обычный запрос
+          по тегу без единого фото; отдельные подписи не путают пользователя ложным "распознаём"
+          (qa-manual-hack-v16.md §2: "Распознаём блюдо…" мелькало и на ручном выборе категории). */}
+      {scanMode === "dish" && dishStatus === "loadingPhoto" && <p className="text-small">{t("scan.dishSearching")}</p>}
+      {scanMode === "dish" && dishStatus === "loadingCategory" && <p className="text-small">{t("scan.dishCategoryLoading")}</p>}
       {scanMode === "dish" && dishStatus === "error" && <p className="field__error">{t("scan.dishError")}</p>}
 
       {scanMode === "bottle" && confidentCard && (

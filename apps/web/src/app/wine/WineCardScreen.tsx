@@ -96,9 +96,17 @@ export function WineCardScreen() {
         <div className="stack">
           <h2>{t("wineCard.similarTitle")}</h2>
           <div className="row">
-            {wine.similar.map((id) => (
+            {/* Приоритет 1 (qa-manual-hack-v16.md §5.1): GET /wines/{id}.similar — контрактно
+                string[] (только слаги), имени вина в ответе нет вовсе — раньше здесь рендерился
+                сырой слаг ("nesterov-winery-krasnostop-...-12"). Слаг не превращаем в
+                псевдо-имя (это была бы выдумка данных) — честная порядковая подпись. Слаг
+                НЕ выносим в title/aria-*: qa проверяет именно accessibility-дерево
+                (mcp__Claude_Browser__read_page), а там title у ряда браузерных тулингов
+                перекрывает видимый текст в вычисленном "name" — так слаг тихо вернулся бы
+                в тот же инструмент, которым его и нашли. Переход по клику не меняется. */}
+            {wine.similar.map((id, index) => (
               <button key={id} type="button" className="chip" onClick={() => handleSimilarClick(id)}>
-                {id}
+                {t("wineCard.similarItemFallback", { index: index + 1 })}
               </button>
             ))}
           </div>

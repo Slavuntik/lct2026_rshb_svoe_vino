@@ -543,7 +543,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(pairingFoodResponse());
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("dish.png")] } });
 
     expect(screen.getByText(/распознаём блюдо/i)).toBeInTheDocument();
 
@@ -570,7 +570,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     );
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("dish.png")] } });
 
     const foodBlock = await screen.findByTestId("dish-food-result");
     expect(within(foodBlock).getByRole("heading", { name: "BBQ" })).toBeInTheDocument();
@@ -585,7 +585,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     );
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("dish.png")] } });
 
     const foodBlock = await screen.findByTestId("dish-food-result");
     fireEvent.click(within(foodBlock).getByRole("button", { name: "Блюда из птицы" }));
@@ -605,7 +605,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     });
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("notfood.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("notfood.png")] } });
 
     const block = await screen.findByTestId("dish-not-food");
     expect(within(block).getByText(/на фото не похоже на блюдо/i)).toBeInTheDocument();
@@ -624,7 +624,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     const scanPhotoSpy = mockScanPhoto(confidentResponse());
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [photoFile] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [photoFile] } });
 
     const cta = await screen.findByRole("button", { name: /похоже на бутылку/i });
     fireEvent.click(cta);
@@ -647,7 +647,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unsure.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("unsure.png")] } });
 
     const unsureBlock = await screen.findByTestId("dish-unsure");
     const chips = within(unsureBlock).getByTestId("dish-category-chips");
@@ -675,7 +675,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unsure-guess.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("unsure-guess.png")] } });
 
     const unsureBlock = await screen.findByTestId("dish-unsure");
     const chips = within(unsureBlock).getByTestId("dish-category-chips");
@@ -700,11 +700,39 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     expect(await screen.findByTestId("dish-food-result")).toBeInTheDocument();
   });
 
+  it("режим «Блюдо» — свои подсказки загрузки, не унаследованные от «Бутылка» (qa-manual-hack-v16.md §2, регресс)", () => {
+    renderScan();
+    switchToDish();
+
+    expect(screen.getByLabelText(/фото блюда/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/фото этикетки/i)).not.toBeInTheDocument();
+    // Бутылочный совет про этикетку в кадре не должен просачиваться в режим «Блюдо».
+    expect(screen.queryByText(/одна бутылка в центре кадра/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/этикетка крупно/i)).not.toBeInTheDocument();
+  });
+
+  it("ручной выбор категории — лоадер свой, не «Распознаём блюдо» (без фото лоадер этот текст видеть не должен, qa-manual-hack-v16.md §2, регресс)", async () => {
+    vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+
+    const manualBlock = await screen.findByTestId("dish-manual-category");
+    fireEvent.click(within(manualBlock).getByRole("button", { name: "Сыры" }));
+
+    // Проверяем СИНХРОННО, до разрешения промиса pairingDish — тот же приём, что и для
+    // фото-пути ниже: React уже поставил dishStatus="loadingCategory" в этом же тике.
+    expect(screen.getByText(/подбираем вина под категорию/i)).toBeInTheDocument();
+    expect(screen.queryByText(/распознаём блюдо/i)).not.toBeInTheDocument();
+
+    await screen.findByTestId("dish-food-result");
+    expect(screen.queryByText(/подбираем вина под категорию/i)).not.toBeInTheDocument();
+  });
+
   it("сетевая ошибка при распознавании блюда — явное состояние, не тишина", async () => {
     vi.spyOn(apiClient, "pairingDishPhoto").mockRejectedValue(new Error("network down"));
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("dish.png")] } });
 
     expect(await screen.findByText(/не удалось распознать блюдо/i)).toBeInTheDocument();
   });
@@ -713,7 +741,7 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(pairingFoodResponse());
     renderScan();
     switchToDish();
-    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile("dish.png")] } });
     await screen.findByTestId("dish-food-result");
 
     fireEvent.click(screen.getByRole("button", { name: "Бутылка" }));
