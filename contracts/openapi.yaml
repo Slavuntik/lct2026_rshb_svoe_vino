@@ -8,6 +8,13 @@
 #   синхронизирован с де-факто версией: поле не менялось с 0.2.0 (commit 1fe521b, 15.09) через
 #   уже свершившиеся v0.2.1/v0.2.2/v0.3/v0.3.2 (см. историю коммитов contracts/openapi.yaml) —
 #   не переприсваиваю задним числом их отдельные номера, только ловлю заголовок с реальностью.
+# 22.09 (architect, reports/architect-submission-audit.md): +/scan/photo, +/eval/predict,
+#   +/metrics/scan, +/case-thumbs/{slug}.webp — ядро кейса (contracts/image-scan.md v0.4),
+#   в бою с 16–17.09, в openapi.yaml не попадало ни разу; найдено независимым аудитом сдачи.
+#   info.version НЕ бампаю (осталась 0.3.3) — это довнесение существующего поведения в
+#   контракт, не новая функциональность; бамп потребовал бы синхронной правки строки
+#   version= в apps/api/app/main.py (зона backend, см. reports/backend-swagger.md «Риски»)
+#   — оставляю тому, кто следующим меняет реальное поведение этих путей.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -180,6 +187,99 @@ paths:
                     type: string
                     nullable: true
                     description: человекочитаемое объяснение фолбэка («Urban Riesling вне каталога — аналоги по стилю рислинг»)
+
+  /scan/photo:
+    post:
+      summary: >
+        Фото этикетки -> одна карточка вина (кейс ЛЦТ) — flat для скрипта оценки, rich для UI;
+        contracts/image-scan.md «Режимы ответа API» (добавлено в openapi.yaml задним числом
+        при аудите reports/architect-submission-audit.md, 22.09 — эндпоинт в бою с v0.4)
+      description: >
+        multipart image (до 25 МБ; decode применяет EXIF Orientation, принимает HEIC).
+        ?flat=1 => flat-режим скрипта оценки: ответ РОВНО {"slug": "..."}, всегда лучший
+        доступный slug, несгораемый (любая ошибка -> валидный JSON, не 500), без auth.
+        Без flat (или flat=0) => rich-режим для UI (Bearer, см. /auth/guest). Дефолт при
+        отсутствии query-параметра — env SCAN_FLAT_DEFAULT.
+      parameters:
+        - name: flat
+          in: query
+          required: false
+          schema: { type: boolean }
+          description: "1 => flat-режим скрипта оценки (см. выше)"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: flat-режим принимает первое файловое поле multipart независимо от имени
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ScanPhotoFlatResponse"
+                  - $ref: "#/components/schemas/ScanPhotoRichResponse"
+                description: выбор формы ответа — по параметру flat, не по content negotiation
+
+  /eval/predict:
+    post:
+      summary: >
+        Алиас flat-режима /scan/photo для скрипта оценки кейсодержателя — v0.4.6
+      description: >
+        Фиксированный путь их participant_test.sh (дефолтный endpoint в скрипте —
+        http://127.0.0.1:8080/v1/eval/predict, curl --max-time 10 c). Тот же обработчик, что
+        /scan/photo?flat=1: без auth, несгораемый, HTTP 200 + {"slug": "..."} даже при низкой
+        уверенности или сбое пайплайна. SLA кейса — мягкая цель ≤3 c (case.md), жёсткий лимит
+        скрипта — 10 c.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image: { type: string, format: binary }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScanPhotoFlatResponse" }
+
+  /metrics/scan:
+    get:
+      summary: F1 топ-1/топ-5, доля совпадений и версия индекса последнего eval-прогона
+      description: >
+        Пункт ТЗ «метрика уверенности (F1) для топ-1 и топ-5, видна в API» (case.md,
+        функция 3). f1_top5 законно null, если последний записанный прогон был flat-режимом
+        (считает только топ-1, см. reports/architect-submission-audit.md) — не 0, честная
+        деградация, а не притворство нулевым F1.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScanMetricsResponse" }
+
+  /case-thumbs/{slug}.webp:
+    get:
+      summary: Превью эталона каталога кейса — только для карточки-фолбэка (v0.4.11 п.4)
+      description: >
+        CASE_DATA_DIR/thumbs/<slug>.webp — материалы каталога кейса, использование
+        ограничено демо (разрешение организаторов, contracts/image-scan.md v0.4.11 п.4).
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          content:
+            image/webp: { schema: { type: string, format: binary } }
+        "404": { description: "not_found — слага нет в CASE_DATA_DIR/thumbs/" }
 
   /scan/ocr:
     post:
@@ -480,3 +580,97 @@ components:
       properties:
         access_token: { type: string }
         expires_in: { type: integer }
+
+    # --- Кейс ЛЦТ: сканер по фото (apps/api/app/schemas.py, contracts/image-scan.md) ---
+    # Добавлено в openapi.yaml задним числом при аудите
+    # reports/architect-submission-audit.md (22.09) — код и image-scan.md были источником
+    # истины с v0.4, эта схема впервые сводит их с формальным контрактом API.
+
+    ScanPhotoFlatResponse:
+      type: object
+      required: [slug]
+      properties:
+        slug: { type: string }
+
+    ScanConfidence:
+      type: object
+      properties:
+        top1_score: { type: number, minimum: 0, maximum: 1, nullable: true }
+        gap:
+          type: number
+          nullable: true
+          description: отрыв top1 от первого кандидата чужой near-dup семьи; null = доминирование (см. v0.4.7)
+        f1_top1: { type: number, minimum: 0, maximum: 1, nullable: true }
+        f1_top5: { type: number, minimum: 0, maximum: 1, nullable: true }
+        eval_missing:
+          type: boolean
+          default: false
+          description: true, пока нет eval-отчёта — f1_* тогда null, а не притворный 0
+
+    PhotoMatchItem:
+      type: object
+      required: [slug, score]
+      description: >
+        v0.4.3 — сырая ANN-позиция (не карточка) исключительно для eval-раннера: без этого
+        поля F1-top5 через живой API вырождается в F1-top1.
+      properties:
+        slug: { type: string }
+        score: { type: number }
+
+    ScanCandidateItem:
+      type: object
+      required: [wine_id, name, source_url, score]
+      description: >
+        v0.4.11 — top-5 схлопнутых позиций при неуверенности («возможно, это одно из»),
+        обогащённых карточкой; из нашего каталога либо (фолбэк) из каталога кейса.
+      properties:
+        wine_id: { type: string }
+        name: { type: string }
+        winery_name: { type: string, nullable: true }
+        region_name: { type: string, nullable: true }
+        image_url: { type: string, nullable: true }
+        source_url: { type: string, format: uri }
+        score: { type: number }
+
+    ScanPhotoRichResponse:
+      type: object
+      required: [confidence, ocr_verified, timing_ms, not_in_catalog]
+      properties:
+        slug: { type: string, nullable: true }
+        card:
+          type: object
+          nullable: true
+          description: ровно тело GET /wines/{wine_id} (v0.4.1) — своя форма у карточки скана отсутствует
+        confidence: { $ref: "#/components/schemas/ScanConfidence" }
+        ocr_verified: { type: boolean }
+        timing_ms: { type: integer }
+        not_in_catalog: { type: boolean }
+        similar:
+          type: array
+          items: { type: object }
+          description: форма items — как у wines в ответе /analogs
+        analogs:
+          type: array
+          items: { type: object }
+          description: форма items — как у wines в ответе /analogs
+        matches:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/PhotoMatchItem" }
+          description: top-5 схлопнутых позиций по убыванию; UI НЕ рендерит (одна карточка — закон)
+        candidates:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ScanCandidateItem" }
+          description: поле есть всегда; UI показывает при not_in_catalog=true
+
+    ScanMetricsResponse:
+      type: object
+      description: GET /metrics/scan — снимок последнего eval-прогона (CV_EVAL_REPORT_PATH)
+      properties:
+        index_version: { type: string, nullable: true }
+        f1_top1: { type: number, minimum: 0, maximum: 1, nullable: true }
+        f1_top5: { type: number, minimum: 0, maximum: 1, nullable: true }
+        match_rate: { type: number, minimum: 0, maximum: 1, nullable: true }
+        eval_set: { type: string, nullable: true, description: человекочитаемое описание прогона }
+        measured_at: { type: string, format: date-time, nullable: true }

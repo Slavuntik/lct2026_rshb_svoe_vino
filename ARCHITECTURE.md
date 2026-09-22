@@ -58,7 +58,10 @@
 `qa/scan_eval.py` — F1 top-1/top-5 (macro), match-rate, p50/p95; стабильный SHA-сплит
 dev/holdout (holdout не участвует в подборе настроек). `qa/mock_case_script.sh` —
 репетиция скрипта кейсодержателя. Отчёт eval подключается к `GET /v1/metrics/scan`
-(env CV_EVAL_REPORT_PATH). Тесты: apps/api 151+ · packages/cv 42 · qa 130+ · web 64.
+(env CV_EVAL_REPORT_PATH). Тесты (сверено 22.09, `reports/architect-submission-audit.md`):
+apps/api 365 passed/11 skipped (`reports/backend-swagger.md`) · packages/cv 422
+(`reports/ml-eng-ml3.md`) · web 84 (`reports/frontend-post-scan.md`) · qa 130+ (не пересчитано
+этим аудитом).
 
 ## Запуск
 
