@@ -26,6 +26,7 @@ import {
   type TokenPair,
   type WaitlistPayload,
   type WineCardResponse,
+  type WinePairingsResponse,
 } from "./apiTypes";
 
 // apiClient — не React-компонент, у него нет доступа к <I18nProvider>. Пока в приложении
@@ -146,6 +147,14 @@ export const apiClient = {
 
   getWine(wineId: string): Promise<WineCardResponse> {
     return request(`/wines/${encodeURIComponent(wineId)}`);
+  },
+
+  /**
+   * v0.3.3 (contracts/post-scan.md v1.0): гастропары «к чему подать» — резолвит wine_id тем
+   * же путём, что getWine (404 not_found на тех же условиях). basis честно называет источник.
+   */
+  getWinePairings(wineId: string): Promise<WinePairingsResponse> {
+    return request(`/wines/${encodeURIComponent(wineId)}/pairings`);
   },
 
   /** SSE-стрим: разбор через lib/sse.ts, события летят в onEvent по мере прихода. */

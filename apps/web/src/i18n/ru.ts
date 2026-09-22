@@ -78,6 +78,14 @@ export const ru = {
     notInCatalogMessage:
       "Честно: не нашли точное совпадение в каталоге «Своё Вино». Вот похожие варианты и аналоги из других виноделен.",
     analogsTitle: "Аналоги из других виноделен",
+    // --- v0.3.3 (contracts/post-scan.md v1.0): «Похоже по вкусу», POST /v1/analogs по
+    // сортам/названию уже полученной карточки — не тот же блок, что analogsTitle выше
+    // (тот приходит готовым в ответе /scan/photo; этот — отдельный запрос по стилю). ---
+    tasteAnalogsTitle: "Похоже по вкусу",
+    tasteAnalogsLoading: "Подбираем вина по вкусу…",
+    tasteAnalogsStyleFound: "По стилю «{style}»",
+    tasteAnalogsInYourTaste: "В вашем вкусе",
+    tastePassportCta: "Пройти вкусовой паспорт",
     // --- текст (запасной путь) ---
     orDivider: "или",
     textFallbackTitle: "Не получилось сфотографировать?",
@@ -109,6 +117,13 @@ export const ru = {
     notFound: "Карточка вина не найдена.",
     askSomelier: "Спросить сомелье об этом вине",
     loading: "Открываем карточку…",
+    // --- v0.3.3 (contracts/post-scan.md v1.0): «К чему подать», GET /wines/{id}/pairings ---
+    pairingsTitle: "К чему подать",
+    pairingsLoading: "Подбираем, к чему подать…",
+    pairingsEmptyFallback: "Пока нет идей, к чему подать это вино.",
+    pairingsSourceCatalog: "По данным карточки вина",
+    pairingsSourceSensory: "По вкусовому профилю вина",
+    pairingsSourceHeuristic: "Оценочно — по цвету и описанию",
   },
   chat: {
     title: "Спросите сомелье",

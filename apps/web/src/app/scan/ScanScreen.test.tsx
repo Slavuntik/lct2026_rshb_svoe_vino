@@ -1,9 +1,10 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { Route, Routes, useParams } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiClient } from "../../lib/apiClient";
+import { apiClient, ApiRequestError } from "../../lib/apiClient";
 import type { ScanPhotoRichResponse } from "../../lib/apiTypes";
 import { findWineBySlug } from "../../mocks/fixtures/wines";
+import { storage } from "../../lib/storage";
 import { renderApp } from "../../test/renderApp";
 import { ScanScreen } from "./ScanScreen";
 
@@ -113,6 +114,8 @@ function renderScan() {
       <Route path="/app/scan" element={<ScanScreen />} />
       <Route path="/app/wine/:wineId" element={<WineProbe />} />
       <Route path="/app/chat" element={<div>CHAT_PROBE</div>} />
+      <Route path="/app/profile" element={<div>PROFILE_PROBE</div>} />
+      <Route path="/app/taste" element={<div>TASTE_PROBE</div>} />
     </Routes>,
     "/app/scan",
   );
@@ -120,6 +123,21 @@ function renderScan() {
 
 function pngFile(name: string) {
   return new File(["fake-photo-bytes"], name, { type: "image/png" });
+}
+
+/**
+ * confidentResponse() несёт вино с одним сортом ("Шардоне") — resolveTasteAnalogs (§2.1) шлёт
+ * его как есть в /analogs; фикстурные стили (mocks/fixtures/styles.ts) не резолвят голое
+ * "Шардоне" ни к одному стилю (сознательно: они завязаны на многословные синонимы), поэтому
+ * без явного мока постAnalogs «Похоже по вкусу» у ЭТОЙ фикстуры всегда уходит в 404 —
+ * ждём здесь, что блок успел осесть в терминальное состояние, прежде чем тест завершится
+ * (иначе поздний .then() после cleanup() шумит предупреждением act() в соседних тестах).
+ */
+async function waitForTasteAnalogsSettled() {
+  await waitFor(() => {
+    expect(screen.queryByText(/подбираем вина по вкусу/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/подбираем, к чему подать/i)).not.toBeInTheDocument();
+  });
 }
 
 describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.md v0.4)", () => {
@@ -142,6 +160,8 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     expect(screen.queryByTestId("scan-low-confidence")).not.toBeInTheDocument();
     expect(screen.queryByTestId("scan-not-in-catalog")).not.toBeInTheDocument();
     expect(resultCard.textContent).not.toMatch(/94\s*%/);
+
+    await waitForTasteAnalogsSettled();
   });
 
   it("аналоги из ответа кликабельны и ведут на карточку соответствующего вина", async () => {
@@ -229,12 +249,100 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     fireEvent.drop(dropzone, { dataTransfer: { files: [pngFile("label.png")] } });
 
     expect(await screen.findByTestId("scan-photo-result")).toBeInTheDocument();
+    await waitForTasteAnalogsSettled();
   });
 
   it("тихая подпись про фото — не чекбокс согласия", () => {
     renderScan();
     expect(screen.getByText(/этикетка крупно, ровно и без бликов/i)).toBeInTheDocument();
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+});
+
+describe("ScanScreen — «Похоже по вкусу» (contracts/post-scan.md v1.0 §2, POST /v1/analogs)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("успех /analogs — стиль и похожие вина видны", async () => {
+    mockScanPhoto(confidentResponse());
+    vi.spyOn(apiClient, "postAnalogs").mockResolvedValue({
+      style: { slug: "chablis", name: "Шабли", country: "Франция" },
+      wines: [
+        {
+          wine_id: "severny-sklon-krasnostop-2021",
+          name: "Красностоп Крепкий",
+          winery_name: "Усадьба Северный Склон",
+          region_name: "Северный склон",
+        },
+      ],
+    });
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    const block = await screen.findByTestId("scan-taste-analogs-block");
+    expect(await within(block).findByText(/по стилю «шабли»/i)).toBeInTheDocument();
+    expect(within(block).getByText(/Красностоп Крепкий/)).toBeInTheDocument();
+  });
+
+  it("404 на всех попытках — виден message из ответа /analogs, не generic-ошибка", async () => {
+    mockScanPhoto(confidentResponse());
+    vi.spyOn(apiClient, "postAnalogs").mockRejectedValue(
+      new ApiRequestError(404, "not_found", "Не нашли похожий стиль. Популярные: Просекко, Шабли."),
+    );
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    const block = await screen.findByTestId("scan-taste-analogs-block");
+    expect(await within(block).findByText(/не нашли похожий стиль/i)).toBeInTheDocument();
+    expect(within(block).queryByText(/что-то пошло не так/i)).not.toBeInTheDocument();
+  });
+
+  it("сетевая ошибка (не 404) — явное состояние, не generic-тост и не тишина", async () => {
+    mockScanPhoto(confidentResponse());
+    vi.spyOn(apiClient, "postAnalogs").mockRejectedValue(new Error("network down"));
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    const block = await screen.findByTestId("scan-taste-analogs-block");
+    expect(await within(block).findByText(/что-то пошло не так/i)).toBeInTheDocument();
+  });
+
+  it("гость — CTA «Пройти вкусовой паспорт» ведёт на профиль (апгрейд токена), не на 403", async () => {
+    storage.setAccountKind("guest");
+    mockScanPhoto(confidentResponse());
+    vi.spyOn(apiClient, "postAnalogs").mockResolvedValue({
+      style: { slug: "chablis", name: "Шабли", country: "Франция" },
+      wines: [],
+    });
+    const profileSpy = vi.spyOn(apiClient, "getTasteProfile");
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    const ctaButton = await screen.findByRole("button", { name: /пройти вкусовой паспорт/i });
+    fireEvent.click(ctaButton);
+
+    await waitFor(() => expect(screen.getByText("PROFILE_PROBE")).toBeInTheDocument());
+    // Гостю /taste/profile честно отдаёт 403 consent_required — клиент даже не пробует
+    // (не тратит запрос на заведомый отказ), поэтому и не может показать его как ошибку экрана.
+    expect(profileSpy).not.toHaveBeenCalled();
+    expect(screen.queryByText(/что-то пошло не так/i)).not.toBeInTheDocument();
+  });
+
+  it("зарегистрированный аккаунт — CTA ведёт на экран вкусового паспорта", async () => {
+    storage.setAccountKind("registered");
+    mockScanPhoto(confidentResponse());
+    vi.spyOn(apiClient, "postAnalogs").mockResolvedValue({
+      style: { slug: "chablis", name: "Шабли", country: "Франция" },
+      wines: [],
+    });
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    const ctaButton = await screen.findByRole("button", { name: /пройти вкусовой паспорт/i });
+    fireEvent.click(ctaButton);
+
+    await waitFor(() => expect(screen.getByText("TASTE_PROBE")).toBeInTheDocument());
   });
 });
 

@@ -159,6 +159,37 @@ export interface WineCardResponse {
 }
 
 /**
+ * v0.3.3 (contracts/post-scan.md v1.0, contracts/openapi.yaml): GET /wines/{wine_id}/pairings —
+ * гастропары к распознанному вину. `basis` честно называет источник — catalog (как в
+ * source.food_pairings, score всегда null), sensory (derived.sensory через мини-DSL правил),
+ * heuristic (цвет + ключевые слова name/description — обычный случай карточки-фолбэка каталога
+ * кейса при сканировании), unavailable (даже color пуст). Контракт: pairings=[] ⟺ message
+ * непусто (§1, правило скоринга №5) — клиент обязан показать message, а не молчаливую пустоту.
+ */
+export type WinePairingsBasis = "catalog" | "sensory" | "heuristic" | "unavailable";
+
+export interface WinePairingRuleHit {
+  id?: string;
+  explain?: string;
+}
+
+export interface WinePairing {
+  tag: string;
+  /** null при basis=catalog (чужой нескорингованный текст портала) — openapi.yaml. */
+  score?: number | null;
+  /** [] при basis=catalog — openapi.yaml. */
+  triggered_rules?: WinePairingRuleHit[];
+}
+
+export interface WinePairingsResponse {
+  wine_id: string;
+  basis: WinePairingsBasis;
+  /** Не более output_contract.top_n=3 (food_pairing_rules.yaml, число не меняем). */
+  pairings: WinePairing[];
+  message?: string | null;
+}
+
+/**
  * v0.4 (contracts/image-scan.md, кейс ЛЦТ): POST /v1/scan/photo, rich-режим (без ?flat=1).
  * Форма `card` контрактом не специфицирована явно — принимаю как у GET /wines/{id}
  * (WineCardResponse), это самая естественная форма "карточки" в системе; зафиксировано

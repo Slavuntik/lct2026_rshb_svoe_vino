@@ -18,6 +18,7 @@ import type {
   ScanResolveResponse,
   SwipePayload,
   WaitlistPayload,
+  WinePairingsResponse,
 } from "../lib/apiTypes";
 import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
 import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
@@ -326,6 +327,34 @@ export const handlers: HttpHandler[] = [
     }
     const { searchTerms: _searchTerms, ...card } = wine;
     return HttpResponse.json(card);
+  }),
+
+  // v0.3.3 (contracts/post-scan.md v1.0): гастропары. Мок — упрощённый стенд-ин, не порт
+  // мини-DSL food_pairing_rules.yaml (та логика — зона backend, apps/api/app/rag): все наши
+  // фикстуры несут непустой food_pairings -> basis=catalog реалистично покрывает dev-режим;
+  // basis=unavailable — честный фолбэк для гипотетического вина без него. sensory/heuristic
+  // здесь не воспроизводятся (нет фикстуры без food_pairings, где было бы видно) — эти basis
+  // у компонента проверены юнит-тестом через vi.spyOn(apiClient.getWinePairings).
+  http.get(`${API}/wines/:wineId/pairings`, ({ params }) => {
+    const wine = findWineBySlug(String(params.wineId));
+    if (!wine) {
+      return errorJson(404, "not_found", "Карточка вина не найдена.");
+    }
+    const catalogPairings = wine.source.food_pairings ?? [];
+    if (catalogPairings.length > 0) {
+      return HttpResponse.json({
+        wine_id: wine.wine_id,
+        basis: "catalog",
+        pairings: catalogPairings.slice(0, 3).map((tag) => ({ tag, score: null, triggered_rules: [] })),
+        message: null,
+      } satisfies WinePairingsResponse);
+    }
+    return HttpResponse.json({
+      wine_id: wine.wine_id,
+      basis: "unavailable",
+      pairings: [],
+      message: "Недостаточно данных, чтобы подобрать сочетания для этого вина.",
+    } satisfies WinePairingsResponse);
   }),
 
   // --- chat (SSE) ---

@@ -4,14 +4,17 @@ import { WineCardContent } from "../../components/WineCardContent";
 import { WineImage } from "../../components/WineImage";
 import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
-import { apiClient } from "../../lib/apiClient";
+import { apiClient, ApiRequestError } from "../../lib/apiClient";
 import type {
+  AnalogStyle,
   AnalogWine,
   ScanCandidateWine,
   ScanMatch,
   ScanPhotoRichResponse,
   ScanResolveResponse,
+  WineSource,
 } from "../../lib/apiTypes";
+import { storage } from "../../lib/storage";
 
 type ResolveOutcome = {
   matches: ScanMatch[];
@@ -38,6 +41,33 @@ function WineResultChip({ wine, onClick }: { wine: AnalogWine | ScanCandidateWin
       {wine.region_name && <span className="text-caption">{wine.region_name}</span>}
     </button>
   );
+}
+
+type TasteAnalogsState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; style: AnalogStyle; wines: AnalogWine[] }
+  | { status: "failed"; message: string };
+
+/**
+ * v0.3.3 (contracts/post-scan.md v1.0 §2.1): «Похоже по вкусу» — POST /v1/analogs
+ * (существующая ручка "аналог импортного", без нового API) по данным уже полученной
+ * карточки: сорта через запятую, иначе название; при 404 и >1 сорте — один повторный
+ * запрос по первому сорту (часто резолвится лучше купажа целиком, resolve_style — rapidfuzz
+ * против имён 146 стилей). Не путать с scan.analogsTitle — тот блок приходит готовым в
+ * ответе /scan/photo, этот — отдельный запрос по стилю данного вина.
+ */
+async function resolveTasteAnalogs(source: WineSource) {
+  const grapes = source.grapes ?? [];
+  const query = grapes.length > 0 ? grapes.join(", ") : source.name;
+  try {
+    return await apiClient.postAnalogs({ query });
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.code === "not_found" && grapes.length > 1) {
+      return apiClient.postAnalogs({ query: grapes[0] });
+    }
+    throw error;
+  }
 }
 
 /**
@@ -68,6 +98,10 @@ export function ScanScreen() {
   const [textError, setTextError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "resolving" | "error">("idle");
   const [outcome, setOutcome] = useState<ResolveOutcome>(null);
+
+  // --- «Похоже по вкусу» (contracts/post-scan.md v1.0 §2) ---
+  const [tasteAnalogs, setTasteAnalogs] = useState<TasteAnalogsState>({ status: "idle" });
+  const [inYourTaste, setInYourTaste] = useState(false);
 
   useEffect(() => {
     // Ревокаем object URL превью при смене фото/размонтировании — не копим память.
@@ -187,6 +221,56 @@ export function ScanScreen() {
 
   const confidentCard = result && !result.not_in_catalog && result.card ? result.card : null;
 
+  useEffect(() => {
+    if (!confidentCard) {
+      setTasteAnalogs({ status: "idle" });
+      setInYourTaste(false);
+      return;
+    }
+    let cancelled = false;
+    setTasteAnalogs({ status: "loading" });
+    setInYourTaste(false);
+    resolveTasteAnalogs(confidentCard.source)
+      .then((response) => {
+        if (cancelled) return;
+        setTasteAnalogs({ status: "ready", style: response.style, wines: response.wines });
+        track("analog_requested", { style_slug: response.style.slug });
+        // Пометка «в вашем вкусе» — опционально (contracts/post-scan.md §2.2, не критерий
+        // приёмки), только для не-гостя: гостю /taste/profile честно отдаёт 403
+        // consent_required, поэтому даже не пробуем — не тратим запрос на заведомый отказ.
+        if (storage.getAccountKind() === "guest") return;
+        apiClient
+          .getTasteProfile()
+          .then((profile) => {
+            if (!cancelled) setInYourTaste(profile.top_styles.includes(response.style.slug));
+          })
+          .catch(() => {
+            // Нет полного согласия/сеть недоступна — молча не показываем пометку,
+            // это необязательное украшение, а не факт, который нужно объяснять ошибкой.
+          });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        const message = error instanceof ApiRequestError ? error.message : t("common.errorGeneric");
+        setTasteAnalogs({ status: "failed", message });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // t/track стабильно не влияют на идентичность эффекта — перезапуск нужен только на
+    // смену самой распознанной карточки.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confidentCard]);
+
+  /** contracts/post-scan.md §2.3: гостю — на апгрейд токена (не дохлый 403 экрана паспорта). */
+  function handleTastePassportCta() {
+    if (storage.getAccountKind() === "guest") {
+      navigate("/app/profile");
+    } else {
+      navigate("/app/taste");
+    }
+  }
+
   return (
     <div className="screen container stack">
       <header className="screen__header">
@@ -248,6 +332,31 @@ export function ScanScreen() {
               </div>
             </div>
           )}
+
+          <div className="stack" data-testid="scan-taste-analogs-block">
+            <h2>{t("scan.tasteAnalogsTitle")}</h2>
+            {tasteAnalogs.status === "loading" && <p className="text-small">{t("scan.tasteAnalogsLoading")}</p>}
+            {tasteAnalogs.status === "failed" && <p className="text-small">{tasteAnalogs.message}</p>}
+            {tasteAnalogs.status === "ready" && (
+              <>
+                <p className="text-small">
+                  {t("scan.tasteAnalogsStyleFound", { style: tasteAnalogs.style.name })}{" "}
+                  {inYourTaste && <span className="badge">{t("scan.tasteAnalogsInYourTaste")}</span>}
+                </p>
+                {tasteAnalogs.wines.length > 0 && (
+                  <div className="match-list">
+                    {tasteAnalogs.wines.map((wine) => (
+                      <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            <button type="button" className="btn btn--ghost" onClick={handleTastePassportCta}>
+              {t("scan.tastePassportCta")}
+            </button>
+          </div>
+
           <button type="button" className="btn btn--ghost" onClick={handleResetPhoto}>
             {t("scan.newPhoto")}
           </button>
