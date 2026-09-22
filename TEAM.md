@@ -8,13 +8,17 @@
 | pm | Sonnet | `agents/BOARD.md`, `reports/pm-*` | доска задач, статусы, блокеры, «нужно от Вячеслава», чек-лист сдачи |
 | product | Sonnet | `docs/product/`, `reports/product-*` | требования кейса, слайды 7–11, сценарий видео, тексты интерфейса |
 | architect | Opus | `contracts/`, `ARCHITECTURE.md`, `reviews/` | контракты, ратификация предложений, архитектурные ревью |
-| ml-lead | Opus | `qa/real_photos_*`, `qa/scan-eval-runs/`, `agents/ML-*` | стратегия точности, разбор промахов, брифы ml-engineer, решение «в бой» |
+| ml-lead | Opus | `qa/real_photos_*`, `qa/scan-eval-runs/`, `agents/ML-*`, `pipeline/ref/` | стратегия точности, разбор промахов, брифы ml-engineer, решение «в бой» |
 | ml-engineer | Sonnet | `packages/cv/`, `apps/api/app/cv/` (по брифу) | реализация ML-брифов с тестами и приёмкой |
 | backend | Sonnet | `apps/api/`, `packages/rag/`, `packages/llm/` | API по контракту, конфиг, тесты |
 | frontend | Sonnet | `apps/web/` | интерфейс сканера, карточка, кандидаты, vitest |
 | devops | Sonnet | `infra/`, `.github/workflows/`, стенд ams3 | выкаты тегами, данные стенда, здоровье, транспорт секретов |
 | qa-auto | Sonnet | `qa/tests/`, `qa/acceptance.md`, прогоны | приёмка через живой API, репетиции скрипта проверки, CI |
 | qa-manual | Opus | разметка, `case-data/ref-review/` | глазами: разметка фото, кропы, интерфейс стенда, дефекты каталога |
+
+`pipeline/ref/` — зона ml-lead (справочники/веса слияния и калибровки, напр. будущий
+`food_pairing_rules.yaml`), read-only для остальных ролей (решение тимлида, 22.09; вопрос
+поднимал architect — `reports/architect-post-scan.md`, «владелец pipeline/ref/ не назначен»).
 
 ## Протокол
 

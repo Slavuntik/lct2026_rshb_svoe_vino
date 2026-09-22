@@ -46,3 +46,18 @@ p50 4.1с/p95 4.8с, лимит 10с). Кандидат hack-v9 (чувстви�
 
 ## Коммит
 `git commit -- agents/BOARD.md reports/pm-board-update.md`
+
+## Обновление 05:15 — по сообщению тимлида
+Проверены и подтверждены все 7 коммитов из сообщения (914207c/ea69b85/b4dbef2/6e6413c/
+b2d80cf/92c817e/5565510) и файлы-источники (`qa/scan-eval-runs/real-photos-stand/README.md`,
+`reports/{qa-auto-hack-v9-detector,devops-hack-v9,ml-lead-plan,product-case-submission,
+architect-tco,architect-post-scan,qa-manual-field-photos}.md`, `contracts/{image-scan,
+post-scan}.md`, `agents/ML-1-*.md`). Доска: hack-v9/v0.4.14/TCO/продакт-пакет/ml-lead+ML-1/
+разметка Field перенесены из «Сейчас» в «Сделано» (цепочка hack-v9 реально дошла до
+«принято» — qa-auto approve → devops тег на стенде); «Сейчас» заменено на 4 новые задачи
+(ml-engineer ML-1, backend pairings, frontend post-scan UI, qa-auto field+md5); добавлен
+раздел «Дефекты каталога» (2 новых от qa-manual + дубль Скалистого берега от L1, не чинить).
+`TEAM.md` — по прямому указанию тимлида добавлена строка: `pipeline/ref/` закреплена за
+ml-lead, read-only для остальных (закрывает открытый вопрос из `reports/architect-post-scan.md`).
+Порт 8080 перепроверен `lsof` в 05:14 — всё ещё занят тем же процессом, статус не изменился.
+Коммит: `git commit -- agents/BOARD.md TEAM.md reports/pm-board-update.md`.
