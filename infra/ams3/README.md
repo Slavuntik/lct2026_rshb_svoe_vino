@@ -58,6 +58,8 @@ bash infra/ams3/push-release.sh <ams3>                       # код + веб +
 
 - **Код:** тег `hack-v*` или ручной запуск workflow `Deploy hack stand (ams3)`; локально — `push-release.sh`.
 - **Индекс после пересборки на Mac:** `sync-data.sh <ams3>` → `ssh somelye@<ams3> 'sudo systemctl restart somelye-api'`.
+  Без простоя (blue/green, отдельный каталог + переключение) — CV: «Смена CV-индекса без простоя»
+  ниже; RAG: «Смена RAG-индекса без простоя» ниже (`switch-rag`/`rollback-rag`, с 22.09).
 - **Откат:** `DEPLOY_REF=<коммит> bash infra/ams3/push-release.sh <ams3>`.
 
 ## Секреты GitHub
@@ -184,11 +186,34 @@ PaddleOCR при этом НЕ грузится в процесс вовсе, п
 боевой запрос не должен ловить холодное скачивание. `CV_FUSION_CROPS=2` (не 8 — бюджет 4 vCPU,
 см. `somelye.env.example`).
 
-### Смена индекса без простоя
+### Смена CV-индекса без простоя
 
 Встроенный Qdrant читает файлы индекса напрямую, поэтому новый индекс нельзя заливать поверх
 работающего. Порядок: (1) `CV_INDEX_DIR=packages/cv/data-d1 CV_INDEX_DST=cv-d1 infra/ams3/sync-data.sh <host>`
 — индекс едет в `/opt/somelye/data/cv-d1`, стенд продолжает читать старый; (2) в `/opt/somelye/somelye.env`
 переключить `CV_DATA_DIR=/opt/somelye/data/cv-d1` и `CV_MODEL` под энкодер индекса; (3) выкат тегом
 `hack-vN` (или рестарт сервиса) — новый процесс стартует уже на новом индексе. Старый каталог
-удалить после проверки `healthz` (`cv_index_version`).
+удалить после проверки `healthz` (`cv_index_version`). Шаги (2)-(3) здесь ручные — для RAG-индекса
+то же самое теперь делает скрипт, см. ниже.
+
+### Смена RAG-индекса без простоя (`switch-rag`/`rollback-rag`, с 22.09)
+
+Тот же embedded-Qdrant, то же правило «не поверх работающего», но полностью скриптом —
+`infra/ams3/sync-data.sh` умеет заливку в отдельный каталог (`RAG_INDEX_DIR`/`RAG_INDEX_DST`, по
+образцу `CV_INDEX_DIR`/`CV_INDEX_DST` выше) и сам свитч:
+
+```bash
+RAG_INDEX_DIR=packages/rag/data-v2 RAG_INDEX_DST=rag-20261001 infra/ams3/sync-data.sh 89.110.72.101
+infra/ams3/sync-data.sh switch-rag 89.110.72.101 rag-20261001
+```
+
+Заливка проверяет целостность (число строк `labels.jsonl` и `version` из `manifest.json` — лок./
+удал. должны совпасть, иначе `exit 1` и `switch-rag` запускать рано). `switch-rag` сам бэкапит
+`somelye.env` (`.bak-before-rag-<таймстамп>`), запоминает прежнее значение `RAG_DATA_DIR` на сервере
+(`/opt/somelye/data/.rag_data_dir.prev`), правит `somelye.env`, перезапускает `somelye-api`, ждёт
+`healthz warm:true` (тот же цикл, что `deploy.sh`) и сверяет `rag_index_version` с `manifest.json`
+целевого каталога. Откат одной командой: `infra/ams3/sync-data.sh rollback-rag 89.110.72.101` —
+переключает на каталог из `.rag_data_dir.prev` той же процедурой; повторный вызов — тумблер туда-
+обратно. `DRY_RUN=1` перед любой из трёх форм — только печать, без изменений на диске/в env/в
+сервисе. Старые каталоги (`rag/`, `rag-<версия>/`) не удаляются автоматически — только показываются
+через `du -sh` в выводе `switch-rag`/`rollback-rag`, чистить вручную по своему решению.
