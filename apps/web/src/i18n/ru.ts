@@ -94,6 +94,42 @@ export const ru = {
     tasteAnalogsStyleFound: "По стилю «{style}»",
     tasteAnalogsInYourTaste: "В вашем вкусе",
     tastePassportCta: "Пройти вкусовой паспорт",
+    // --- «Что подать» по фото блюда (задача тимлида 22.09, POST /v1/pairing/dish-photo,
+    // POST /v1/pairing/dish) — переключатель «Бутылка | Блюдо» на этом же экране, камера и
+    // загрузка общие с веткой вина выше. ---
+    modeBottleLabel: "Бутылка",
+    modeDishLabel: "Блюдо",
+    dishSearching: "Распознаём блюдо… обычно до 3 секунд.",
+    dishError: "Не удалось распознать блюдо. Попробуйте другое фото или выберите категорию ниже.",
+    // contracts/post-scan.md v1.1 §4.1: alternatives — ДРУГИЕ теги категории, которые модель
+    // тоже держала в уме (не альтернативные названия блюда) — текст честно про категорию.
+    dishAlternativesTitle: "Может быть, это другая категория?",
+    // Крайний случай: dish.source="zero_shot" даёт категорию по образу фото, но не название;
+    // 22.09 backend иногда шлёт "" вместо null на пустое имя (contracts/openapi.yaml 0.3.4
+    // ещё не догнан реализацией) — заголовок карточки в любом случае не должен быть пустым.
+    dishUnnamedFallback: "Блюдо",
+    dishWinesTitle: "Что подать",
+    dishNoWinesFallback: "Пока нет идей, что подать к этому блюду.",
+    dishNotFoodTitle: "Это не похоже на блюдо",
+    dishNotFoodFallback: "Честно: на фото не удалось узнать блюдо. Попробуйте другое фото или выберите категорию ниже.",
+    dishBottleFallback: "Похоже, на фото бутылка вина, а не блюдо.",
+    // Дословная формулировка из задания тимлида (22.09, п.1 UI) — то же фото уходит в /v1/scan/photo.
+    dishBottleCta: "Похоже на бутылку — отсканировать?",
+    dishUnsureTitle: "Не уверены, что за блюдо",
+    dishManualCategoryTitle: "Или выберите категорию блюда",
+    dishNewPhoto: "Загрузить другое фото блюда",
+    // 9 категорий — те же строки, что ключи portal_tag_defaults в pipeline/ref/
+    // food_pairing_rules.yaml (используются и как подпись чипа, и как значение "category"
+    // в запросе POST /v1/pairing/dish — см. DISH_CATEGORIES в ScanScreen.tsx).
+    dishCategoryOysters: "Устрицы",
+    dishCategoryCheese: "Сыры",
+    dishCategoryFish: "Блюда из рыбы",
+    dishCategoryPoultry: "Блюда из птицы",
+    dishCategorySalads: "Салаты",
+    dishCategoryBruschetta: "Брускетты",
+    dishCategoryBbq: "BBQ",
+    dishCategoryAsian: "Азиатская кухня",
+    dishCategoryDesserts: "Выпечка и десерты",
     // --- текст (запасной путь) ---
     orDivider: "или",
     textFallbackTitle: "Не получилось сфотографировать?",

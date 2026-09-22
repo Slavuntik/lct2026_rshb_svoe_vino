@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { Route, Routes, useParams } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
-import type { ScanPhotoRichResponse } from "../../lib/apiTypes";
+import type { DishPairingResponse, ScanPhotoRichResponse } from "../../lib/apiTypes";
 import { findWineBySlug } from "../../mocks/fixtures/wines";
 import { storage } from "../../lib/storage";
 import { renderApp } from "../../test/renderApp";
@@ -128,6 +128,41 @@ function notInCatalogFiveCandidatesResponse(): ScanPhotoRichResponse {
     })),
     similar: [],
     analogs: [],
+  };
+}
+
+/**
+ * «Что подать» по фото блюда (задача тимлида 22.09) — status=food по умолчанию, схема
+ * буквально по брифу тимлида (contracts/post-scan.md v1.1 ещё не ратифицирован architect'ом
+ * на момент реализации). overrides позволяет собрать remaining статусы точечно в тестах.
+ */
+function pairingFoodResponse(overrides: Partial<DishPairingResponse> = {}): DishPairingResponse {
+  return {
+    status: "food",
+    dish: {
+      name: "Стейк рибай на гриле",
+      category: "BBQ",
+      // contracts/post-scan.md v1.1 §4.1: alternatives — ДРУГИЕ теги из тех же 9, не
+      // альтернативные названия блюда.
+      alternatives: ["Блюда из птицы"],
+      ingredients: ["говядина", "розмарин"],
+      source: "vlm",
+    },
+    wines: [
+      {
+        wine_id: "severny-sklon-krasnostop-2021",
+        name: "Красностоп Крепкий",
+        winery: "Усадьба Северный Склон",
+        color: "красное",
+        sugar: "сухое",
+        image_url: "data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'/>",
+        reason: "Плотные танины выдержат жирность мяса с углей.",
+        basis: "catalog",
+      },
+    ],
+    message: null,
+    timing_ms: 640,
+    ...overrides,
   };
 }
 
@@ -453,5 +488,210 @@ describe("ScanScreen — текстовый путь (запасной вход)
     await waitFor(() =>
       expect(screen.getByText("WINE_CARD_PROBE:severny-sklon-riesling-poluslad-2023")).toBeInTheDocument(),
     );
+  });
+});
+
+describe("ScanScreen — «Что подать» по фото блюда (переключатель «Бутылка | Блюдо», задача тимлида 22.09)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function switchToDish() {
+    fireEvent.click(screen.getByRole("button", { name: "Блюдо" }));
+  }
+
+  it("переключатель по умолчанию — «Бутылка» нажата, «Блюдо» — нет", () => {
+    renderScan();
+    expect(screen.getByRole("button", { name: "Бутылка" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Блюдо" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("status=food — имя блюда, чип категории, вина-карточки со ссылкой на внутреннюю карточку и reason", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+
+    expect(screen.getByText(/распознаём блюдо/i)).toBeInTheDocument();
+
+    const foodBlock = await screen.findByTestId("dish-food-result");
+    expect(within(foodBlock).getByText("Стейк рибай на гриле")).toBeInTheDocument();
+    expect(within(foodBlock).getByText("BBQ")).toBeInTheDocument();
+
+    const winesBlock = within(foodBlock).getByTestId("dish-wines-block");
+    expect(within(winesBlock).getByText(/Красностоп Крепкий/)).toBeInTheDocument();
+    expect(within(winesBlock).getByText(/Плотные танины выдержат жирность мяса/)).toBeInTheDocument();
+    // Правило ссылок (задача тимлида 22.09, п.2): ни одной внешней ссылки в списке вин
+    // подбора к блюду — только внутренняя навигация, как во всех остальных списках.
+    expect(within(winesBlock).queryAllByRole("link")).toHaveLength(0);
+
+    fireEvent.click(within(winesBlock).getByText(/Красностоп Крепкий/));
+    await waitFor(() =>
+      expect(screen.getByText("WINE_CARD_PROBE:severny-sklon-krasnostop-2021")).toBeInTheDocument(),
+    );
+  });
+
+  it("status=food, dish.name пуст (zero_shot/backend расхождение) — заголовок падает на категорию, не пустую строку", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(
+      pairingFoodResponse({ dish: { name: "", category: "BBQ", alternatives: [], ingredients: [], source: "zero_shot" } }),
+    );
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+
+    const foodBlock = await screen.findByTestId("dish-food-result");
+    expect(within(foodBlock).getByRole("heading", { name: "BBQ" })).toBeInTheDocument();
+  });
+
+  it("чип alternatives (ДРУГАЯ категория, не имя блюда) уходит в POST /pairing/dish без поля dish", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(pairingFoodResponse());
+    const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(
+      pairingFoodResponse({
+        dish: { name: null, category: "Блюда из птицы", alternatives: [], ingredients: [], source: "user" },
+      }),
+    );
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+
+    const foodBlock = await screen.findByTestId("dish-food-result");
+    fireEvent.click(within(foodBlock).getByRole("button", { name: "Блюда из птицы" }));
+
+    // Ровно {category}, БЕЗ поля dish — alternatives не несёт название блюда (контракт).
+    await waitFor(() => expect(dishSpy).toHaveBeenCalledWith({ category: "Блюда из птицы" }));
+    expect(await screen.findByRole("heading", { name: "Блюда из птицы" })).toBeInTheDocument();
+  });
+
+  it("status=not_food — честное сообщение, без вин и без выдумки", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue({
+      status: "not_food",
+      dish: { name: null, category: null, alternatives: [], ingredients: [], source: "vlm" },
+      wines: [],
+      message: "На фото не похоже на блюдо — попробуйте другой кадр.",
+      timing_ms: 300,
+    });
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("notfood.png")] } });
+
+    const block = await screen.findByTestId("dish-not-food");
+    expect(within(block).getByText(/на фото не похоже на блюдо/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("dish-wines-block")).not.toBeInTheDocument();
+  });
+
+  it("status=bottle — CTA «Похоже на бутылку — отсканировать?» шлёт ТО ЖЕ фото в /v1/scan/photo", async () => {
+    const photoFile = pngFile("actually-a-bottle.png");
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue({
+      status: "bottle",
+      dish: { name: null, category: null, alternatives: [], ingredients: [], source: "vlm" },
+      wines: [],
+      message: "Похоже, на фото бутылка вина, а не блюдо.",
+      timing_ms: 300,
+    });
+    const scanPhotoSpy = mockScanPhoto(confidentResponse());
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [photoFile] } });
+
+    const cta = await screen.findByRole("button", { name: /похоже на бутылку/i });
+    fireEvent.click(cta);
+
+    await waitFor(() => expect(scanPhotoSpy).toHaveBeenCalledTimes(1));
+    expect(scanPhotoSpy.mock.calls[0][0]).toBe(photoFile);
+    expect(await screen.findByTestId("scan-photo-result")).toBeInTheDocument();
+    // Переключатель отражает фактический переход в режим «Бутылка».
+    expect(screen.getByRole("button", { name: "Бутылка" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("status=unsure без догадки (alternatives=[]) — чипы всех 9 категорий, выбор уходит в POST /pairing/dish", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue({
+      status: "unsure",
+      dish: { name: null, category: null, alternatives: [], ingredients: [], source: "none" },
+      wines: [],
+      message: "Не уверены, что за блюдо на фото — уточните категорию.",
+      timing_ms: 300,
+    });
+    const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unsure.png")] } });
+
+    const unsureBlock = await screen.findByTestId("dish-unsure");
+    const chips = within(unsureBlock).getByTestId("dish-category-chips");
+    expect(within(chips).getAllByRole("button")).toHaveLength(9);
+
+    fireEvent.click(within(chips).getByRole("button", { name: "BBQ" }));
+    await waitFor(() => expect(dishSpy).toHaveBeenCalledWith({ category: "BBQ" }));
+    expect(await screen.findByTestId("dish-food-result")).toBeInTheDocument();
+  });
+
+  it("status=unsure со слабой догадкой (alternatives непуст) — чипы ИМЕННО этих тегов, не все 9 (contracts/post-scan.md v1.1 §4.4)", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue({
+      status: "unsure",
+      dish: {
+        name: null,
+        category: null,
+        alternatives: ["Блюда из птицы", "Салаты"],
+        ingredients: [],
+        source: "zero_shot",
+      },
+      wines: [],
+      message: "Не уверены, что за блюдо на фото — похоже на один из вариантов ниже.",
+      timing_ms: 480,
+    });
+    const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unsure-guess.png")] } });
+
+    const unsureBlock = await screen.findByTestId("dish-unsure");
+    const chips = within(unsureBlock).getByTestId("dish-category-chips");
+    expect(within(chips).getAllByRole("button")).toHaveLength(2);
+    expect(within(chips).getByRole("button", { name: "Блюда из птицы" })).toBeInTheDocument();
+    expect(within(chips).getByRole("button", { name: "Салаты" })).toBeInTheDocument();
+
+    fireEvent.click(within(chips).getByRole("button", { name: "Салаты" }));
+    await waitFor(() => expect(dishSpy).toHaveBeenCalledWith({ category: "Салаты" }));
+  });
+
+  it("ручной выбор категории без фото — тоже работает", async () => {
+    const dishSpy = vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+
+    const manualBlock = await screen.findByTestId("dish-manual-category");
+    expect(within(manualBlock).getAllByRole("button")).toHaveLength(9);
+    fireEvent.click(within(manualBlock).getByRole("button", { name: "Сыры" }));
+
+    await waitFor(() => expect(dishSpy).toHaveBeenCalledWith({ category: "Сыры" }));
+    expect(await screen.findByTestId("dish-food-result")).toBeInTheDocument();
+  });
+
+  it("сетевая ошибка при распознавании блюда — явное состояние, не тишина", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockRejectedValue(new Error("network down"));
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+
+    expect(await screen.findByText(/не удалось распознать блюдо/i)).toBeInTheDocument();
+  });
+
+  it("переключение обратно на «Бутылка» сбрасывает результат распознавания блюда", async () => {
+    vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(pairingFoodResponse());
+    renderScan();
+    switchToDish();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("dish.png")] } });
+    await screen.findByTestId("dish-food-result");
+
+    fireEvent.click(screen.getByRole("button", { name: "Бутылка" }));
+
+    expect(screen.queryByTestId("dish-food-result")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("dish-manual-category")).not.toBeInTheDocument();
+  });
+
+  it("режим «Бутылка» не затронут: текстовый фолбэк по-прежнему на месте, без блюда-переключения", () => {
+    renderScan();
+    expect(screen.getByLabelText(/текст с этикетки/i)).toBeInTheDocument();
+    expect(screen.queryByTestId("dish-manual-category")).not.toBeInTheDocument();
   });
 });

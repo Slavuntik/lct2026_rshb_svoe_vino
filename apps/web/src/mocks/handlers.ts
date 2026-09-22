@@ -8,6 +8,7 @@ import type {
   ChatPayload,
   ChatStreamEvent,
   ConsentScope,
+  DishPairingPayload,
   GuestAuthPayload,
   LoginPayload,
   PostConsentPayload,
@@ -21,6 +22,7 @@ import type {
   WinePairingsResponse,
 } from "../lib/apiTypes";
 import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
+import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
 import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
 import { caseFallbackWines, findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
 import {
@@ -355,6 +357,27 @@ export const handlers: HttpHandler[] = [
       pairings: [],
       message: "Недостаточно данных, чтобы подобрать сочетания для этого вина.",
     } satisfies WinePairingsResponse);
+  }),
+
+  // --- pairing/dish («Что подать» по фото блюда, задача тимлида 22.09) ---
+  // Контракт (post-scan.md v1.1) architect оформляет параллельно — мок построен буквально по
+  // схеме брифа, детерминирован по имени файла (тот же приём, что /scan/photo выше).
+  http.post(`${API}/pairing/dish-photo`, async ({ request }) => {
+    const form = await request.formData();
+    const image = form.get("image");
+    const filename = image instanceof File ? image.name : "dish.jpg";
+    return HttpResponse.json(buildDishPhotoResponse(filename));
+  }),
+
+  http.post(`${API}/pairing/dish`, async ({ request }) => {
+    const body = (await request.json()) as DishPairingPayload;
+    // contracts/post-scan.md v1.1 §4.2: category — строго один из 9 тегов, иное значение
+    // (включая пустое) -> 400 validation_error, а не честный "unsure" (это не фото со
+    // случайной моделью — пользователь выбирает строго из наших же 9 чипов).
+    if (!body.category || !isDishCategory(body.category)) {
+      return errorJson(400, "validation_error", `Неизвестная категория блюда: «${body.category ?? ""}».`);
+    }
+    return HttpResponse.json(buildDishCategoryResponse(body.category, body.dish));
   }),
 
   // --- chat (SSE) ---

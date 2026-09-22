@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type For
 import { useNavigate } from "react-router-dom";
 import { WineCardContent } from "../../components/WineCardContent";
 import { WineImage } from "../../components/WineImage";
-import { useI18n } from "../../i18n";
+import { useI18n, type DictionaryPath } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
 import type {
   AnalogStyle,
   AnalogWine,
+  DishPairingResponse,
+  PairingWineItem,
   ScanCandidateWine,
   ScanMatch,
   ScanPhotoRichResponse,
@@ -43,11 +45,79 @@ function WineResultChip({ wine, onClick }: { wine: AnalogWine | ScanCandidateWin
   );
 }
 
+/**
+ * Задача тимлида 22.09 («Что подать» по фото блюда), п.1 UI: «список вин: карточки со
+ * ссылкой на внутреннюю карточку /app/wine/:wineId и reason». Клик — внутренняя навигация
+ * приложения (goToWine), не href: правило ссылок п.2 (ратифицировано в contracts/
+ * post-scan.md v1.1 §5) — внешняя ссылка на портал остаётся только внутри самой карточки
+ * вина (WineCardContent), нигде в списках. image_url у PairingWineItem не required
+ * (openapi 0.3.4) — WineImage сам деградирует на плейсхолдер при отсутствии/битой ссылке.
+ */
+function DishWineCard({ wine, onClick }: { wine: PairingWineItem; onClick: () => void }) {
+  return (
+    <button type="button" className="match-item" onClick={onClick}>
+      <span className="match-item__main">
+        <WineImage src={wine.image_url ?? undefined} alt={wine.name} width={40} className="match-item__thumb" />
+        <span className="stack stack--tight">
+          <span>
+            {wine.name} · {wine.winery}
+          </span>
+          <span className="row">
+            {wine.color && <span className="badge">{wine.color}</span>}
+            {wine.sugar && <span className="badge">{wine.sugar}</span>}
+          </span>
+          {wine.reason && <span className="text-caption">{wine.reason}</span>}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+// 9 категорий блюд — те же ключи, что `portal_tag_defaults` в pipeline/ref/
+// food_pairing_rules.yaml (mocks/fixtures/dishPairing.ts::DISH_CATEGORIES зеркалит эти же
+// строки из словаря ru.ts, единый источник — см. комментарий там). Значение, уходящее в
+// POST /v1/pairing/dish как "category", — это САМ переведённый текст чипа, не отдельный слаг.
+const DISH_CATEGORY_KEYS: DictionaryPath[] = [
+  "scan.dishCategoryOysters",
+  "scan.dishCategoryCheese",
+  "scan.dishCategoryFish",
+  "scan.dishCategoryPoultry",
+  "scan.dishCategorySalads",
+  "scan.dishCategoryBruschetta",
+  "scan.dishCategoryBbq",
+  "scan.dishCategoryAsian",
+  "scan.dishCategoryDesserts",
+];
+
+/**
+ * Чипы категорий блюда — три вызова: (1) ручной выбор без фото и (2) статус "unsure" без
+ * догадки — все 9 тегов (categories не задан); (3) alternatives (и у "food", и у "unsure"
+ * с слабой догадкой) — ИМЕННО переданный список, не все 9. `alternatives` в контракте —
+ * это 0–3 ДРУГИХ тега из тех же 9 portal_tag_defaults (НЕ альтернативные названия блюда,
+ * contracts/post-scan.md v1.1 §4.1/§4.4) — чипы одной природы с ручным выбором, поэтому один
+ * общий компонент и один и тот же POST /v1/pairing/dish {category} без поля dish.
+ */
+function DishCategoryChips({ categories, onSelect }: { categories?: string[]; onSelect: (category: string) => void }) {
+  const { t } = useI18n();
+  const items = categories ?? DISH_CATEGORY_KEYS.map((key) => t(key));
+  return (
+    <div className="row" data-testid="dish-category-chips">
+      {items.map((category) => (
+        <button key={category} type="button" className="chip" onClick={() => onSelect(category)}>
+          {category}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 type TasteAnalogsState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "ready"; style: AnalogStyle; wines: AnalogWine[] }
   | { status: "failed"; message: string };
+
+type ScanMode = "bottle" | "dish";
 
 /**
  * v0.3.3 (contracts/post-scan.md v1.0 §2.1): «Похоже по вкусу» — POST /v1/analogs
@@ -80,10 +150,18 @@ async function resolveTasteAnalogs(source: WineSource) {
  * /scan/ocr (501). Кейс меняет механизм: CV-поиск по самому изображению происходит на
  * сервере для ЛЮБОЙ платформы, поэтому эта ветка убрана — apps/shell/plugins/ocr-plugin
  * остаётся в дереве (компилируется, есть тесты), просто здесь больше не используется.
+ *
+ * Задача тимлида 22.09 («Что подать» по фото блюда): переключатель «Бутылка | Блюдо» —
+ * точка входа этого же экрана, камера/загрузка общие (handlePhotoSelected ветвится по
+ * scanMode). status="bottle" от ручки блюда — мостик обратно в уже готовый bottle-сценарий
+ * тем же файлом (handleScanAsBottle шлёт то же фото в /v1/scan/photo).
  */
 export function ScanScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
+
+  // --- режим: бутылка (по умолчанию) | блюдо ---
+  const [scanMode, setScanMode] = useState<ScanMode>("bottle");
 
   // --- фото ---
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -93,11 +171,15 @@ export function ScanScreen() {
   const [result, setResult] = useState<ScanPhotoRichResponse | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- текст (запасной путь) ---
+  // --- текст (запасной путь, только режим "бутылка") ---
   const [text, setText] = useState("");
   const [textError, setTextError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "resolving" | "error">("idle");
   const [outcome, setOutcome] = useState<ResolveOutcome>(null);
+
+  // --- «Что подать» по фото блюда (задача тимлида 22.09) ---
+  const [dishStatus, setDishStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [dishResult, setDishResult] = useState<DishPairingResponse | null>(null);
 
   // --- «Похоже по вкусу» (contracts/post-scan.md v1.0 §2) ---
   const [tasteAnalogs, setTasteAnalogs] = useState<TasteAnalogsState>({ status: "idle" });
@@ -114,14 +196,11 @@ export function ScanScreen() {
     navigate(`/app/wine/${encodeURIComponent(wineId)}`, { state: { from } });
   }
 
-  async function handlePhotoSelected(selected: File) {
-    setPhotoPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(selected);
-    });
-    setPhotoFile(selected);
+  async function runBottleScan(selected: File) {
     setOutcome(null);
     setResult(null);
+    setDishResult(null);
+    setDishStatus("idle");
     setPhotoStatus("searching");
     track("scan_started", { mode: "web_upload" });
 
@@ -139,6 +218,36 @@ export function ScanScreen() {
       }
     } catch {
       setPhotoStatus("error");
+    }
+  }
+
+  async function runDishPhotoScan(selected: File) {
+    setOutcome(null);
+    setResult(null);
+    setPhotoStatus("idle");
+    setDishResult(null);
+    setDishStatus("loading");
+    track("scan_started", { mode: "web_upload" });
+
+    try {
+      const response = await apiClient.pairingDishPhoto(selected);
+      setDishResult(response);
+      setDishStatus("idle");
+    } catch {
+      setDishStatus("error");
+    }
+  }
+
+  async function handlePhotoSelected(selected: File) {
+    setPhotoPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(selected);
+    });
+    setPhotoFile(selected);
+    if (scanMode === "dish") {
+      await runDishPhotoScan(selected);
+    } else {
+      await runBottleScan(selected);
     }
   }
 
@@ -161,8 +270,44 @@ export function ScanScreen() {
     });
     setPhotoFile(null);
     setResult(null);
+    setDishResult(null);
     setPhotoStatus("idle");
+    setDishStatus("idle");
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  /** Переключатель «Бутылка | Блюдо»: смена намерения — честный сброс текущего результата,
+   * камера/загрузка остаются теми же элементами (не пересоздаются). */
+  function handleModeChange(mode: ScanMode) {
+    if (mode === scanMode) return;
+    setScanMode(mode);
+    handleResetPhoto();
+  }
+
+  /** status="bottle" от /v1/pairing/dish-photo: «Похоже на бутылку — отсканировать?» — то же
+   * фото, без повторной загрузки, уходит в уже готовый и покрытый тестами сценарий бутылки. */
+  async function handleScanAsBottle() {
+    if (!photoFile) return;
+    setScanMode("bottle");
+    await runBottleScan(photoFile);
+  }
+
+  /** Чипы alternatives (и у "food", и у "unsure" со слабой догадкой) и категории (unsure без
+   * догадки / ручной выбор без фото) — один и тот же запрос POST /v1/pairing/dish {category}.
+   * `dish` (свободный текст) в payload намеренно не передаём: alternatives в контракте — это
+   * ДРУГИЕ теги категории (contracts/post-scan.md v1.1 §4.1), не альтернативные названия
+   * блюда, а свободного текстового поля для ручного ввода названия в этом UI нет (только
+   * чипы) — DishPairingPayload.dish остаётся для будущей итерации, если она появится. */
+  async function submitDishCorrection(category: string) {
+    setDishResult(null);
+    setDishStatus("loading");
+    try {
+      const response = await apiClient.pairingDish({ category });
+      setDishResult(response);
+      setDishStatus("idle");
+    } catch {
+      setDishStatus("error");
+    }
   }
 
   function handleAskSomelierAboutResult() {
@@ -220,6 +365,9 @@ export function ScanScreen() {
   }
 
   const confidentCard = result && !result.not_in_catalog && result.card ? result.card : null;
+  // dishResult.dish ВСЕГДА объект (контракт), но name/category внутри него — nullable;
+  // foodDish!=null означает только "показываем блок еды", не "name/category точно заполнены".
+  const foodDish = dishResult && dishResult.status === "food" ? dishResult.dish : null;
 
   useEffect(() => {
     if (!confidentCard) {
@@ -278,6 +426,20 @@ export function ScanScreen() {
         <p className="screen__subtitle">{t("scan.subtitle")}</p>
       </header>
 
+      <div className="row" data-testid="scan-mode-toggle">
+        <button
+          type="button"
+          className="chip"
+          aria-pressed={scanMode === "bottle"}
+          onClick={() => handleModeChange("bottle")}
+        >
+          {t("scan.modeBottleLabel")}
+        </button>
+        <button type="button" className="chip" aria-pressed={scanMode === "dish"} onClick={() => handleModeChange("dish")}>
+          {t("scan.modeDishLabel")}
+        </button>
+      </div>
+
       <div
         className={`dropzone${dragActive ? " dropzone--active" : ""}`}
         onDragOver={(event) => {
@@ -313,10 +475,12 @@ export function ScanScreen() {
         </p>
       </div>
 
-      {photoStatus === "searching" && <p className="text-small">{t("scan.photoSearching")}</p>}
-      {photoStatus === "error" && <p className="field__error">{t("scan.photoError")}</p>}
+      {scanMode === "bottle" && photoStatus === "searching" && <p className="text-small">{t("scan.photoSearching")}</p>}
+      {scanMode === "bottle" && photoStatus === "error" && <p className="field__error">{t("scan.photoError")}</p>}
+      {scanMode === "dish" && dishStatus === "loading" && <p className="text-small">{t("scan.dishSearching")}</p>}
+      {scanMode === "dish" && dishStatus === "error" && <p className="field__error">{t("scan.dishError")}</p>}
 
-      {confidentCard && (
+      {scanMode === "bottle" && confidentCard && (
         <div className="stack" data-testid="scan-photo-result">
           <WineCardContent wine={confidentCard} titleAs="h2" />
           <button type="button" className="btn btn--secondary" onClick={handleAskSomelierAboutResult}>
@@ -363,7 +527,7 @@ export function ScanScreen() {
         </div>
       )}
 
-      {result && result.not_in_catalog && (
+      {scanMode === "bottle" && result && result.not_in_catalog && (
         <div className="card stack" data-testid="scan-not-in-catalog">
           {result.candidates.length > 0 ? (
             <div className="stack" data-testid="scan-candidates-block">
@@ -401,31 +565,110 @@ export function ScanScreen() {
         </div>
       )}
 
+      {scanMode === "dish" && dishResult && (
+        <div className="stack" data-testid="dish-result">
+          {foodDish && (
+            <div className="card stack" data-testid="dish-food-result">
+              {/* name — nullable (zero_shot не даёт названия, только категорию по образу
+                  фото; на 22.09 backend вдобавок иногда шлёт "" вместо null — контракт ещё
+                  не догнан реализацией, см. apiTypes.ts) — || ловит оба случая, не только null. */}
+              <h2>{foodDish.name || foodDish.category || t("scan.dishUnnamedFallback")}</h2>
+              {foodDish.category && (
+                <div className="row">
+                  <span className="badge">{foodDish.category}</span>
+                </div>
+              )}
+              {foodDish.alternatives.length > 0 && (
+                <div className="stack stack--tight" data-testid="dish-alternatives">
+                  <p className="field__label">{t("scan.dishAlternativesTitle")}</p>
+                  <DishCategoryChips categories={foodDish.alternatives} onSelect={submitDishCorrection} />
+                </div>
+              )}
+              <div className="stack" data-testid="dish-wines-block">
+                <p className="field__label">{t("scan.dishWinesTitle")}</p>
+                {dishResult.wines.length > 0 ? (
+                  <div className="match-list">
+                    {dishResult.wines.map((wine) => (
+                      <DishWineCard key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-small">{dishResult.message || t("scan.dishNoWinesFallback")}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {dishResult.status === "not_food" && (
+            <div className="card stack" data-testid="dish-not-food">
+              <h2>{t("scan.dishNotFoodTitle")}</h2>
+              <p>{dishResult.message || t("scan.dishNotFoodFallback")}</p>
+            </div>
+          )}
+
+          {dishResult.status === "bottle" && (
+            <div className="card stack" data-testid="dish-bottle-hint">
+              <p>{dishResult.message || t("scan.dishBottleFallback")}</p>
+              <button type="button" className="btn btn--primary" onClick={handleScanAsBottle}>
+                {t("scan.dishBottleCta")}
+              </button>
+            </div>
+          )}
+
+          {dishResult.status === "unsure" && (
+            <div className="card stack" data-testid="dish-unsure">
+              <h2>{t("scan.dishUnsureTitle")}</h2>
+              {dishResult.message && <p className="text-small">{dishResult.message}</p>}
+              {/* contracts/post-scan.md v1.1 §4.4: alternatives непуст — модель успела дать
+                  слабую догадку, показываем именно её; пуст — честный фолбэк на все 9 тегов. */}
+              <DishCategoryChips
+                categories={dishResult.dish.alternatives.length > 0 ? dishResult.dish.alternatives : undefined}
+                onSelect={submitDishCorrection}
+              />
+            </div>
+          )}
+
+          <button type="button" className="btn btn--ghost" onClick={handleResetPhoto}>
+            {t("scan.dishNewPhoto")}
+          </button>
+        </div>
+      )}
+
       <p className="text-small" style={{ textAlign: "center" }}>
         {t("scan.orDivider")}
       </p>
 
-      <form className="stack card" onSubmit={handleTextSubmit}>
-        <p className="field__label">{t("scan.textFallbackTitle")}</p>
-        <label className="field">
-          <span className="field__label">{t("scan.textLabel")}</span>
-          <textarea
-            className="field__textarea"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            placeholder={t("scan.textPlaceholder")}
-          />
-        </label>
-        {textError && <p className="field__error">{textError}</p>}
-        <button type="submit" className="btn btn--ghost" disabled={status === "resolving"}>
-          {t("scan.textSubmit")}
-        </button>
-      </form>
+      {scanMode === "bottle" ? (
+        <form className="stack card" onSubmit={handleTextSubmit}>
+          <p className="field__label">{t("scan.textFallbackTitle")}</p>
+          <label className="field">
+            <span className="field__label">{t("scan.textLabel")}</span>
+            <textarea
+              className="field__textarea"
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder={t("scan.textPlaceholder")}
+            />
+          </label>
+          {textError && <p className="field__error">{textError}</p>}
+          <button type="submit" className="btn btn--ghost" disabled={status === "resolving"}>
+            {t("scan.textSubmit")}
+          </button>
+        </form>
+      ) : (
+        // Задача тимлида 22.09: «ручной выбор категории без фото тоже работает» — тот же
+        // POST /v1/pairing/dish, что и чипы unsure/alternatives выше, доступен независимо
+        // от того, был ли вообще загружен снимок блюда.
+        <div className="stack card" data-testid="dish-manual-category">
+          <p className="field__label">{t("scan.dishManualCategoryTitle")}</p>
+          <DishCategoryChips onSelect={submitDishCorrection} />
+        </div>
+      )}
 
-      {status === "resolving" && <p className="text-small">{t("scan.resolving")}</p>}
-      {status === "error" && <p className="field__error">{t("common.errorGeneric")}</p>}
+      {scanMode === "bottle" && status === "resolving" && <p className="text-small">{t("scan.resolving")}</p>}
+      {scanMode === "bottle" && status === "error" && <p className="field__error">{t("common.errorGeneric")}</p>}
 
-      {outcome && outcome.matches.length === 0 && outcome.analogs.length > 0 && (
+      {scanMode === "bottle" && outcome && outcome.matches.length === 0 && outcome.analogs.length > 0 && (
         <div className="card stack" data-testid="scan-text-analogs">
           <h2>{t("scan.analogsFoundTitle")}</h2>
           {outcome.analogReason && <p className="text-small">{outcome.analogReason}</p>}
@@ -437,14 +680,14 @@ export function ScanScreen() {
         </div>
       )}
 
-      {outcome && outcome.matches.length === 0 && outcome.analogs.length === 0 && (
+      {scanMode === "bottle" && outcome && outcome.matches.length === 0 && outcome.analogs.length === 0 && (
         <div className="card stack" data-testid="scan-no-matches">
           <h2>{t("scan.noMatchesTitle")}</h2>
           <p>{t("scan.noMatchesMessage")}</p>
         </div>
       )}
 
-      {outcome && outcome.matches.length > 0 && (
+      {scanMode === "bottle" && outcome && outcome.matches.length > 0 && (
         <div className="card stack" data-testid="scan-low-confidence">
           <h2>{t("scan.lowConfidenceTitle")}</h2>
           <p className="text-small">{t("scan.lowConfidenceSubtitle")}</p>

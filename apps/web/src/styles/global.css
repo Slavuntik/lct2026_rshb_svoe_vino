@@ -282,10 +282,17 @@ input:focus-visible {
   align-items: center;
   gap: var(--space-1);
   border-radius: var(--radius-pill);
+  border: none;
   padding: 2px var(--space-3);
   font-size: var(--fs-caption);
   background: var(--mono-bg);
   color: var(--muted);
+}
+
+/* Цитата-вино в чате — внутренняя навигация кнопкой, не ссылка (правило ссылок, 22.09):
+   визуально тот же бейдж, что span/a-варианты, просто убираем UA-стили кнопки. */
+button.badge {
+  cursor: pointer;
 }
 
 .badge--ok {
