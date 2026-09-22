@@ -7,9 +7,11 @@ qa/text_v2.py (гомоглифы, потокенная нечёткость, с
 from __future__ import annotations
 
 import csv
+import json
 
 import pytest
 
+from cv import config
 from cv.text_fusion import (
     DEFAULT_ANN_TOP_K,
     DEFAULT_CV_FLOOR,
@@ -19,9 +21,12 @@ from cv.text_fusion import (
     DEFAULT_W,
     FUSION_FIELDS,
     TextIndexV2,
+    default_winery_aliases_path,
     fuse,
     homoglyph_variant,
     load_catalog_index,
+    load_winery_alias_groups,
+    load_winery_index,
     query_tokens,
     sugar_of,
     text_top_slugs_for_ocr,
@@ -684,3 +689,191 @@ def test_fuse_color_penalty_inactive_without_color_word_or_zero_penalty():
     a = fuse({"w": 0.85, "r": 0.87}, idx, "МУСКАТЕЛЬ 2023", w=0.3, colors=colors, color_penalty=0.05)
     b = fuse({"w": 0.85, "r": 0.87}, idx, "МУСКАТЕЛЬ БЕЛЫЙ 2023", w=0.3, colors=colors, color_penalty=0.0)
     assert a.ranked[0].slug == "r" and b.ranked[0].slug == "r"
+
+
+# --------------------------------------------------------------------------------------
+# Алиасы написания винодельни (agents/ML-1-*.md, задача 2) — load_winery_alias_groups() /
+# default_winery_aliases_path() / load_winery_index(). Реальный кейс — слаг 93.97
+# (golubitskoe-estate-chardonnay), reports/ml-lead-plan.md: каталог пишет ОДНОГО
+# производителя ДВУМЯ строками поля «Винодельня», гейт «не подтверждена винодельня»
+# наказывает истину по её собственной строке.
+# --------------------------------------------------------------------------------------
+
+
+def _write_aliases(tmp_path, groups: list):
+    path = tmp_path / "winery_aliases.json"
+    path.write_text(json.dumps({"groups": groups}, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def test_load_winery_alias_groups_missing_file_returns_empty(tmp_path):
+    assert load_winery_alias_groups(tmp_path / "does-not-exist.json") == []
+
+
+def test_load_winery_alias_groups_malformed_json_returns_empty(tmp_path):
+    path = tmp_path / "winery_aliases.json"
+    path.write_text("{not valid json", encoding="utf-8")
+    assert load_winery_alias_groups(path) == []
+
+
+def test_load_winery_alias_groups_non_object_json_returns_empty(tmp_path):
+    path = tmp_path / "winery_aliases.json"
+    path.write_text("[1, 2, 3]", encoding="utf-8")
+    assert load_winery_alias_groups(path) == []
+
+
+def test_load_winery_alias_groups_missing_groups_key_returns_empty(tmp_path):
+    path = tmp_path / "winery_aliases.json"
+    path.write_text(json.dumps({"note": "нет groups"}), encoding="utf-8")
+    assert load_winery_alias_groups(path) == []
+
+
+def test_load_winery_alias_groups_reads_brief_example(tmp_path):
+    """Ровно пример из брифа (agents/ML-1-*.md, задача 2) — Голубицкое."""
+    path = _write_aliases(tmp_path, [
+        {"strings": ["Поместье Голубицкое", "Golubitskoe Estate"], "anchor_token": "golubitskoe",
+         "note": "один производитель, 2 vs 28 SKU в каталоге"},
+    ])
+    assert load_winery_alias_groups(path) == [["Поместье Голубицкое", "Golubitskoe Estate"]]
+
+
+def test_load_winery_alias_groups_drops_groups_with_fewer_than_two_strings(tmp_path):
+    path = _write_aliases(tmp_path, [{"strings": ["Одна Строка"]}, {"strings": []}])
+    assert load_winery_alias_groups(path) == []
+
+
+def test_load_winery_alias_groups_strips_and_drops_blank_or_non_string_entries(tmp_path):
+    path = _write_aliases(tmp_path, [{"strings": ["  А  ", "", "  Б  ", None, 42]}])
+    assert load_winery_alias_groups(path) == [["А", "Б"]]
+
+
+def test_load_winery_alias_groups_ignores_malformed_group_entries(tmp_path):
+    """Группа-не-словарь и "strings"-не-список просто пропускаются, не валят загрузку целиком."""
+    path = _write_aliases(tmp_path, ["не словарь", {"strings": "не список"}, {"strings": ["X", "Y"]}])
+    assert load_winery_alias_groups(path) == [["X", "Y"]]
+
+
+def test_default_winery_aliases_path_uses_env_when_set(monkeypatch, tmp_path):
+    custom = tmp_path / "custom-aliases.json"
+    monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(custom))
+    assert default_winery_aliases_path() == custom
+
+
+def test_default_winery_aliases_path_falls_back_to_case_data_dir(monkeypatch, tmp_path):
+    monkeypatch.delenv("CV_WINERY_ALIASES_JSON", raising=False)
+    monkeypatch.setattr(config, "CASE_DATA_DIR", tmp_path)
+    assert default_winery_aliases_path() == tmp_path / "winery_aliases.json"
+
+
+def test_load_winery_index_missing_aliases_file_matches_load_catalog_index_object(tmp_path):
+    """brief п.3: "файл алиасов отсутствует — старое поведение" — не просто те же
+    числа, а РОВНО тот же кэшированный объект `TextIndexV2` (никакой копии)."""
+    csv_path = _write_case_csv(tmp_path, [
+        {"Slug": "a", "Название вина": "Вино А", "Винодельня": "Фанагория"},
+        {"Slug": "b", "Название вина": "Вино Б", "Винодельня": "Массандра"},
+    ])
+    load_catalog_index.cache_clear()
+    plain = load_catalog_index(str(csv_path), fields=("winery",))
+    got = load_winery_index(str(csv_path), aliases_json=tmp_path / "no-such-aliases.json")
+    assert got is plain
+
+
+def test_load_winery_index_empty_groups_file_matches_load_catalog_index_object(tmp_path):
+    csv_path = _write_case_csv(tmp_path, [
+        {"Slug": "a", "Название вина": "Вино А", "Винодельня": "Фанагория"},
+    ])
+    aliases_path = _write_aliases(tmp_path, [])
+    load_catalog_index.cache_clear()
+    plain = load_catalog_index(str(csv_path), fields=("winery",))
+    got = load_winery_index(str(csv_path), aliases_json=aliases_path)
+    assert got is plain
+
+
+def test_load_winery_index_slug_outside_any_group_is_unaffected(tmp_path):
+    """Регрессия (brief п.3): винодельня НЕ входит ни в одну группу алиасов -> её
+    recall/mass остаются РОВНО теми же, что у `load_catalog_index()` без алиасов —
+    не просто "top-1 совпадает", а те же числа."""
+    csv_path = _write_case_csv(tmp_path, [
+        {"Slug": "a", "Название вина": "Вино А", "Винодельня": "Фанагория"},
+        {"Slug": "b", "Название вина": "Вино Б", "Винодельня": "Массандра"},
+    ])
+    aliases_path = _write_aliases(tmp_path, [{"strings": ["Совсем Другая Винодельня", "Other Winery"]}])
+
+    load_catalog_index.cache_clear()
+    plain = load_catalog_index(str(csv_path), fields=("winery",))
+    aliased = load_winery_index(str(csv_path), aliases_json=aliases_path)
+
+    plain_rec, plain_mass = plain.scores("фанагория массандра")
+    aliased_rec, aliased_mass = aliased.scores("фанагория массандра")
+    assert dict(zip(aliased.slugs, aliased_rec)) == dict(zip(plain.slugs, plain_rec))
+    assert dict(zip(aliased.slugs, aliased_mass)) == dict(zip(plain.slugs, plain_mass))
+
+
+def test_load_winery_index_merges_and_fixes_golubitskoe_style_gate_false_negative(tmp_path):
+    """Основной сценарий брифа (agents/ML-1-*.md, задача 2; reports/ml-lead-plan.md,
+    промах 93.97): каталог пишет ОДНОГО производителя ДВУМЯ строками «Винодельня» —
+    «Поместье Голубицкое» (2 SKU, включает истину) и «Golubitskoe Estate» (28 SKU,
+    включает ложный top-1). Без алиаса гейт «не подтверждена винодельня» наказывает
+    ИМЕННО истину (её собственная строка не совпадает с «Golubitskoe» на этикетке
+    целиком); с алиасом обе строки подтверждают друг друга — recall становится РАВНЫМ
+    и проходит `winery_recall_floor` для ОБОИХ."""
+    csv_path = _write_case_csv(tmp_path, [
+        {"Slug": "truth", "Название вина": "Golubitskoe Estate Chardonnay", "Винодельня": "Поместье Голубицкое"},
+        {"Slug": "rival", "Название вина": "Golubitskoe Estate Reserve", "Винодельня": "Golubitskoe Estate"},
+    ])
+    aliases_path = _write_aliases(tmp_path, [
+        {"strings": ["Поместье Голубицкое", "Golubitskoe Estate"], "anchor_token": "golubitskoe"},
+    ])
+    query = "Golubitskoe Estate Chardonnay"  # текст этикетки (OCR/VLM), как в разборе промаха
+
+    load_catalog_index.cache_clear()
+    plain_winery = load_catalog_index(str(csv_path), fields=("winery",))
+    plain_rec, _ = plain_winery.scores(query)
+    plain_by_slug = dict(zip(plain_winery.slugs, plain_rec))
+    assert plain_by_slug["truth"] < 0.5  # без алиаса — recall истины НИЖЕ пола (как в отчёте: 0.40)
+    assert plain_by_slug["rival"] >= 0.5  # у конкурента recall полный (оба слова совпали)
+
+    aliased_winery = load_winery_index(str(csv_path), aliases_json=aliases_path)
+    aliased_rec, _ = aliased_winery.scores(query)
+    aliased_by_slug = dict(zip(aliased_winery.slugs, aliased_rec))
+    assert aliased_by_slug["truth"] == pytest.approx(aliased_by_slug["rival"])  # оба написания -> тот же recall
+    assert aliased_by_slug["truth"] >= 0.5  # теперь подтверждена тоже
+
+    # Практический эффект через fuse(): текстовая масса уже отдаёт победу truth (её
+    # название само содержит «Golubitskoe Estate»), но БЕЗ алиаса гейт срезает это
+    # преимущество до потери top-1 — С алиасом истина побеждает.
+    text_index = TextIndexV2(
+        _catalog({
+            "truth": {"name": "Golubitskoe Estate Chardonnay", "winery": "Поместье Голубицкое"},
+            "rival": {"name": "Golubitskoe Estate Reserve", "winery": "Golubitskoe Estate"},
+        }),
+        fields=("name", "winery"),
+    )
+    cv_scores = {"truth": 0.8678, "rival": 0.8676}  # CV — почти ничья, как в разборе промаха
+    without_alias = fuse(
+        cv_scores, text_index, query, w=0.3, winery_index=plain_winery, unconfirmed_winery_w=0.5,
+    )
+    with_alias = fuse(
+        cv_scores, text_index, query, w=0.3, winery_index=aliased_winery, unconfirmed_winery_w=0.5,
+    )
+    assert without_alias.ranked[0].slug == "rival"  # баг ДО этой правки — гейт наказывает truth незаслуженно
+    assert with_alias.ranked[0].slug == "truth"  # ПОСЛЕ правки — оба написания подтверждают друг друга
+
+
+def test_load_winery_index_returns_new_object_when_aliases_applied(tmp_path):
+    """Не мутирует закэшированный `load_catalog_index()` — когда алиас реально
+    что-то меняет, `load_winery_index()` строит НОВЫЙ объект (иначе испортил бы
+    результат для любого другого вызывающего кода с тем же catalog_csv)."""
+    csv_path = _write_case_csv(tmp_path, [
+        {"Slug": "truth", "Название вина": "Вино", "Винодельня": "Поместье Голубицкое"},
+        {"Slug": "rival", "Название вина": "Вино", "Винодельня": "Golubitskoe Estate"},
+    ])
+    aliases_path = _write_aliases(tmp_path, [{"strings": ["Поместье Голубицкое", "Golubitskoe Estate"]}])
+    load_catalog_index.cache_clear()
+    plain = load_catalog_index(str(csv_path), fields=("winery",))
+    plain_rec_before, _ = plain.scores("Golubitskoe Estate")
+    aliased = load_winery_index(str(csv_path), aliases_json=aliases_path)
+    assert aliased is not plain
+    # закэшированный "plain" не испорчен последующим вызовом load_winery_index()
+    plain_rec_after, _ = plain.scores("Golubitskoe Estate")
+    assert plain_rec_after == plain_rec_before

@@ -422,15 +422,25 @@ def _fusion_colors(catalog_csv: str):
 
 
 @lru_cache(maxsize=4)
-def _fusion_winery_index(catalog_csv: str):
+def _fusion_winery_index(catalog_csv: str, aliases_json: str):
     """agents/H1-cpu-path.md: `cv.text_fusion.TextIndexV2` ТОЛЬКО по полю `winery` —
     для гейта «не подтверждена винодельня» (`cv.text_fusion.fuse(winery_index=...)`).
     ОТДЕЛЬНЫЙ индекс/кэш от `_fusion_text_index` выше (тот несёт `FUSION_FIELDS`
     целиком — name+winery+grape+category+sugar, непригоден для recall ИМЕННО поля
     winery) — тот же паттерн ключевания строкой по `catalog_csv`, тот же честный
-    выход на отсутствующий CSV (пустой индекс, см. `load_catalog_index`)."""
+    выход на отсутствующий CSV (пустой индекс, см. `load_catalog_index`).
+
+    agents/ML-1-*.md (задача 2, 22.09): делегирует `cv.text_fusion.load_winery_index()`
+    — ОБЪЕДИНЯЕТ доктокены слагов, чья строка «Винодельня» входит в проверенную
+    вручную группу алиасов (`case-data/winery_aliases.json`, путь резолвит
+    вызывающий код через `text_fusion.default_winery_aliases_path()`, тот же живой
+    резолв env, что `cv.families.default_families_path()`). Кэш ключуется ОБОИМИ
+    путями (catalog_csv, aliases_json) — разные CASE_DATA_DIR/CV_WINERY_ALIASES_JSON
+    в разных тестах не видят чужой кэш, тот же принцип, что `_fusion_family_by_slug`
+    ниже. Файл алиасов отсутствует/пуст -> честная деградация к прежнему 1:1
+    (см. докстринг `load_winery_index`)."""
     _, text_fusion, _ = _import_cv_fusion_deps()
-    return text_fusion.load_catalog_index(catalog_csv, fields=("winery",))
+    return text_fusion.load_winery_index(catalog_csv, aliases_json=aliases_json)
 
 
 @lru_cache(maxsize=4)
@@ -461,7 +471,17 @@ def _fusion_text_and_vectors(
     CV-эмбеддинги считаются в этом же потоке, пока текст читается. Модель не ответила к
     общему дедлайну `VISION_LLM_TIMEOUT_S` от начала чтения, ошиблась или вернула пустые
     поля — её вклад пропускается; не ответила ни одна — слияние идёт на тексте OCR.
-    Источник в ответе: "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr"."""
+    Источник в ответе: "vlm", "vlm_local", "vlm_both" (ответили обе) или "ocr".
+
+    agents/ML-1-*.md (задача 1): `settings.cv_fusion_merge_model_text` (дефолт
+    выключен) — когда включён И хотя бы одна модель ответила, OCR ДОБАВЛЯЕТСЯ к
+    тексту модели(ей) через пробел, а не служит только фолбэком на случай "не
+    ответила НИ ОДНА модель" (та ветка ниже не меняется). Замер offline на 62
+    живых фото: "vlm"+OCR 96.8% против 95.2% у одной "vlm" (reports/ml-lead-plan.md,
+    тот же потолок, что "vlm"+"gwf1024" вдвоём без OCR). Флаг не влияет на
+    `source` (по-прежнему только "какая модель ответила") и не влияет на
+    `ocr_text` — третий элемент кортежа, отдельное поле, которое видит
+    near-dup verify()."""
     mode = settings.cv_fusion_text_source
     # Общий дедлайн от начала чтения, а не таймаут на каждую модель: скрипт проверки режет
     # запрос на 10 с, а у шлюза длинный хвост (p95 ~9.8 с на приёмке 21.09) — кто не
@@ -494,7 +514,9 @@ def _fusion_text_and_vectors(
     if not got:
         return ocr_text, "ocr", ocr_text, vectors
     source = "vlm_both" if len(got) == 2 else next(iter(got))
-    return " ".join(got[k] for k in ("vlm", "vlm_local") if k in got), source, ocr_text, vectors
+    model_text = " ".join(got[k] for k in ("vlm", "vlm_local") if k in got)
+    label_text = f"{model_text} {ocr_text}".strip() if settings.cv_fusion_merge_model_text else model_text
+    return label_text, source, ocr_text, vectors
 
 
 def _run_photo_scan_fusion(
@@ -523,7 +545,9 @@ def _run_photo_scan_fusion(
 
     label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(image_bytes, image_index, verifier, settings)
     text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
-    winery_index = _fusion_winery_index(str(tr.default_catalog_csv_path()))
+    winery_index = _fusion_winery_index(
+        str(tr.default_catalog_csv_path()), str(text_fusion.default_winery_aliases_path()),
+    )
     family_by_slug = _fusion_family_by_slug(str(cv_families.default_families_path()))
 
     text_top = text_fusion.text_top_slugs_for_ocr(text_index, label_text, text_fusion.DEFAULT_TEXT_TOP_N)

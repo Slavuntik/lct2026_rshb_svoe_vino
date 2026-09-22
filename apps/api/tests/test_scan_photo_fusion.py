@@ -36,10 +36,19 @@ def _write_fusion_catalog_csv(tmp_path, rows: list[dict[str, str]]):
     return path
 
 
-def _enable_fusion(app, tmp_path, monkeypatch, *, catalog_rows=None, families=None, **overrides):
+def _enable_fusion(
+    app, tmp_path, monkeypatch, *, catalog_rows=None, families=None, winery_aliases=None, **overrides,
+):
     """Общая обвязка: включает CV_FUSION, изолирует текстовый индекс/перепись
     семей от боевого case-data (детерминизм), опционально задаёт остальные
-    settings полем `overrides` (dataclasses.replace)."""
+    settings полем `overrides` (dataclasses.replace).
+
+    `winery_aliases` (agents/ML-1-*.md, задача 2) — как `families`: словарь
+    `{"groups": [...]}` (см. `cv.text_fusion.load_winery_alias_groups`),
+    записывается в `<tmp_path>/winery_aliases.json` и включается через
+    `CV_WINERY_ALIASES_JSON`. Не передан -> путь по умолчанию
+    (`$CASE_DATA_DIR/winery_aliases.json`, т.е. `tmp_path/winery_aliases.json`)
+    просто не существует — `_fusion_winery_index()` честно деградирует к 1:1."""
     monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))  # пусто — card/candidates честно деградируют на RAG-мок
     csv_path = _write_fusion_catalog_csv(tmp_path, catalog_rows or [])
     monkeypatch.setenv("CV_CASE_CATALOG_CSV", str(csv_path))
@@ -47,13 +56,18 @@ def _enable_fusion(app, tmp_path, monkeypatch, *, catalog_rows=None, families=No
         fam_path = tmp_path / "families.json"
         fam_path.write_text(json.dumps(families, ensure_ascii=False), encoding="utf-8")
         monkeypatch.setenv("CV_FAMILIES_JSON", str(fam_path))
+    if winery_aliases is not None:
+        aliases_path = tmp_path / "winery_aliases.json"
+        aliases_path.write_text(json.dumps(winery_aliases, ensure_ascii=False), encoding="utf-8")
+        monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(aliases_path))
     app.state.settings = dataclasses.replace(app.state.settings, cv_fusion=True, **overrides)
     # lru_cache модулей слияния — сбрасываем между тестами, ключ (str-путь) и так
     # уникален per-tmp_path, но подчищаем явно ради безопасности при повторных путях.
-    from app.cv.service import _fusion_colors, _fusion_family_by_slug, _fusion_text_index
+    from app.cv.service import _fusion_colors, _fusion_family_by_slug, _fusion_text_index, _fusion_winery_index
     _fusion_text_index.cache_clear()
     _fusion_family_by_slug.cache_clear()
     _fusion_colors.cache_clear()
+    _fusion_winery_index.cache_clear()
 
 
 class _FusionImageIndex:

@@ -88,6 +88,25 @@ top-5 ANN, которым ограничивался `cv.text_rerank`.
 достаточно точна, чтобы урезание текста только теряло уже подтверждённый сигнал) —
 там передаётся `1.0` (без эффекта).
 
+### Алиасы написания винодельни (agents/ML-1-*.md, задача 2, 22.09)
+
+Гейт выше наказывает и тогда, когда винодельня «не подтверждена» ЛОЖНО: каталог
+записал ОДНОГО реального производителя ДВУМЯ разными строками поля «Винодельня»
+(пример — слаг 93.97, «Поместье Голубицкое» на 2 SKU и «Golubitskoe Estate» на 28,
+reports/ml-lead-plan.md), и recall по СВОЕЙ строке SKU не дотягивает до
+`winery_recall_floor`, хотя запрос называет производителя ВЕРНО, просто другим
+написанием, чем у конкретного SKU. `load_winery_index()` ниже читает проверенный
+ВРУЧНУЮ список таких групп (`case-data/winery_aliases.json`,
+`CV_WINERY_ALIASES_JSON`) и для слага из группы считает доктокены winery_index
+ОБЪЕДИНЕНИЕМ токенов ВСЕХ строк группы — recall тогда отвечает на вопрос
+"подтверждён ли производитель хоть одним из его известных написаний", а не
+"подтверждена ли ИМЕННО строка каталога этого SKU". Файл отсутствует/пуст ->
+прежнее поведение 1:1 (см. докстринг функции). Список НЕ строится автоматически по
+частоте токенов поля winery — полный разбор (`qa/real_photos_winery_alias.py`)
+показал, что одинаково редкие токены часто РОДОВЫЕ слова международного винного
+брендинга (estate/vineyards/chateau/семейная — у РАЗНЫХ производителей), не имена
+собственные; в файл идут только вручную подтверждённые пары.
+
 ## Гейт уверенности (новый, независимый от `CV_ABS_FLOOR`/`CV_MARGIN_FLOOR`)
 
 Уверенно, если ОБА условия: (1) отрыв ИТОГОВОГО (`final`) скора top-1 от первого
@@ -102,14 +121,17 @@ null-gap, что contracts/image-scan.md v0.4.7 §2 для обычного ге
 from __future__ import annotations
 
 import csv
+import json
 import math
+import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 
 from rapidfuzz import fuzz
 
+from cv import config
 from cv import text_rerank as tr
 
 # --------------------------------------------------------------------------------------
@@ -362,6 +384,102 @@ def load_catalog_index(catalog_csv: str, fields: tuple[str, ...] = FUSION_FIELDS
     catalog = tr.load_catalog_text(csv_path)
     extra = _load_extra_fields(csv_path, catalog)
     return TextIndexV2(catalog, fields=fields, extra=extra)
+
+
+# --------------------------------------------------------------------------------------
+# Алиасы написания винодельни (agents/ML-1-*.md, задача 2) — ТОЛЬКО для winery_index,
+# см. докстринг модуля "Алиасы написания винодельни"; основной индекс слияния
+# (FUSION_FIELDS, load_catalog_index() выше) эта секция не строит и не трогает.
+# --------------------------------------------------------------------------------------
+
+
+def load_winery_alias_groups(path: Path) -> list[list[str]]:
+    """Группы проверенных ВРУЧНУЮ написаний ОДНОЙ и той же винодельни
+    (`case-data/winery_aliases.json`) — каждая группа: список строк поля
+    «Винодельня» каталога РОВНО как они там записаны (не токены, не regex).
+
+    Тот же принцип честной деградации, что `cv.families.load_family_by_slug()`:
+    путь не существует, JSON битый, не словарь, нет ключа "groups" -> `[]`
+    (вызывающий код, `load_winery_index()` ниже, тогда строит индекс 1:1, как до
+    этой правки, ничего не ломая). Группа без хотя бы ДВУХ непустых строк
+    отбрасывается — объединять нечего."""
+    if not path.exists():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(payload, dict):
+        return []
+    raw_groups = payload.get("groups")
+    if not isinstance(raw_groups, list):
+        return []
+    out: list[list[str]] = []
+    for g in raw_groups:
+        strings = g.get("strings") if isinstance(g, dict) else None
+        if not isinstance(strings, list):
+            continue
+        cleaned = [s.strip() for s in strings if isinstance(s, str) and s.strip()]
+        if len(cleaned) >= 2:
+            out.append(cleaned)
+    return out
+
+
+def default_winery_aliases_path() -> Path:
+    """`CV_WINERY_ALIASES_JSON`, иначе `$CASE_DATA_DIR/winery_aliases.json` — тот
+    же паттерн живого резолва env ПРИ КАЖДОМ ВЫЗОВЕ, что `cv.families.
+    default_families_path()` (см. её докстринг: не замораживается при импорте
+    модуля — вызывающий код читает актуальный env на момент вызова, не на
+    момент импорта `cv.text_fusion`)."""
+    raw = os.environ.get("CV_WINERY_ALIASES_JSON")
+    if raw:
+        return Path(raw)
+    return config.CASE_DATA_DIR / "winery_aliases.json"
+
+
+def load_winery_index(catalog_csv: str, aliases_json: "str | Path | None" = None) -> TextIndexV2:
+    """`TextIndexV2` ТОЛЬКО по полю `winery` — то, что `_fusion_winery_index()` в
+    `app/cv/service.py` строит СТРОГО с `fields=("winery",)` для гейта «не
+    подтверждена винодельня» (`fuse(winery_index=...)`).
+
+    Единственное отличие от голого `load_catalog_index(catalog_csv,
+    fields=("winery",))`: слаг, чья СЫРАЯ строка «Винодельня» (после `strip()`)
+    совпадает с ОДНОЙ из строк подтверждённой вручную группы алиасов
+    (`load_winery_alias_groups()`), перед токенизацией получает поле winery,
+    ЗАМЕНЁННОЕ на конкатенацию ВСЕХ строк этой группы через пробел —
+    `TextIndexV2`/`tr.tokenize()` разбивают текст по пробелу на каждом шаге
+    нормализации, поэтому конкатенация даёт РОВНО объединение множеств токенов
+    отдельных строк (не приближение, не эвристика). Слаг вне любой группы
+    получает свою строку как есть — 1:1, без изменений, регрессия исключена по
+    построению.
+
+    Честная деградация — аргумент `aliases_json` не передан и файл по умолчанию
+    отсутствует, JSON пуст/битый, или НИ ОДНА строка каталога не совпала ни с
+    одной группой -> результат ПОБИТОВО РАВЕН
+    `load_catalog_index(catalog_csv, fields=("winery",))` (тот же кэшированный
+    объект `TextIndexV2`, не копия) — та же дисциплина честного "нет файла — нет
+    эффекта", что `cv.families.load_family_by_slug`. Основной индекс слияния
+    (`FUSION_FIELDS`, `_fusion_text_index()`/`load_catalog_index()` без
+    переопределения `fields`) эта функция не строит и не трогает вовсе — алиасы
+    применяются ИСКЛЮЧИТЕЛЬНО к winery-only индексу (agents/ML-1-*.md, задача 2:
+    "алиас только в winery_index")."""
+    plain = load_catalog_index(catalog_csv, fields=("winery",))
+    groups = load_winery_alias_groups(Path(aliases_json) if aliases_json else default_winery_aliases_path())
+    csv_path = Path(catalog_csv)
+    if not groups or not catalog_csv or not csv_path.exists():
+        return plain  # нет групп алиасов или нет CSV каталога — 1:1, как раньше
+
+    merged_text_by_string = {s.strip().casefold(): " ".join(strings) for strings in groups for s in strings}
+    catalog = tr.load_catalog_text(csv_path)
+    patched: dict[str, "tr.CatalogText"] = {}
+    for slug, entry in catalog.items():
+        merged_text = merged_text_by_string.get(entry.winery.strip().casefold())
+        if merged_text is not None and merged_text != entry.winery:
+            patched[slug] = replace(entry, winery=merged_text)
+    if not patched:
+        return plain  # ни один слаг каталога не попал ни в одну группу алиасов
+
+    return TextIndexV2({**catalog, **patched}, fields=("winery",))
 
 
 def top_text_slugs(index: TextIndexV2, mass: list[float], limit: int) -> list[str]:
