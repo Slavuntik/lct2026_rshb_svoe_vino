@@ -32,6 +32,10 @@ echo "5/7 PaddleOCR";          put "$HOME/.paddlex/official_models" "$DST/models
 echo "6/7 кейс и метрики";     put "$CASE/slug_refs.json" "$CASE/families.json" "$DST/case/"
                                # сырой CSV каталога — текстовый индекс слияния CV+текст (cv/text_fusion.py)
                                put "$CASE/strapi_output0709.csv" "$DST/case/"
+                               # алиасы виноделен (ML-1, reports/ml-eng-ml1.md): cv/text_fusion.py::
+                               # default_winery_aliases_path() читает $CASE_DATA_DIR/winery_aliases.json;
+                               # файл вне git — только этим sync (или разовым rsync ниже в README).
+                               put "$CASE/winery_aliases.json" "$DST/case/"
                                put "$ROOT/qa/scan-eval-runs/real-photos-stand/eval_report_snapshot.json" "$DST/eval_report_snapshot.json"
 # agents/B8-candidates-card.md (contracts/image-scan.md v0.4.11): фолбэк-карточка
 # кейс-слагов вне нашего RAG-каталога — case_catalog.json (apps/api/scripts/

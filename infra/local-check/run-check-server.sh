@@ -7,6 +7,8 @@
 #   (agents/H2-rapidocr-multiscale.md — фолбэк был PaddleOCR, теперь быстрее и не хуже по
 #   точности на этом же кадре).
 # Приёмка 21.09 (62 живых фото из каталога): обе модели — top-1 95.2%, медиана 5.3 с.
+# ML-1 (reports/ml-eng-ml1.md, 22.09): CV_FUSION_MERGE_MODEL_TEXT=1 ниже — OCR добавляется к
+# тексту модели через пробел, не только фолбэк на её молчание — режим vlm 95.2% → 96.8% top-1.
 #
 # Адрес и ключ шлюза — из файла вне репозитория (по умолчанию vines/vlm-lab/.env, chmod 600,
 # строки LLM_GATEWAY_URL=... и LLM_GATEWAY_KEY=...). Нет файла — только локальная модель.
@@ -37,7 +39,7 @@ exec env \
   CV_DATA_DIR="$R/packages/cv/data-d1" CV_MODEL=google/siglip2-base-patch16-384 \
   CASE_DATA_DIR="$CASE" HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false \
   LLM_PROVIDER=mock \
-  CV_FUSION=1 CV_FUSION_W=0.3 CV_FUSION_TEXT_SOURCE="${TEXT_SOURCE:-vlm_both}" \
+  CV_FUSION=1 CV_FUSION_W=0.3 CV_FUSION_MERGE_MODEL_TEXT=1 CV_FUSION_TEXT_SOURCE="${TEXT_SOURCE:-vlm_both}" \
   CV_OCR_ENGINE="${OCR_ENGINE:-rapid}" CV_OCR_RAPID_SIZES="${OCR_RAPID_SIZES:-640,960}" \
   CV_OCR_LABEL_SIZE="${OCR_LABEL_SIZE:-1280}" \
   CV_FUSION_CROPS="${FUSION_CROPS:-8}" \
