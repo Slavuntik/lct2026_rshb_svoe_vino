@@ -21,7 +21,7 @@ import yaml
 from starlette.testclient import TestClient
 
 from tests.conftest import auth_header, register_user
-from tests.test_pairing_router import _dish_manual, _dish_photo, _mock_vlm
+from tests.test_pairing_router import _dish_manual, _dish_photo, _mock_vlm, _patch_small_wine_catalog
 
 OPENAPI_PATH = Path(__file__).resolve().parents[3] / "contracts" / "openapi.yaml"
 
@@ -90,6 +90,7 @@ def assert_dish_pairing_response_matches_contract(body: dict) -> None:
 
 def test_dish_photo_food_response_matches_openapi_0_3_4(client: TestClient, app, monkeypatch):
     import dataclasses
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     app.state.settings = dataclasses.replace(app.state.settings, vision_llm_url="https://gw.example/v1", vision_llm_key="k")
     _mock_vlm(monkeypatch, {
         "is_food": True, "is_wine_bottle": False, "dish": "Сырная тарелка",
@@ -151,7 +152,8 @@ def test_dish_photo_unsure_response_matches_openapi_0_3_4(client: TestClient):
 # dish (ручной) — всегда status=food по контракту
 # --------------------------------------------------------------------------
 
-def test_dish_manual_response_matches_openapi_0_3_4(client: TestClient):
+def test_dish_manual_response_matches_openapi_0_3_4(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     tokens = register_user(client, email="pairing-schema-manual@example.com")
     r = _dish_manual(client, {"category": "Сыры", "dish": "Камамбер"}, headers=auth_header(tokens))
     assert r.status_code == 200
@@ -163,7 +165,8 @@ def test_dish_manual_response_matches_openapi_0_3_4(client: TestClient):
     assert body["dish"]["ingredients"] == []
 
 
-def test_dish_manual_without_dish_name_response_matches_openapi_0_3_4(client: TestClient):
+def test_dish_manual_without_dish_name_response_matches_openapi_0_3_4(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "BBQ")
     tokens = register_user(client, email="pairing-schema-manual-noname@example.com")
     r = _dish_manual(client, {"category": "BBQ"}, headers=auth_header(tokens))
     assert r.status_code == 200

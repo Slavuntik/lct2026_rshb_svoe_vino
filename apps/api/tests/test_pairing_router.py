@@ -9,6 +9,7 @@ import dataclasses
 
 from starlette.testclient import TestClient
 
+from app import dish_pairing
 from app.cv import vision_llm
 from tests.conftest import auth_header, make_guest, register_user
 
@@ -23,6 +24,22 @@ def _dish_photo(client: TestClient, payload: bytes, *, headers: dict | None = No
 
 def _dish_manual(client: TestClient, body: dict, *, headers: dict | None = None):
     return client.post("/v1/pairing/dish", json=body, headers=headers or {})
+
+
+def _patch_small_wine_catalog(monkeypatch, category: str = "Сыры") -> None:
+    """Подбор вин (app/dish_pairing.py) с 22.09 сканирует ВЕСЬ каталог
+    (`case_catalog.json`, 2103 реальных слага на этой машине) — герметичному
+    и быстрому юнит-тесту роутера реальный файл не нужен и вреден (внешняя
+    зависимость, секунды на прогон вместо миллисекунд): подменяем
+    `_iter_catalog_cards()` целиком, тот же приём, что tests/
+    test_dish_pairing.py. Одно вино с тегом `category` — этого достаточно
+    для тестов роутера (им важен статус/форма ответа, не разнообразие подбора)."""
+    source = {
+        "name": "Тестовое вино", "winery": "test-winery", "winery_name": "Test Winery",
+        "color": "красное", "sugar_category": "сухое", "image_url": "https://example.com/test.webp",
+        "food_pairings": [category],
+    }
+    monkeypatch.setattr(dish_pairing, "_iter_catalog_cards", lambda retriever, settings: (("test-wine", source, None),))
 
 
 # --------------------------------------------------------------------------
@@ -86,6 +103,7 @@ def _mock_vlm(monkeypatch, payload: dict):
 
 
 def test_dish_photo_status_food_with_recognized_category(client: TestClient, app, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     app.state.settings = dataclasses.replace(app.state.settings, vision_llm_url="https://gw.example/v1", vision_llm_key="k")
     _mock_vlm(monkeypatch, {
         "is_food": True, "is_wine_bottle": False, "dish": "Сырная тарелка",
@@ -171,13 +189,15 @@ def test_dish_manual_requires_auth(client: TestClient):
     assert r.status_code == 401
 
 
-def test_dish_manual_guest_is_allowed(client: TestClient):
+def test_dish_manual_guest_is_allowed(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     tokens = make_guest(client)
     r = _dish_manual(client, {"category": "Сыры"}, headers=auth_header(tokens))
     assert r.status_code == 200
 
 
-def test_dish_manual_valid_category_returns_food_with_user_source(client: TestClient):
+def test_dish_manual_valid_category_returns_food_with_user_source(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     tokens = register_user(client, email="dish-manual@example.com")
     r = _dish_manual(client, {"category": "сыры", "dish": "Камамбер"}, headers=auth_header(tokens))
     assert r.status_code == 200
@@ -189,7 +209,8 @@ def test_dish_manual_valid_category_returns_food_with_user_source(client: TestCl
     assert len(body["wines"]) >= 1
 
 
-def test_dish_manual_category_typo_is_fuzzy_corrected(client: TestClient):
+def test_dish_manual_category_typo_is_fuzzy_corrected(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Азиатская кухня")
     tokens = register_user(client, email="dish-manual-fuzzy@example.com")
     r = _dish_manual(client, {"category": "Азиятская кухня"}, headers=auth_header(tokens))
     assert r.status_code == 200
@@ -203,14 +224,16 @@ def test_dish_manual_unknown_category_is_400_validation_error(client: TestClient
     assert r.json()["error"]["code"] == "validation_error"
 
 
-def test_dish_manual_dish_name_optional(client: TestClient):
+def test_dish_manual_dish_name_optional(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     tokens = register_user(client, email="dish-manual-no-name@example.com")
     r = _dish_manual(client, {"category": "Сыры"}, headers=auth_header(tokens))
     assert r.status_code == 200
     assert r.json()["dish"]["name"] == ""
 
 
-def test_dish_manual_deterministic_across_repeated_calls(client: TestClient):
+def test_dish_manual_deterministic_across_repeated_calls(client: TestClient, monkeypatch):
+    _patch_small_wine_catalog(monkeypatch, "Сыры")
     tokens = register_user(client, email="dish-manual-determinism@example.com")
     headers = auth_header(tokens)
     r1 = _dish_manual(client, {"category": "Сыры"}, headers=headers)

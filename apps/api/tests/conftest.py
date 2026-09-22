@@ -22,6 +22,21 @@ def _reset_cv_fusion_model_breakers():
     _reset_model_breakers()
 
 
+@pytest.fixture(autouse=True)
+def _reset_dish_pairing_catalog_cache():
+    """Тимлид 22.09 (правка после needs-work по пулу подбора вин к блюду):
+    `app.dish_pairing._build_catalog_cards()` кэширует ВЕСЬ каталог НА ПРОЦЕСС
+    (`@lru_cache` по объекту `retriever`) — тот же класс риска, что у
+    `_MODEL_BREAKERS` выше, если какой-то тест не подменит
+    `_iter_catalog_cards()` явно (штатный путь тестов этого модуля — см.
+    tests/test_dish_pairing.py) и всё же построит реальный кэш."""
+    from app.dish_pairing import _reset_catalog_cache
+
+    _reset_catalog_cache()
+    yield
+    _reset_catalog_cache()
+
+
 @pytest.fixture()
 def app(monkeypatch):
     """Свежее приложение на изолированной in-memory БД, mock-LLM и mock-RAG.
