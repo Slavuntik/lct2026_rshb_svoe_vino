@@ -15,6 +15,26 @@
 #   контракт, не новая функциональность; бамп потребовал бы синхронной правки строки
 #   version= в apps/api/app/main.py (зона backend, см. reports/backend-swagger.md «Риски»)
 #   — оставляю тому, кто следующим меняет реальное поведение этих путей.
+# v0.3.4 (22.09, architect, задача тимлида): +POST /pairing/dish-photo, +POST /pairing/dish —
+#   подбор вина к фото блюда (contracts/post-scan.md v1.1 §4, НОВАЯ функциональность, не
+#   довнесение). info.version БАМПНУТ (0.3.3→0.3.4) в отличие от предыдущей записи — здесь
+#   контракт идёт ВПЕРЕДИ реализации, не вдогонку; apps/api/app/main.py::API_VERSION ("0.3.3")
+#   backend синхронизирует при реализации (та же оговорка, что выше, теперь в другую сторону).
+# Ссылки на вино в выдаче (v0.3.4, задача тимлида 22.09): в любом списке вин — цитаты-вина
+#   чата (/chat, событие citation с wine_id), аналоги (/analogs, similar/analogs в rich-скане),
+#   кандидаты скана (candidates, image-scan.md v0.4.11), вина подбора к блюду
+#   (/pairing/dish-photo, /pairing/dish) — клиент ведёт СНАЧАЛА на внутреннюю карточку
+#   /app/wine/:wineId (frontend-маршрут, не путь этого API); внешняя ссылка на портал
+#   (source_url) показывается ТОЛЬКО внутри самой карточки (GET /wines/{wine_id}.source_url,
+#   WineCardContent.tsx), не как прямая ссылка из списка/цитаты. Статус на 22.09 (сверено
+#   architect по коду apps/web/src, read-only): analogs и кандидаты скана УЖЕ соответствовали на
+#   момент ратификации (AnalogWine/ScanCandidateWine — переход по wine_id, ScanCandidateItem.
+#   source_url клиентом как прямая ссылка не использовался). Найденное отклонение — chat/
+#   ChatScreen.tsx::CitationBadge (href={citation.url} напрямую для любой цитаты с wine_id) —
+#   ИСПРАВЛЕНО тем же днём (`5d7772a`, `reports/frontend-dish-photo-links.md`): цитата с
+#   wine_id теперь внутренняя навигация на /app/wine/:wineId; цитата ТОЛЬКО с chunk_id (статья/
+#   знание, нет карточки вина) — url остаётся легальной прямой ссылкой, правило касается именно
+#   wine_id-цитат. Все четыре места правилу соответствуют на 22.09.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -24,7 +44,7 @@
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.3.3
+  version: 0.3.4
 servers:
   - url: /v1
 paths:
@@ -198,8 +218,12 @@ paths:
         multipart image (до 25 МБ; decode применяет EXIF Orientation, принимает HEIC).
         ?flat=1 => flat-режим скрипта оценки: ответ РОВНО {"slug": "..."}, всегда лучший
         доступный slug, несгораемый (любая ошибка -> валидный JSON, не 500), без auth.
-        Без flat (или flat=0) => rich-режим для UI (Bearer, см. /auth/guest). Дефолт при
-        отсутствии query-параметра — env SCAN_FLAT_DEFAULT.
+        Без flat (или flat=0) => rich-режим для UI. Дефолт при отсутствии query-параметра —
+        env SCAN_FLAT_DEFAULT. Auth (уточнено v0.3.4, сверено architect по коду
+        routers/scan.py, 22.09): ОПЦИОНАЛЬНЫЙ Bearer в ОБОИХ режимах (не только flat) —
+        `get_current_principal_optional`, сознательное отступление от общего правила
+        "scan/chat/wines/analogs требуют принципала" (нужно скрипту оценки без токена);
+        токен, если есть, только атрибутирует запись.
       parameters:
         - name: flat
           in: query
@@ -373,6 +397,82 @@ paths:
                     description: непусто, когда pairings=[] (basis=unavailable либо ни одно правило не сработало)
         "404": { description: "not_found — wine_id не резолвится ни нашим каталогом, ни каталогом кейса (как GET /wines/<wine_id>)" }
 
+  /pairing/dish-photo:
+    post:
+      summary: >
+        Фото блюда -> распознавание + подбор вина — v0.3.4 (22.09, contracts/post-scan.md
+        v1.1 §4, задача тимлида)
+      description: >
+        multipart image; лимиты и авторизация — КАК У /scan/photo (до 25 МБ = settings.
+        max_upload_bytes, EXIF/HEIC, опциональный принципал — не обязательный Bearer, тот же
+        get_current_principal_optional). Пустой/отсутствующий файл или файл больше лимита —
+        400 validation_error. Фото НЕ пишется в архив сканов (SCAN_ARCHIVE_DIR) — другая
+        категория данных. Классификация — VLM-шлюз И локальная модель на Mac (vlm_local)
+        запрашиваются ПАРАЛЛЕЛЬНО (если обе настроены и предохранитель разрешает), общий
+        дедлайн VISION_LLM_TIMEOUT_S (дефолт 6.0 с) от начала запроса; результат шлюза
+        побеждает, если успел, иначе — локальный (не склейка текстов, в отличие от скана).
+        Предохранитель — тот же, что у скана, общее состояние на "vlm"/"vlm_local", не по
+        эндпоинту. Ни одна модель не ответила -> zero_shot: CLIP-подобная классификация
+        текстовой башней того же SigLIP2-энкодера, что индекс сканера, против якорей (9
+        тегов + "бутылка вина" + "не еда"); порог уверенности — отрыв top1/top2 эмбеддинга
+        ≥ DISH_ZERO_SHOT_MARGIN (дефолт 0.03), иначе воздержание. Ни одна ступень не дала
+        ответа -> status=unsure. Как у rich-режима /scan/photo: битый запрос — обычная
+        валидация (4xx); сбой внутри классификации — никогда 500, деградация по цепочке до
+        status=unsure. Полная спецификация статусов/полей — post-scan.md §4.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image: { type: string, format: binary }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DishPairingResponse" }
+
+  /pairing/dish:
+    post:
+      summary: >
+        Ручной выбор/исправление категории блюда -> подбор вина — v0.3.4 (22.09,
+        contracts/post-scan.md v1.1 §4)
+      description: >
+        Без фото — пользователь (чип из alternatives, или свободный ввод) явно называет
+        category. Тот же ответ, что /pairing/dish-photo: status всегда "food", dish.
+        source="user", подбор вин — идентичный алгоритм (post-scan.md §4.3). Auth —
+        ОБЯЗАТЕЛЬНЫЙ Bearer (get_current_principal, отличие от /pairing/dish-photo: не
+        принимает приватная проверка кейсодержателя, применено общее правило "scan/chat/
+        wines/analogs требуют принципала", app/security.py). Разрешение category —
+        точное совпадение (без учёта регистра) -> словарь частых синонимов ("стейк"->BBQ и
+        т.п.) -> нечёткое совпадение (rapidfuzz token_set_ratio, порог 60) -> 400
+        validation_error, если ничего не подошло.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category]
+              properties:
+                category:
+                  type: string
+                  maxLength: 100
+                  description: строго один из 9 тегов pipeline/ref/food_pairing_rules.yaml::portal_tag_defaults, либо распознаваемый синоним/опечатка (см. выше) — иное -> 400 validation_error
+                dish:
+                  type: string
+                  maxLength: 200
+                  nullable: true
+                  description: свободный текст названия блюда, опционально; не разбирается на ингредиенты (v1)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DishPairingResponse" }
+        "400": { description: "validation_error — category вне 9 легальных тегов" }
+
   /chat:
     post:
       summary: Вопрос сомелье. Ответ — SSE-стрим
@@ -393,6 +493,11 @@ paths:
         рендерит такие непривязанные цитаты блоком «Источники» под ответом. Гарантия
         «каждый ответ несёт источники» сохраняется по построению: контекст промпта и есть
         источник ответа.
+        v0.3.4 (22.09, "Ссылки на вино в выдаче", см. шапку файла): citation с wine_id — клиент
+        ведёт на /app/wine/:wineId, а не открывает url напрямую (url — для карточки, не для
+        цитаты); citation только с chunk_id (нет карточки вина) — url остаётся прямой ссылкой,
+        это единственный легальный случай. Реализовано тем же днём (apps/web/src/app/chat/
+        ChatScreen.tsx::CitationBadge, `5d7772a`) — правку нашёл architect, исправил frontend.
       requestBody:
         content:
           application/json:
@@ -674,3 +779,67 @@ components:
         match_rate: { type: number, minimum: 0, maximum: 1, nullable: true }
         eval_set: { type: string, nullable: true, description: человекочитаемое описание прогона }
         measured_at: { type: string, format: date-time, nullable: true }
+
+    DishInfo:
+      type: object
+      description: v0.3.4 (post-scan.md §4) — блюдо, распознанное на фото либо названное пользователем
+      required: [name, category, alternatives, ingredients, source]
+      properties:
+        name: { type: string, description: "НЕ null — пустая строка при отсутствии значения (not_food/bottle/unsure/zero_shot); реализация backend (22.09) держит поле ненуллабельным" }
+        category:
+          type: string
+          nullable: true
+          description: один из 9 тегов pipeline/ref/food_pairing_rules.yaml::portal_tag_defaults; null, если status != food
+        alternatives:
+          type: array
+          items: { type: string }
+          description: >
+            0-2 тега из тех же 9 (без повтора category) при status=food и слабой уверенности
+            модели; ВСЕ 9 тегов, когда category не резолвлен (status=unsure или модель дала тег
+            вне словаря) — API сам отдаёт полный список чипов, фронт его не хардкодит повторно.
+        ingredients:
+          type: array
+          items: { type: string }
+          description: "до 5 позиций у source=vlm|vlm_local; всегда [] у source=zero_shot|user|none (ни энкодер, ни свободный текст пользователя не разбираются на состав)"
+        source: { type: string, enum: [vlm, vlm_local, zero_shot, user, none] }
+
+    PairingWineItem:
+      type: object
+      description: >
+        v0.3.4 (post-scan.md §4.3) — вино-рекомендация к блюду, только наш каталог (не каталог
+        кейса). Намеренно БЕЗ source_url — переход на /app/wine/:wineId, внешняя ссылка только
+        из карточки (см. "Ссылки на вино в выдаче" в шапке файла).
+      required: [wine_id, name, reason, basis]
+      properties:
+        wine_id: { type: string }
+        name: { type: string }
+        winery: { type: string, nullable: true, description: "отображаемое имя винодельни (source.winery_name, фолбэк — слаг source.winery); null, если у вина нет ни того ни другого. Группировка ≤2/винодельня в §4.3 идёт по слагу source.winery (фолбэк — winery_name, затем wine_id), не по этому полю" }
+        color: { type: string, nullable: true, description: "source.color; null у вин без простановки" }
+        sugar: { type: string, nullable: true, description: "source.sugar_category; null (не пустая строка) у вин без простановки" }
+        image_url: { type: string, nullable: true }
+        reason:
+          type: string
+          description: >
+            Детерминированная строка без LLM: basis=catalog — фиксированный шаблон;
+            basis=rules — explain первого сработавшего правила food_pairing_rules.yaml,
+            дословно (тот же принцип, что triggered_rules в /wines/{wine_id}/pairings).
+        basis: { type: string, enum: [catalog, rules] }
+
+    DishPairingResponse:
+      type: object
+      description: >
+        v0.3.4 (post-scan.md §4) — общий ответ /pairing/dish-photo и /pairing/dish.
+      required: [status, dish, wines, timing_ms]
+      properties:
+        status: { type: string, enum: [food, not_food, bottle, unsure] }
+        dish: { $ref: "#/components/schemas/DishInfo" }
+        wines:
+          type: array
+          maxItems: 6
+          items: { $ref: "#/components/schemas/PairingWineItem" }
+          description: "не более 2 вин на одну винодельню (source.winery); [] ⟺ message непусто"
+        message:
+          type: string
+          nullable: true
+          description: непусто при status != food, либо когда подбор §4.3 не нашёл ни одного вина
+        timing_ms: { type: integer, description: "весь путь ручки (классификация, если была, + подбор вин)" }
