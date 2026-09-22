@@ -5,6 +5,8 @@ DATABASE_URL по умолчанию файловый SQLite рядом с пр�
 from __future__ import annotations
 
 import logging
+import os
+import threading
 import time
 
 from fastapi import FastAPI
@@ -15,6 +17,7 @@ from llm.base import get_llm
 from .config import get_settings
 from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index, warm_up_label_verifier
 from .db import make_engine, make_session_factory
+from .dish_pairing import warm_up_catalog_cache
 from .errors import register_error_handlers
 from .models import Base
 from .rag.factory import get_retriever, warm_up_retriever
@@ -212,6 +215,43 @@ def create_app() -> FastAPI:
     _rag_warm = warm_up_retriever(app.state.retriever, settings)
     _rag_warmup_s = time.monotonic() - _rag_warmup_t0
     logger.info("retriever warm-up: warm=%s, %.3f s", _rag_warm, _rag_warmup_s)
+
+    # Тимлид 22.09 (после замера "холодный кэш 12 с на 2103 карточки",
+    # reports/backend-dish-photo.md): "не должен доставаться первому
+    # пользователю — на демо это выглядит как зависший запрос". В ОТЛИЧИЕ от
+    # прогревов выше (синхронные — секунды, не десятки) — 12 с достаточно
+    # долго, чтобы задерживать готовность ВСЕГО сервиса ради этого было бы
+    # хуже, чем не прогревать вовсе: фоновый поток, create_app() возвращается
+    # сразу же. Сбой прогрева НЕ роняет старт (try/except внутри
+    # warm_up_catalog_cache()) — кэш тогда просто соберётся лениво на первом
+    # запросе `/v1/pairing/*`, как и без прогрева.
+    #
+    # 22.09 (находка при полном прогоне тестов): `case_catalog.py` читает
+    # `CASE_DATA_DIR` "живьём" при каждом вызове — намеренно, чтобы тесты
+    # могли `monkeypatch.setenv()` ПОСЛЕ create_app() (см. её докстринг). Фоновый
+    # поток читает этот же env НЕ синхронно с созданием приложения — под pytest,
+    # где `create_app()` зовётся СОТНИ раз за прогон с быстро сменяющимся
+    # `CASE_DATA_DIR`, поток одного теста может дочитать до env УЖЕ следующего
+    # теста и заразить его process-wide кэш `case_catalog._load_catalog`
+    # (поймано не гипотетически — 4 теста test_wine_pairings.py стабильно падали
+    # при полном прогоне apps/api). В проде `create_app()` вызывается РОВНО ОДИН
+    # раз за жизнь процесса — гонки с "следующим тестом" структурно нет, поэтому
+    # прогрев пропускается только под pytest (`PYTEST_CURRENT_TEST` — офиц.
+    # флаг pytest ровно для этого случая, docs: "запущен ли код как часть
+    # теста"), не по общему признаку окружения. Кэш тестам, которым он нужен,
+    # либо подменяют `_iter_catalog_cards()` напрямую, либо (в паре тестов
+    # роутера) собирается лениво на первый реальный запрос — оба пути уже
+    # покрыты тестами независимо от прогрева.
+    if "PYTEST_CURRENT_TEST" not in os.environ:
+        def _warm_up_dish_pairing_catalog_in_background() -> None:
+            _t0 = time.monotonic()
+            _warm = warm_up_catalog_cache(app.state.retriever)
+            logger.info("dish-pairing catalog warm-up: warm=%s, %.3f s", _warm, time.monotonic() - _t0)
+
+        threading.Thread(
+            target=_warm_up_dish_pairing_catalog_in_background,
+            name="dish-pairing-catalog-warmup", daemon=True,
+        ).start()
 
     # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
     # существовало, но никто его не читал. Bearer-токены в Authorization,

@@ -198,3 +198,30 @@ def test_build_catalog_cards_cached_once_per_retriever_object(monkeypatch):
 
     dish_pairing._build_catalog_cards(retriever_b)  # другой retriever -> отдельная запись
     assert len(calls) == 2
+
+
+# --------------------------------------------------------------------------
+# warm_up_catalog_cache() — тимлид 22.09: "холодный кэш 12 с не должен
+# доставаться первому пользователю... прогревай при старте, в фоновом
+# потоке". Фоновый поток и интеграция с create_app() — tests/test_main.py;
+# здесь — сама функция прогрева в изоляции.
+# --------------------------------------------------------------------------
+
+def test_warm_up_catalog_cache_builds_cache_and_returns_true(monkeypatch):
+    monkeypatch.setattr(dish_pairing.case_catalog, "all_slugs", lambda: ["w1"])
+    monkeypatch.setattr(
+        dish_pairing, "build_wine_card",
+        lambda retriever, slug: {"source": {"name": slug, "food_pairings": []}, "derived": {}},
+    )
+    retriever = object()
+
+    assert dish_pairing.warm_up_catalog_cache(retriever) is True
+    assert dish_pairing._build_catalog_cards(retriever) == (("w1", {"name": "w1", "food_pairings": []}, None),)
+
+
+def test_warm_up_catalog_cache_failure_returns_false_not_raises(monkeypatch):
+    def boom():
+        raise RuntimeError("CASE_DATA_DIR недоступен")
+
+    monkeypatch.setattr(dish_pairing.case_catalog, "all_slugs", boom)
+    assert dish_pairing.warm_up_catalog_cache(object()) is False

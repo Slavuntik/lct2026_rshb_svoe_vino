@@ -106,7 +106,16 @@ def test_pairings_sensory_with_null_axis_degrades_to_heuristic_not_500(client: T
     body = r.json()
     assert body["basis"] == "heuristic"  # НЕ "sensory" — вектор с null-осью ненадёжен
     assert body["message"] is None
-    assert _pairing_tags(body) == ["BBQ", "Блюда из птицы", "Сыры"]
+    # ml-lead 22.09 (reports/ml-lead-dish-pairing-poultry-fix.md, коммит b6872e5):
+    # калибровка portal_tag_defaults["Блюда из птицы"].protein_heavy 0.6->0.55 —
+    # раньше 0.6 стоял РОВНО на пороге protein_needs_tannin (require wine.tannin>=0.55),
+    # так что этот танинный (0.62) вектор ложно давал тегу score=0.50; ниже 0.6 правило
+    # для птицы больше не применяется вовсе — тег честно уходит в 0 (не участвует),
+    # список сократился с 3 тегов до 2. Механизм теста (null-ось -> heuristic, не 500)
+    # не изменился, изменились только сами числа calibration.
+    assert _pairing_tags(body) == ["BBQ", "Сыры"]
+    assert body["pairings"][0]["score"] == pytest.approx(0.5263, abs=1e-4)
+    assert body["pairings"][1]["score"] == pytest.approx(0.2286, abs=1e-4)
 
 
 def test_pairings_fully_null_sensory_degrades_to_unavailable_not_500(client: TestClient, monkeypatch):
@@ -158,10 +167,17 @@ def test_pairings_heuristic_basis_from_case_catalog_color(client: TestClient, tm
     body = r.json()
     assert body["basis"] == "heuristic"
     assert body["message"] is None
-    assert _pairing_tags(body) == ["Блюда из рыбы", "Сыры", "Выпечка и десерты"]
+    # ml-lead 22.09 (reports/ml-lead-dish-pairing-poultry-fix.md, коммит b6872e5):
+    # калибровка "Блюда из птицы" (protein_heavy 0.6->0.55, ниже порога
+    # protein_needs_tannin) даёт этому тихому белому вектору тот же
+    # weight_matches_body-only механизм, что уже работал для "Блюда из рыбы" —
+    # оба теперь на score=1.0, тай-брейк по алфавиту ("Блюда из птицы" <
+    # "Блюда из рыбы": "п" < "р"). "Выпечка и десерты" (0.6061) выпал из
+    # топ-3, не изменившись сам по себе — просто уступил место.
+    assert _pairing_tags(body) == ["Блюда из птицы", "Блюда из рыбы", "Сыры"]
     assert body["pairings"][0]["score"] == pytest.approx(1.0)
-    assert body["pairings"][1]["score"] == pytest.approx(0.8)
-    assert body["pairings"][2]["score"] == pytest.approx(0.6061)
+    assert body["pairings"][1]["score"] == pytest.approx(1.0)
+    assert body["pairings"][2]["score"] == pytest.approx(0.8)
 
 
 def test_pairings_heuristic_keyword_brut_hard_blocks_dessert_pairing(client: TestClient, tmp_path, monkeypatch):
@@ -170,7 +186,8 @@ def test_pairings_heuristic_keyword_brut_hard_blocks_dessert_pairing(client: Tes
     бы sweetness=0.20 и «Выпечка и десерты» в топ-3), но имя с «брют» роняет
     sweetness до 0.05 — hard_blocks.dry_wine_with_dessert (pipeline/ref/
     food_pairing_rules.yaml) исключает «Выпечка и десерты» ЦЕЛИКОМ, даже
-    несмотря на то, что без блока это был бы топ-3 (score 0.6061) — тот самый
+    несмотря на то, что без блока это был бы топ-3 (score 0.6061, число не
+    зависит от калибровки "Блюда из птицы" ниже — другой тег) — тот самый
     "хотя бы 1 сценарий на hard_blocks" из брифа."""
     _write_case_catalog(tmp_path, {
         "case-heuristic-brut": {
@@ -189,7 +206,14 @@ def test_pairings_heuristic_keyword_brut_hard_blocks_dessert_pairing(client: Tes
     assert body["basis"] == "heuristic"
     tags = _pairing_tags(body)
     assert "Выпечка и десерты" not in tags, "dry_wine_with_dessert обязан исключить тег целиком"
-    assert tags == ["Блюда из рыбы", "Сыры", "Блюда из птицы"]
+    # ml-lead 22.09 (reports/ml-lead-dish-pairing-poultry-fix.md, коммит b6872e5):
+    # "Блюда из птицы" 0.5->1.0 на этом же тихом белом векторе (см. тест дефолта
+    # выше) — поднялась с 3-го места на 1-е, hard-block по-прежнему держит
+    # "Выпечка и десерты" снаружи независимо от этого.
+    assert tags == ["Блюда из птицы", "Блюда из рыбы", "Сыры"]
+    assert body["pairings"][0]["score"] == pytest.approx(1.0)
+    assert body["pairings"][1]["score"] == pytest.approx(1.0)
+    assert body["pairings"][2]["score"] == pytest.approx(0.8)
 
 
 def test_pairings_heuristic_keyword_sparkling_sets_bubbles_axis(client: TestClient, tmp_path, monkeypatch):
@@ -218,12 +242,18 @@ def test_pairings_heuristic_keyword_sparkling_sets_bubbles_axis(client: TestClie
 
 
 def test_pairings_alphabetical_tiebreak_orders_equal_scores_by_tag(client: TestClient, tmp_path, monkeypatch):
-    """Тот же игристый вектор, что и тест ключевого слова выше, даёт РОВНО
-    три тега со score=1.0 (Блюда из рыбы / Брускетты / Сыры — сверено прогоном
-    настоящего движка, reports/backend-pairings.md) — top_n=3 забирает их всех
-    целиком, порядок решает ТОЛЬКО алфавит тега (contracts/post-scan.md §1,
-    "Правила скоринга", п.4): "Блюда из рыбы" < "Брускетты" (л < р) <
-    "Сыры" (С после Б)."""
+    """Тот же игристый вектор, что и тест ключевого слова выше.
+
+    ml-lead 22.09 (reports/ml-lead-dish-pairing-poultry-fix.md, коммит
+    b6872e5, калибровка "Блюда из птицы" protein_heavy 0.6->0.55): этот
+    вектор теперь даёт ЧЕТЫРЕ тега со score=1.0 (было три — "Блюда из птицы"
+    присоединилась к "Блюда из рыбы"/"Брускетты"/"Сыры", тот же
+    weight_matches_body-only механизм, что уже работал для рыбы), а не три —
+    top_n=3 (pipeline/ref/food_pairing_rules.yaml::output_contract, число не
+    меняем) забирает только первые три по алфавиту, "Сыры" теперь СРЕЗАН
+    (4-й), это и есть проверяемый механизм. Порядок решает ТОЛЬКО алфавит
+    тега (contracts/post-scan.md §1, "Правила скоринга", п.4): "Блюда из
+    птицы" < "Блюда из рыбы" ("п" < "р") < "Брускетты" (Б.. < Бр..)."""
     _write_case_catalog(tmp_path, {
         "case-heuristic-tiebreak": {
             "name": "Игристое чудо", "winery_name": "Тестовая винодельня",
@@ -238,7 +268,8 @@ def test_pairings_alphabetical_tiebreak_orders_equal_scores_by_tag(client: TestC
 
     assert r.status_code == 200, r.text
     body = r.json()
-    assert _pairing_tags(body) == ["Блюда из рыбы", "Брускетты", "Сыры"]
+    assert _pairing_tags(body) == ["Блюда из птицы", "Блюда из рыбы", "Брускетты"]
+    assert "Сыры" not in _pairing_tags(body), "top_n=3 обязан срезать 4-й тег с тем же score=1.0"
     assert all(item["score"] == pytest.approx(1.0) for item in body["pairings"])
 
 

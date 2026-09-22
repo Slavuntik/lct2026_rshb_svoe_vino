@@ -25,14 +25,26 @@ packages/cv не тронут). `app/food_pairing.py`: `+portal_tags`, `+score_w
 Холодный кэш (`build_wine_card` x2103): **12.0 с** (один раз на процесс). Тёплый кэш, `select_wines_for_dish`
 по всем 9 тегам: **20-69 мс** (avg ~50 мс) — в целевом «десятки миллисекунд».
 
-Санити топ-6 по всем 9 тегам — **все 6 из 6 catalog** (реальных тег-совпадений хватает с запасом,
-ярус rules в топ-6 не потребовался). Ожидания тимлида подтверждены: BBQ 6/6 красное; Блюда из
-рыбы 6/6 белое; Выпечка и десерты 5 сладких+1 полусладкое (5 белых+1 красное). Остальные тоже
-разумны (Устрицы/Брускетты — белое+брют/сухое; Азиатская кухня — белое, полусладкое/полусухое).
-Блюда из птицы — 6/6 **красное** (не белое) — не баг подбора: `portal_tag_defaults["Блюда из
-птицы"]` (`protein_heavy=0.6, weight=0.5`) в движке `food_pairing_rules.yaml` triggers
-`protein_needs_tannin` (require `wine.tannin>=0.55`) — содержимое `pipeline/ref/` не моя зона
-(ml-lead), выношу как наблюдение, не правил.
+Санити топ-6 по всем 9 тегам — **все 6 из 6 catalog**. Ожидания тимлида подтверждены: BBQ 6/6
+красное; Блюда из рыбы 6/6 белое; Выпечка и десерты 5 сладких+1 полусладкое. Блюда из птицы
+изначально были 6/6 красное (артефакт калибровки `portal_tag_defaults` — вынес как наблюдение,
+не моя зона); ml-lead поправила (коммит `b6872e5`, `protein_heavy` 0.6→0.55) — сейчас 5 бел+1
+роз, подтверждено её независимым живым прогоном. Это изменило 4 пиннед-теста в
+`test_wine_pairings.py` (моя зона, направление вино→блюдо) — обновил числа по её таблице
+(`reports/ml-lead-dish-pairing-poultry-fix.md`), сам проверяемый механизм (hard-block/тай-брейк/
+деградация) не ослаблен, только числа.
+
+## Прогрев кэша при старте
+
+12 с холодного кэша не должны доставаться первому пользователю (демо) — `warm_up_catalog_cache()`
+(`app/dish_pairing.py`) зовётся из `app/main.py` в фоновом потоке (`create_app()` возвращается
+сразу, не ждёт), лог `dish-pairing catalog warm-up: warm=%s, %.3f s`. Сбой не роняет старт (try/
+except внутри), кэш тогда соберётся лениво на первом запросе. Под pytest поток НЕ запускается
+(`PYTEST_CURRENT_TEST` guard) — `case_catalog.py` читает `CASE_DATA_DIR` "живьём" не синхронно с
+`create_app()`, а pytest зовёт его сотни раз за прогон с быстро сменяющимся `CASE_DATA_DIR`:
+без guard'а отставший поток одного теста дочитывал до env уже следующего и заражал process-wide
+`_load_catalog()` (поймано эмпирически — 4 теста валились нестабильно). `create_app()` как была,
+так и осталась быстрой (мс) — прогрев не блокирует её ни в проде, ни в тестах.
 
 ## Расхождения с контрактом §4.2 (единственное оставшееся)
 
@@ -50,12 +62,14 @@ base-384, офлайн, локальный HF-кэш): **92/100 = 92.0%** bottle
 
 ## Тесты
 
-66 новых (`test_dish_recognition.py` 29, `test_dish_pairing.py` 10 — включая регресс-тест
-"лучшее по тегу вино вне выборки 30 всё равно в выдаче", `test_pairing_router.py` 20,
-`test_pairing_contract_schema.py` 7) + `conftest.py` (автосброс кэша каталога, тот же приём, что
-у `_MODEL_BREAKERS`) + правки `test_docs.py`/`test_openapi_contract.py` (регистрация роутера).
-`cd apps/api && .venv/bin/pytest -q` — **520 passed, 12 skipped** (было 454/12), без сети —
-тесты подменяют `_iter_catalog_cards`, не читают реальный `case_catalog.json`.
+70 новых (`test_dish_recognition.py` 29, `test_dish_pairing.py` 12 — включая регресс-тест
+"лучшее по тегу вино вне выборки 30 всё равно в выдаче" и 2 на прогрев, `test_pairing_router.py` 20,
+`test_pairing_contract_schema.py` 7, `test_main.py` 2 — фоновый поток реально запускается вне
+pytest, реально пропускается под pytest) + `conftest.py` (автосброс кэша каталога, дефолтный
+несуществующий `CASE_DATA_DIR`) + правки `test_docs.py`/`test_openapi_contract.py` (регистрация
+роутера) + 4 пиннед-теста `test_wine_pairings.py` обновлены под калибровку ml-lead (см. выше).
+`cd apps/api && .venv/bin/pytest -q` — **524 passed, 12 skipped** (было 454/12), без сети —
+тесты подменяют `_iter_catalog_cards`/`warm_up_catalog_cache`, не читают реальный `case_catalog.json`.
 
 ## Риски / предложения
 
@@ -66,8 +80,6 @@ base-384, офлайн, локальный HF-кэш): **92/100 = 92.0%** bottle
 
 Коммит: pathspec `apps/api/app/{dish_recognition,dish_pairing}.py apps/api/app/cv/vision_llm.py
 apps/api/app/food_pairing.py apps/api/app/config.py apps/api/app/main.py apps/api/app/schemas.py
-apps/api/app/routers/pairing.py apps/api/tests/test_dish_recognition.py
-apps/api/tests/test_dish_pairing.py apps/api/tests/test_pairing_router.py
-apps/api/tests/test_pairing_contract_schema.py apps/api/tests/test_docs.py
-apps/api/tests/test_openapi_contract.py apps/api/tests/conftest.py reports/backend-dish-photo.md`,
-не пушил.
+apps/api/app/routers/pairing.py apps/api/tests/{test_dish_recognition,test_dish_pairing,
+test_pairing_router,test_pairing_contract_schema,test_main,test_wine_pairings,test_docs,
+test_openapi_contract,conftest}.py reports/backend-dish-photo.md`, не пушил.

@@ -134,6 +134,28 @@ def _reset_catalog_cache() -> None:
     _build_catalog_cards.cache_clear()
 
 
+def warm_up_catalog_cache(retriever: Retriever) -> bool:
+    """Прогрев `_build_catalog_cards()` — тимлид 22.09, реакция на замер
+    "холодный кэш 12 с на 2103 карточки" (reports/backend-dish-photo.md):
+    "не должен доставаться первому пользователю — на демо это выглядит как
+    зависший запрос". Вызывается из `app/main.py` В ФОНОВОМ ПОТОКЕ (12 с —
+    заметно дольше, чем синхронные `warm_up_image_index`/`warm_up_retriever`
+    там же, задерживать старт процесса ради этого не стоит: `create_app()`
+    обязан вернуться сразу, готовность сервиса не должна ждать 12 с).
+
+    Сбой (любое исключение — битый `CASE_DATA_DIR`, сбой RAG-резолюции и
+    т.п.) -> `False`, лог WARNING/INFO — забота вызывающего кода в
+    `app/main.py`, не эта функция. Кэш тогда просто не прогрет заранее и
+    соберётся ЛЕНИВО на первом реальном запросе `/v1/pairing/*` — то же
+    поведение, что и без прогрева вовсе (не хуже, просто без выигрыша по
+    времени для первого пользователя)."""
+    try:
+        _build_catalog_cards(retriever)
+        return True
+    except Exception:  # noqa: BLE001 — прогрев в фоновом потоке не должен ронять его молча с трейсбеком
+        return False
+
+
 def _winery_key(wine_id: str, source: dict) -> str:
     return source.get("winery") or source.get("winery_name") or wine_id
 

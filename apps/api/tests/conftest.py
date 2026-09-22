@@ -51,6 +51,17 @@ def app(monkeypatch):
     monkeypatch.setenv("RATE_LIMIT_MAX_REQUESTS", "1000")  # тесты не должны спотыкаться о лимитер
     monkeypatch.delenv("LLM_PROVIDER", raising=False)
     monkeypatch.delenv("RAG_PROVIDER", raising=False)
+    # 22.09 (правка после прогрева кэша подбора вина к блюду в фоновом потоке,
+    # app/main.py): без этого КАЖДЫЙ create_app() в тестовом прогоне (сотни за
+    # прогон) фоново сканирует НАСТОЯЩИЙ CASE_DATA_DIR этой машины (2103 слага,
+    # app/dish_pairing.py::_build_catalog_cards) — раньше это было "бесплатно"
+    # (ничто не перебирало case_catalog.json целиком, только точечные lookup()),
+    # с прогревом добавило ~30 с к прогону всей apps/api (замерено: 52 с -> 84 с).
+    # Несуществующий путь -> `case_catalog.all_slugs()` честно отдаёт [] (см. её
+    # докстринг) — тесты, которым нужен настоящий/синтетический каталог кейса
+    # (test_wine_pairings.py, test_dish_pairing.py и др.), уже сами переопределяют
+    # CASE_DATA_DIR через monkeypatch/`_iter_catalog_cards` — этот дефолт им не мешает.
+    monkeypatch.setenv("CASE_DATA_DIR", "/nonexistent-case-data-for-tests")
     reset_rate_limits()
     return create_app()
 
