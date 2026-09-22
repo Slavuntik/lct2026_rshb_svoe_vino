@@ -23,8 +23,8 @@ import type {
 } from "../lib/apiTypes";
 import { chunkAnswer, pickChatResponse, pickChatResponseForWine } from "./fixtures/chat";
 import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
-import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
-import { caseFallbackWines, findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
+import { popularStyleNames, resolveStyle, styleNamesFor, winesForStyle } from "./fixtures/styles";
+import { caseFallbackWines, findWineBySlug, similarWinesFor, wines, type WineFixture } from "./fixtures/wines";
 import {
   applySwipe,
   createAccount,
@@ -309,7 +309,8 @@ export const handlers: HttpHandler[] = [
     const { searchTerms: _searchTerms, ...card } = demoWine;
     return HttpResponse.json({
       slug: demoWine.wine_id,
-      card,
+      // v0.3.6: card = ровно тело GET /wines/{id} (v0.4.1 image-scan.md) — тот же similar_wines.
+      card: { ...card, similar_wines: similarWinesFor(card.similar ?? []) },
       confidence: { top1_score: 0.94, gap: 0.31, f1_top1: 0.87, f1_top5: 0.95 },
       ocr_verified: true,
       timing_ms: 780,
@@ -328,7 +329,9 @@ export const handlers: HttpHandler[] = [
       return errorJson(404, "not_found", "Карточка вина не найдена.");
     }
     const { searchTerms: _searchTerms, ...card } = wine;
-    return HttpResponse.json(card);
+    // v0.3.6: similar_wines — обогащение тех же слагов, что в similar (оставлен для обратной
+    // совместимости/запасного пути на клиенте, см. reports/frontend-jury-pass-fixes.md).
+    return HttpResponse.json({ ...card, similar_wines: similarWinesFor(card.similar ?? []) });
   }),
 
   // v0.3.3 (contracts/post-scan.md v1.0): гастропары. Мок — упрощённый стенд-ин, не порт
@@ -510,9 +513,12 @@ export const handlers: HttpHandler[] = [
   http.get(`${API}/taste/profile`, ({ request }) => {
     const account = accountFromRequest(request);
     if (!account) return unauthorized();
+    const topStyles = topStylesFor(account);
+    // v0.3.6: top_styles_named — обогащение тех же слагов, что в top_styles (запасной путь).
     return HttpResponse.json({
       vector: account.vector,
-      top_styles: topStylesFor(account),
+      top_styles: topStyles,
+      top_styles_named: styleNamesFor(topStyles),
       swipes_count: account.swipes.length,
     });
   }),

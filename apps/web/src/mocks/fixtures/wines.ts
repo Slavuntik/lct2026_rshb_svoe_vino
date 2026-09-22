@@ -1,4 +1,4 @@
-import type { WineCardResponse } from "../../lib/apiTypes";
+import type { SimilarWineItem, WineCardResponse } from "../../lib/apiTypes";
 import { bottlePlaceholderDataUri } from "./image";
 
 // 6 ВЫМЫШЛЕННЫХ вин для мок-режима (нет бэкенда — contracts/openapi.yaml, /wines/{wine_id}).
@@ -300,4 +300,23 @@ export const caseFallbackWines: WineFixture[] = [
 
 export function findWineBySlug(slug: string): WineFixture | undefined {
   return wines.find((wine) => wine.wine_id === slug) ?? caseFallbackWines.find((wine) => wine.wine_id === slug);
+}
+
+/**
+ * v0.3.6 (openapi.yaml, задача тимлида 23.09, reports/backend-similar-wines.md): similar_wines —
+ * то же самое обогащение, что боевой build_wine_card() делает из meta уже полученного
+ * Candidate — здесь вычисляем на лету из фикстур по слагам similar, тот же порядок. Слаг без
+ * карточки в каталоге (findWineBySlug вернул undefined) в similar_wines не попадает — как и в
+ * бою, длины similar/similar_wines могут разойтись.
+ */
+export function similarWinesFor(slugs: string[]): SimilarWineItem[] {
+  return slugs
+    .map((slug) => findWineBySlug(slug))
+    .filter((wine): wine is WineFixture => Boolean(wine))
+    .map((wine) => ({
+      wine_id: wine.wine_id,
+      name: wine.source.name,
+      winery: wine.source.winery_name,
+      image_url: wine.source.image_url,
+    }));
 }

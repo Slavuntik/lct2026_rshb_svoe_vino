@@ -169,17 +169,35 @@ export function TastePassportScreen() {
           <p className="text-small">{t("taste.swipesCount", { count: profile.swipes_count })}</p>
           <h2>{t("taste.vectorTitle")}</h2>
           <SensoryVectorView vector={profile.vector} />
-          {profile.top_styles.length > 0 && (
+          {/* Задача тимлида 23.09 (аудит architect, openapi 0.3.6): top_styles рендерился голым
+              слагом стиля ("chablis") — тот же класс дефекта, что «Похожие вина» (qa-manual
+              §5.1). top_styles_named — основной путь (имя + страна); top_styles — запасной,
+              когда top_styles_named пуст/отсутствует, с честной порядковой подписью, без
+              выдумки имени из слага (тот же приём, что wineCard.similarItemFallback). */}
+          {profile.top_styles_named && profile.top_styles_named.length > 0 ? (
             <>
               <p className="field__label">{t("taste.topStylesTitle")}</p>
               <div className="row">
-                {profile.top_styles.map((style) => (
-                  <span key={style} className="chip">
-                    {style}
+                {profile.top_styles_named.map((style) => (
+                  <span key={style.slug} className="chip">
+                    {t("taste.topStyleNamed", { name: style.name, country: style.country })}
                   </span>
                 ))}
               </div>
             </>
+          ) : (
+            profile.top_styles.length > 0 && (
+              <>
+                <p className="field__label">{t("taste.topStylesTitle")}</p>
+                <div className="row">
+                  {profile.top_styles.map((style, index) => (
+                    <span key={style} className="chip">
+                      {t("taste.topStyleFallback", { index: index + 1 })}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { WineCardContent } from "../../components/WineCardContent";
+import { WineImage } from "../../components/WineImage";
 import { useI18n } from "../../i18n";
 import { track, type EventPropsMap } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
@@ -92,25 +93,48 @@ export function WineCardScreen() {
 
       <WineCardContent wine={wine} titleAs="h1" />
 
-      {wine.similar && wine.similar.length > 0 && (
+      {/* Задача тимлида 23.09 (backend db090e1/architect openapi 0.3.6, closing qa-manual §5.1):
+          similar_wines — обогащённые {wine_id,name,winery,image_url}, тот же порядок, что
+          similar; слаг без карточки в каталоге в similar_wines не попадает. similar (голые
+          слаги) — DEPRECATED, остаётся только запасным путём, когда similar_wines пуст/нет —
+          там честная порядковая подпись без выдумки имени из слага (не title/aria-*: qa читает
+          accessibility-дерево тем же тулингом, что нашёл исходный дефект — title в нём
+          перекрывает текст узла). Переход по клику не меняется в обоих путях. */}
+      {wine.similar_wines && wine.similar_wines.length > 0 ? (
         <div className="stack">
           <h2>{t("wineCard.similarTitle")}</h2>
-          <div className="row">
-            {/* Приоритет 1 (qa-manual-hack-v16.md §5.1): GET /wines/{id}.similar — контрактно
-                string[] (только слаги), имени вина в ответе нет вовсе — раньше здесь рендерился
-                сырой слаг ("nesterov-winery-krasnostop-...-12"). Слаг не превращаем в
-                псевдо-имя (это была бы выдумка данных) — честная порядковая подпись. Слаг
-                НЕ выносим в title/aria-*: qa проверяет именно accessibility-дерево
-                (mcp__Claude_Browser__read_page), а там title у ряда браузерных тулингов
-                перекрывает видимый текст в вычисленном "name" — так слаг тихо вернулся бы
-                в тот же инструмент, которым его и нашли. Переход по клику не меняется. */}
-            {wine.similar.map((id, index) => (
-              <button key={id} type="button" className="chip" onClick={() => handleSimilarClick(id)}>
-                {t("wineCard.similarItemFallback", { index: index + 1 })}
+          <div className="match-list">
+            {wine.similar_wines.map((item) => (
+              <button
+                key={item.wine_id}
+                type="button"
+                className="match-item"
+                onClick={() => handleSimilarClick(item.wine_id)}
+              >
+                <span className="match-item__main">
+                  {item.image_url && (
+                    <WineImage src={item.image_url} alt={item.name} width={40} className="match-item__thumb" />
+                  )}
+                  <span>{item.winery ? `${item.name} · ${item.winery}` : item.name}</span>
+                </span>
               </button>
             ))}
           </div>
         </div>
+      ) : (
+        wine.similar &&
+        wine.similar.length > 0 && (
+          <div className="stack">
+            <h2>{t("wineCard.similarTitle")}</h2>
+            <div className="row">
+              {wine.similar.map((id, index) => (
+                <button key={id} type="button" className="chip" onClick={() => handleSimilarClick(id)}>
+                  {t("wineCard.similarItemFallback", { index: index + 1 })}
+                </button>
+              ))}
+            </div>
+          </div>
+        )
       )}
 
       <button type="button" className="btn btn--secondary" onClick={handleAskSomelier}>

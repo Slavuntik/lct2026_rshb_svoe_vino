@@ -1,7 +1,8 @@
 # Frontend: правки после обхода жюри (задача тимлида 23.09, qa-manual-hack-v16.md)
 
-Стенд `http://89.110.72.101` / `e23875c` (hack-v16). `apps/web`: 17 файлов / **109 тестов**
-(было 104, +5), `npm run typecheck`/`npm run build` зелёные, Node 24.18.0.
+Стенд `http://89.110.72.101` / `e23875c` (hack-v16). `apps/web`: 17 файлов / 109 тестов
+(было 104, +5), `npm run typecheck`/`npm run build` зелёные, Node 24.18.0. **См. также
+«Обновление 23.09» внизу — API подвезли, временная подпись из п.1 теперь запасной путь.**
 
 ## 1 (высокая) — «Похожие вина» показывали сырой слаг
 Причина: `GET /wines/{id}.similar` контрактно — `string[]` (только слаги, `openapi.yaml`
@@ -15,6 +16,7 @@
 нашли (поймал и убрал сам, до коммита). Клик проверен live: «Похожее вино 1» ведёт на правильный
 `/app/wine/nesterov-winery-...-12`. Тест-регресс: `WineCardScreen.test.tsx`.
 **Предложение к контракту:** обогатить `similar` до формы `AnalogWine`, либо батч-резолв имён.
+*(Выполнено 23.09 — см. «Обновление» внизу.)*
 
 ## 2 (средняя) — режим «Блюдо» донашивал тексты «Бутылка»
 Скрытая подпись поля загрузки была «Фото этикетки» (accessibility-дерево, не видна глазом, но
@@ -57,3 +59,29 @@ dishPhotoCaption/dishCategoryLoading` (`i18n/ru.ts`). Проверено live. �
 Worker не регистрируется в этой браузер-панели — лимит из `reports/frontend-dish-photo-links.md`).
 Риски: фикс п.1 временный (подписи без данных, которых нет в ответе); п.3 — код не менялся,
 вывод из живой проверки в этой сессии, см. просьбу тимлиду выше.
+
+## Обновление (23.09, тимлид: API готов — similar_wines/top_styles_named)
+
+Контракт закрыт: backend (`db090e1`, `reports/backend-similar-wines.md`) + architect (`openapi`
+0.3.6) добавили `GET /wines/{id}.similar_wines: [{wine_id,name,winery,image_url}]` (тот же
+порядок/слаги, что `similar`; слаг без карточки — пропущен) и, по аудиту architect (тот же класс
+дефекта), `GET /taste/profile.top_styles_named: [{slug,name,country}]`. Оба старых поля —
+DEPRECATED, оставлены запасным путём (контракт явно этого требует).
+
+- **`WineCardScreen.tsx`**: `similar_wines` — основной путь (имя · винодельня, фото если есть;
+  `match-item`/`WineImage`, тот же паттерн, что `WineResultChip` в `ScanScreen.tsx`); `similar`
+  (голые слаги) — только когда `similar_wines` пуст/отсутствует, прежняя честная подпись
+  «Похожее вино N». Переход по клику не изменился. Live-проверка обоими путями (в т.ч. позиция
+  без `winery`/`image_url` — деградирует чисто, без «· null» и битой картинки).
+- **`TastePassportScreen.tsx`**: тот же паттерн — `top_styles_named` рендерит «{Имя} ({Страна})»
+  (формат как у `chat.analogStyleFound`); `top_styles` — запасной путь, честная подпись
+  «Стиль N» вместо сырого слага (это был баг того же класса — `{style}` рендерился буквально).
+- Моки: `mocks/fixtures/wines.ts::similarWinesFor()` и `mocks/fixtures/styles.ts::styleNamesFor()`
+  обогащают на лету из фикстур (неизвестный слаг — пропущен, как в бою); `handlers.ts` отдаёт оба
+  поля в `GET /wines/{id}`, `card` внутри `/scan/photo`, `GET /taste/profile`.
+- Тесты (+3, 109→**112**): `WineCardScreen.test.tsx` — рендер имени/винодельни/фото из
+  `similar_wines`, запасной путь без него (`vi.spyOn(apiClient.getWine)`); `TastePassportScreen.
+  test.tsx` — «Шабли (Франция)» после свайпа, запасной путь без `top_styles_named`
+  (`vi.spyOn(apiClient.getTasteProfile)`).
+- `cd apps/web && npm test && npm run typecheck && npm run build` — 17 файлов / 112 тестов,
+  typecheck/build зелёные. Коммит отдельный, с pathspec.

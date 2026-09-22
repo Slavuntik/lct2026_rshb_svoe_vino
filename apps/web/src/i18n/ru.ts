@@ -160,12 +160,11 @@ export const ru = {
     // vino-svoe.ru — WineCardContent сам решает по хосту ссылки, какую подпись показать.
     sourceLinkVinoSvoe: "Открыть на «Своё Вино»",
     similarTitle: "Похожие вина",
-    // Приоритет 1 (qa-manual-hack-v16.md §5.1, задача тимлида 23.09): GET /wines/{id}.similar
-    // контрактно — string[] (только слаги, contracts/openapi.yaml), имени вина в ответе нет.
-    // Раньше рендерился сырой слаг (nesterov-winery-krasnostop-...-12). Не подставляем имя,
-    // придуманное из слага (это было бы выдумкой данных) — честная временная подпись с
-    // порядковым номером, пока backend не обогатит поле (см. reports/frontend-jury-pass-fixes.md
-    // — предложение к контракту: форма similar как у AnalogWine, а не string[]).
+    // Приоритет 1 (qa-manual-hack-v16.md §5.1, задача тимлида 23.09): раньше рендерился сырой
+    // слаг (nesterov-winery-krasnostop-...-12) — GET /wines/{id}.similar был string[] без имени.
+    // С openapi 0.3.6 основной путь — similar_wines (имя/винодельня/фото, WineCardScreen.tsx).
+    // Этот ключ — честная подпись ЗАПАСНОГО пути (similar, голые слаги), когда similar_wines
+    // пуст/отсутствует у конкретной карточки — не подставляем имя, придуманное из слага.
     similarItemFallback: "Похожее вино {index}",
     grapesLabel: "Сорта",
     regionLabel: "Регион",
@@ -223,6 +222,13 @@ export const ru = {
     swipesCount: "Свайпов: {count}",
     vectorTitle: "Ваш вкусовой вектор",
     topStylesTitle: "Похоже на стили",
+    // Задача тимлида 23.09 (аудит architect, openapi 0.3.6 — тот же класс дефекта, что similar):
+    // top_styles_named ({slug,name,country}) — основной путь, показываем имя стиля и страну
+    // (формат — как у chat.analogStyleFound, уже привычный по остальному интерфейсу).
+    // top_styles (голые слаги) — запасной путь, когда top_styles_named пуст/отсутствует: та же
+    // честная порядковая подпись, что у wineCard.similarItemFallback, без выдумки имени.
+    topStyleNamed: "{name} ({country})",
+    topStyleFallback: "Стиль {index}",
     emptyTitle: "Вина закончились",
     emptyMessage: "Вы продегустировали все вина из демо-набора.",
     axisSweetness: "Сладость",

@@ -150,12 +150,28 @@ export interface WineDerived {
   reference_style_matches: string[];
 }
 
+/**
+ * v0.3.6 (openapi.yaml, задача тимлида 23.09 — дефект жюри reports/qa-manual-hack-v16.md §5.1):
+ * форма items у GET /wines/{id}.similar_wines. Тот же порядок/слаги, что similar, но слаг без
+ * карточки в каталоге в similar_wines НЕ попадает (остаётся только в similar) — длины массивов
+ * могут отличаться, similar_wines не индексируем в паре с similar.
+ */
+export interface SimilarWineItem {
+  wine_id: string;
+  name: string;
+  winery?: string | null;
+  image_url?: string | null;
+}
+
 export interface WineCardResponse {
   wine_id: string;
   source: WineSource;
   derived: WineDerived;
   source_url: string;
+  /** DEPRECATED (openapi 0.3.6) — голые слаги без имени/винодельни. Запасной путь рендера,
+   * когда similar_wines пуст или отсутствует (contracts/openapi.yaml, reports/backend-similar-wines.md). */
   similar?: string[];
+  similar_wines?: SimilarWineItem[];
 }
 
 /**
@@ -371,7 +387,13 @@ export interface SwipePayload {
 
 export interface TasteProfileResponse {
   vector: SensoryVector;
+  /** DEPRECATED (openapi 0.3.6) — голые слаги эталонных стилей, без имени/страны. Запасной
+   * путь рендера, когда top_styles_named пуст или отсутствует (тот же класс дефекта и то же
+   * решение, что similar/similar_wines — reports/backend-similar-wines.md, аудит architect). */
   top_styles: string[];
+  /** v0.3.6 — форма как у list_reference_styles()/AnalogStyle; тот же порядок, что top_styles,
+   * неизвестный слаг стиля пропущен (остаётся только в top_styles). */
+  top_styles_named?: AnalogStyle[];
   swipes_count: number;
 }
 
