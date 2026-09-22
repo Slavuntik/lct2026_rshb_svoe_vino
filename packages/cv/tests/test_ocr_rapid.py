@@ -445,6 +445,8 @@ def test_engine_for_passes_prototype_params_verbatim(monkeypatch):
         "Global.use_cls": False,
         "Det.limit_side_len": 640,
         "Det.limit_type": "max",
+        "Det.box_thresh": 0.3,  # 22.09: чувствительный детектор (строки вразрядку), см. DEFAULT_DET_BOX_THRESH
+        "Det.unclip_ratio": 2.0,
         "Det.ocr_version": "ppocrv5-marker",
         "Det.model_type": "mobile-marker",
         "Rec.lang_type": "eslav-marker",
