@@ -46,9 +46,14 @@ def _enable_fusion(
     `winery_aliases` (agents/ML-1-*.md, задача 2) — как `families`: словарь
     `{"groups": [...]}` (см. `cv.text_fusion.load_winery_alias_groups`),
     записывается в `<tmp_path>/winery_aliases.json` и включается через
-    `CV_WINERY_ALIASES_JSON`. Не передан -> путь по умолчанию
-    (`$CASE_DATA_DIR/winery_aliases.json`, т.е. `tmp_path/winery_aliases.json`)
-    просто не существует — `_fusion_winery_index()` честно деградирует к 1:1."""
+    `CV_WINERY_ALIASES_JSON`. Не передан -> `CV_WINERY_ALIASES_JSON` всё равно
+    ставится, но на ЗАВЕДОМО несуществующий путь: `cv.config.CASE_DATA_DIR`
+    (в отличие от env `CASE_DATA_DIR` выше) резолвится ОДИН РАЗ при первом
+    импорте `cv.config` и НЕ видит `monkeypatch.setenv("CASE_DATA_DIR", ...)`
+    — без явного `CV_WINERY_ALIASES_JSON` дефолт `default_winery_aliases_path()`
+    тихо падает на БОЕВОЙ `$CASE_DATA_DIR/winery_aliases.json` (реальный файл,
+    см. `case-data/winery_aliases.json`), а не на путь этого теста — ловушка,
+    пойманная на этом самом файле (winery-строки теста совпали с боевым алиасом)."""
     monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))  # пусто — card/candidates честно деградируют на RAG-мок
     csv_path = _write_fusion_catalog_csv(tmp_path, catalog_rows or [])
     monkeypatch.setenv("CV_CASE_CATALOG_CSV", str(csv_path))
@@ -56,10 +61,10 @@ def _enable_fusion(
         fam_path = tmp_path / "families.json"
         fam_path.write_text(json.dumps(families, ensure_ascii=False), encoding="utf-8")
         monkeypatch.setenv("CV_FAMILIES_JSON", str(fam_path))
+    aliases_path = tmp_path / "winery_aliases.json"
     if winery_aliases is not None:
-        aliases_path = tmp_path / "winery_aliases.json"
         aliases_path.write_text(json.dumps(winery_aliases, ensure_ascii=False), encoding="utf-8")
-        monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(aliases_path))
+    monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(aliases_path))  # не существует, если winery_aliases=None
     app.state.settings = dataclasses.replace(app.state.settings, cv_fusion=True, **overrides)
     # lru_cache модулей слияния — сбрасываем между тестами, ключ (str-путь) и так
     # уникален per-tmp_path, но подчищаем явно ради безопасности при повторных путях.

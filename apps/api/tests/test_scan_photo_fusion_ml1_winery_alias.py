@@ -90,21 +90,24 @@ def test_winery_aliases_env_var_resolves_independently_of_case_data_dir(
 ):
     """`CV_WINERY_ALIASES_JSON` резолвится независимо от `CASE_DATA_DIR` (тот же
     принцип живого резолва, что `CV_FAMILIES_JSON`) — путь ВНЕ
-    tmp_path/CASE_DATA_DIR тоже подхватывается."""
+    tmp_path/CASE_DATA_DIR тоже подхватывается. Env выставляется ПОСЛЕ
+    `_enable_fusion()` — та сама ставит `CV_WINERY_ALIASES_JSON` (на заведомо
+    несуществующий путь, раз `winery_aliases` не передан), последний
+    `monkeypatch.setenv()` в тесте побеждает."""
     other_dir = tmp_path / "elsewhere"
     other_dir.mkdir()
     aliases_path = other_dir / "custom-winery-aliases.json"
     aliases_path.write_text(json.dumps(_GOLUBITSKOE_ALIASES, ensure_ascii=False), encoding="utf-8")
-    monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(aliases_path))
 
     idx = _FusionImageIndex([_m("truth", 0.8678), _m("rival", 0.8676)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text=_OCR_TEXT)
-    # winery_aliases=None — не пишем файл через _enable_fusion, он уже указан явным env выше
     _enable_fusion(
         app, tmp_path, monkeypatch, catalog_rows=_GOLUBITSKOE_CATALOG_ROWS,
         cv_fusion_w=0.3, cv_fusion_text_source="ocr",
     )
+    monkeypatch.setenv("CV_WINERY_ALIASES_JSON", str(aliases_path))  # переопределяет путь _enable_fusion
+
     r = _photo(client, b"MOCKPHOTO:whatever", flat=True)
     assert r.status_code == 200, r.text
     assert r.json()["slug"] == "truth"
