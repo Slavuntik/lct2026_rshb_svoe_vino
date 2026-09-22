@@ -61,3 +61,20 @@ post-scan}.md`, `agents/ML-1-*.md`). Доска: hack-v9/v0.4.14/TCO/прода�
 ml-lead, read-only для остальных (закрывает открытый вопрос из `reports/architect-post-scan.md`).
 Порт 8080 перепроверен `lsof` в 05:14 — всё ещё занят тем же процессом, статус не изменился.
 Коммит: `git commit -- agents/BOARD.md TEAM.md reports/pm-board-update.md`.
+
+## Обновление 06:50 — hack-v10, ML-1, пост-скан, полки
+Проверены commits d423bdb/e32ae1d/984027e/30f15f6/097a326 и отчёты
+`reports/{devops-hack-v10,ml-eng-ml1,backend-pairings,frontend-post-scan,qa-auto-post-scan,
+qa-auto-field-photos,ml-lead-shelf-crop,qa-manual-field-bottles}.md`. hack-v10 (95.2%,
+59/62, принято) и вся цепочка ML-1/пост-скан/qa-auto перенесены в «Сделано». TEAM.md на
+этот раз НЕ трогала — зону devops (`qa/scan-eval-runs/real-photos-stand/`) тимлид уже
+внёс сам, проверено (строка 15).
+**Расхождение со снимком тимлида**: qa-manual (85 кропов бутылок) назван «в работе», но
+`reports/qa-manual-field-bottles.md` уже закоммичен (`0ce605f`) — перенесла в «Сделано»,
+пометив расхождение. Живым `git status` подтвердила, что ml-engineer сейчас реально
+правит `apps/api/app/{config,cv/service}.py` + новый `packages/cv/cv/shelf_crop.py`
+(ML-2, некоммичено) — единственная настоящая строка в «Сейчас» в этом раунде.
+Новый дефект каталога — `shato-taman-grape-dance-1` (rosé, отдельный слаг от уже
+известного `shato-taman-grape-dance`) — добавлен в раздел с явной пометкой «не чинить».
+Порт 8080 — `lsof` в 06:46, тот же PID 14083, без изменений.
+Коммит: `git commit -- agents/BOARD.md reports/pm-board-update.md`.
