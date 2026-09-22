@@ -50,3 +50,43 @@ passed); `.venv/bin/pytest -q` — 341 passed, 11 skipped (регрессий н
 - `config.py` в момент коммита нёс параллельный незакоммиченный кусок ml-engineer
   (`cv_fusion_merge_model_text`) — pathspec-коммит не умеет выбирать куски внутри
   одного файла, унёс и его (чужой текст не менялся и не терялся).
+
+## Дополнение (22.09, needs-work qa-auto → фикс)
+
+qa-auto (`reports/qa-auto-post-scan.md`): `chateau-de-talu-uroki-frantsuzskogo-
+krasnostop-krasnostop-anapskiy-krasnoe-suhoe-145` → 500. Причина: `derived.sensory`
+непуст, но `sweetness`/`acidity`/`aromatic_intensity` — ключи со значением `null`
+(битая запись живого каталога, не отсутствующие ключи); `food_pairing.py:324` проверял
+`axis in sensory`, не `is not None` → `float(None)` → `TypeError` без перехвата → 500.
+
+**Фикс:** `_is_usable_sensory()` — `basis="sensory"` теперь только когда ВСЕ 7 осей
+числом; неполный вектор молчаливым пропуском оси НЕ чинится (`applicable` в формуле
+скоринга растёт от `when`, дырка в данных иначе неотличима от "явно не прошло порог" —
+тихо занижала бы score), вместо этого каскад честно падает на heuristic/unavailable, как
+будто `derived.sensory` не было вовсе. `build_sensory_wine_vector` — тот же
+`isinstance`-фильтр вторым слоем защиты. Заодно `build_heuristic_wine_vector`:
+`color` оборачивается в `str(...)` (та же живая запись несёт `color: null`, не только
+пустую строку) — не наблюдалось падений, но тот же класс риска.
+
+**Тесты (+2 в `test_wine_pairings.py`, итого 12):** запись с частичным null (3 из 7
+осей) → `basis="heuristic"`, не 500; запись с ПОЛНОСТЬЮ null sensory + пустой `color`
+→ `basis="unavailable"`, не 500. `pytest -q` — **348 passed, 11 skipped**, регрессий нет
+(WIP-тест ml-engineer из отчёта qa-auto к этому моменту сам стал зелёным).
+
+**Прогон по всем 4081 записям** (`RAG_PROVIDER=real` на своей копии
+`packages/rag/data` без `.lock` — та же ловушка qdrant embedded, что поймал qa-auto —
++ `CASE_DATA_DIR` оригинал, только JSON, лока нет; через `TestClient`, скрипт
+одноразовый, не в pytest): **0 ошибок 500 на 4081 вин** (1978 наш каталог + 2103
+каталог кейса), p50≈2.6 мс/вызов. Basis: наш каталог — catalog=1977, unavailable=1
+(сам дефектный `chateau-de-talu-...`: `color=null` тоже); каталог кейса — catalog=1977
+(слаг совпал с нашим RAG), heuristic=125 (собственно кейсовые слаги), unavailable=1.
+**basis=sensory не встретился ни разу на реальных данных** — не регресс: 1977 из 1978
+вин нашего каталога несут непустой `food_pairings` (уровень 1 побеждает раньше, чем
+дело доходит до sensory); из оставшихся 1014/1978 вин с непустым `derived.sensory`
+несут ≥1 null-ось (ровно то, что нашёл qa-auto, только в масштабе). Путь sensory
+по-прежнему покрыт юнит-тестом (`test_pairings_sensory_basis_scores_via_rules_engine`)
+через фикстуру — слепая зона на реальных данных ожидаема, не блокер.
+
+Воспроизвести сводный прогон: скрипт не в репозитории (разовая диагностика, тяжёлые
+ML-зависимости) — команды и код приведены выше; при повторе скопировать
+`packages/rag/data` в scratch-директорию БЕЗ `qdrant/.lock` перед стартом.

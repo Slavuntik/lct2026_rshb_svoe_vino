@@ -76,6 +76,63 @@ def test_pairings_sensory_basis_scores_via_rules_engine(client: TestClient, monk
     assert body["pairings"][2]["score"] == pytest.approx(0.2857)
 
 
+# --- Регресс qa-auto (reports/qa-auto-post-scan.md, 22.09): битые записи ------
+# derived.sensory каталога — ключи с null вместо отсутствующих ключей.
+# chateau-de-talu-uroki-frantsuzskogo-krasnostop-krasnostop-anapskiy-krasnoe-
+# suhoe-145 (1 из 1978) ронял 500 (`float(None)`, food_pairing.py:324 на тот
+# момент) — ниже НЕ должно 500-ить ни при каких пропусках осей, а вместо
+# basis=sensory обязана честно деградировать (вектор с дырой не может
+# скориться надёжно — см. docstring _is_usable_sensory).
+
+def test_pairings_sensory_with_null_axis_degrades_to_heuristic_not_500(client: TestClient, monkeypatch):
+    """Ровно класс дефекта qa-auto: derived.sensory непуст, но 3 из 7 осей —
+    ключи со значением null (не отсутствуют, а именно null). shato-vymysel-
+    cabernet несёт color="красное" — есть куда деградировать (heuristic),
+    так что basis обязан смениться, а не остаться sensory с дырой в векторе."""
+    from app.rag.fixtures import WINES_BY_SLUG
+
+    monkeypatch.setitem(WINES_BY_SLUG["shato-vymysel-cabernet"], "food_pairings", [])
+    monkeypatch.setitem(WINES_BY_SLUG["shato-vymysel-cabernet"], "derived", {
+        "sensory": {
+            "sweetness": None, "acidity": None, "tannin": 0.62, "body": 0.72,
+            "oak": 0.38, "aromatic_intensity": None, "bubbles": 0.0,
+        },
+    })
+
+    tokens = register_user(client, email="pair-null-axis@example.com")
+    r = client.get("/v1/wines/shato-vymysel-cabernet/pairings", headers=auth_header(tokens))
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["basis"] == "heuristic"  # НЕ "sensory" — вектор с null-осью ненадёжен
+    assert body["message"] is None
+    assert _pairing_tags(body) == ["BBQ", "Блюда из птицы", "Сыры"]
+
+
+def test_pairings_fully_null_sensory_degrades_to_unavailable_not_500(client: TestClient, monkeypatch):
+    """"Полностью пустой" sensory — ВСЕ 7 осей null (не просто отсутствующий
+    словарь {} — тот и так уже работал, см. каталог кейса ниже). color тоже
+    убран, чтобы дойти до самого дна каскада — доказывает, что деградация
+    работает до basis=unavailable включительно, а не спотыкается на полпути."""
+    from app.rag.fixtures import WINES_BY_SLUG
+
+    monkeypatch.setitem(WINES_BY_SLUG["shato-vymysel-cabernet"], "food_pairings", [])
+    monkeypatch.setitem(WINES_BY_SLUG["shato-vymysel-cabernet"], "color", "")
+    monkeypatch.setitem(WINES_BY_SLUG["shato-vymysel-cabernet"], "derived", {
+        "sensory": {axis: None for axis in
+                    ("sweetness", "acidity", "tannin", "body", "oak", "aromatic_intensity", "bubbles")},
+    })
+
+    tokens = register_user(client, email="pair-null-sensory-full@example.com")
+    r = client.get("/v1/wines/shato-vymysel-cabernet/pairings", headers=auth_header(tokens))
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["basis"] == "unavailable"
+    assert body["pairings"] == []
+    assert body["message"]
+
+
 # --- Уровень 3 — basis=heuristic (каталог кейса: ни food_pairings, ни sensory) -
 
 def test_pairings_heuristic_basis_from_case_catalog_color(client: TestClient, tmp_path, monkeypatch):

@@ -295,8 +295,13 @@ def _resolve_abv(source: dict) -> float:
 
 def build_heuristic_wine_vector(source: dict) -> dict[str, float] | None:
     """`None` → вызывающая сторона честно отдаёт `basis="unavailable"`
-    (color пуст либо вне 4 известных значений контракта)."""
-    color_raw = (source.get("color") or "").strip()
+    (color пуст либо вне 4 известных значений контракта). `str(...)` вокруг
+    `color` — та же дисциплина "битые записи каталога не роняют ручку", что
+    `_is_usable_sensory` выше (qa-auto, reports/qa-auto-post-scan.md): если
+    `color` вдруг не строка (не наблюдалось живьём, но `sensory` тоже "не
+    наблюдалось" до находки qa-auto), `.strip()` на не-строке кидал бы
+    `AttributeError` вместо честного `unavailable`."""
+    color_raw = str(source.get("color") or "").strip()
     if not color_raw:
         return None
 
@@ -316,12 +321,38 @@ def build_heuristic_wine_vector(source: dict) -> dict[str, float] | None:
     return vector
 
 
+def _is_usable_sensory(sensory: dict) -> bool:
+    """qa-auto (reports/qa-auto-post-scan.md, приёмка 22.09): живой RAG-каталог
+    несёт битые записи — `derived.sensory` непуст, но часть осей это ключи со
+    значением `null` (`chateau-de-talu-uroki-frantsuzskogo-krasnostop-
+    krasnostop-anapskiy-krasnoe-suhoe-145`: sweetness/acidity/aromatic_intensity
+    — null, 1 из 1978). Раньше `axis in sensory` считал такую ось "есть" и
+    падал на `float(None)` (500). Чинить молчаливым пропуском оси НЕДОСТАТОЧНО:
+    `score = raw/applicable` растит `applicable` от `when` (чисто dish-driven)
+    независимо от того, смогли ли мы проверить `require`/`penalize` — пропавшая
+    ось неотличима от "явно не прошло порог", score тихо занижается, это нечестно
+    (то же самое found qa-auto: "живьём basis=sensory не проходит ни на одной
+    реальной записи" даже безотносительно бага). Поэтому — всё или ничего: только
+    когда ВСЕ 7 осей числом, считаем derived.sensory надёжным сигналом; иначе
+    вызывающая сторона (compute_pairings) деградирует на heuristic/unavailable,
+    как будто derived.sensory не было вовсе (contracts/post-scan.md §1)."""
+    return all(isinstance(sensory.get(axis), (int, float)) for axis in _SENSORY_AXES)
+
+
 def build_sensory_wine_vector(source: dict, sensory: dict) -> dict[str, float]:
     """Уровень 2 — `derived.sensory` "без каких-либо преобразований: имена
     осей совпадают буквально" (contracts/post-scan.md §1). `wine.abv_percent`
     — единственное исключение, не ось `derived.sensory` (`source.abv_percent`
-    отдельно, дефолт `_DEFAULT_ABV`)."""
-    vector = {axis: float(sensory[axis]) for axis in _SENSORY_AXES if axis in sensory}
+    отдельно, дефолт `_DEFAULT_ABV`). Вызывается только после `_is_usable_
+    sensory()` (все 7 осей числом) — фильтр по `isinstance` здесь всё равно
+    оставлен (защита на случай будущего вызова в обход гейта, не полагаемся
+    ТОЛЬКО на дисциплину вызывающей стороны): пропущенная/null-ось просто не
+    попадает в вектор вместо `TypeError: float(None)`."""
+    vector = {
+        axis: float(sensory[axis])
+        for axis in _SENSORY_AXES
+        if isinstance(sensory.get(axis), (int, float))
+    }
     vector["abv_percent"] = _resolve_abv(source)
     return vector
 
@@ -371,7 +402,7 @@ def compute_pairings(card: dict, settings: Settings) -> dict:
         return {"basis": "catalog", "pairings": pairings, "message": None}
 
     sensory = derived.get("sensory") or {}
-    if sensory:
+    if _is_usable_sensory(sensory):
         wine_vector = build_sensory_wine_vector(source, sensory)
         return _scored_result("sensory", wine_vector, rules_data)
 
