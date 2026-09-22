@@ -41,9 +41,22 @@ COOLDOWN_S=60` (скан сразу локальный, без ожидания 
 `_run_photo_scan_fusion()` всегда считает `local_result` (CV+чистый OCR) и `model_result`
 (текущая склейка) на ОДНИХ векторах/кандидатной вселенной (union extra_slugs обоих
 текстов, один `search_fusion()`); `_choose_fusion_result()` — merge/max_score/
-agree_else_llm/agree_else_cv. `PhotoScanResult.local_slug/model_slug/answers_agree/
-chosen_answer_side` — НЕ в контракте, только архив (`archive.py`) + `INFO`-лог. "merge" —
-ответ бит-в-бит старый (проверено HTTP-тестом); `max_score` в тесте перекл. ответ.
+agree_else_llm/agree_else_cv/**confident_else_cv**. `PhotoScanResult.local_slug/
+model_slug/answers_agree/chosen_answer_side` — НЕ в контракте, только архив
+(`archive.py`) + `INFO`-лог. "merge" — ответ бит-в-бит старый (проверено HTTP-тестом);
+`max_score` в тесте перекл. ответ.
+
+**Параллельная находка**: во время этой задачи ml-lead независимо (`git log`, коммит
+`b1a7c48`, `reports/ml-lead-choose-rule.md`) прогнал офлайн-сравнение
+merge/max_score/agree_else_llm/agree_else_cv/confident_else_cv на 62 живых фото + 38
+честных NONE (боевая `cv.text_fusion.fuse()`) и **рекомендует `confident_else_cv`**
+(доверяем модели, только если её СОБСТВЕННЫЙ `fuse()` проходит уже откалиброванный
+гейт `confident`, иначе локальный — независимо от согласия слагов): не хуже merge на
+чистых (60/62), заметно устойчивее к галлюцинации чтения модели на всех проверенных
+точках искажения (10/30/100%), чем остальные 4 режима. Добавил `confident_else_cv`
+в `_choose_fusion_result()` (читает `model_result.confident` — то же поле `fuse()`,
+что уже решает `not_in_catalog`) — режим ДОСТУПЕН, дефолт НЕ переключаю (решение "в
+бой" по букве TEAM.md не в зоне ml-engineer, ml-lead адресовала рекомендацию тимлиду).
 
 ## Находка: near-dup verify() тоже без бюджета (rich 14.6с/3.4с)
 `run_photo_scan()`/`_run_photo_scan_fusion()` зовут ОДИН и тот же пайплайн для flat/rich
@@ -90,7 +103,8 @@ chosen_answer_side` — НЕ в контракте, только архив (`ar
    другое значение.
 
 ## Тесты
-Новые: `test_cv_scan_budget.py` (36, бюджет/предохранитель/`_choose_fusion_result`/HTTP),
+Новые: `test_cv_scan_budget.py` (39, бюджет/предохранитель/`_choose_fusion_result`/HTTP,
+вкл. 3 на `confident_else_cv`),
 `test_cv_scan_budget_fake_gateway.py` (17, настоящий локальный HTTP-сервер: разрыв
 соединения/500/429/битый JSON/пустые поля/зависание/трикл, flat+rich всегда 200,
 предохранитель открывается/закрывается), `test_cv_factory_warmup_fusion.py` (11 + 1
@@ -100,7 +114,7 @@ chosen_answer_side` — НЕ в контракте, только архив (`ar
 `test_scan_photo_fusion_ml1_merge_text.py`; `conftest.py` — autouse сброс предохранителей
 между тестами (модульное состояние `_MODEL_BREAKERS`).
 
-`apps/api`: было 385 passed/11 skipped → **451 passed/12 skipped** (доп. skip — гейт
+`apps/api`: было 385 passed/11 skipped → **454 passed/12 skipped** (доп. skip — гейт
 `RUN_CV_INTEGRATION`). `packages/cv` не тронут — **422 passed** (без изменений).
 
 ## Локальный замер (100 фото case-data/real-photos, свой Mac 10 ядер, своя копия

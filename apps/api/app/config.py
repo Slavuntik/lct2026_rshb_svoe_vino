@@ -319,6 +319,14 @@ class Settings:
     #   "agree_else_llm"  — слаги совпали -> тот же ответ; разошлись -> модельный.
     #   "agree_else_cv"   — слаги совпали -> тот же ответ; разошлись -> та сторона, чей
     #                        top-1 CV-скор (не final) выше.
+    #   "confident_else_cv" — ml-lead, офлайн-разбор 22.09 (reports/ml-lead-choose-
+    #                        rule.md, qa/real_photos_choose_rule.py, 62 живых фото +
+    #                        38 честных NONE): модельный ответ ТОЛЬКО если сам проходит
+    #                        гейт уверенности (CV_FUSION_GAP_FLOOR/CV_FUSION_CV_FLOOR),
+    #                        иначе локальный — независимо от согласия слагов. На их
+    #                        выборке не хуже merge на чистых, устойчивее к галлюцинации
+    #                        чтения модели. Рекомендация ml-lead тимлиду для "в бой" —
+    #                        дефолт здесь НЕ переключён (решение тимлида/pm).
     # Неизвестное значение — честно как "merge" (см. _choose_fusion_result).
     cv_fusion_choose: str = field(
         default_factory=lambda: os.environ.get("CV_FUSION_CHOOSE", "merge").strip().lower()

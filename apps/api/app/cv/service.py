@@ -697,7 +697,20 @@ def _choose_fusion_result(model_result, local_result, mode: str) -> tuple[object
     дефолт не переключён). Пустой `ranked` с одной из сторон (кандидатная
     вселенная `fuse()` не может быть пустой, пока `cv_scores` непуст — вызывающий
     код это уже проверил до вызова, но защита остаётся на случай будущих
-    изменений) — эта сторона просто проигрывает."""
+    изменений) — эта сторона просто проигрывает.
+
+    `mode="confident_else_cv"` (ml-lead, параллельный офлайн-разбор 22.09,
+    `reports/ml-lead-choose-rule.md`, `qa/real_photos_choose_rule.py` — 62 живых
+    фото каталога + 38 честных NONE, боевая `cv.text_fusion.fuse()`): доверяем
+    модели, ТОЛЬКО если её СОБСТВЕННЫЙ `fuse()`-результат сам проходит уже
+    откалиброванный гейт уверенности (`model_result.confident` — тот же
+    `gap>=CV_FUSION_GAP_FLOOR И cv_score>=CV_FUSION_CV_FLOOR`, что решает
+    `not_in_catalog` ниже по конвейеру), иначе локальный. Независимо от
+    согласия/несогласия слагов — НЕ путать с `agree_else_*` ниже. На их выборке:
+    не хуже merge на чистых 60/62, заметно устойчивее галлюцинации чтения модели
+    (перестановка/похожая ниша между фото) на каждой проверенной точке 10/30/100%.
+    Рекомендация ml-lead тимлиду — дефолт НЕ переключаю сам (решение "в бой" не
+    моя зона), только добавляю режим."""
     if mode == "merge" or not local_result.ranked:
         return model_result, "model"
     if not model_result.ranked:
@@ -706,6 +719,8 @@ def _choose_fusion_result(model_result, local_result, mode: str) -> tuple[object
         if local_result.ranked[0].final_score > model_result.ranked[0].final_score:
             return local_result, "local"
         return model_result, "model"
+    if mode == "confident_else_cv":
+        return (model_result, "model") if model_result.confident else (local_result, "local")
     if local_result.ranked[0].slug == model_result.ranked[0].slug:
         return model_result, "model"  # согласны — форма ответа от модельной стороны, слаг тот же
     if mode == "agree_else_cv" and local_result.ranked[0].cv_score > model_result.ranked[0].cv_score:

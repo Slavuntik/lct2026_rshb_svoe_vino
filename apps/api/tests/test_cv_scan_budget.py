@@ -373,6 +373,7 @@ class _FakeCandidate:
 @_dc
 class _FakeFusionResult:
     ranked: list
+    confident: bool = False
 
 
 def test_choose_merge_always_picks_model_regardless_of_local():
@@ -437,6 +438,31 @@ def test_choose_unknown_mode_falls_back_to_model():
     local = _FakeFusionResult(ranked=[_FakeCandidate("l", 0.95, 0.95)])
     result, side = service_module._choose_fusion_result(model, local, "bogus-mode")
     assert (result, side) == (model, "model")
+
+
+def test_choose_confident_else_cv_uses_model_when_model_result_confident():
+    """ml-lead (reports/ml-lead-choose-rule.md, qa/real_photos_choose_rule.py) —
+    доверяем модели, ТОЛЬКО если её fuse() сама прошла гейт уверенности."""
+    model = _FakeFusionResult(ranked=[_FakeCandidate("m", 0.80, 0.70)], confident=True)
+    local = _FakeFusionResult(ranked=[_FakeCandidate("l", 0.95, 0.95)], confident=True)
+    result, side = service_module._choose_fusion_result(model, local, "confident_else_cv")
+    assert (result, side) == (model, "model")
+
+
+def test_choose_confident_else_cv_falls_back_to_local_when_model_result_not_confident():
+    model = _FakeFusionResult(ranked=[_FakeCandidate("m", 0.80, 0.70)], confident=False)
+    local = _FakeFusionResult(ranked=[_FakeCandidate("l", 0.75, 0.90)], confident=True)
+    result, side = service_module._choose_fusion_result(model, local, "confident_else_cv")
+    assert (result, side) == (local, "local")
+
+
+def test_choose_confident_else_cv_ignores_agreement_entirely():
+    """Независимо от того, совпадают ли слаги — решает ТОЛЬКО model_result.confident,
+    не сравнение с local (в отличие от agree_else_*)."""
+    model = _FakeFusionResult(ranked=[_FakeCandidate("same", 0.80, 0.70)], confident=False)
+    local = _FakeFusionResult(ranked=[_FakeCandidate("same", 0.80, 0.70)], confident=True)
+    result, side = service_module._choose_fusion_result(model, local, "confident_else_cv")
+    assert (result, side) == (local, "local"), "model.confident=False -> локальный, даже при совпадении слагов"
 
 
 # --------------------------------------------------------------------------------------
