@@ -21,8 +21,16 @@
 # распознаватель RapidOCR на КРОПЕ ЭТИКЕТКИ (боксы из прохода 960 выше переиспользуются,
 # лишней детекции нет) — +1 фото офлайн (90.3% -> 91.9% top-1, 2 кропа CV). "0" выключает.
 #
+# ML-2 (reports/ml-eng-ml2.md, 22.09): SHELF_CROP=1 ниже — сегментация кадра ЦЕЛОЙ ПОЛКИ
+# на бутылки перед конвейером (packages/cv/cv/shelf_crop.py). Дефолт "0" (выключено) —
+# живая приёмка нашла РЕГРЕССИЮ на 62 фото каталога (59/62 -> 58/62, near-dup спутан
+# ложным срабатыванием гейта на одиночной бутылке) и НЕ показала обещанный офлайн прирост
+# на 8 полевых целевых (1/8, как и без флага) — не готово к бою, инфраструктура оставлена
+# для дальнейшей работы поверх неё.
+#
 # Использование: infra/local-check/run-check-server.sh        (порт 8080)
 #                PORT=8081 TEXT_SOURCE=vlm_local infra/local-check/run-check-server.sh
+#                SHELF_CROP=1 infra/local-check/run-check-server.sh   (см. предупреждение выше)
 set -euo pipefail
 R="$(cd "$(dirname "$0")/../.." && pwd)"
 CASE="${CASE_DATA_DIR:-$R/../case-data}"
@@ -43,6 +51,8 @@ exec env \
   CV_OCR_ENGINE="${OCR_ENGINE:-rapid}" CV_OCR_RAPID_SIZES="${OCR_RAPID_SIZES:-640,960}" \
   CV_OCR_LABEL_SIZE="${OCR_LABEL_SIZE:-1280}" \
   CV_FUSION_CROPS="${FUSION_CROPS:-8}" \
+  CV_SHELF_CROP="${SHELF_CROP:-0}" CV_SHELF_MIN_BOXES="${SHELF_MIN_BOXES:-30}" \
+  CV_SHELF_CHECK_NEIGHBORS="${SHELF_CHECK_NEIGHBORS:-0}" \
   VISION_LLM_URL="${LLM_GATEWAY_URL:-}" VISION_LLM_KEY="${LLM_GATEWAY_KEY:-}" \
   VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.5}" \
   .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "${PORT:-8080}"

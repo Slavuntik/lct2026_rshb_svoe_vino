@@ -655,6 +655,95 @@ def _run_photo_scan_fusion(
     )
 
 
+# --------------------------------------------------------------------------
+# agents/ML-2-shelf-crop.md (22.09): сегментация кадра ЦЕЛОЙ ПОЛКИ на бутылки —
+# шаг 0 конвейера, ДО ImageIndex.search()/_run_photo_scan_fusion() (см.
+# reports/ml-lead-shelf-crop.md — центральный кроп боевого пути на фото ЦЕЛОЙ
+# ПОЛКИ содержит 3-4+ бутылки вместо одной, top-1 падает 93.5%→1/8 на полевых
+# фото). Ленивый импорт `cv.shelf_crop` — тот же принцип, что
+# `_import_cv_fusion_deps()`/`_import_text_rerank()` выше: apps/api не должен
+# требовать packages/cv, пока CV_SHELF_CROP=0 (дефолт).
+# --------------------------------------------------------------------------
+
+
+def _import_shelf_crop():
+    try:
+        from cv import shelf_crop
+    except ImportError as exc:
+        raise RuntimeError(
+            "CV_SHELF_CROP=1, но пакет packages/cv не установлен в это окружение "
+            "(uv sync --extra integration в apps/api). Пока не нужен — оставьте "
+            "CV_SHELF_CROP=0 (дефолт)."
+        ) from exc
+    return shelf_crop
+
+
+def _pick_best_shelf_crop(
+    arr, boxes: list[tuple[int, int, int, int]], image_index: ImageIndex, encode_jpeg,
+) -> tuple[int, int, int, int]:
+    """agents/ML-2-shelf-crop.md, доп. пункт (риски reports/ml-lead-shelf-crop.md,
+    п.2: off-by-one раздела Вороного на пограничном центре, F04/F30) — только
+    при `settings.cv_shelf_check_neighbors` и когда `ShelfSegmentation.
+    candidate_indices` реально несёт больше одного кандидата (граница между
+    колонками почти совпала с X-центром кадра). Пробует КАЖДЫЙ кандидатный кроп
+    через `ImageIndex.search()` (дешёвый top-1 ANN — тот же сырой CV-сигнал,
+    которому уже доверяет гейт уверенности ниже по конвейеру, не второй проход
+    OCR/текстового индекса — дешевле) и оставляет тот, что дал более высокий
+    скор. Сбой поиска на конкретном кандидате (крошечный/вырожденный кроп и
+    т.п.) — этот кандидат просто не выигрывает, исключение наружу не идёт (весь
+    шаг сегментации — усилитель, не обязательный компонент конвейера)."""
+    best_box, best_score = boxes[0], float("-inf")
+    for candidate in boxes:
+        x0, y0, x1, y1 = candidate
+        crop = arr[y0:y1, x0:x1]
+        score = float("-inf")
+        try:
+            matches = image_index.search(encode_jpeg(crop), top_k=1)
+            if matches:
+                score = matches[0].score
+        except Exception:  # noqa: BLE001 — деградация: кандидат просто не выигрывает сравнение
+            pass
+        if score > best_score:
+            best_score, best_box = score, candidate
+    return best_box
+
+
+def _apply_shelf_crop(image_bytes: bytes, settings: Settings, image_index: ImageIndex) -> bytes:
+    """contracts/image-scan.md НЕ описывает CV_SHELF_CROP (чистый препроцессинг
+    входного фото ДО ImageIndex.search()/OCR, формат ответа не меняется — см.
+    agents/ML-2-shelf-crop.md). Гейт «это полка»
+    (`packages/cv/cv/shelf_crop.py::segment_shelf`) не пройден -> ИСХОДНЫЕ
+    БАЙТЫ ПОБИТОВО, без единого перекодирования — регрессия на студийных/
+    не-полочных фото структурно невозможна (тот же принцип, что "весь кадр"
+    было для конвейера без сегментации).
+
+    Кроп передаётся дальше ПЕРЕКОДИРОВАННЫМ в JPEG (`cv.imageio.encode_jpeg`,
+    quality=95), не сырым массивом глубже по стеку: и `ImageIndex.search()`/
+    `embed_fusion_query()`, и `LabelVerifier.read_query_text()`/`verify()`
+    принимают `bytes` — интерфейс контракта не трогается, а замена входных
+    байт ОДИН раз здесь автоматически подхватывается ОБОИМИ путями
+    `run_photo_scan` (обычным и `_run_photo_scan_fusion`), не только одним из
+    них. Цена — один лишний цикл JPEG-кодирования на полочных фото (гейт
+    пройден на меньшинстве кадров, см. reports/ml-eng-ml2.md) — дешевле, чем
+    протаскивать ndarray отдельным параметром через все сигнатуры контракта."""
+    shelf_crop = _import_shelf_crop()
+    from cv.imageio import decode_image, encode_jpeg
+
+    arr = decode_image(image_bytes)  # ValueError на битые байты — как и раньше, просто раньше по времени
+    seg = shelf_crop.segment_shelf(arr, min_boxes=settings.cv_shelf_min_boxes)
+    if not seg.is_shelf:
+        return image_bytes
+
+    chosen = seg.central_crop
+    if settings.cv_shelf_check_neighbors and len(seg.candidate_indices) > 1:
+        candidates = [seg.crops[i] for i in seg.candidate_indices]
+        chosen = _pick_best_shelf_crop(arr, candidates, image_index, encode_jpeg)
+
+    x0, y0, x1, y1 = chosen
+    cropped = arr[y0:y1, x0:x1]
+    return encode_jpeg(cropped, quality=95)
+
+
 def run_photo_scan(
     *,
     image_bytes: bytes,
@@ -665,6 +754,9 @@ def run_photo_scan(
     top_k: int = 5,
 ) -> PhotoScanResult:
     t0 = time.monotonic()
+
+    if settings.cv_shelf_crop:
+        image_bytes = _apply_shelf_crop(image_bytes, settings, image_index)
 
     if settings.cv_fusion:
         return _run_photo_scan_fusion(

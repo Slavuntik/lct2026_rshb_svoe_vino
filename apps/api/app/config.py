@@ -307,6 +307,34 @@ class Settings:
     # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
     # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
     # попадают. TLS проверяется штатно.
+    # agents/ML-2-shelf-crop.md (22.09): сегментация кадра ЦЕЛОЙ ПОЛКИ на бутылки —
+    # шаг 0 конвейера, ДО ImageIndex.search()/OCR (см. app/cv/service.py::run_photo_scan,
+    # packages/cv/cv/shelf_crop.py). Основание — reports/ml-lead-shelf-crop.md: боевой
+    # центральный кроп кадра на фото ЦЕЛОЙ ПОЛКИ (Field/) содержит 3-4+ бутылки вместо
+    # одной, top-1 падает до 1/8 (qa-auto, reports/qa-auto-field-photos.md). Дефолт
+    # ВЫКЛЮЧЕН до приёмки живым API — та же дисциплина, что cv_fusion/cv_text_rerank
+    # (reports/ml-eng-ml2.md — цифры приёмки на 62/8/22 живых фото).
+    cv_shelf_crop: bool = field(
+        default_factory=lambda: _bool_env("CV_SHELF_CROP", False)
+    )
+    cv_shelf_min_boxes: int = field(
+        # Гейт «это вообще полка» (packages/cv/cv/shelf_crop.py::DEFAULT_MIN_BOXES):
+        # колонок >= 2 И боксов текста в полосе ряда >= это значение. Порог 30 подобран
+        # ml-lead на ВСЕХ 100 фото каталога (максимум боксов у НЕ-полочных фото — 51,
+        # целевые полевые ряды — 41-118, пересечения при 30 нет; без гейта — катастрофа,
+        # 95.2%→51.6% на 62 фото каталога).
+        default_factory=lambda: int(os.environ.get("CV_SHELF_MIN_BOXES", "30"))
+    )
+    # agents/ML-2-shelf-crop.md, доп. пункт (риски reports/ml-lead-shelf-crop.md, п.2):
+    # раздел Вороного между колонками — без нахлёста, что даёт off-by-one на кадрах, где
+    # X-центр кадра приходится почти РОВНО на границу двух колонок (F04/F30 отчёта).
+    # Включает попытку соседнего кропа (см. `ShelfSegmentation.candidate_indices`) и
+    # выбор по CV-скору поиска — НЕЗАВИСИМЫЙ флаг от cv_shelf_crop (нет смысла без
+    # него), дефолт ВЫКЛЮЧЕН, включается только при подтверждённых 0 регрессиях на
+    # 62 фото каталога (см. reports/ml-eng-ml2.md).
+    cv_shelf_check_neighbors: bool = field(
+        default_factory=lambda: _bool_env("CV_SHELF_CHECK_NEIGHBORS", False)
+    )
     vision_llm_url: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_URL") or None)
     vision_llm_key: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_KEY") or None, repr=False)
     vision_llm_model: str = field(default_factory=lambda: os.environ.get("VISION_LLM_MODEL", "qwen3.8-27b"))
