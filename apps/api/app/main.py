@@ -82,7 +82,13 @@ OPENAPI_URL = "/v1/openapi.json"
 
 # Версия дублирует contracts/openapi.yaml (поле version верхнего уровня) —
 # синхронизируется вручную, контракт правит только architect (ORCHESTRATION.md).
-API_VERSION = "0.3.3"
+# 0.3.3 -> 0.3.6 (22.09, backend, reports/backend-similar-wines.md): контракт
+# получил similar_wines (GET /wines/{id}) и top_styles_named (GET
+# /taste/profile) ЗАРАНЕЕ (architect ратифицировал 0.3.6 в рамках аудита
+# reports/qa-manual-hack-v16.md), эта волна backend реализует оба поля —
+# синхронизирую строку версии вместе с реальным поведением путей, тот же
+# принцип, что и у v0.3.4 (см. историю contracts/openapi.yaml).
+API_VERSION = "0.3.6"
 
 API_DESCRIPTION = """\
 API «Свой Сомелье» — сканер российских вин по фото (кейс №10 РСХБ, хакатон ЛЦТ 2026).

@@ -178,10 +178,16 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     assert body["ocr_verified"] is False
 
     # v0.4.1 (пробел нашёл C): card — РОВНО тело GET /wines/{id}, включая
-    # similar, не усечённая форма без него.
-    assert set(body["card"].keys()) == {"wine_id", "source", "derived", "source_url", "similar"}
+    # similar, не усечённая форма без него. v0.3.6: то же самое верно для
+    # similar_wines — build_wine_card() один построитель на оба места, card
+    # получает его без отдельной правки (contracts/openapi.yaml v0.3.6, шапка
+    # файла).
+    assert set(body["card"].keys()) == {
+        "wine_id", "source", "derived", "source_url", "similar", "similar_wines",
+    }
     assert body["card"]["wine_id"] == "shato-vymysel-cabernet"
     assert isinstance(body["card"]["similar"], list)
+    assert isinstance(body["card"]["similar_wines"], list)
 
     wines_r = client.get(f"/v1/wines/{body['card']['wine_id']}", headers=auth_header(register_user(
         client, email="photo-card-parity@example.com")))

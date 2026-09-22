@@ -82,12 +82,30 @@ class ScanResolveResponse(BaseModel):
     analog_reason: str | None = None
 
 
+class SimilarWineItem(BaseModel):
+    """contracts/openapi.yaml v0.3.6 — item формы `similar_wines` (см. ниже):
+    те же слаги/порядок, что `similar`, обогащённые именем/винодельней/фото.
+    `winery` — отображаемое имя (source.winery_name, фолбэк — слаг
+    source.winery), тот же приём, что `PairingWineItem.winery`."""
+    wine_id: str
+    name: str
+    winery: str | None = None
+    image_url: str | None = None
+
+
 class WineResponse(BaseModel):
     wine_id: str
     source: dict
     derived: dict
     source_url: str
+    # DEPRECATED (contracts/openapi.yaml v0.3.6) — голые слаги, без имени/
+    # винодельни (дефект жюри, reports/qa-manual-hack-v16.md п.5.1). Оставлено
+    # для обратной совместимости — новые клиенты читают similar_wines ниже.
     similar: list[str] = Field(default_factory=list)
+    # v0.3.6 — те же слаги и тот же порядок, что similar; слаг без пригодного
+    # имени в каталоге в similar_wines не попадает, но остаётся в similar
+    # (app/rag/cards.py::build_wine_card, "similar_wines" может быть короче).
+    similar_wines: list[SimilarWineItem] = Field(default_factory=list)
 
 
 # --- GET /v1/wines/{wine_id}/pairings (contracts/post-scan.md v1.0, 22.09) --
@@ -246,7 +264,18 @@ class TasteCandidatesResponse(BaseModel):
 
 class TasteProfileResponse(BaseModel):
     vector: dict[str, float]
+    # DEPRECATED (contracts/openapi.yaml v0.3.6) — голые слаги эталонных
+    # стилей, без имени/страны (тот же класс дефекта, что WineResponse.similar
+    # — найдено аудитом architect по жалобе жюри, не отдельной жалобой на этот
+    # эндпоинт). Оставлено для обратной совместимости — новые клиенты читают
+    # top_styles_named ниже.
     top_styles: list[str]
+    # v0.3.6 — те же слаги и тот же порядок, что top_styles, форма как у
+    # list_reference_styles()/AnalogsStyle (contracts/rag-interface.md);
+    # переиспользуем AnalogsStyle 1:1 — та же сущность "эталонный стиль".
+    # Слаг вне справочника стилей в top_styles_named не попадает, но
+    # остаётся в top_styles (routers/taste.py::_resolve_style_names).
+    top_styles_named: list[AnalogsStyle] = Field(default_factory=list)
     swipes_count: int
 
 
