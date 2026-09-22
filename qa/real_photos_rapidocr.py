@@ -18,10 +18,13 @@ ap.add_argument("--det", default="mobile", choices=["mobile", "server"])
 ap.add_argument("--score", type=float, default=0.5)
 ap.add_argument("--images-dir", default="", help="готовые кропы NNN.jpg (порядок photos.json) вместо центрального кропа кадра")
 ap.add_argument("--prefix", default="rapid", help="префикс тега выходного файла")
+ap.add_argument("--box-thresh", type=float, default=None, help="Det.box_thresh (дефолт движка 0.6); 0.3 собирает строки вразрядку")
+ap.add_argument("--unclip", type=float, default=None, help="Det.unclip_ratio (дефолт движка 1.5)")
 a = ap.parse_args()
 photos = json.loads((F / "photos.json").read_text())
 for size in [int(s) for s in a.sizes.split(",")]:
-    eng = RapidOCR(params={"Global.use_cls": False, "Det.limit_side_len": size, "Det.limit_type": "max",
+    det_extra = {k: v for k, v in (("Det.box_thresh", a.box_thresh), ("Det.unclip_ratio", a.unclip)) if v is not None}
+    eng = RapidOCR(params={**det_extra, "Global.use_cls": False, "Det.limit_side_len": size, "Det.limit_type": "max",
                            "Det.ocr_version": OCRVersion.PPOCRV5,
                            "Det.model_type": ModelType.MOBILE if a.det == "mobile" else ModelType.SERVER,
                            "Rec.lang_type": LangRec.ESLAV, "Rec.ocr_version": OCRVersion.PPOCRV5,

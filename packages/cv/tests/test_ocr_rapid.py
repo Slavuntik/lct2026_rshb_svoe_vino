@@ -789,3 +789,40 @@ def test_label_engine_construction_failure_degrades_without_affecting_main_text(
         text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
 
     assert text == "B"
+
+
+# --------------------------------------------------------------------------------------
+# 22.09: пороги детектора (строки вразрядку) — дефолты 0.3/2.0, env CV_OCR_DET_BOX_THRESH/UNCLIP
+# --------------------------------------------------------------------------------------
+
+
+def test_engine_params_carry_sensitive_detector_thresholds_by_default(monkeypatch):
+    seen = {}
+
+    def construct(params=None):
+        seen.update(params or {})
+        return _StubRapidEngine(_StubRapidResult((), ()))
+
+    _install_fake_rapidocr_module(monkeypatch, construct=construct)
+    monkeypatch.delenv("CV_OCR_DET_BOX_THRESH", raising=False)
+    monkeypatch.delenv("CV_OCR_DET_UNCLIP", raising=False)
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
+    assert reader._engine_for(640) is not None
+    assert seen["Det.box_thresh"] == pytest.approx(0.3)
+    assert seen["Det.unclip_ratio"] == pytest.approx(2.0)
+
+
+def test_engine_params_detector_thresholds_from_env(monkeypatch):
+    seen = {}
+
+    def construct(params=None):
+        seen.update(params or {})
+        return _StubRapidEngine(_StubRapidResult((), ()))
+
+    _install_fake_rapidocr_module(monkeypatch, construct=construct)
+    monkeypatch.setenv("CV_OCR_DET_BOX_THRESH", "0.6")
+    monkeypatch.setenv("CV_OCR_DET_UNCLIP", "1.5")
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
+    assert reader._engine_for(640) is not None
+    assert seen["Det.box_thresh"] == pytest.approx(0.6)
+    assert seen["Det.unclip_ratio"] == pytest.approx(1.5)

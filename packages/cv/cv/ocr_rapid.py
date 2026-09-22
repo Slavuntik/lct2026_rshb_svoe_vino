@@ -153,6 +153,14 @@ DEFAULT_SCORE_THRESH = 0.5
 # agents/H3-label-crop-ocr.md: CV_OCR_LABEL_SIZE — третий масштаб, детектор+
 # распознаватель на КРОПЕ ЭТИКЕТКИ (см. докстринг модуля, "Третий проход"). 0 = выключено.
 DEFAULT_LABEL_SIZE = 1280
+# 22.09 (оркестратор, разбор промахов стенда hack-v8): пороги ДЕТЕКТОРА текста. Дефолты движка
+# (box_thresh 0.6, unclip_ratio 1.5) не собирают строки, набранные ВРАЗРЯДКУ мелкими капителями
+# («ПОЛУСЛАДКОЕ РОЗОВОЕ» на «Новом Свете», «WINEMAKER'S SELECTION» на золотой ленте Инкермана):
+# каждая буква — отдельный слабый бокс ниже порога, и строка теряется целиком. При box_thresh 0.3 и
+# unclip_ratio 2.0 обе читаются; на 62 живых фото CPU-путь 56 → 59 (90.3 → 95.2% top-1), объединение
+# 640+960; лишний шум гейт «винодельня» и IDF переваривают. Env: CV_OCR_DET_BOX_THRESH, CV_OCR_DET_UNCLIP.
+DEFAULT_DET_BOX_THRESH = 0.3
+DEFAULT_DET_UNCLIP = 2.0
 
 
 def parse_sizes(raw: str) -> tuple[int, ...]:
@@ -235,6 +243,8 @@ class RapidOcrReader:
             self.label_size = int(label_size)
         else:
             self.label_size = DEFAULT_LABEL_SIZE
+        self.det_box_thresh = float(os.environ.get("CV_OCR_DET_BOX_THRESH", DEFAULT_DET_BOX_THRESH))
+        self.det_unclip = float(os.environ.get("CV_OCR_DET_UNCLIP", DEFAULT_DET_UNCLIP))
         self._engines: dict[int, Any] = {}  # масштаб -> RapidOCR, создаётся по требованию
         self._unavailable_sizes: set[int] = set()  # масштабы, чей движок УЖЕ не удалось создать в этом процессе
 
@@ -261,6 +271,8 @@ class RapidOcrReader:
                     "Global.use_cls": False,
                     "Det.limit_side_len": size,
                     "Det.limit_type": "max",
+                    "Det.box_thresh": self.det_box_thresh,
+                    "Det.unclip_ratio": self.det_unclip,
                     "Det.ocr_version": OCRVersion.PPOCRV5,
                     "Det.model_type": ModelType.MOBILE,
                     "Rec.lang_type": LangRec.ESLAV,
