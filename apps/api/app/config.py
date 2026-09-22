@@ -294,6 +294,16 @@ class Settings:
     cv_fusion_text_source: str = field(
         default_factory=lambda: os.environ.get("CV_FUSION_TEXT_SOURCE", "ocr").strip().lower()
     )
+    # agents/ML-1-*.md (задача 1, 22.09): в режимах vlm/vlm_local/vlm_both текст OCR
+    # (PaddleOCR/RapidOCR, читается всегда параллельно, см. cv_fusion_text_source выше)
+    # ДОБАВЛЯЕТСЯ к тексту модели(ей), а не служит фолбэком только когда НИ ОДНА модель
+    # не ответила (см. app/cv/service.py::_fusion_text_and_vectors). Дефолт ВЫКЛЮЧЕН до
+    # приёмки живым API — та же дисциплина, что cv_fusion/cv_text_rerank. Офлайн-замер
+    # на 62 живых фото (reports/ml-lead-plan.md): "vlm"+OCR 96.8% top-1 против 95.2% у
+    # одной "vlm" (тот же потолок, что "vlm"+"gwf1024" вдвоём, без OCR).
+    cv_fusion_merge_model_text: bool = field(
+        default_factory=lambda: _bool_env("CV_FUSION_MERGE_MODEL_TEXT", False)
+    )
     # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
     # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
     # попадают. TLS проверяется штатно.
@@ -321,6 +331,19 @@ class Settings:
     # дефолт "../../pipeline/ref" резолвится в корень репо.
     scan_foreign_ref_dir: str = field(
         default_factory=lambda: os.environ.get("SCAN_FOREIGN_REF_DIR", "../../pipeline/ref")
+    )
+    # 22.09 (задача backend, reports/architect-post-scan.md — "Задача backend"):
+    # GET /wines/{wine_id}/pairings, уровень sensory/heuristic — правила
+    # гастропар. pipeline/ref/ — ТОЛЬКО ЧТЕНИЕ отсюда (см. app/food_pairing.py).
+    # Тот же принцип пути, что у scan_foreign_ref_dir выше (относительно cwd
+    # процесса, apps/api) — файл, не каталог, потому что тут ровно один файл,
+    # не два. Решение backend по пробелу владения pipeline/ref/ в TEAM.md
+    # (contracts/post-scan.md §1, "Ограничения v1") — см. reports/
+    # backend-pairings.md, "Предложения к контрактам".
+    pairing_rules_path: str = field(
+        default_factory=lambda: os.environ.get(
+            "PAIRING_RULES_PATH", "../../pipeline/ref/food_pairing_rules.yaml"
+        )
     )
     max_upload_bytes: int = field(
         # v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ. Телефонные фото (особенно

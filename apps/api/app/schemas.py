@@ -90,6 +90,28 @@ class WineResponse(BaseModel):
     similar: list[str] = Field(default_factory=list)
 
 
+# --- GET /v1/wines/{wine_id}/pairings (contracts/post-scan.md v1.0, 22.09) --
+
+class TriggeredRule(BaseModel):
+    id: str
+    explain: str  # дословно rules[].explain из pipeline/ref/food_pairing_rules.yaml
+
+
+class WinePairingItem(BaseModel):
+    tag: str
+    # null при basis=catalog (contracts/openapi.yaml 0.3.3) — свой текст
+    # портала, не скорингованный нашим движком.
+    score: float | None = Field(default=None, ge=0, le=1)
+    triggered_rules: list[TriggeredRule] = Field(default_factory=list)
+
+
+class WinePairingsResponse(BaseModel):
+    wine_id: str
+    basis: Literal["catalog", "sensory", "heuristic", "unavailable"]
+    pairings: list[WinePairingItem] = Field(max_length=3)
+    message: str | None = None  # непусто ⟺ pairings=[]
+
+
 class ChatFilters(BaseModel):
     color: str | None = None
     sugar: str | None = None
