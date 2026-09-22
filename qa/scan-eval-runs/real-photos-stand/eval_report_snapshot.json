@@ -1,15 +1,22 @@
 {
  "index_version": "case-20260921-d1-b384",
  "f1_top1": 0.968,
- "f1_top5": null,
+ "f1_top5": 0.984,
  "match_rate": 0.968,
  "raw_top1_rate_ungated": 0.968,
- "eval_set": "живые фото организаторов: 100 фото, 62 с вином из каталога (разметка вручную 21.09); прогон на стенде ams3 hack-v13 — драйвер LLM_PROVIDER=openai (свой GPU-шлюз, Qwen3.8-27b) для сомелье-чата /v1/chat, packages/llm e9c4cde; CV_FUSION_TEXT_SOURCE=vlm и остальной скан-путь не менялись с hack-v12+VLM, diff всех 100 фото 0 расхождений flat_slug",
+ "eval_set": "живые фото организаторов: 100 фото, 62 с вином из каталога (разметка вручную 21.09); прогон на стенде ams3 hack-v13 — драйвер LLM_PROVIDER=openai (свой GPU-шлюз, Qwen3.8-27b) для сомелье-чата /v1/chat, packages/llm e9c4cde; CV_FUSION_TEXT_SOURCE=vlm и остальной скан-путь не менялись с hack-v12+VLM, diff всех 100 фото 0 расхождений flat_slug. f1_top5 — отдельный rich-прогон qa/real_photos_serve.py БЕЗ --flat-only (POST /v1/scan/photo, поле matches: top-5 схлопнутых позиций), qa-auto 22.09: доля истины в top-5 по тем же 62 фото (61/62, closed-set F1 = доля совпадений); top-1 этого прогона 60/62 = flat-режиму (0 расхождений), 1 фото восстановлено топ-5 (denisov_pereplyas_kurmyshi, позиция 2), 1 фото истина вне топ-5 (merlo-litavshhuk, известный текстовый пробел)",
  "latency_ms": {
   "p50": 4412,
   "p95": 6634,
   "max": 9139,
   "n": 100
  },
- "measured_at": "2026-09-22T15:00:21+03:00"
+ "rich_latency_ms": {
+  "p50": 3075,
+  "p95": 3501,
+  "max": 14580,
+  "n": 100,
+  "note": "POST /v1/scan/photo, тот же rich-прогон что и f1_top5; max — один выброс на not_in_catalog=true фото (41.8_22-08-2026_20-56-40.webp), не влияет на графиковый flat-путь скрипта оценки"
+ },
+ "measured_at": "2026-09-22T15:13:23+03:00"
 }

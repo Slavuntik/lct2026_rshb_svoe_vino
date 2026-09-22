@@ -5,20 +5,22 @@
 Прогон `qa/real_photos_serve.py --flat-only` НА САМОМ стенде ams3 (4 vCPU), CPU-путь без VLM: индекс base-384
 после чистки эталонов (D1), слияние с текстом RapidOCR 640+960, двойники букв, гейт винодельни, штраф цвета.
 
-| Выкат | top-1 (= match-rate при закрытом множестве) | p50 / p95 / max, мс |
-|---|---|---|
-| hack-v5 (ANN + верификатор, base-224) | 51.6% | — |
-| hack-v6 (22.09 00:40) | 87.1% (54/62) | 3504 / 3911 / 4397 |
-| hack-v8 (22.09 03:45, + проход OCR по кропу этикетки 1280 px, бикубика для мелких фото) | 91.9% (57/62) | 4126 / 4791 / 5718 |
-| hack-v7 (22.09 01:40) | 91.9% (57/62) | 3526 / 3950 / 4391 |
-| hack-v9 (22.09 04:56, чувствительный детектор текста RapidOCR box_thresh=0.3/unclip=2.0 вместо 0.6/1.5 — строки вразрядку мелкими капителями теперь собираются) | 93.5% (58/62) | 4204 / 5096 / 6585 |
-| hack-v10 (22.09 06:28, алиас винодельни Голубицкое `case-data/winery_aliases.json` — ML-1, вне git; + `CV_FUSION_MERGE_MODEL_TEXT=1`, на стенде без эффекта — VLM не настроена) | **95.2% (59/62)** | 4186 / 4798 / 5812 |
-| hack-v11 (22.09 08:27, frontend-подсказка «одна бутылка крупно»/5-кандидатов c3288e9 + `CV_SHELF_CROP`-обвязка ML-2/ML-3 8459f57/21667bc — флаг выключен, CV-путь не тронут) | 95.2% (59/62) | 4276 / 4977 / 6631 |
-| hack-v12 (22.09 13:57, Swagger/OpenAPI под `/v1/docs` 9ed0e55 — docs-only, CV/API-путь не тронут) | 95.2% (59/62) | 4227 / 4955 / 5949 |
-| hack-v12 + VLM 27B (env) (22.09 14:20, тимлид включил чтение этикетки моделью 27B через наш GPU-шлюз: `/opt/somelye/somelye.env` — впервые заданы `VISION_LLM_URL`/`VISION_LLM_KEY` (бэкап `.bak-before-vlm`), `CV_FUSION_TEXT_SOURCE=vlm` (было `ocr`), `CV_FUSION_MERGE_MODEL_TEXT=1` уже стоял с hack-v10; **только env, кода и тега нет** — рестарт сервиса, `cv_index_version` не менялся) | **96.8% (60/62)** | 3264 / 3567 / 4528 |
-| hack-v13 (22.09 14:47, драйвер `LLM_PROVIDER=openai` для сомелье-чата `/v1/chat` — свой GPU-шлюз, Qwen3.8-27b, `packages/llm` e9c4cde; env `LLM_PROVIDER`/`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL` тимлид уже поставил на сервере (бэкап `.bak-before-llm`), применились этим рестартом — чат-путь, CV/OCR/индекс не тронуты) | 96.8% (60/62) | 4412 / 6634 / 9139 |
+| Выкат | top-1 (= match-rate при закрытом множестве) | top-5 | p50 / p95 / max, мс |
+|---|---|---|---|
+| hack-v5 (ANN + верификатор, base-224) | 51.6% | — | — |
+| hack-v6 (22.09 00:40) | 87.1% (54/62) | — | 3504 / 3911 / 4397 |
+| hack-v8 (22.09 03:45, + проход OCR по кропу этикетки 1280 px, бикубика для мелких фото) | 91.9% (57/62) | — | 4126 / 4791 / 5718 |
+| hack-v7 (22.09 01:40) | 91.9% (57/62) | — | 3526 / 3950 / 4391 |
+| hack-v9 (22.09 04:56, чувствительный детектор текста RapidOCR box_thresh=0.3/unclip=2.0 вместо 0.6/1.5 — строки вразрядку мелкими капителями теперь собираются) | 93.5% (58/62) | — | 4204 / 5096 / 6585 |
+| hack-v10 (22.09 06:28, алиас винодельни Голубицкое `case-data/winery_aliases.json` — ML-1, вне git; + `CV_FUSION_MERGE_MODEL_TEXT=1`, на стенде без эффекта — VLM не настроена) | **95.2% (59/62)** | — | 4186 / 4798 / 5812 |
+| hack-v11 (22.09 08:27, frontend-подсказка «одна бутылка крупно»/5-кандидатов c3288e9 + `CV_SHELF_CROP`-обвязка ML-2/ML-3 8459f57/21667bc — флаг выключен, CV-путь не тронут) | 95.2% (59/62) | — | 4276 / 4977 / 6631 |
+| hack-v12 (22.09 13:57, Swagger/OpenAPI под `/v1/docs` 9ed0e55 — docs-only, CV/API-путь не тронут) | 95.2% (59/62) | — | 4227 / 4955 / 5949 |
+| hack-v12 + VLM 27B (env) (22.09 14:20, тимлид включил чтение этикетки моделью 27B через наш GPU-шлюз: `/opt/somelye/somelye.env` — впервые заданы `VISION_LLM_URL`/`VISION_LLM_KEY` (бэкап `.bak-before-vlm`), `CV_FUSION_TEXT_SOURCE=vlm` (было `ocr`), `CV_FUSION_MERGE_MODEL_TEXT=1` уже стоял с hack-v10; **только env, кода и тега нет** — рестарт сервиса, `cv_index_version` не менялся) | **96.8% (60/62)** | — | 3264 / 3567 / 4528 |
+| hack-v13 (22.09 14:47, драйвер `LLM_PROVIDER=openai` для сомелье-чата `/v1/chat` — свой GPU-шлюз, Qwen3.8-27b, `packages/llm` e9c4cde; env `LLM_PROVIDER`/`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL` тимлид уже поставил на сервере (бэкап `.bak-before-llm`), применились этим рестартом — чат-путь, CV/OCR/индекс не тронуты) | 96.8% (60/62) | **98.4% (61/62)** | 4412 / 6634 / 9139 |
 
-Ни одного ответа дольше 10 с. top-5 не измерялся (flat-режим, как у скрипта организаторов).
+Ни одного ответа дольше 10 с. top-5 не измерялся ни на одной волне до hack-v13 (flat-режим, как у
+скрипта организаторов, без поля `matches`) — hack-v13 первая и пока единственная строка с top-5,
+отдельным rich-прогоном (qa-auto, ниже).
 Снимок читает `/v1/metrics/scan` (CV_EVAL_REPORT_PATH); везётся на стенд `infra/ams3/sync-data.sh`.
 p50/p95/max hack-v9 посчитаны `numpy.percentile` (линейная интерполяция, как `qa/scan_eval.py:_percentile`) по
 `flat_ms` из `case-data/real-photos-labels/served/stand-hack-v9.jsonl` — тем же методом пересчитан hack-v8
@@ -65,3 +67,49 @@ run-to-run шума ±100-300 мс). Ни одного фото дороже л�
 Дым `/v1/chat` (гостевой токен → `POST /v1/chat`, живой запрос): первый токен 4335 мс, весь ответ
 11976 мс, текст содержательный (рекомендации по конкретным винам с обоснованием, НЕ заглушка `По
 данным источников:`) — `LLM_PROVIDER=openai` подтверждён живым ответом модели через GPU-шлюз.
+
+## top-5 / F1 (qa-auto, 22.09 15:13) — требование ТЗ «F1 топ-1/топ-5 в API» (`case.md` строка 21)
+
+До сих пор все волны гоняли только `--flat-only` (как скрипт кейсодержателя) — `matches` (top-5
+схлопнутых позиций, `contracts/image-scan.md` v0.4.3) ни разу не собирался, `/v1/metrics/scan` отдавал
+`f1_top5: null` (зафиксировано `reports/architect-submission-audit.md`). Дождавшись конца выката
+hack-v13 и flat-прогона devops (`ExecMainStartTimestamp` 14:47:10, `healthz warm:true`, процесс
+`real_photos_serve` на сервере не найден — devops уже закончил свой прогон 14:51:31→~14:59, 100/100,
+`served/stand-hack-v13.jsonl`), qa-auto запустил `qa/real_photos_serve.py` **БЕЗ** `--flat-only`
+(rich: `POST /v1/eval/predict` + `POST /v1/scan/photo` на каждое фото) — `/opt/somelye/cpulab/`,
+скрипт на сервере md5-идентичен репозиторию (апдейт не потребовался) → 100/100, 0 HTTP-ошибок,
+10м55с → `served/stand-hack-v13-rich.jsonl`.
+
+`qa/real_photos_eval.py --served stand-hack-v13-rich.jsonl stand-hack-v12-vlm.jsonl` (62/100
+sure+likely): **top-1 60/62 = 96.8%** (flat-нога этого прогона — 0 расхождений с независимым
+`stand-hack-v13.jsonl` devops на всех 100 фото, детерминизм подтверждён), **top-5 61/62 = 98.4%**.
+На закрытом множестве top-5-F1 = доля истины в top-5 (совпадений), это и есть `f1_top5`. Diff
+top-1 vs top-5: 1 фото восстановлено — `95.76_23-08-2026_18-19-43.webp`, истина
+`denisov_pereplyas_kurmyshi`, топ-1 ошибся на брата-близнеца той же линейки `denisov_barynya_kurmyshi`
+(скор 1.058 против 1.026), истина на позиции 2/5; 1 фото вне топ-5 даже так —
+`91.43_02-09-2026_12-08-50.webp`, истина `merlo-litavshhuk`, ни одного вина винодельни Литавщук нет
+среди топ-5 кандидатов — известный текстовый пробел (`BOARD.md`: «2 CV-only случая — Литавщук/
+Курмыши, вне текстового бюджета»), top-5 в этот раз вытащил ровно Курмыши, Литавщук — нет.
+
+Тайминги того же rich-прогона (`numpy.percentile`, метод `qa/scan_eval.py:_percentile`): `flat_ms`
+(нога `/v1/eval/predict` внутри rich-прогона, для справки) p50/p95/max = 3316/3638/4395 мс — заметно
+ниже независимого flat-only замера devops (4412/6634/9139) в то же окно теста; `rich_ms`
+(`/v1/scan/photo`, включает card/candidates/analogs) p50/p95/max = **3075/3501/14580 мс**. Максимум
+rich_ms — один выброс на `41.8_22-08-2026_20-56-40.webp` (`not_in_catalog=true`, `flat_ms` того же
+фото нормальный — 3369 мс), единичный случай, не на графиковом flat-пути скрипта оценки (10 с — лимит
+только для `/v1/eval/predict`, rich туда не идёт); следующий по величине rich_ms — 3801 мс, разброс
+не системный. 0 ошибок, 0 фото с `error`. Канонический `latency_ms` снимка (таблица выше и JSON) —
+по-прежнему flat-only цифры devops (та же методика и позиция колонки, что у всех предыдущих строк);
+rich-тайминги — отдельное поле `rich_latency_ms` в `eval_report_snapshot.json` (вне контракта
+`ScanMetricsResponse`, как и уже бывший там `latency_ms` — информационно, `/v1/metrics/scan` эти поля
+не отдаёт, см. `apps/api/app/routers/metrics.py`).
+
+Как воспроизвести:
+```
+cd packages/cv && CASE_DATA_DIR=/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data \
+  .venv/bin/python ../../qa/real_photos_eval.py --ocr crop320 --only zzz \
+  --served ../../../case-data/real-photos-labels/served/stand-hack-v13-rich.jsonl \
+           ../../../case-data/real-photos-labels/served/stand-hack-v12-vlm.jsonl
+```
+Заливка обновлённого `eval_report_snapshot.json` на стенд (`/opt/somelye/data/eval_report_snapshot.json`)
+этим прогоном НЕ делалась — по заданию тимлида это отдельный шаг (не devops-выкат, не qa-auto).
