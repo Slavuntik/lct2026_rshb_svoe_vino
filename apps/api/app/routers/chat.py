@@ -81,6 +81,10 @@ def chat(
         for event in stream_chat_events(
             message=body.message, retriever=retriever, llm=llm,
             filters=filters, filters_for_prompt=filters_for_prompt, taste_vector=taste_vector,
+            # openapi 0.3.5 (задача тимлида, reports/backend-rag-rebuild.md п.3-4):
+            # слаг вина со скана/карточки — resolve и приоритет внутри
+            # stream_chat_events(), не здесь (см. его докстринг).
+            wine_id=body.wine_id,
             # reports/backend-chat-retrieval.md (22.09, п.3): бюджет длины ответа —
             # без лимита первый прогон стенда ушёл на 497 токенов / ~84 с до конца.
             max_tokens=settings.chat_max_tokens,
@@ -112,6 +116,9 @@ def chat(
                     "filters": filters_for_prompt or {},
                     "candidate_ids": event["candidate_ids"],
                     "index_version": getattr(retriever, "index_version", None) or settings.rag_index_version,
+                    # v0.3.5: запрошенный wine_id как есть — резолвился ли он в
+                    # кандидата №1, видно по candidate_ids[0] выше, отдельно не дублируем.
+                    "wine_id": body.wine_id or None,
                 },
             )
             db.add(assistant_msg)

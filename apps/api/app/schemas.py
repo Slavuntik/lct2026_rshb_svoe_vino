@@ -170,6 +170,10 @@ class ChatFilters(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(max_length=1000)
     filters: ChatFilters | None = None
+    # openapi 0.3.5 (architect, 22.09, задача тимлида по reports/backend-rag-rebuild.md
+    # п.3-4): слаг вина, которое фронт уже показывает (скан/карточка) — опционален,
+    # пустая строка трактуется как отсутствие (app/chat/service.py::stream_chat_events).
+    wine_id: str | None = Field(default=None, max_length=200)
 
 
 class ChatFeedbackRequest(BaseModel):

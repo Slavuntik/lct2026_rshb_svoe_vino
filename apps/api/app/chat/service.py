@@ -40,6 +40,18 @@ intent-роутинг внутри search() самого ретривера (pai
 сцена 2 демо через реальный API цитировала статьи знаний вместо вин на
 wine-pick вопросы (живой зонд ревьюера). Явный tuple остаётся легальным для
 принудительных спецвызовов — просто /chat больше не один из них.
+
+v0.3.5 (22.09, openapi 0.3.5, задача тимлида по reports/backend-rag-rebuild.md
+п.3-4): опциональный `wine_id` — слаг вина, которое фронт уже показывает
+(скан/карточка). Найдено (reports/backend-rag-rebuild.md, п.3): на «Расскажи
+про {name} от {winery}» (кнопка «Спросить сомелье об этом вине») текстовый
+retrieval даёт top-8 верно найденное вино не всегда — 91.82% на полном
+каталоге, промахи в основном "близнецы" одной серии (Союз-Вино, Золотая
+Балка: несколько SKU с почти идентичным названием). `wine_id` снимает эту
+зависимость: если резолвится в kind="wine", становится кандидатом №1 ДО
+поиска — ответ и цитата гарантированно про именно это вино, а не про
+похожего родственника. Не резолвится / пуст — `search()` работает как раньше,
+без единой ветки специально под это (см. stream_chat_events ниже).
 """
 from __future__ import annotations
 
@@ -81,6 +93,7 @@ def stream_chat_events(
     filters: Filters | None = None,
     filters_for_prompt: dict[str, str] | None = None,
     taste_vector: dict[str, float] | None = None,
+    wine_id: str | None = None,
     top_k: int = 8,
     max_tokens: int = 1024,
 ) -> Iterator[dict]:
@@ -95,6 +108,15 @@ def stream_chat_events(
     после первого чанка ниже — «токены уже ушли клиенту, откатить нельзя»,
     закрываем как обычный (пусть и укороченный) ответ, не ошибку.
 
+    `wine_id` (v0.3.5, см. докстринг модуля) — резолвится ЧЕРЕЗ `get_by_id()`,
+    НЕ через `search()`: прямой lookup по id, тот же путь, что у `GET
+    /wines/{id}` (rag/base.py::Retriever.get_by_id), без обращения к
+    эмбеддингам/BM25/реранкеру. Резолвится и `kind == "wine"` — кандидат №1,
+    остальные — обычный `search()` без урезания top_k, дедуплицированные по
+    id (тот же слаг из search() не показывается дважды). Не резолвится, `kind
+    != "wine"` (article:/winery: id по ошибке) или пуст/`None` — `pinned`
+    остаётся `None`, дальше буквально прежний код.
+
     Формы yield:
       {"type": "refusal", "reason": str}                                   — терминально
       {"type": "token", "text": str}                                       — по мере генерации
@@ -104,6 +126,12 @@ def stream_chat_events(
                                                                               персистит, потом сам
                                                                               эмитит citation+done.
     """
+    pinned: Candidate | None = None
+    if wine_id:
+        resolved = retriever.get_by_id(wine_id)
+        if resolved is not None and resolved.kind == "wine":
+            pinned = resolved
+
     # v0.3.3 (ревью 03, блокер заморозки): collections НЕ передаём —
     # collections=None у Retriever.search() это дефолт и норма, включающий
     # intent-роутинг внутри search() (pairing-запросы приоритезируют wines
@@ -112,6 +140,12 @@ def stream_chat_events(
     # вин на wine-pick вопросы (живой зонд ревьюера). Явный tuple — только
     # для принудительных спецвызовов, не для /chat.
     candidates: list[Candidate] = retriever.search(message, filters=filters, top_k=top_k)
+    if pinned is not None:
+        # Пункт задания: "пустая выдача при заданном wine_id невозможна" —
+        # pinned гарантирует непустой candidates дальше по коду ниже, даже
+        # если search() честно вернул [] (отказ/жёсткие фильтры/мусорный
+        # текст) — про САМО вино мы уже знаем, что оно есть.
+        candidates = [pinned] + [c for c in candidates if c.id != pinned.id]
     if not candidates:
         yield {"type": "refusal", "reason": EMPTY_RETRIEVAL_REASON}
         return

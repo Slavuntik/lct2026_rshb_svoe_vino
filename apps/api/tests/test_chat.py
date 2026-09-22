@@ -30,6 +30,23 @@ class _EmptyRetriever:
     def search(self, query, *, filters=None, collections=None, top_k=8):
         return []
 
+    def get_by_id(self, id):
+        return None
+
+
+class _EmptyRetrieverWithOneWine(_EmptyRetriever):
+    """Тот же пустой search(), но get_by_id() резолвит РОВНО один известный
+    id — для теста wine_id (v0.3.5): search() пуст (что угодно рефузило бы
+    без pin), get_by_id() честно находит вино."""
+
+    def __init__(self, wine_candidate):
+        self._wine = wine_candidate
+
+    def get_by_id(self, id):
+        if id == self._wine.id:
+            return self._wine
+        return None
+
 
 class _RecordingLLM:
     """Оборачивает реальный (mock) LLM и запоминает все messages, с которыми
@@ -347,6 +364,180 @@ def test_chat_endpoint_refuses_end_to_end_on_gibberish(client: TestClient):
     events = parse_sse(r.text)
     assert events == [{"type": "refusal", "reason": events[0]["reason"]}]
     assert "citation" not in [e["type"] for e in events]
+
+
+# --- v0.3.5 (22.09, openapi 0.3.5, reports/backend-rag-rebuild.md п.3-4):
+# ChatRequest.wine_id — слаг вина со скана/карточки становится кандидатом
+# №1, снимая зависимость от текстового ranking (see rag/case_data.py — вина
+# из одной серии, "близнецы", проигрывают друг другу top-8 на generic-текст).
+
+def test_wine_id_resolved_pins_candidate_and_prevents_empty_retrieval_refusal():
+    """Ядро задания: "пустая выдача при заданном wine_id невозможна" — даже
+    когда search() честно вернул [] (здесь — стаб, в бою: refusal-порог,
+    жёсткие фильтры, мусорный текст), резолвнутый wine_id не даёт
+    провалиться в EMPTY_RETRIEVAL."""
+    from app.rag.interface import Candidate
+    from llm.drivers.mock import MockLLM
+
+    wine = Candidate(
+        id="shato-vymysel-cabernet", kind="wine", score=1.0,
+        text="Шато Вымысел Каберне — тестовое вино.", url="https://example.invalid/wines/shato-vymysel-cabernet",
+        meta={"source": {"name": "Шато Вымысел Каберне", "winery_name": "Тест"}, "derived": {}},
+    )
+    retriever = _EmptyRetrieverWithOneWine(wine)
+
+    events = list(stream_chat_events(
+        message="что угодно", retriever=retriever, llm=MockLLM(), wine_id="shato-vymysel-cabernet",
+    ))
+    types = [e["type"] for e in events]
+    assert "refusal" not in types, f"wine_id резолвился — refusal не должен был наступить: {events[:2]}"
+    ready = next(e for e in events if e["type"] == "_ready")
+    assert ready["candidate_ids"][0] == "shato-vymysel-cabernet"
+    assert ready["citations"][0].ref_id == "shato-vymysel-cabernet"
+    assert ready["citations"][0].kind == "wine"
+
+
+def test_wine_id_not_found_behaves_exactly_like_no_wine_id():
+    """Неизвестный слаг — честно деградирует, без ошибки: тот же исход, что
+    и вовсе без wine_id (byte-identical candidate_ids)."""
+    from app.rag.mock import MockRetriever
+    from llm.drivers.mock import MockLLM
+
+    message = "Что подать к стейку?"
+    without = list(stream_chat_events(message=message, retriever=MockRetriever(), llm=MockLLM()))
+    with_unknown = list(stream_chat_events(
+        message=message, retriever=MockRetriever(), llm=MockLLM(), wine_id="no-such-slug-at-all",
+    ))
+
+    ready_without = next(e for e in without if e["type"] == "_ready")
+    ready_with = next(e for e in with_unknown if e["type"] == "_ready")
+    assert ready_with["candidate_ids"] == ready_without["candidate_ids"]
+
+
+def test_wine_id_empty_string_behaves_exactly_like_no_wine_id():
+    from app.rag.mock import MockRetriever
+    from llm.drivers.mock import MockLLM
+
+    message = "Что подать к стейку?"
+    without = list(stream_chat_events(message=message, retriever=MockRetriever(), llm=MockLLM()))
+    with_empty = list(stream_chat_events(
+        message=message, retriever=MockRetriever(), llm=MockLLM(), wine_id="",
+    ))
+
+    ready_without = next(e for e in without if e["type"] == "_ready")
+    ready_with = next(e for e in with_empty if e["type"] == "_ready")
+    assert ready_with["candidate_ids"] == ready_without["candidate_ids"]
+
+
+def test_wine_id_resolving_to_non_wine_kind_is_ignored():
+    """get_by_id() может найти article:/winery: id (тот же namespace lookup)
+    — pin применяется ТОЛЬКО для kind=="wine" (задание: "это вино становится
+    кандидатом... kind=wine"), иначе ведём себя как без wine_id."""
+    from app.rag.mock import MockRetriever
+    from llm.drivers.mock import MockLLM
+
+    retriever = MockRetriever()
+    chunk_id = "article:steak-pairing#1"
+    assert retriever.get_by_id(chunk_id).kind == "chunk"  # предпосылка теста
+
+    message = "Что подать к стейку?"
+    without = list(stream_chat_events(message=message, retriever=MockRetriever(), llm=MockLLM()))
+    with_chunk_id = list(stream_chat_events(
+        message=message, retriever=MockRetriever(), llm=MockLLM(), wine_id=chunk_id,
+    ))
+
+    ready_without = next(e for e in without if e["type"] == "_ready")
+    ready_with = next(e for e in with_chunk_id if e["type"] == "_ready")
+    assert ready_with["candidate_ids"] == ready_without["candidate_ids"], (
+        "wine_id, резолвящийся не в вино, не должен ничего менять"
+    )
+
+
+def test_wine_id_deduplicated_when_search_already_finds_it():
+    """Если search() и так нашёл бы это вино где-то в top_k — pin не должен
+    создавать дубликат кандидата/цитаты на один и тот же id."""
+    from app.rag.mock import MockRetriever
+    from llm.drivers.mock import MockLLM
+
+    retriever = MockRetriever()
+    message = "Хочу лёгкое красное вино"
+    plain = next(e for e in stream_chat_events(message=message, retriever=retriever, llm=MockLLM())
+                 if e["type"] == "_ready")
+    assert plain["candidate_ids"], "нужен непустой baseline, чтобы тест был содержательным"
+    already_found_id = plain["candidate_ids"][0]
+
+    pinned = next(e for e in stream_chat_events(
+        message=message, retriever=MockRetriever(), llm=MockLLM(), wine_id=already_found_id,
+    ) if e["type"] == "_ready")
+
+    assert pinned["candidate_ids"][0] == already_found_id
+    assert pinned["candidate_ids"].count(already_found_id) == 1, "не должно быть дубля кандидата"
+
+
+def test_chat_endpoint_accepts_optional_wine_id_end_to_end(client: TestClient):
+    tokens = register_user(client, email="wineid1@example.com")
+    r = client.post(
+        "/v1/chat",
+        json={"message": "Что подать к стейку?", "wine_id": "shato-vymysel-cabernet"},
+        headers=auth_header(tokens),
+    )
+    assert r.status_code == 200
+    events = parse_sse(r.text)
+    citations = [e for e in events if e["type"] == "citation"]
+    assert citations, "должна быть хотя бы одна цитата"
+    assert citations[0].get("wine_id") == "shato-vymysel-cabernet", (
+        "закреплённое вино обязано быть первой цитатой (кандидат №1)"
+    )
+
+
+def test_chat_endpoint_unknown_wine_id_does_not_break_response(client: TestClient):
+    tokens = register_user(client, email="wineid2@example.com")
+    r = client.post(
+        "/v1/chat",
+        json={"message": "Что подать к стейку?", "wine_id": "definitely-not-a-real-slug-xyz"},
+        headers=auth_header(tokens),
+    )
+    assert r.status_code == 200
+    events = parse_sse(r.text)
+    assert events[-1]["type"] == "done"
+    assert "citation" in [e["type"] for e in events]
+
+
+def test_chat_without_wine_id_field_is_unaffected(client: TestClient):
+    """Регресс-проверка на уровне HTTP: тело запроса вовсе без поля wine_id
+    (старые клиенты, contracts до 0.3.5) отвечает 200 как раньше."""
+    tokens = register_user(client, email="wineid3@example.com")
+    r = client.post("/v1/chat", json={"message": "Что подать к стейку?"}, headers=auth_header(tokens))
+    assert r.status_code == 200
+    assert parse_sse(r.text)[-1]["type"] == "done"
+
+
+def test_chat_trace_persists_requested_wine_id(client: TestClient, app):
+    tokens = register_user(client, email="wineid4@example.com")
+    client.post(
+        "/v1/chat",
+        json={"message": "Что подать к стейку?", "wine_id": "shato-vymysel-cabernet"},
+        headers=auth_header(tokens),
+    )
+    with app.state.session_factory() as db:
+        from app.models import ChatMessage
+        assistant_msg = (
+            db.query(ChatMessage).filter(ChatMessage.role == "assistant")
+            .order_by(ChatMessage.at.desc()).first()
+        )
+        assert assistant_msg.trace["wine_id"] == "shato-vymysel-cabernet"
+
+
+def test_chat_trace_wine_id_is_null_when_not_requested(client: TestClient, app):
+    tokens = register_user(client, email="wineid5@example.com")
+    client.post("/v1/chat", json={"message": "Что подать к стейку?"}, headers=auth_header(tokens))
+    with app.state.session_factory() as db:
+        from app.models import ChatMessage
+        assistant_msg = (
+            db.query(ChatMessage).filter(ChatMessage.role == "assistant")
+            .order_by(ChatMessage.at.desc()).first()
+        )
+        assert assistant_msg.trace["wine_id"] is None
 
 
 # --- privacy: email/id must never reach the LLM -----------------------------

@@ -109,7 +109,22 @@ def _iter_target_slugs(case_data_dir: Path) -> list[str]:
     return sorted(mapping)
 
 
-def run(data_dir: Path, case_data_dir: Path, label: str, out_path: Path, limit: int | None) -> None:
+def run(
+    data_dir: Path, case_data_dir: Path, label: str, out_path: Path, limit: int | None,
+    use_wine_id: bool = False,
+) -> None:
+    """`use_wine_id=True` (v0.3.5, openapi 0.3.5, app/chat/service.py::
+    stream_chat_events(wine_id=)): симулирует фронт, передающий wine_id =
+    слаг ИМЕННО ЭТОГО отсканированного/открытого вина — ровно тот путь,
+    которым в реальности будет пользоваться кнопка "Спросить сомелье".
+    Пин детерминирован кодом (candidates = [pinned] + [...], БЕЗ повторного
+    среза по top_k дальше в stream_chat_events) — если `retriever.get_by_id(
+    slug)` резолвится в kind="wine", попадание в top-8 гарантировано
+    построением, независимо от того, что вернул бы search(). Поэтому здесь
+    НЕ зовём search()/реранкер в этой ветке вовсе (на 2103 слагах это часы
+    экономии CPU без потери точности измерения) — только когда get_by_id()
+    НЕ резолвит (ожидаем ~0 случаев на полном индексе), честно падаем на
+    обычный путь search(), чтобы не соврать про причину промаха."""
     already_done: set[str] = set()
     if out_path.exists():
         with open(out_path, encoding="utf-8") as f:
@@ -139,19 +154,32 @@ def run(data_dir: Path, case_data_dir: Path, label: str, out_path: Path, limit: 
             else:
                 name, winery = resolved
                 query = _QUERY_TEMPLATE.format(name=_js_string(name), winery=_js_string(winery))
-                filters = extract_filters(query)
-                candidates = retriever.search(query, filters=filters, top_k=_TOP_K)
-                candidate_ids = [c.id for c in candidates]
-                hit = slug in candidate_ids
-                reason = None if hit else classify_miss(retriever, slug, candidates, winery)
-                row = {
-                    "slug": slug,
-                    "query": query,
-                    "hit": hit,
-                    "reason": reason,
-                    "winery_name": winery,
-                    "candidate_ids": candidate_ids,
-                }
+
+                pinned = retriever.get_by_id(slug) if use_wine_id else None
+                if pinned is not None and pinned.kind == "wine":
+                    # Пин гарантирует попадание — см. докстринг run(). search()
+                    # намеренно не зовём (совпадает с реальным исходом, экономит CPU).
+                    row = {
+                        "slug": slug, "query": query, "hit": True, "reason": None,
+                        "winery_name": winery, "candidate_ids": [slug], "wine_id_pinned": True,
+                    }
+                else:
+                    filters = extract_filters(query)
+                    candidates = retriever.search(query, filters=filters, top_k=_TOP_K)
+                    candidate_ids = [c.id for c in candidates]
+                    hit = slug in candidate_ids
+                    reason = None if hit else classify_miss(retriever, slug, candidates, winery)
+                    row = {
+                        "slug": slug,
+                        "query": query,
+                        "hit": hit,
+                        "reason": reason,
+                        "winery_name": winery,
+                        "candidate_ids": candidate_ids,
+                        # get_by_id(slug) не резолвился в kind="wine" — пин не сработал,
+                        # это фолбэк на обычный search() (ожидаем ~0 таких на полном индексе).
+                        **({"wine_id_pinned": False} if use_wine_id else {}),
+                    }
             out_f.write(json.dumps(row, ensure_ascii=False) + "\n")
             out_f.flush()
             if i % 50 == 0 or i == len(todo):
@@ -209,6 +237,10 @@ def main() -> int:
     parser.add_argument("--out", required=True, help="путь к .jsonl с построчным результатом (resume-friendly)")
     parser.add_argument("--limit", type=int, default=None, help="ограничить числом слагов (смок-тест)")
     parser.add_argument("--summarize-only", action="store_true", help="не считать заново — только сводка по готовому --out")
+    parser.add_argument(
+        "--wine-id", action="store_true",
+        help="симулировать ChatRequest.wine_id=<свой слаг> (v0.3.5) — см. докстринг run()",
+    )
     args = parser.parse_args()
 
     out_path = Path(args.out)
@@ -223,7 +255,7 @@ def main() -> int:
     case_data_dir = Path(args.case_data_dir) if args.case_data_dir else Path(
         os.environ.get("CASE_DATA_DIR", "/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data")
     )
-    run(Path(args.data_dir), case_data_dir, args.label, out_path, args.limit)
+    run(Path(args.data_dir), case_data_dir, args.label, out_path, args.limit, use_wine_id=args.wine_id)
     return 0
 
 
