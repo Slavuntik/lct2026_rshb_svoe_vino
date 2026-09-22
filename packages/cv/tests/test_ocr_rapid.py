@@ -12,15 +12,18 @@ import sys
 import types
 import warnings
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pytest
 
 from cv.ocr_rapid import (
+    DEFAULT_LABEL_SIZE,
     DEFAULT_RAPID_SIZES,
     DEFAULT_SCORE_THRESH,
     RapidOcrReader,
     _downscale_to_longest_side,
+    _resize_to_longest_side,
     parse_sizes,
 )
 from cv.verify import CENTER_CROP
@@ -141,6 +144,11 @@ def test_construction_does_not_import_rapidocr(monkeypatch):
 class _StubRapidResult:
     txts: tuple[str, ...] | None
     scores: tuple[float, ...] | None
+    # agents/H3-label-crop-ocr.md: боксы масштаба-источника переиспользуются третьим
+    # проходом (см. RapidOcrReader._read_label_pass()) — дефолт None, чтобы СУЩЕСТВУЮЩИЕ
+    # вызовы _StubRapidResult(txts=..., scores=...) (без boxes) не ломались; тесты
+    # третьего прохода передают его явно.
+    boxes: Any | None = None
 
 
 class _StubRapidEngine:
@@ -161,6 +169,13 @@ class _StubRapidEngine:
 
 
 def _reader_with_stub_engines(engines: dict[int, _StubRapidEngine], **kwargs) -> RapidOcrReader:
+    """agents/H3-label-crop-ocr.md: `label_size=0` ПО УМОЛЧАНИЮ здесь — третий проход
+    выключен для ВСЕХ тестов этого хелпера, если явно не запрошен `label_size=...`
+    (см. раздел "label-пасс" ниже) — тесты выше/большинство ниже проверяют механику
+    `self.sizes` (640/960) и не должны попутно конструировать/греть ЕЩЁ один движок
+    (дефолт `RapidOcrReader` — 1280) или трогать `result.boxes` стабов, которые его не
+    несут."""
+    kwargs.setdefault("label_size", 0)
     reader = RapidOcrReader(sizes=tuple(engines), **kwargs)
     reader._engines.update(engines)
     return reader
@@ -267,17 +282,39 @@ def test_read_passes_contiguous_array_to_engine():
 # --------------------------------------------------------------------------------------
 
 
-def test_read_center_crops_full_frame_by_center_crop_fractions_when_no_downscale_needed():
-    """Небольшой кадр (кроп уже <= target) — даунскейл не срабатывает, доли
-    `CENTER_CROP` проверяются побитово, без искажения ресайзом."""
+def test_read_center_crop_exactly_at_target_is_unchanged():
+    """Кроп РОВНО на границе `target` по длинной стороне (640) — ни уменьшение, ни
+    увеличение не срабатывают (agents/H3-label-crop-ocr.md, задача 3 — граница `>=`
+    уходит в `_downscale_to_longest_side()`, а та на границе — no-op): доли
+    `CENTER_CROP` проверяются побитово, без искажения ресайзом. W=915 подобрано так,
+    чтобы `int(915*0.85) - int(915*0.15) == 640` (усечение `_center_crop()`)."""
+    engine = _StubRapidEngine(_StubRapidResult(txts=(), scores=()))
+    reader = _reader_with_stub_engines({640: engine})
+    full_frame = np.arange(100 * 915 * 3, dtype=np.uint8).reshape(100, 915, 3)
+
+    reader.read_center(full_frame)
+
+    assert engine.calls[0].shape == (93, 640, 3)  # (0.98-0.05)*100, ровно 640 по x — см. CENTER_CROP
+    assert np.array_equal(engine.calls[0], full_frame[5:98, 137:777])
+
+
+def test_read_center_upscales_small_crop_via_bicubic_before_engine():
+    """Небольшой кадр (кроп 93x140, СТРОГО МЕНЬШЕ target=640 по обеим сторонам) —
+    agents/H3-label-crop-ocr.md, задача 3: до этой волны такой кроп доходил до
+    движка БЕЗ изменений (H2, `_downscale_to_longest_side()` — "только уменьшает");
+    теперь `_resize_to_longest_side()` увеличивает его бикубически до 640 по длинной
+    стороне — движок видит БОЛЬШЕ пикселей на ту же строку текста, не исходные 93x140."""
     engine = _StubRapidEngine(_StubRapidResult(txts=(), scores=()))
     reader = _reader_with_stub_engines({640: engine})
     full_frame = np.arange(100 * 200 * 3, dtype=np.uint8).reshape(100, 200, 3)
 
     reader.read_center(full_frame)
 
-    assert engine.calls[0].shape == (93, 140, 3)  # (0.98-0.05)*100, (0.85-0.15)*200 — см. CENTER_CROP
-    assert np.array_equal(engine.calls[0], full_frame[5:98, 30:170])
+    # 93x140 (доли CENTER_CROP от 100x200), увеличено до max=640 по длинной стороне (140)
+    assert engine.calls[0].shape == (425, 640, 3)
+    assert max(engine.calls[0].shape[:2]) == 640
+    # НЕ исходный кроп — реально увеличенный (иначе тест ничего не проверял бы)
+    assert engine.calls[0].shape != (93, 140, 3)
 
 
 def test_read_center_downscales_large_crop_to_target_size_before_engine():
@@ -343,8 +380,10 @@ def _install_fake_rapidocr_module(monkeypatch, *, construct=None):
 
 
 def test_engine_for_degrades_gracefully_when_rapidocr_not_importable(monkeypatch):
+    # label_size=0 — эта секция про _engine_for()/self.sizes (640/960), третий проход
+    # (дефолт 1280) не должен попутно плодить свой собственный импорт/warning здесь.
     monkeypatch.setitem(sys.modules, "rapidocr", None)
-    reader = RapidOcrReader(sizes=(640,))
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
 
     with pytest.warns(UserWarning, match="rapidocr"):
         text = reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
@@ -357,7 +396,7 @@ def test_engine_for_degrades_gracefully_when_engine_construction_fails(monkeypat
         raise RuntimeError("сеть недоступна — модель RapidOCR не скачать")
 
     _install_fake_rapidocr_module(monkeypatch, construct=_boom)
-    reader = RapidOcrReader(sizes=(640,))
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
 
     with pytest.warns(UserWarning, match="640"):
         text = reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
@@ -376,7 +415,7 @@ def test_engine_for_unavailable_size_does_not_retry_construction_on_next_read(mo
         raise RuntimeError("недоступно")
 
     _install_fake_rapidocr_module(monkeypatch, construct=_boom)
-    reader = RapidOcrReader(sizes=(640,))
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
 
     with pytest.warns(UserWarning):
         reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
@@ -398,7 +437,7 @@ def test_engine_for_passes_prototype_params_verbatim(monkeypatch):
         return _StubRapidEngine(_StubRapidResult((), ()))
 
     _install_fake_rapidocr_module(monkeypatch, construct=_capture)
-    reader = RapidOcrReader(sizes=(640,))
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
 
     reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
 
@@ -426,7 +465,7 @@ def test_engine_for_creates_separate_engine_per_scale_with_correct_limit_side_le
         return _StubRapidEngine(_StubRapidResult((), ()))
 
     _install_fake_rapidocr_module(monkeypatch, construct=_capture)
-    reader = RapidOcrReader(sizes=(640, 960))
+    reader = RapidOcrReader(sizes=(640, 960), label_size=0)
 
     reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
 
@@ -443,9 +482,310 @@ def test_engine_for_caches_engine_instance_across_multiple_reads(monkeypatch):
         return _StubRapidEngine(_StubRapidResult((), ()))
 
     _install_fake_rapidocr_module(monkeypatch, construct=_factory)
-    reader = RapidOcrReader(sizes=(640, 960))
+    reader = RapidOcrReader(sizes=(640, 960), label_size=0)
 
     reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
     reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
 
     assert construct_count["n"] == 2  # по одному конструктору НА МАСШТАБ за всё время, не на read()
+
+
+# --------------------------------------------------------------------------------------
+# _resize_to_longest_side() — agents/H3-label-crop-ocr.md, задача 3, "Бикубика для
+# МЕЛКИХ входов": уменьшает (делегирует _downscale_to_longest_side(), не тронут) ИЛИ
+# увеличивает (PIL.Image.resize BICUBIC) — в отличие от _downscale_to_longest_side()
+# (H2), которая НИКОГДА не увеличивает (её тесты выше не менялись).
+# --------------------------------------------------------------------------------------
+
+
+def test_resize_to_longest_side_no_op_exactly_at_target():
+    arr = np.zeros((320, 640, 3), dtype=np.uint8)
+    assert _resize_to_longest_side(arr, 640) is arr  # ровно на границе — тот же объект, без копии
+
+
+def test_resize_to_longest_side_delegates_to_downscale_when_larger():
+    arr = np.zeros((930, 1400, 3), dtype=np.uint8)
+    assert _resize_to_longest_side(arr, 640).shape == _downscale_to_longest_side(arr, 640).shape
+    assert _resize_to_longest_side(arr, 640).shape == (425, 640, 3)
+
+
+def test_resize_to_longest_side_upscales_smaller_input_preserving_aspect_ratio():
+    arr = np.zeros((50, 80, 3), dtype=np.uint8)
+    result = _resize_to_longest_side(arr, 640)
+    assert result.shape == (400, 640, 3)  # 80->640 (×8), 50×8=400 — аспект сохранён
+    assert max(result.shape[:2]) == 640
+
+
+def test_resize_to_longest_side_upscale_matches_pil_resize_bicubic_pixel_for_pixel():
+    """Регресс-защита: ДОЛЖЕН быть `Image.resize(..., BICUBIC)`, не NEAREST/другой
+    фильтр — та же дисциплина, что H2 уже применяет к downscale-пути (см.
+    `test_downscale_to_longest_side_matches_pil_thumbnail_pixel_for_pixel` выше)."""
+    from PIL import Image
+
+    rng = np.random.default_rng(11)
+    arr = rng.integers(0, 256, size=(50, 80, 3), dtype=np.uint8)
+
+    result = _resize_to_longest_side(arr, 640)
+
+    expected_im = Image.fromarray(arr, mode="RGB").resize((640, 400), Image.Resampling.BICUBIC)
+    assert np.array_equal(result, np.asarray(expected_im))
+
+
+def test_resize_to_longest_side_never_produces_zero_sized_dimension():
+    """Экстремально узкий кроп (1px по одной стороне) — `max(1, round(...))`
+    гарантирует минимум 1px на КОРОТКОЙ стороне после увеличения, не 0 (0 сломал бы
+    PIL/движок дальше по конвейеру)."""
+    arr = np.zeros((1, 500, 3), dtype=np.uint8)
+    result = _resize_to_longest_side(arr, 640)
+    assert result.shape[0] >= 1
+    assert max(result.shape[:2]) == 640
+
+
+# --------------------------------------------------------------------------------------
+# Третий проход — CV_OCR_LABEL_SIZE / label_size (agents/H3-label-crop-ocr.md, задача 2)
+# --------------------------------------------------------------------------------------
+
+
+def test_default_label_size_is_1280():
+    assert DEFAULT_LABEL_SIZE == 1280
+    assert RapidOcrReader().label_size == 1280
+
+
+def test_label_size_constructor_param_overrides_default():
+    assert RapidOcrReader(label_size=960).label_size == 960
+
+
+def test_label_size_zero_disables_via_constructor():
+    assert RapidOcrReader(label_size=0).label_size == 0
+
+
+def test_label_size_env_var_overrides_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_LABEL_SIZE", "1600")
+    assert RapidOcrReader().label_size == 1600
+
+
+def test_label_size_env_var_overrides_constructor_param(monkeypatch):
+    """Тот же приоритет, что `CV_OCR_RAPID_SIZES` над `rapid_sizes` в
+    `cv.verify.LabelVerifier` — env побеждает явный аргумент конструктора."""
+    monkeypatch.setenv("CV_OCR_LABEL_SIZE", "0")
+    assert RapidOcrReader(label_size=1280).label_size == 0
+
+
+def test_label_size_env_var_tolerates_surrounding_whitespace(monkeypatch):
+    monkeypatch.setenv("CV_OCR_LABEL_SIZE", " 1280 \n")
+    assert RapidOcrReader().label_size == 1280
+
+
+class _StubLabelEngine(_StubRapidEngine):
+    """Тот же двойник, что `_StubRapidEngine` — отдельное имя только для читаемости
+    тестов третьего прохода (движок КОНКРЕТНО масштаба `label_size`)."""
+
+
+def _box(x0, y0, x1, y1) -> np.ndarray:
+    return np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], dtype=np.float32)
+
+
+def _boxes(*items: np.ndarray) -> np.ndarray:
+    """Собирает боксы в ОДИН numpy ndarray формы (N,4,2) — ИМЕННО так реальный
+    `rapidocr` отдаёт `RapidOCROutput.boxes` (проверено эмпирически живым движком
+    на приёмке 22.09, см. reports/h3-label-crop-ocr.md), НЕ список списков: живой
+    прогон API поймал баг именно на этом расхождении типов (`not <ndarray с
+    несколькими элементами>` -> "The truth value of an array with more than one
+    element is ambiguous") — тесты этого файла обязаны воспроизводить РЕАЛЬНЫЙ
+    тип, не удобный для написания тестов список."""
+    return np.stack(items)
+
+
+def test_label_pass_skipped_when_source_scale_finds_no_boxes():
+    """Масштаб-источник (max(self.sizes)=960) отработал, но боксов не вернул
+    (`None` — фото без читаемого текста в центральной колонке; РЕАЛЬНЫЙ `rapidocr`
+    отдаёт именно `None`, не пустой список/массив, см. `_boxes()` докстринг выше) —
+    третий проход не читается вовсе: движок label_size НЕ вызывается (хотя и
+    конструируется — см. отдельный тест прогрева ниже)."""
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("ГДЕ",), scores=(0.9,), boxes=None))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("НЕ ДОЛЖНО ПОПАСТЬ",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({960: e960}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "ГДЕ"
+    assert label_engine.calls == []
+
+
+def test_label_pass_skipped_when_source_scale_boxes_is_empty_ndarray():
+    """Вариант `boxes` — ПУСТОЙ ndarray (не `None`, а форма (0,4,2)) — тоже
+    законный вход (`len(boxes) == 0`), не должен падать на `not boxes`/`bool(...)`
+    (см. `_boxes()` докстринг — ndarray с >1 элементом там падает, но и путь
+    ПУСТОГО ndarray стоит проверить отдельно, раз производственный код обязан
+    отличать его от `None` через `is None`/`len`, а не просто `not`)."""
+    empty_boxes = np.empty((0, 4, 2), dtype=np.float32)
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("ГДЕ",), scores=(0.9,), boxes=empty_boxes))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("НЕ ДОЛЖНО ПОПАСТЬ",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({960: e960}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "ГДЕ"
+    assert label_engine.calls == []
+
+
+def test_label_pass_boxes_as_real_multi_element_ndarray_does_not_raise():
+    """Регресс-защита ИМЕННО живого бага (22.09): `boxes` — ndarray формы (2,4,2)
+    (2 бокса, как реально отдаёт `rapidocr`) — `not boxes`/`bool(boxes)` на такой
+    ndarray бросает ValueError ("ambiguous"), который `apps/api` бы поймал как
+    validation_error/400 (см. `apps/api/app/routers/scan.py`). Без падения —
+    третий проход обязан либо отработать, либо тихо отказаться, никогда не
+    поднять исключение наружу `read()`."""
+    two_boxes = _boxes(_box(280, 150, 360, 170), _box(300, 400, 340, 420))
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("ГДЕ",), scores=(0.9, 0.9), boxes=two_boxes))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("ЭТИКЕТКА",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({960: e960}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))  # не должно поднять исключение
+
+    assert "ГДЕ" in text.split()
+    assert "ЭТИКЕТКА" in text.split()
+
+
+def test_label_pass_skipped_when_source_scale_engine_missing(monkeypatch):
+    """Масштаб-источник вообще не смог создать движок (см. `_engine_for()`
+    деградацию — здесь через недоступный `rapidocr`) — `result is None` для
+    этого масштаба, третий проход тоже пропускается (нет боксов, которые можно
+    переиспользовать), хотя движок label_size сам по себе застейблен и рабочий."""
+    monkeypatch.setitem(sys.modules, "rapidocr", None)  # 960 не сможет создать движок
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("НЕ ДОЛЖНО ПОПАСТЬ",), scores=(0.9,)))
+    reader = RapidOcrReader(sizes=(960,), label_size=1280)
+    reader._engines[1280] = label_engine
+
+    with pytest.warns(UserWarning, match="rapidocr"):
+        text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == ""
+    assert label_engine.calls == []
+
+
+def test_label_pass_appends_text_after_main_scales_separated_by_space():
+    a = _box(280, 150, 360, 170)
+    e640 = _StubRapidEngine(_StubRapidResult(txts=("ШАПКА",), scores=(0.9,), boxes=None))
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("НАЗВАНИЕ",), scores=(0.9,), boxes=_boxes(a)))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("ПОЛНЫЙ ТЕКСТ ЭТИКЕТКИ",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({640: e640, 960: e960}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "ШАПКА НАЗВАНИЕ ПОЛНЫЙ ТЕКСТ ЭТИКЕТКИ"
+    assert len(label_engine.calls) == 1
+
+
+def test_label_pass_crops_from_full_resolution_source_not_downscaled_frame():
+    """Ключевой тест координатной математики: боксы читаются в координатах
+    ДАУНСКЕЙЛЕННОГО кадра масштаба-источника (640x320, из bottle_full 800x400
+    через `_resize_to_longest_side`), `label_bbox()` возвращает прямоугольник в
+    ТЕХ ЖЕ координатах — обязан быть смасштабирован ОБРАТНО (×800/640=1.25) и
+    вырезан ИЗ bottle_full (полное разрешение, НЕ из уменьшенного кадра
+    масштаба-источника). `label_size=360` подобран так, чтобы `_resize_to_
+    longest_side()` перед движком НЕ трогал результат (max(128,360)==360==target,
+    no-op) — тест проверяет ИМЕННО кроп-координаты, не отдельно уже
+    протестированный ресайз."""
+    bottle_full = (np.arange(400 * 800 * 3) % 256).astype(np.uint8).reshape(400, 800, 3)
+    box_in_scaled_frame = _box(280, 150, 360, 170)  # координаты в кадре 640x320 (после ресайза 800->640)
+    e640 = _StubRapidEngine(_StubRapidResult(txts=("X",), scores=(0.9,), boxes=_boxes(box_in_scaled_frame)))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("Y",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({640: e640}, label_size=360)
+    reader._engines[360] = label_engine
+
+    reader.read(bottle_full)
+
+    assert len(label_engine.calls) == 1
+    received = label_engine.calls[0]
+    assert received.shape == (128, 360, 3)  # см. вычисление в докстринге теста выше
+    assert np.array_equal(received, bottle_full[151:279, 220:580])
+
+
+def test_label_pass_uses_boxes_from_largest_main_scale_not_smallest():
+    """Источник боксов — `max(self.sizes)`, не первый/последний по порядку
+    объявления: `sizes=(960, 640)` (960 объявлен ПЕРВЫМ) обязан всё равно взять
+    боксы 960, не 640. Различимость гарантирована КОНСТРУКЦИЕЙ: `box_640` вне
+    центральной колонки 640-кадра (cx=5 вне [115.2, 524.8]) — если бы код
+    ошибочно использовал боксы 640, `label_bbox()` вернул бы `None` и "C" не
+    попал бы в текст вовсе; `box_960` — валидный кандидат для 960-кадра."""
+    box_640 = _box(0, 0, 10, 10)
+    box_960 = _box(280, 150, 360, 170)
+    e640 = _StubRapidEngine(_StubRapidResult(txts=("A",), scores=(0.9,), boxes=_boxes(box_640)))
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("B",), scores=(0.9,), boxes=_boxes(box_960)))
+    label_engine = _StubLabelEngine(_StubRapidResult(txts=("C",), scores=(0.9,)))
+    reader = _reader_with_stub_engines({960: e960, 640: e640}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert "C" in text.split()  # третий проход отработал -> нашёл боксы (значит, взял 960, не 640)
+    assert len(label_engine.calls) == 1
+
+
+def test_label_size_zero_disables_pass_entirely_no_engine_lookup():
+    """`label_size=0` — третий проход не пытается получить движок ВООБЩЕ (не
+    только "не вызывает") — застейбленный движок для 1280 остаётся нетронутым
+    и НЕ регистрируется в `_engines`, если сам явно не добавлен."""
+    a = _box(280, 150, 360, 170)
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("B",), scores=(0.9,), boxes=_boxes(a)))
+    reader = _reader_with_stub_engines({960: e960}, label_size=0)
+
+    text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "B"
+    assert 1280 not in reader._engines
+
+
+def test_label_pass_call_failure_degrades_to_empty_without_affecting_main_text():
+    a = _box(280, 150, 360, 170)
+    e960 = _StubRapidEngine(_StubRapidResult(txts=("B",), scores=(0.9,), boxes=_boxes(a)))
+    label_engine = _StubLabelEngine(raises=RuntimeError("движок этикетки упал"))
+    reader = _reader_with_stub_engines({960: e960}, label_size=1280)
+    reader._engines[1280] = label_engine
+
+    with pytest.warns(UserWarning, match="1280"):
+        text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "B"
+
+
+def test_label_engine_construction_is_attempted_even_when_no_boxes_found(monkeypatch):
+    """Прогрев (agents/H3-label-crop-ocr.md, докстринг класса): движок `label_size`
+    обязан конструироваться ВСЕГДА при `label_size > 0`, даже когда `label_bbox()`
+    ничего не находит (например, 2x2-плейсхолдер `warm_up_label_verifier()`) — иначе
+    первый боевой запрос с настоящей этикеткой платит холодный старт третьего
+    движка. Проверено через ПОДМЕНУ реального пакета `rapidocr` (не прямой инжект
+    в `_engines`, как остальные тесты этого файла) — только так видно, ПЫТАЛСЯ ли
+    код вообще создать движок для 1280, а не просто нашёл готовый."""
+    captured_sizes: list[int] = []
+
+    def _capture(params=None):
+        captured_sizes.append(params["Det.limit_side_len"])
+        return _StubRapidEngine(_StubRapidResult(txts=(), scores=(), boxes=None))
+
+    _install_fake_rapidocr_module(monkeypatch, construct=_capture)
+    reader = RapidOcrReader(sizes=(960,), label_size=1280)
+
+    reader.read(np.zeros((10, 10, 3), dtype=np.uint8))
+
+    assert set(captured_sizes) == {960, 1280}
+
+
+def test_label_engine_construction_failure_degrades_without_affecting_main_text(monkeypatch):
+    def _boom_only_label(params=None):
+        if params["Det.limit_side_len"] == 1280:
+            raise RuntimeError("модель 1280px недоступна")
+        return _StubRapidEngine(_StubRapidResult(txts=("B",), scores=(0.9,), boxes=_boxes(_box(280, 150, 360, 170))))
+
+    _install_fake_rapidocr_module(monkeypatch, construct=_boom_only_label)
+    reader = RapidOcrReader(sizes=(960,), label_size=1280)
+
+    with pytest.warns(UserWarning, match="1280"):
+        text = reader.read(np.zeros((400, 800, 3), dtype=np.uint8))
+
+    assert text == "B"
