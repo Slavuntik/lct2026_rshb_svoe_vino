@@ -369,6 +369,10 @@ export function ScanScreen() {
             <div className="stack" data-testid="scan-candidates-block">
               <h2>{t("scan.candidatesTitle")}</h2>
               <p className="text-small">{t("scan.candidatesSubtitle")}</p>
+              {/* 22.09: полный top-5 без явного лидера — типичный след кадра целой полки
+                  (reports/qa-auto-field-photos.md), где нарезка на бутылку в бой не пошла
+                  (reports/ml-eng-ml3.md); при < 5 кандидатах подсказку не показываем. */}
+              {result.candidates.length === 5 && <p className="text-small">{t("scan.candidatesManyHint")}</p>}
               <div className="match-list">
                 {result.candidates.map((wine) => (
                   <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />

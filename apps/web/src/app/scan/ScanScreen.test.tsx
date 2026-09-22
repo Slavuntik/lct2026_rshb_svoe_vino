@@ -103,6 +103,34 @@ function notInCatalogNoCandidatesResponse(): ScanPhotoRichResponse {
   };
 }
 
+/**
+ * Задача тимлида 22.09 (reports/qa-auto-field-photos.md, reports/ml-eng-ml3.md): полный
+ * top-5 без явного лидера — типичный след кадра целой полки (много бутылок в объективе) —
+ * должен показать подсказку scan.candidatesManyHint. Пять записей строим циклом — сами
+ * значения не важны для теста, важна только длина массива.
+ */
+function notInCatalogFiveCandidatesResponse(): ScanPhotoRichResponse {
+  return {
+    slug: "",
+    card: null,
+    confidence: { top1_score: 0.83, gap: 0.004, f1_top1: 0.87, f1_top5: 0.95 },
+    ocr_verified: false,
+    timing_ms: 710,
+    not_in_catalog: true,
+    candidates: Array.from({ length: 5 }, (_, i) => ({
+      wine_id: `shelf-candidate-${i}`,
+      name: `Кандидат с полки ${i + 1}`,
+      winery_name: "Тестовая Винодельня",
+      region_name: "Тестовый регион",
+      image_url: "data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'/>",
+      source_url: `https://example.com/wines/shelf-candidate-${i}`,
+      score: 0.83 - i * 0.01,
+    })),
+    similar: [],
+    analogs: [],
+  };
+}
+
 function WineProbe() {
   const { wineId } = useParams<{ wineId: string }>();
   return <div>WINE_CARD_PROBE:{wineId}</div>;
@@ -230,6 +258,26 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     );
   });
 
+  it("not_in_catalog с 5 кандидатами (полный top-5) — подсказка снять одну бутылку крупнее (задача 22.09)", async () => {
+    mockScanPhoto(notInCatalogFiveCandidatesResponse());
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("shelf.png")] } });
+
+    const candidatesBlock = await screen.findByTestId("scan-candidates-block");
+    expect(within(candidatesBlock).getAllByRole("button")).toHaveLength(5);
+    expect(within(candidatesBlock).getByText(/попробуйте снять одну бутылку крупнее/i)).toBeInTheDocument();
+  });
+
+  it("not_in_catalog с < 5 кандидатами — подсказку не показываем (не всякая неуверенность — полка)", async () => {
+    mockScanPhoto(notInCatalogResponse());
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("unknown-bottle.png")] } });
+
+    const candidatesBlock = await screen.findByTestId("scan-candidates-block");
+    expect(within(candidatesBlock).getAllByRole("button")).toHaveLength(2);
+    expect(within(candidatesBlock).queryByText(/попробуйте снять одну бутылку крупнее/i)).not.toBeInTheDocument();
+  });
+
   it("not_in_catalog без кандидатов — честное «такого вина в каталоге нет», без выдумки", async () => {
     mockScanPhoto(notInCatalogNoCandidatesResponse());
     renderScan();
@@ -252,8 +300,9 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     await waitForTasteAnalogsSettled();
   });
 
-  it("тихая подпись про фото — не чекбокс согласия", () => {
+  it("тихая подпись про фото — не чекбокс согласия, просит одну бутылку в центре кадра (задача 22.09)", () => {
     renderScan();
+    expect(screen.getByText(/одна бутылка в центре кадра/i)).toBeInTheDocument();
     expect(screen.getByText(/этикетка крупно, ровно и без бликов/i)).toBeInTheDocument();
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
