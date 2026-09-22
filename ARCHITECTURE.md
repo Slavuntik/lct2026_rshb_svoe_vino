@@ -34,8 +34,8 @@ eval-гейт: просевшие метрики не публикуют вер�
 dev/holdout. Текущий боевой снимок (живые фото организаторов, hack-v15) — **top-1 96.8%
 (60/62), top-5 98.4% (61/62)** — история точности по волнам и методика —
 `models-and-algorithms.md` §3. Тесты (сверено 22.09, architect, живой прогон): `apps/api`
-**454 passed/12 skipped** · `packages/cv` **422 passed** · `packages/llm` **32 passed** ·
-`apps/web` **84 passed** · `packages/rag` **98→115 passed** за вечер 22.09 (три живых замера,
+**524 passed/12 skipped** · `packages/cv` **422 passed** · `packages/llm` **32 passed** ·
+`apps/web` **104 passed** · `packages/rag` **98→115 passed** за вечер 22.09 (три живых замера,
 хронология и оговорки — `docs/architecture/LLD.md` §6) · `qa/` **130+** (не пересчитано,
 открытый пункт).
 

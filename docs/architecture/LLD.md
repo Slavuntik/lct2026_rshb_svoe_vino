@@ -213,20 +213,30 @@ HTTP-ответ.
 ### 3.4 Чат — сжатая версия
 
 Полная диаграмма (7 участников, все ветки refusal/citation) — `lld-rag-chat-pairing.md` §5.1.
-Здесь — интеграционный уровень:
+Здесь — интеграционный уровень, включая `ChatRequest.wine_id` (ADR-14, v0.3.5, 22.09 —
+landing на момент этой диаграммы, см. §8 риск 8 в `HLD.md`):
 
 ```mermaid
 sequenceDiagram
     actor U as Пользователь
     participant API as POST /v1/chat
-    participant RAG as Retriever.search()
+    participant RAG as Retriever
     participant LLM as LLM-драйвер
 
-    U->>API: вопрос + фильтры
+    U->>API: вопрос + filters + wine_id? (кнопка «Спросить про ЭТО вино»)
+    opt wine_id непуст
+        API->>RAG: get_by_id(wine_id)
+        alt резолвится, kind=="wine"
+            RAG-->>API: Candidate — становится кандидатом №1 (БЕЗ дедупа против search() ниже)
+        else не резолвится
+            Note over API: без единой ветки специально под это — как будто wine_id не передавали
+        end
+    end
     API->>RAG: search(текст, filters, intent-роутинг)
-    alt пусто (после 1 повтора без фильтров)
+    alt кандидатов НЕТ вовсе (ни от wine_id, ни от search(), после 1 повтора без фильтров)
         API-->>U: event: refusal — БЕЗ обращения к LLM
-    else есть кандидаты
+    else есть хотя бы один кандидат
+        Note over API: wine_id резолвился → refusal НЕ наступает,<br/>даже если search() сам по себе вернул бы []
         API->>LLM: chat_stream(промпт с цитатами)
         loop без буферизации
             LLM-->>U: event: token
@@ -256,11 +266,12 @@ flowchart LR
     ENGINE -.-> TIERS
 ```
 
-### 3.6 Фото блюда → вина каталога (НОВОЕ, v1.1) — полная диаграмма
+### 3.6 Фото блюда → вина каталога (v1.2) — полная диаграмма
 
-Авторитетная версия на 22.09 (контракт `contracts/post-scan.md` §4, ратифицирован этой же
-волной; заменяет более раннюю диаграмму-набросок `lld-rag-chat-pairing.md` §5.3, помеченную
-там самим backend как «ПЛАН, не реализовано» до этого контракта):
+Авторитетная версия на 22.09 (контракт `contracts/post-scan.md` §4, v1.2 — подбор вин
+переписан на весь каталог+кэш после того, как v1.1/пул-30 отклонил тимлид, `451c481`;
+заменяет более раннюю диаграмму-набросок `lld-rag-chat-pairing.md` §5.3, помеченную там
+самим backend как «ПЛАН, не реализовано» до контракта):
 
 ```mermaid
 sequenceDiagram
@@ -271,7 +282,8 @@ sequenceDiagram
     participant GW as VLM-шлюз / local-vlm
     participant ZS as zero_shot_classify()
     participant DP as dish_pairing.py
-    participant RAG as Retriever.search()
+    participant Cache as _build_catalog_cards()<br/>(@lru_cache по retriever, once/process)
+    participant Case as case_catalog.all_slugs()
 
     U->>R: POST /pairing/dish-photo (multipart, auth опционален)
     R->>R: валидация: файл есть? ≤ max_upload_bytes?
@@ -295,11 +307,14 @@ sequenceDiagram
     end
     DR-->>R: {status, dish} — food|not_food|bottle|unsure
     alt status == food И category резолвлен
-        R->>DP: select_wines_for_dish(category, dish.name, settings)
-        DP->>RAG: search("<category> <dish.name>", collections=("wines",), top_k=30)
-        RAG-->>DP: пул до 30 Candidate
-        DP->>DP: ярус catalog: category ∈ source.food_pairings
-        DP->>DP: ярус rules: score_wine_for_dish(dish_vector, wine_vector) для остатка пула
+        R->>DP: select_wines_for_dish(retriever, category, settings)
+        DP->>Cache: карточки+векторы (2103, тёплый кэш — ~50 мс, холодный — 12.0 с, редко,<br/>обычно уже прогрето warm_up_catalog_cache() при старте)
+        opt кэш холодный
+            Cache->>Case: all_slugs() → build_wine_card() на каждый (единожды за процесс)
+        end
+        Cache-->>DP: (wine_id, source, wine_vector) × 2103
+        DP->>DP: ярус catalog: ВСЕ вина с category ∈ source.food_pairings,<br/>сортировка по score_wine_for_dish (не фильтр — только порядок)
+        DP->>DP: ярус rules: остаток каталога, score_wine_for_dish(dish_vector, wine_vector),<br/>score<=0 или hard-block → исключён
         DP->>DP: объединение ярусов, ≤2/винодельня, ≤6 суммарно
         DP-->>R: wines[] (basis=catalog|rules, reason детерминирован)
         R-->>U: 200 {status:"food", dish, wines, message:null, timing_ms}
@@ -376,10 +391,10 @@ not_implemented | internal_error`. Форма ошибки везде одна: 
 
 | Пакет | Раннер | Зелёных тестов | Источник/дата |
 |---|---|---|---|
-| `apps/api` | pytest, свой `.venv` | **454 passed, 12 skipped** | прогнано architect лично, 22.09 (тот же результат, что `reports/ml-eng-scan-budget.md`) |
+| `apps/api` | pytest, свой `.venv` | **524 passed, 12 skipped** (было 454/12 до фичи «фото блюда») | прогнано architect лично, 22.09 (3-я волна, после `451c481`+калибровки ml-lead) |
 | `packages/cv` | pytest, свой `.venv` | **422 passed** | прогнано architect лично, 22.09 |
 | `packages/llm` | pytest, свой `.venv` | **32 passed** | прогнано architect лично, 22.09 |
-| `apps/web` | vitest | **84 passed** (17 файлов) | прогнано architect лично, 22.09 |
+| `apps/web` | vitest | **104 passed** (17 файлов, было 84 до фичи «фото блюда»+правила ссылок) | прогнано architect лично, 22.09 (3-я волна) |
 | `packages/rag` | pytest, свой `.venv` | **115 passed** (было 98) | коммит `a686bf4` (backend, тот же день) — см. оговорку ниже |
 | `qa/` | pytest, свой `.venv` | «130+» (`ARCHITECTURE.md`, не пересчитано ни этим, ни прошлым аудитом) | `reports/architect-submission-audit.md` «Желательно» п.4 — точный счётчик остаётся открытым пунктом |
 
