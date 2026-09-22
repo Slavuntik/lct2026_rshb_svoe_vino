@@ -12,7 +12,7 @@
 | ml-engineer | Sonnet | `packages/cv/`, `apps/api/app/cv/` (по брифу) | реализация ML-брифов с тестами и приёмкой |
 | backend | Sonnet | `apps/api/`, `packages/rag/`, `packages/llm/` | API по контракту, конфиг, тесты |
 | frontend | Sonnet | `apps/web/` | интерфейс сканера, карточка, кандидаты, vitest |
-| devops | Sonnet | `infra/`, `.github/workflows/`, стенд ams3 | выкаты тегами, данные стенда, здоровье, транспорт секретов |
+| devops | Sonnet | `infra/`, `.github/workflows/`, стенд ams3, `qa/scan-eval-runs/real-photos-stand/` (снимок метрик при каждом выкате) | выкаты тегами, данные стенда, здоровье, транспорт секретов |
 | qa-auto | Sonnet | `qa/tests/`, `qa/acceptance.md`, прогоны | приёмка через живой API, репетиции скрипта проверки, CI |
 | qa-manual | Opus | разметка, `case-data/ref-review/` | глазами: разметка фото, кропы, интерфейс стенда, дефекты каталога |
 
