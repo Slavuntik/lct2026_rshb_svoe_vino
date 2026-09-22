@@ -38,6 +38,13 @@
 # SOURCE=ocr не даёт top-1 ни на одном из них. Дефолт "0" остаётся, SHELF_MIN_
 # TEXT_ASPECT ниже — для дальнейших ручных опытов.
 #
+# hack-v15 (22.09, решение тимлида): VISION_LLM_TIMEOUT_S 6.5->6.0 (дедлайн модели от начала
+# запроса — тот же якорь, что CV_SCAN_BUDGET_S, код-дефолт apps/api/app/config.py) и новая
+# строка CV_FUSION_CHOOSE (дефолт здесь confident_else_cv, reports/ml-lead-choose-rule.md) —
+# обе переопределяемы через одноимённую переменную окружения, как VISION_LLM_TIMEOUT_S выше.
+# CV_SCAN_BUDGET_S/VISION_LLM_BREAKER_FAILS/VISION_LLM_BREAKER_COOLDOWN_S не заданы —
+# код-дефолты (7.5с/3/60с) безопасны, строка добавляется только при отклонении от дефолта.
+#
 # Использование: infra/local-check/run-check-server.sh        (порт 8080)
 #                PORT=8081 TEXT_SOURCE=vlm_local infra/local-check/run-check-server.sh
 #                SHELF_CROP=1 infra/local-check/run-check-server.sh   (см. предупреждение выше)
@@ -65,5 +72,6 @@ exec env \
   CV_SHELF_MIN_TEXT_ASPECT="${SHELF_MIN_TEXT_ASPECT:-1.2}" \
   CV_SHELF_CHECK_NEIGHBORS="${SHELF_CHECK_NEIGHBORS:-0}" \
   VISION_LLM_URL="${LLM_GATEWAY_URL:-}" VISION_LLM_KEY="${LLM_GATEWAY_KEY:-}" \
-  VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.5}" \
+  VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.0}" \
+  CV_FUSION_CHOOSE="${CV_FUSION_CHOOSE:-confident_else_cv}" \
   .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "${PORT:-8080}"
