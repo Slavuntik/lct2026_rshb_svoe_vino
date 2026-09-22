@@ -454,6 +454,19 @@ class Settings:
             "PAIRING_RULES_PATH", "../../pipeline/ref/food_pairing_rules.yaml"
         )
     )
+    # 22.09 (задача тимлида, "Что подать" по фото блюда — contracts/post-scan.md
+    # v1.1 по брифу, POST /v1/pairing/dish-photo): порог отрыва (топ1-топ2
+    # косинусной близости L2-нормированных эмбеддингов) запасного zero-shot пути
+    # по CV-модели SigLIP2, когда ни шлюз, ни локальная VLM не ответили (см.
+    # app/dish_recognition.py::zero_shot_classify). Синтетическая стартовая
+    # точка — тот же порядок величины, что CV_FUSION_GAP_FLOOR (0.03) и
+    # CV_VERIFY_PROXIMITY (0.04), калибровки на голд-сете НЕТ (нет фото блюд для
+    # позитивного замера на момент этой правки, см. отчёт backend-dish-photo.md,
+    # "нужны фото блюд у Вячеслава") — тот же честный статус, что у
+    # cv_abs_floor/cv_margin_floor до калибровки F2.
+    dish_zero_shot_margin: float = field(
+        default_factory=lambda: float(os.environ.get("DISH_ZERO_SHOT_MARGIN", "0.03"))
+    )
     max_upload_bytes: int = field(
         # v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ. Телефонные фото (особенно
         # HEIC/iPhone на полном разрешении) часто больше 8 МБ — старый лимит

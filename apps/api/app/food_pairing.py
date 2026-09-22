@@ -218,6 +218,65 @@ def top_n_of(rules_data: dict) -> int:
 
 
 # --------------------------------------------------------------------------
+# Обратное направление — "Что подать" по фото блюда (contracts/post-scan.md
+# v1.1 по брифу тимлида 22.09, архитектор параллельно готовит контракт/
+# openapi 0.3.4 "по той же схеме"; на момент этой правки contracts/
+# post-scan.md всё ещё v1.0 и описывает только вино → блюдо выше). Дано:
+# один ФИКСИРОВАННЫЙ вектор блюда (dish, обычно `portal_tag_defaults[category]`)
+# и ПЕРЕБИРАЕМОЕ вино (wine, из каталога) — score_pairings() выше делает
+# наоборот (перебирает 9 тегов при фиксированном вине). Та же формула
+# (hard_blocks/when/require/penalize, applicable/raw/clamp), тот же
+# eval_condition — сознательно НЕ через общий примитив с score_pairings()
+# (риск регресса на уже протестированной, идущей в отчёт функции ради
+# скромного выигрыша DRY при разной форме результата — там список
+# triggered_rules на тег, здесь один "лучший" explain на вино для плоского
+# поля `reason`, contracts по брифу тимлида; см. reports/backend-dish-photo.md).
+# --------------------------------------------------------------------------
+
+
+def score_wine_for_dish(dish: dict, wine: dict, rules_data: dict) -> tuple[float, str] | None:
+    """`None`, если хард-блок сработал или итоговый score<=0 (не предлагаем
+    вино без единого сработавшего правила — тот же принцип "score>0", что и
+    score_pairings). Иначе `(score, explain)` — explain дословно из
+    `rules[].explain` НАИБОЛЕЕ весомого правила с положительным вкладом
+    (require выполнен либо безусловный бонус) — один текст, не список."""
+    hard_blocks: list[dict] = rules_data.get("hard_blocks") or []
+    if any(eval_condition(hb["condition"], dish, wine) for hb in hard_blocks):
+        return None
+
+    rules: list[dict] = rules_data.get("rules") or []
+    applicable = 0.0
+    raw = 0.0
+    best: tuple[float, str] | None = None  # (weight, explain) лучшего положительного вклада
+    for rule in rules:
+        when = rule.get("when", {})
+        if not eval_condition(when, dish, wine):
+            continue
+        weight = float(rule["weight"])
+        applicable += weight
+
+        has_require = "require" in rule
+        has_penalize = "penalize" in rule
+        positive = False
+        if has_require and eval_condition(rule["require"], dish, wine):
+            raw += weight
+            positive = True
+        if has_penalize and eval_condition(rule["penalize"], dish, wine):
+            raw -= weight
+        if not has_require and not has_penalize:
+            raw += weight  # бонус-правило (regional_affinity) — при истинном when
+            positive = True
+        if positive and (best is None or weight > best[0]):
+            best = (weight, str(rule["explain"]))
+
+    score = max(0.0, min(1.0, raw / applicable)) if applicable > 0 else 0.0
+    if score <= 0:
+        return None
+    explain = best[1] if best is not None else "Хорошо сочетается по вкусовому профилю блюда."
+    return score, explain
+
+
+# --------------------------------------------------------------------------
 # Уровень 3 — эвристика по цвету + ключевым словам (contracts/post-scan.md §1,
 # таблица дефолтов посчитана архитектором 22.09 по pipeline/ref/
 # reference_styles.yaml — среднее по 146 стилям, сгруппировано по
@@ -371,6 +430,16 @@ def _load_rules_data(path_str: str) -> dict:
 
 def _rules_path(settings: Settings) -> str:
     return str(Path(settings.pairing_rules_path).resolve())
+
+
+def portal_tags(settings: Settings) -> list[str]:
+    """9 тегов `portal_tag_defaults`, В ПОРЯДКЕ YAML (dict хранит порядок
+    вставки) — единственный источник списка тегов для промпта VLM/zero-shot
+    и для валидации `category` в распознавании блюда (contracts/post-scan.md
+    v1.1 по брифу тимлида 22.09, `app/dish_recognition.py`). Не дублирует
+    словарь — просто ключи уже загруженного/закэшированного `_load_rules_data`."""
+    rules_data = _load_rules_data(_rules_path(settings))
+    return list((rules_data.get("portal_tag_defaults") or {}).keys())
 
 
 # --------------------------------------------------------------------------

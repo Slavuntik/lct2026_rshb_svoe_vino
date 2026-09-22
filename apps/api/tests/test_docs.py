@@ -22,6 +22,7 @@ from app.routers import (
     events,
     health,
     metrics,
+    pairing,
     profile,
     scan,
     taste,
@@ -36,7 +37,7 @@ from app.routers import (
 # приватная обёртка) — путь снизу собирается вручную из router.prefix +
 # route.path, ровно как это делает сам FastAPI при инклюде.
 _ROUTER_MODULES = (
-    health, auth, consents, scan, eval_router, wines, chat,
+    health, auth, consents, scan, eval_router, wines, pairing, chat,
     analogs, events, taste, waitlist, profile, metrics, case_thumbs,
 )
 

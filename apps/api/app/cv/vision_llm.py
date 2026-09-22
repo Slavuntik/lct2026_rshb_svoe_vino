@@ -78,6 +78,21 @@ def prepare_image(image_bytes: bytes, size: int) -> str:
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
+def prepare_full_frame_image(image_bytes: bytes, size: int) -> str:
+    """Как `prepare_image()`, но БЕЗ `CENTER_CROP` — весь кадр целиком, даунскейл
+    до `size` по длинной стороне, JPEG q90 → base64. Для распознавания блюда
+    по фото (`ask_json_or_raise()` ниже, contracts/post-scan.md v1.1 по брифу
+    тимлида 22.09: "модель читает ВЕСЬ кадр, без центрального кропа
+    этикетки") — `read_label()`/`prepare_image()` не трогаются этой правкой,
+    остаются на своём CENTER_CROP для этикеток."""
+    with Image.open(io.BytesIO(image_bytes)) as im:
+        im = ImageOps.exif_transpose(im).convert("RGB")
+        im.thumbnail((size, size))
+        buf = io.BytesIO()
+        im.save(buf, format="JPEG", quality=90)
+    return base64.b64encode(buf.getvalue()).decode("ascii")
+
+
 def parse_fields(content: str) -> dict[str, str]:
     """Поля этикетки из ответа модели (JSON может быть обёрнут в ```json … ```)."""
     m = _JSON_RE.search(content or "")
@@ -94,6 +109,21 @@ def parse_fields(content: str) -> dict[str, str]:
 
 def fields_to_text(fields: dict[str, str]) -> str:
     return " ".join(fields[k] for k in FIELDS if fields.get(k))
+
+
+def parse_json_object(content: str) -> dict | None:
+    """Как `parse_fields()`, но без фильтра по `FIELDS` — сырой `dict` ответа
+    модели (JSON может быть обёрнут в ```json … ```), `None`, если распарсить
+    не удалось. Для `ask_json_or_raise()` ниже (промпт распознавания блюда
+    несёт свой набор ключей, не `FIELDS` этикетки)."""
+    m = _JSON_RE.search(content or "")
+    if not m:
+        return None
+    try:
+        data = json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _read_response_within_deadline(resp, deadline: float) -> bytes:
@@ -193,3 +223,68 @@ def read_label(
         return read_label_or_raise(image_bytes, url=url, key=key, model=model, timeout_s=timeout_s, image_size=image_size)
     except VisionLLMError:
         return ""
+
+
+def ask_json_or_raise(
+    image_bytes: bytes,
+    *,
+    url: str | None,
+    key: str | None,
+    model: str,
+    timeout_s: float,
+    prompt: str,
+    image_size: int = 1024,
+    max_tokens: int = 300,
+) -> dict:
+    """Общий вызов шлюза за строгим JSON-ответом по ВСЕМУ кадру — НЕ про
+    этикетку (contracts/post-scan.md v1.1 по брифу тимлида 22.09,
+    "Что подать" по фото блюда): `read_label()`/`read_label_or_raise()` выше
+    не используют эту функцию и не меняются ею ни на строку — отдельный путь
+    со своим промптом и `prepare_full_frame_image()` (без `CENTER_CROP`).
+
+    Та же дисциплина, что `read_label_or_raise()`:
+      - `url` пуст -> `{}` (не сбой — источник просто не настроен, как и там);
+      - сеть/HTTP/таймаут -> `VisionLLMError` (сбой шлюза — вызывающий код
+        решает через тот же `_ModelBreaker`, что и сканер, см.
+        `app/dish_recognition.py`);
+      - ответ пришёл, но JSON не распарсился (`parse_json_object() is None`)
+        -> `{}`, НЕ исключение — модель честно ответила чем-то нечитаемым,
+        это не сбой шлюза (тот же принцип, что `parse_fields()` у
+        `read_label_or_raise()` — пустой словарь на нечитаемый контент).
+      - `_read_response_within_deadline()` переиспользуется как есть (то же
+        чтение чанками по 1 байту, тот же смысл — см. её докстринг).
+
+    Ключ шлюза не логируется и не несётся в исключении."""
+    if not url:
+        return {}
+    try:
+        img = prepare_full_frame_image(image_bytes, image_size)
+    except Exception:  # noqa: BLE001 — битые байты: не сбой шлюза, вызывающий код решает сам
+        return {}
+    body = {
+        "model": model,
+        "messages": [{"role": "user", "content": [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img}"}},
+        ]}],
+        "max_tokens": max_tokens,
+        "temperature": 0,
+    }
+    req = urllib.request.Request(
+        url.rstrip("/") + "/chat/completions",
+        data=json.dumps(body).encode("utf-8"),
+        method="POST",
+        headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {key}"} if key else {})},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout_s, context=ssl.create_default_context()) as resp:
+            raw = _read_response_within_deadline(resp, deadline=time.monotonic() + timeout_s)
+            payload = json.loads(raw)
+        content = payload["choices"][0]["message"].get("content") or ""
+    except urllib.error.HTTPError as exc:
+        logger.warning("vision_llm: HTTP %s от шлюза (dish JSON)", exc.code)
+        raise VisionLLMError(f"HTTP {exc.code}") from exc
+    except Exception as exc:  # noqa: BLE001 — сеть/таймаут/формат
+        logger.warning("vision_llm: %s (dish JSON)", type(exc).__name__)
+        raise VisionLLMError(type(exc).__name__) from exc
+    return parse_json_object(content) or {}

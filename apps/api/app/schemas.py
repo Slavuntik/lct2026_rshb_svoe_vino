@@ -112,6 +112,54 @@ class WinePairingsResponse(BaseModel):
     message: str | None = None  # непусто ⟺ pairings=[]
 
 
+# --- POST /v1/pairing/dish-photo, POST /v1/pairing/dish --------------------
+# "Что подать" по фото блюда (contracts/post-scan.md v1.1 §4, contracts/
+# openapi.yaml 0.3.4, 22.09, architect — ратифицировано; имена схем/полей
+# ниже сверены построчно с openapi.yaml::components.schemas.{DishInfo,
+# PairingWineItem,DishPairingResponse}, см. reports/backend-dish-photo.md,
+# "Расхождения с контрактом" — два предложения к контракту зафиксированы там
+# (пул кандидатов, порог нечёткого совпадения), схема ответа ниже совпадает
+# с openapi.yaml дословно).
+
+class DishInfo(BaseModel):
+    # openapi.yaml::DishInfo.name: "НЕ null — пустая строка, когда нечего
+    # показать" — поле держим ненуллабельным сознательно (не str | None).
+    name: str = ""
+    # category: null, если status != food (не резолвлен/не применим).
+    category: str | None = None
+    alternatives: list[str] = Field(default_factory=list)
+    ingredients: list[str] = Field(default_factory=list)
+    source: Literal["vlm", "vlm_local", "zero_shot", "user", "none"]
+
+
+class PairingWineItem(BaseModel):
+    wine_id: str
+    name: str
+    winery: str | None = None
+    color: str | None = None
+    sugar: str | None = None
+    image_url: str | None = None
+    reason: str  # детерминированный текст — из шаблона (catalog) либо rules[].explain (rules)
+    basis: Literal["catalog", "rules"]
+
+
+class DishPairingResponse(BaseModel):
+    status: Literal["food", "not_food", "bottle", "unsure"]
+    dish: DishInfo
+    wines: list[PairingWineItem] = Field(default_factory=list, max_length=6)
+    message: str | None = None
+    timing_ms: int
+
+
+class DishManualRequest(BaseModel):
+    """`POST /v1/pairing/dish` — ручной выбор/исправление категории.
+    `category` — свободный текст (валидируется/приводится к одному из 9
+    тегов `app/dish_recognition.py::resolve_category`, 400 validation_error
+    на нераспознанном)."""
+    category: str = Field(max_length=100)
+    dish: str | None = Field(default=None, max_length=200)
+
+
 class ChatFilters(BaseModel):
     color: str | None = None
     sugar: str | None = None
