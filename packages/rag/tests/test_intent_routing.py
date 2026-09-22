@@ -180,3 +180,43 @@ def test_short_pairing_fragment_requires_whole_word_not_substring():
     # "Как" не должен матчиться как "к " — \b перед группой требует границу
     # слова, а \s+ сразу после неё — что дальше идёт пробел, а не буква.
     assert classify("Как погода в Крыму?") == "default"
+
+
+# --------------------------------------------------------------------------
+# 22.09 (reports/backend-rag-rebuild.md): кнопка "Спросить сомелье об этом
+# вине" шлёт t("chat.prefillAskAboutWine") = "Расскажи про {name} от
+# {winery}" (apps/web/src/i18n/ru.ts:156) — до этой правки матчилась
+# _FACT_RE ("расскаж.{0,3} про") или (для winery_name с "Винодельня") ещё
+# раньше _TRAVEL_RE, и в обоих случаях коллекция "wines" не участвовала в
+# поиске вовсе — вино не находило само себя НИ ПРИ КАКИХ обстоятельствах,
+# даже если оно есть в индексе.
+# --------------------------------------------------------------------------
+
+
+def test_ask_about_wine_prefill_routes_to_pairing_not_fact():
+    q = "Расскажи про Пино Нуар от А. Гордиенко & М. Николаев"
+    assert classify(q) == "pairing", q
+    assert infer_collections(q) == ("wines",), q
+
+
+def test_ask_about_wine_prefill_wins_over_travel_when_winery_name_says_vinodelnya():
+    # Ровно случай реальной винодельни каталога с "Винодельня" в имени
+    # (Винодельня Орлова — 2 из 21 винодельни на пропущенных 125 вин).
+    q = "Расскажи про Мерло Резерв от Винодельня Орлова"
+    assert classify(q) == "pairing", q
+    assert infer_collections(q) == ("wines",), q
+
+
+def test_generic_fact_question_with_rasskazhi_still_routes_to_knowledge():
+    # Общий вопрос про понятие ("расскажи про танины") не несёт " от <кого-то>"
+    # после "про" — обязан остаться fact-веткой, не перехватываться новым паттерном.
+    assert classify("Расскажи про танины в вине") == "fact"
+    assert infer_collections("Расскажи про танины в вине") == ("knowledge",)
+
+
+def test_goldset_only_rasskazhi_question_unaffected():
+    # Единственный вопрос голдсета со словом "расскаж" (packages/rag/eval/goldset.jsonl,
+    # type=travel) не содержит " от " после "про" — маршрут не должен измениться.
+    q = "Расскажите про винодельню Абрау-Дюрсо."
+    assert classify(q) == "travel", q
+    assert infer_collections(q) == ("wineries", "knowledge"), q

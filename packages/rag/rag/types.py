@@ -57,3 +57,19 @@ class Candidate:
     text: str  # текст для промпта
     url: str  # первоисточник для цитаты
     meta: dict
+
+
+@dataclass
+class SourceRecord:
+    """Промежуточная запись между источником (vines build/ или case-data) и
+    ingest (rag/ingest.py::run_ingest) — до эмбеддинга/upsert. Вынесена сюда
+    (не в rag/ingest.py, где жила раньше) 22.09 (reports/backend-rag-rebuild.md):
+    rag/case_data.py тоже строит SourceRecord (дополнение каталога кейса) и
+    не должен импортировать rag/ingest.py — тот сам импортирует case_data
+    (см. докстринг там), цикл был бы неизбежен без этого переноса."""
+
+    id: str
+    kind: str
+    text: str
+    url: str
+    payload: dict

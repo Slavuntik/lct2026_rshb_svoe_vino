@@ -19,9 +19,15 @@ def test_repeated_ingest_does_not_duplicate(tiny_source, tmp_path):
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path / "data"
     no_goldset = tmp_path / "no-such-goldset.jsonl"  # см. conftest.tiny_index — калибровка не в тему мини-фикстуры
+    no_case_data = tmp_path / "no-such-case-data"  # см. conftest.tiny_index — реальные 125 вин кейса тут ни к чему
 
     manifest1 = run_ingest(
-        version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+        version="v1",
+        source_dir=build_dir,
+        catalog_dir=catalog_dir,
+        data_dir=data_dir,
+        goldset_path=no_goldset,
+        case_data_dir=no_case_data,
     )
     store = QdrantStore(path=data_dir / "qdrant")
     counts_after_first = {name: store.count(name) for name in ("wines", "wineries", "knowledge")}
@@ -37,7 +43,12 @@ def test_repeated_ingest_does_not_duplicate(tiny_source, tmp_path):
     # Повторный прогон — тот же источник, тот же data_dir, ДРУГАЯ версия
     # (как если бы оператор перегнал ingest ещё раз тем же source).
     manifest2 = run_ingest(
-        version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+        version="v2",
+        source_dir=build_dir,
+        catalog_dir=catalog_dir,
+        data_dir=data_dir,
+        goldset_path=no_goldset,
+        case_data_dir=no_case_data,
     )
     store = QdrantStore(path=data_dir / "qdrant")
     counts_after_second = {name: store.count(name) for name in ("wines", "wineries", "knowledge")}
@@ -61,8 +72,14 @@ def test_ingest_point_ids_are_stable_across_runs(tiny_source, tmp_path):
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path / "data"
     no_goldset = tmp_path / "no-such-goldset.jsonl"
+    no_case_data = tmp_path / "no-such-case-data"
     run_ingest(
-        version="v1", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+        version="v1",
+        source_dir=build_dir,
+        catalog_dir=catalog_dir,
+        data_dir=data_dir,
+        goldset_path=no_goldset,
+        case_data_dir=no_case_data,
     )
 
     store = QdrantStore(path=data_dir / "qdrant")
@@ -70,7 +87,12 @@ def test_ingest_point_ids_are_stable_across_runs(tiny_source, tmp_path):
     store.close()
 
     run_ingest(
-        version="v2", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+        version="v2",
+        source_dir=build_dir,
+        catalog_dir=catalog_dir,
+        data_dir=data_dir,
+        goldset_path=no_goldset,
+        case_data_dir=no_case_data,
     )
     store = QdrantStore(path=data_dir / "qdrant")
     vec_after = store.get_vector("wines", "red-dry-kuban-1")
