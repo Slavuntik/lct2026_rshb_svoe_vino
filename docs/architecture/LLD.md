@@ -92,10 +92,14 @@ DDL-детали (`jsonb`, `gen_random_uuid()`) в `schema.sql` — целево
 
 ### 2.3 Карточка вина — единая форма
 
-`WineCardResponse` (`{wine_id, source, derived, source_url, similar}`) — форма ОДНА на весь
-продукт: `GET /wines/{id}`, поле `card` в `ScanPhotoRichResponse` (v0.4.1, «своей формы у
-карточки скана нет»), и подразумеваемо там, где backend резолвит `wine_id` для гастропар/
-подбора к блюду. `source` — сырые поля каталога (наш — полные, каталог кейса — подмножество:
+`WineCardResponse` (`{wine_id, source, derived, source_url, similar, similar_wines}`) — форма
+ОДНА на весь продукт: `GET /wines/{id}`, поле `card` в `ScanPhotoRichResponse` (v0.4.1, «своей
+формы у карточки скана нет»), и подразумеваемо там, где backend резолвит `wine_id` для
+гастропар/подбора к блюду. `similar` — DEPRECATED голые слаги (v0.3.6, жюри увидело их
+напрямую в блоке «Похожие вина», `reports/qa-manual-hack-v16.md`); `similar_wines` —
+{wine_id,name,winery,image_url} тех же слагов, тот же класс исправления применён к
+`GET /taste/profile.top_styles`→`top_styles_named` (найдено тем же аудитом, не реализовано).
+`source` — сырые поля каталога (наш — полные, каталог кейса — подмножество:
 `name/winery_name/region_name/grapes/color/category/description/image_url`, БЕЗ
 `sugar_category/vintage/abv_percent/serving_temp_c/food_pairings`, см. `contracts/
 post-scan.md` §1 «Находка»); `derived` — вычисленное (`sensory`, `style_tags`,

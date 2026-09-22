@@ -42,6 +42,23 @@
 #   91.82% случаев на полном каталоге 2103 (reports/backend-rag-rebuild.md §3) — промахи
 #   почти все на винах-«близнецах» одной серии (Союз-Вино/Золотая Балка, несколько SKU
 #   почти с одинаковым названием), не на структурных пробелах каталога. См. /chat ниже.
+# v0.3.6 (22.09, architect, задача тимлида — дефект жюри, reports/qa-manual-hack-v16.md):
+#   GET /wines/{wine_id}.similar — массив ГОЛЫХ СЛАГОВ, карточка «Похожие вина» показывала
+#   их жюри напрямую (временная заглушка фронта «Похожее вино N», reports/
+#   frontend-jury-pass-fixes.md). +similar_wines: [{wine_id,name,winery,image_url}], те же
+#   слаги и порядок, что similar; слаг не в каталоге — пропущен в similar_wines, остаётся в
+#   similar. similar — DEPRECATED, не удалён (обратная совместимость: клиенты, кто уже читает
+#   голые слаги — напр. для построения /app/wine/:wineId — не ломаются). Дёшево для backend:
+#   `app/rag/cards.py::build_wine_card()` уже зовёт `retriever.similar()`, который отдаёт
+#   `Candidate` С полным meta (source/derived) — код (`[c.id for c in ...]`) сегодня ВЫБРАСЫВАЕТ
+#   эти данные, а не заново их ищет. `card` в ScanPhotoRichResponse = тело этого пути (v0.4.1
+#   image-scan.md) — получает similar_wines автоматически, без отдельной правки.
+#   Заодно (аудит architect по прямому пункту тимлида «проверь другие места») — тот же класс
+#   дефекта в GET /taste/profile.top_styles (голые слаги стилей, рендерится в
+#   TastePassportScreen.tsx буквально как есть, `{style}` — тоже жюри-видимый баг того же
+#   рода): +top_styles_named: [{slug,name,country}] (форма `list_reference_styles()`,
+#   contracts/rag-interface.md), top_styles — DEPRECATED. Это НЕ отчёт backend, а находка
+#   этого аудита — не реализовано, статус см. `reports/architect-docs-and-dish-contract.md`.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -51,7 +68,7 @@
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.3.5
+  version: 0.3.6
 servers:
   - url: /v1
 paths:
@@ -348,7 +365,28 @@ paths:
                   source: { type: object, description: как в catalog/wines/<slug>.json }
                   derived: { type: object }
                   source_url: { type: string, format: uri }
-                  similar: { type: array, items: { type: string } }
+                  similar:
+                    type: array
+                    items: { type: string }
+                    deprecated: true
+                    description: >
+                      DEPRECATED (v0.3.6) — голые wine_id, без названия/винодельни; жюри видело
+                      их напрямую в блоке «Похожие вина» (reports/qa-manual-hack-v16.md).
+                      Оставлено для обратной совместимости, новые клиенты — similar_wines.
+                  similar_wines:
+                    type: array
+                    items:
+                      type: object
+                      required: [wine_id, name]
+                      properties:
+                        wine_id: { type: string }
+                        name: { type: string }
+                        winery: { type: string, nullable: true }
+                        image_url: { type: string, nullable: true }
+                    description: >
+                      v0.3.6 — те же слаги и тот же порядок, что similar, обогащённые именем/
+                      винодельней/фото; слаг, которого нет в каталоге, в similar_wines НЕ
+                      попадает (остаётся только в similar) — длина массивов может отличаться.
 
   /wines/{wine_id}/pairings:
     get:
@@ -647,7 +685,30 @@ paths:
                   vector:
                     type: object
                     description: sweetness/acidity/tannin/body/oak/aromatic_intensity/bubbles, 0..1
-                  top_styles: { type: array, items: { type: string } }
+                  top_styles:
+                    type: array
+                    items: { type: string }
+                    deprecated: true
+                    description: >
+                      DEPRECATED (v0.3.6) — голые слаги эталонных стилей (`derived.
+                      reference_style_matches`), без имени/страны; `TastePassportScreen.tsx`
+                      рендерит их буквально как есть — тот же класс дефекта, что similar
+                      (найдено этим аудитом, не отдельным отчётом backend — см. шапку файла).
+                      Оставлено для обратной совместимости, новые клиенты — top_styles_named.
+                  top_styles_named:
+                    type: array
+                    items:
+                      type: object
+                      required: [slug, name, country]
+                      properties:
+                        slug: { type: string }
+                        name: { type: string }
+                        country: { type: string }
+                    description: >
+                      v0.3.6 — те же слаги и тот же порядок, что top_styles, форма как у
+                      `list_reference_styles()` (contracts/rag-interface.md). НЕ реализовано на
+                      момент ратификации — предложение к следующей волне backend, приоритет
+                      ниже similar_wines (тот — прямая жалоба жюри, этот — находка аудита).
                   swipes_count: { type: integer }
 
   /taste/candidates:
