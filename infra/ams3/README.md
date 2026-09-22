@@ -115,6 +115,38 @@ pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^L
 
 Вернуть заглушку — `LLM_PROVIDER=mock` в том же файле и рестарт.
 
+## Подключение LLM через шлюз (свой Qwen 27B, пока нет ключа GigaChat)
+
+Решение Вячеслава (22.09, `reports/backend-llm-openai.md`): пока нет ключа GigaChat, сомелье-чат
+(`/v1/chat`) подключается к GPU-серверу команды через OpenAI-совместимый шлюз (LiteLLM,
+`/v1/chat/completions`, Bearer-ключ, модель по умолчанию `qwen3.8-27b`, SSE-стрим шлюз
+поддерживает) — драйвер `packages/llm/llm/drivers/openai.py`, `LLM_PROVIDER=openai`. Тот же
+драйвер годится для любого другого OpenAI-совместимого шлюза/модели: достаточно сменить
+`LLM_BASE_URL`/`LLM_MODEL`, код трогать не нужно.
+
+Это ДРУГИЕ переменные, чем `VISION_LLM_URL`/`VISION_LLM_KEY` из раздела «Секреты GitHub» выше
+(те — чтение этикетки на скане, `packages/cv`, секреты GitHub, приходят через `push-release.sh`;
+эти — текстовый чат, `packages/llm`, секретов GitHub под них пока нет), даже если физически
+указывают на один и тот же шлюз. Адрес шлюза — тоже секрет (не только ключ): в репозиторий,
+GitHub Secrets проекта и чат не попадает, ставится только на сервере.
+
+1. Получить у Вячеслава адрес шлюза (`https://<gpu-host>/v1`) и ключ.
+2. Поставить вручную через SSH, оба значения — из буфера обмена, не литералом в команде (тот же
+   приём, что «Запасной путь без CI» для GigaChat выше, только в два захода — под каждое значение):
+
+```bash
+pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r u; sed -i "/^LLM_PROVIDER=/d; /^LLM_BASE_URL=/d" /opt/somelye/somelye.env; printf "LLM_PROVIDER=openai\nLLM_BASE_URL=%s\n" "$u" >> /opt/somelye/somelye.env'
+pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^LLM_API_KEY=/d" /opt/somelye/somelye.env; printf "LLM_API_KEY=%s\n" "$k" >> /opt/somelye/somelye.env; sudo /usr/bin/systemctl restart somelye-api'
+```
+
+   `LLM_MODEL` можно не задавать — дефолт драйвера уже `qwen3.8-27b` (`somelye.env.example`,
+   закомментированный блок).
+3. Проверить: `sudo systemctl status somelye-api` без ошибок и живой запрос в чат через интерфейс
+   стенда — ответ перестаёт быть детерминированной заглушкой мока.
+
+Вернуть заглушку — `LLM_PROVIDER=mock` в `/opt/somelye/somelye.env` (строки `LLM_BASE_URL`/
+`LLM_API_KEY` можно оставить или удалить тем же `sed -i`) и рестарт.
+
 ## Диагностика
 
 ```bash

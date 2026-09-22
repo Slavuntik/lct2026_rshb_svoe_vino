@@ -1,5 +1,5 @@
-"""Драйверы deepseek/gigachat/anthropic: проверяем сборку запроса и разбор
-ответа ОФФЛАЙН через httpx.MockTransport. Реальная сеть не вызывается —
+"""Драйверы deepseek/openai/gigachat/anthropic: проверяем сборку запроса и
+разбор ответа ОФФЛАЙН через httpx.MockTransport. Реальная сеть не вызывается —
 это требование проекта (в тестах внешние LLM-API не звать).
 """
 import json
@@ -11,6 +11,7 @@ from llm.base import LLMUnavailable
 from llm.drivers.anthropic import AnthropicLLM
 from llm.drivers.deepseek import DeepSeekLLM
 from llm.drivers.gigachat import GigaChatLLM
+from llm.drivers.openai import OpenAILLM
 
 MESSAGES = [
     {"role": "system", "content": "Ты сомелье."},
@@ -99,6 +100,110 @@ def test_deepseek_chat_stream_yields_deltas():
     )
     chunks = list(llm.chat_stream(MESSAGES))
     assert "".join(chunks) == "Каберне подойдёт [1]"
+
+
+# ---------------------------------------------------------------------------
+# openai (универсальный шлюз — напр. LiteLLM перед Qwen3.8-27b на GPU-сервере
+# команды, reports/backend-llm-openai.md). Одна реализация с DeepSeek
+# (_openai_compat.py) — тесты дублируют форму deepseek-блока выше нарочно:
+# доказывают, что обобщение не потеряло поведение ни у одного из двух драйверов.
+# ---------------------------------------------------------------------------
+
+def test_openai_chat_parses_openai_shaped_response():
+    def handler(request: httpx.Request) -> httpx.Response:
+        # base_url несёт /v1 (форма шлюза LiteLLM, contracts/llm-adapter.md) —
+        # путь запроса поэтому /v1/chat/completions, не /chat/completions.
+        assert request.url.path == "/v1/chat/completions"
+        assert request.headers["authorization"] == "Bearer sk-gw-test"
+        body = json.loads(request.content)
+        assert body["model"] == "qwen3.8-27b"
+        assert body["messages"] == MESSAGES
+        assert body["stream"] is False
+        return httpx.Response(200, json={
+            "choices": [{"message": {"content": "Каберне подойдёт [1]"}}]
+        })
+
+    llm = OpenAILLM(
+        base_url="https://gpu.example.internal/v1", api_key="sk-gw-test", model="qwen3.8-27b",
+        transport=httpx.MockTransport(handler),
+    )
+    assert llm.chat(MESSAGES) == "Каберне подойдёт [1]"
+
+
+def test_openai_missing_api_key_raises_llm_unavailable():
+    llm = OpenAILLM(base_url="https://gpu.example.internal/v1", api_key=None, model="qwen3.8-27b")
+    with pytest.raises(LLMUnavailable):
+        llm.chat(MESSAGES)
+
+
+def test_openai_missing_base_url_raises_llm_unavailable():
+    """В отличие от deepseek/anthropic (публичный дефолт base_url), у openai
+    дефолта нет — адрес шлюза секретный (contracts/llm-adapter.md "Гигиена")."""
+    llm = OpenAILLM(base_url=None, api_key="sk-gw-test", model="qwen3.8-27b")
+    with pytest.raises(LLMUnavailable):
+        llm.chat(MESSAGES)
+    with pytest.raises(LLMUnavailable):
+        list(llm.chat_stream(MESSAGES))
+
+
+def test_openai_5xx_retries_then_raises_llm_unavailable():
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(503, text="upstream overloaded")
+
+    llm = OpenAILLM(
+        base_url="https://gpu.example.internal/v1", api_key="sk-gw-test", model="qwen3.8-27b",
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(LLMUnavailable):
+        llm.chat(MESSAGES)
+    assert calls["n"] == 3  # 1 попытка + 2 ретрая, как того требует контракт
+
+
+def test_openai_4xx_does_not_retry():
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(401, text="bad key")
+
+    llm = OpenAILLM(
+        base_url="https://gpu.example.internal/v1", api_key="sk-gw-bad", model="qwen3.8-27b",
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(LLMUnavailable):
+        llm.chat(MESSAGES)
+    assert calls["n"] == 1
+
+
+def test_openai_chat_stream_yields_deltas():
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        assert body["stream"] is True
+        content = _sse(
+            {"choices": [{"delta": {"content": "Каберне "}}]},
+            {"choices": [{"delta": {"content": "подойдёт [1]"}}]},
+        )
+        return httpx.Response(200, content=content)
+
+    llm = OpenAILLM(
+        base_url="https://gpu.example.internal/v1", api_key="sk-gw-test", model="qwen3.8-27b",
+        transport=httpx.MockTransport(handler),
+    )
+    chunks = list(llm.chat_stream(MESSAGES))
+    assert "".join(chunks) == "Каберне подойдёт [1]"
+
+
+def test_openai_from_env_reads_llm_env_vars(monkeypatch):
+    monkeypatch.setenv("LLM_BASE_URL", "https://gpu.example.internal/v1")
+    monkeypatch.setenv("LLM_API_KEY", "sk-gw-env")
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    llm = OpenAILLM.from_env()
+    assert llm.base_url == "https://gpu.example.internal/v1"
+    assert llm.api_key == "sk-gw-env"
+    assert llm.model == "qwen3.8-27b"  # дефолт, пока LLM_MODEL не задан явно
 
 
 # ---------------------------------------------------------------------------
