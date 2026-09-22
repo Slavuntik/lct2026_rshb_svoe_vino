@@ -18,6 +18,7 @@ from cv.shelf_crop import (
     DEFAULT_EXPECTED_BOTTLE_WIDTH_FRAC,
     DEFAULT_MAX_BOTTLE_WIDTH_FRAC,
     DEFAULT_MIN_BOXES,
+    DEFAULT_MIN_TEXT_ASPECT,
     ShelfDetector,
     ShelfSegmentation,
     _split_oversized_segments,
@@ -316,12 +317,17 @@ def test_single_block_of_boxes_is_not_a_shelf_frame_unchanged():
 def test_two_separated_clusters_with_enough_boxes_triggers_gate_and_splits_at_midpoint():
     """>= 30 боксов в ряду, ДВЕ ясно разделённые X-колонки — гейт срабатывает,
     раздел Вороного — ровно на полпути между центрами колонок, `center_index`
-    указывает на колонку, ближайшую к X-центру кадра."""
+    указывает на колонку, ближайшую к X-центру кадра.
+
+    `min_text_aspect=0.0` — тест про раздел Вороного (v1), не про гейт v2:
+    `full_height_boxes` даёт row_height=800 (см. `test_shelf_crop.py`, гейт v2
+    ниже), а текст здесь узкий (охват 745px, аспект 0.93 < 1.2 по умолчанию) —
+    без сброса гейт v2 срезал бы этот сценарий, тест изолирован от него."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(16)]  # x в [50,125], центр колонки ~ 87.5
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(16)]  # x в [700,795], центр ~ 747.5
     boxes = full_height_boxes(left_xs + right_xs, H)
     assert len(boxes) == 32
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.is_shelf is True
     assert seg.n_row_boxes == 32
     assert seg.col_method == "ocr"
@@ -351,10 +357,12 @@ def test_sparse_boxes_below_min_boxes_threshold_does_not_trigger_gate():
 
 
 def test_exactly_min_boxes_threshold_is_inclusive():
+    """`min_text_aspect=0.0` — тест изолирует порог по числу боксов (v1), не
+    гейт v2 (тот же узкий паттерн 0.93 < 1.2, что и тест раздела Вороного выше)."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(15)]
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(15)]  # ровно 30
     boxes = full_height_boxes(left_xs + right_xs, H)
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.n_row_boxes == 30
     assert seg.is_shelf is True  # >= — включительно
 
@@ -388,11 +396,15 @@ def test_geometric_fallback_used_when_ocr_columns_insufficient():
     `col_method` переключается на "geometric", гейт может сработать через него.
     Точное число итоговых сегментов не фиксируем (см. `test_split_oversized_*`
     ниже — сегменты шире `DEFAULT_MAX_BOTTLE_WIDTH_FRAC` доли высоты ряда
-    дополнительно дробятся, реальное число зависит от найденного окна ряда)."""
+    дополнительно дробятся, реальное число зависит от найденного окна ряда).
+
+    `min_text_aspect=0.0` — тест про геометрический фолбэк колонок (v1): все 30
+    OCR-боксов совпадают (120-180), охват текста узкий (60px) — гейт v2 срезал
+    бы этот сценарий, что здесь не проверяется (изолировано отдельным тестом)."""
     fw, fh = 300, 600
     boxes = full_height_boxes([(120.0, 180.0)] * 30, fh)  # 30 совпадающих боксов — один OCR-блок
     gray = _row_repeated_gap_band(fw, fh, [(95, 115), (195, 215)])
-    seg = segment_boxes(boxes, fw, fh, gray=gray, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_boxes(boxes, fw, fh, gray=gray, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.col_method == "geometric"
     assert seg.is_shelf is True
     assert len(seg.crops) >= 2
@@ -414,30 +426,40 @@ def test_gate_false_bypasses_threshold_but_still_needs_two_columns():
 
 
 def test_gate_false_with_enough_shelf_still_returns_split_crops():
+    """`min_text_aspect=0.0` на ОБОИХ вызовах — иначе `seg_gated.is_shelf`
+    стало бы `False` (узкий текст, аспект 0.93 < 1.2) и вернуло бы весь кадр,
+    а `seg_ungated` (гейт пропущен) — по-прежнему разрез, разваливая само
+    сравнение, которое этот тест проверяет."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(16)]
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(16)]
     boxes = full_height_boxes(left_xs + right_xs, H)
-    seg_gated = segment_boxes(boxes, W, H, gate=True, min_boxes=DEFAULT_MIN_BOXES)
-    seg_ungated = segment_boxes(boxes, W, H, gate=False, min_boxes=DEFAULT_MIN_BOXES)
+    seg_gated = segment_boxes(boxes, W, H, gate=True, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
+    seg_ungated = segment_boxes(boxes, W, H, gate=False, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg_gated.crops == seg_ungated.crops  # гейт пройден -> оба пути совпадают
 
 
 def test_three_columns_center_index_picks_nearest_to_frame_center():
+    """`min_text_aspect=0.0` — тест про выбор `center_index` среди 3 колонок
+    (v1), не про гейт v2 (охват текста здесь 892px/800=1.115, чуть НИЖЕ 1.2)."""
     xs = [(50.0 + 3 * i, 65.0 + 3 * i) for i in range(10)]  # колонка ~ x=57..80, center~68
     xs += [(460.0 + 3 * i, 475.0 + 3 * i) for i in range(10)]  # колонка центр ~478 (ближе к 500)
     xs += [(900.0 + 3 * i, 915.0 + 3 * i) for i in range(10)]  # колонка центр ~918
     boxes = full_height_boxes(xs, H)
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.is_shelf is True
     assert len(seg.crops) == 3
     assert seg.center_index == 1  # средняя колонка ближе всего к W/2=500
 
 
 def test_candidate_indices_defaults_to_center_only_when_not_borderline():
+    """`min_text_aspect=0.0` — тест про кандидатов НЕ на границе (v1), не про
+    гейт v2; без сброса `is_shelf` ушёл бы в `False` по гейту v2 (аспект 0.93),
+    и `candidate_indices==(center_index,)` совпало бы случайно (оба `(0,)` из
+    ветки "гейт не пройден"), а не по проверяемой логике."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(16)]
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(16)]
     boxes = full_height_boxes(left_xs + right_xs, H)
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.candidate_indices == (seg.center_index,)
 
 
@@ -446,12 +468,15 @@ def test_candidate_indices_includes_immediate_neighbor_when_nearly_tied():
     X-центру кадра (разница расстояний 20 <= `border_tie_frac*W`=60) — обе
     становятся кандидатами (reports/ml-lead-shelf-crop.md, риски, п.2:
     off-by-one на пограничном разделе Вороного, F04/F30). Колонка A — далеко,
-    не участвует."""
+    не участвует.
+
+    `min_text_aspect=0.0` — тест про `candidate_indices` (v1), охват текста
+    (510px/800=0.64) — ниже гейта v2, изолируем его."""
     a = [(50.0, 90.0)] * 10  # центр 70, dist от центра кадра (500) = 430
     b = [(420.0, 470.0)] * 10  # центр 445, dist = 55
     c = [(510.0, 560.0)] * 10  # центр 535, dist = 35 — ближе всех, но близко к b
     boxes = full_height_boxes(a + b + c, H)
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, border_tie_frac=0.06)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, border_tie_frac=0.06, min_text_aspect=0.0)
     assert len(seg.crops) == 3
     assert seg.center_index == 2  # колонка c — ближайшая к центру кадра
     assert seg.candidate_indices == (1, 2)  # b — непосредственный сосед, почти той же дистанции
@@ -461,14 +486,118 @@ def test_candidate_indices_excludes_non_adjacent_or_far_column():
     """Кандидат добавляется, только если он НЕПОСРЕДСТВЕННЫЙ сосед по порядку
     колонок И достаточно близок — далёкая третья колонка не попадает, даже если
     гипотетически оказалась бы второй по близости (здесь этого не происходит,
-    тест фиксирует инвариант "далёкая колонка не добавляется")."""
+    тест фиксирует инвариант "далёкая колонка не добавляется").
+
+    `min_text_aspect=0.0` — тест про `candidate_indices` (v1); охват текста
+    здесь 920px/800=1.15, чуть НИЖЕ гейта v2 по умолчанию (1.2)."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(11)]
     mid_xs = [(480.0 + 5 * i, 500.0 + 5 * i) for i in range(11)]
     right_xs = [(900.0 + 5 * i, 920.0 + 5 * i) for i in range(11)]
     boxes = full_height_boxes(left_xs + mid_xs + right_xs, H)
-    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, border_tie_frac=0.06)
+    seg = segment_boxes(boxes, W, H, min_boxes=DEFAULT_MIN_BOXES, border_tie_frac=0.06, min_text_aspect=0.0)
     assert seg.center_index == 1  # средняя колонка — центр кадра
     assert seg.candidate_indices == (1,)  # ни левая, ни правая не в пределах border_tie_frac
+
+
+# --------------------------------------------------------------------------------------
+# Гейт v2 — text_aspect (agents/ML-3-shelf-gate.md, reports/ml-lead-shelf-gate-v2.md):
+# доп. сигнал против ложного срабатывания v1 на ОДНОЙ бутылке со сложной вёрсткой
+# этикетки (регрессия ML-2, `87.88_28-08-2026_16-56-20.webp`, reports/ml-eng-ml2.md).
+# Свой локальный кадр FW=1000/FH=1000 (не модульный W/H=1000/2000 выше) — с
+# `full_height_boxes` `expand_from_center` даёт `row_height = 0.4*кадра` детерминированно
+# (проверено эмпирически: плоский профиль плотности -> argmin тай-брейк всегда на первом
+# индексе окна поиска), FH=1000 -> row_height=400 даёт круглые числа охвата текста.
+# --------------------------------------------------------------------------------------
+
+FW, FH = 1000, 1000
+ROW_HEIGHT_FULL = 0.4 * FH  # = 400, см. комментарий выше
+
+
+def test_text_aspect_regression_pattern_below_default_threshold_is_not_a_shelf():
+    """Синтетика формы "87.88" (reports/ml-eng-ml2.md): ОДИН ряд, >= 30 боксов,
+    2 X-кластера (реальный OCR-разрыв, gap=210px >> порога слияния ~20px) — как
+    будто одна этикетка, обе половины которой разъехались по X, а не 2 бутылки —
+    но охват текста УЗКИЙ относительно высоты ряда: [300,395]+[605,700] -> ширина
+    400 / row_height 400 = aspect 1.00 < 1.2 (реальный кейс — 1.06, тот же
+    порядок). C ДЕФОЛТНЫМ порогом гейт v2 обязан исключить такой кадр, хотя v1
+    (колонки>=2 И боксов>=30) сам по себе сработал бы (см. тест ниже)."""
+    left_xs = [(300.0 + 5 * i, 320.0 + 5 * i) for i in range(16)]  # span [300,395]
+    right_xs = [(605.0 + 5 * i, 625.0 + 5 * i) for i in range(16)]  # span [605,700], gap=210
+    boxes = full_height_boxes(left_xs + right_xs, FH)
+    assert len(boxes) == 32  # >= DEFAULT_MIN_BOXES
+
+    seg = segment_boxes(boxes, FW, FH, min_boxes=DEFAULT_MIN_BOXES)  # min_text_aspect по умолчанию (1.2)
+    assert seg.text_aspect == pytest.approx(1.0)
+    assert seg.col_method == "ocr"  # v1 честно нашёл 2 колонки...
+    assert seg.n_row_boxes == 32  # ...и боксов достаточно...
+    assert seg.is_shelf is False  # ...но гейт v2 всё равно исключает («не полка»)
+    assert seg.crops == ((0, 0, FW, FH),)  # весь кадр, побитово (см. докстринг модуля, "Алгоритм", п.4)
+
+
+def test_text_aspect_zero_threshold_reproduces_old_v1_only_behavior_on_same_pattern():
+    """ТОТ ЖЕ паттерн, что в тесте выше, но `min_text_aspect=0.0` (эквивалент
+    старого поведения ДО этого брифа, когда сигнала text_aspect не было вовсе) —
+    `is_shelf` переключается на `True`, доказывая, что именно НОВЫЙ сигнал
+    (не случайное совпадение с чем-то другим в v1) заблокировал регрессию
+    в тесте выше: единственная разница между двумя тестами — этот порог."""
+    left_xs = [(300.0 + 5 * i, 320.0 + 5 * i) for i in range(16)]
+    right_xs = [(605.0 + 5 * i, 625.0 + 5 * i) for i in range(16)]
+    boxes = full_height_boxes(left_xs + right_xs, FH)
+
+    seg = segment_boxes(boxes, FW, FH, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
+    assert seg.text_aspect == pytest.approx(1.0)  # тот же аспект, что и выше — сигнал не изменился
+    assert seg.is_shelf is True  # но гейт v2 обнулён -> старое поведение v1
+    assert len(seg.crops) == 2
+
+
+def test_text_aspect_wide_multi_bottle_row_still_passes_default_gate():
+    """Контрольный "проход": широкий ряд, 3 РЕАЛЬНО разделённые колонки (как
+    несколько бутылок подряд на настоящей полке), охват текста ШИРОКИЙ
+    относительно высоты ряда: [50,145]+[475,570]+[855,950] -> ширина 900 /
+    row_height 400 = aspect 2.25 >= 1.2 — гейт v2 НЕ должен резать настоящую
+    полку своим дефолтным порогом (v1 и v2 оба «за», без переопределения
+    `min_text_aspect`, в отличие от узких паттернов v1-теста выше по файлу)."""
+    left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(16)]  # span [50,145]
+    mid_xs = [(475.0 + 5 * i, 495.0 + 5 * i) for i in range(16)]  # span [475,570]
+    right_xs = [(855.0 + 5 * i, 875.0 + 5 * i) for i in range(16)]  # span [855,950]
+    boxes = full_height_boxes(left_xs + mid_xs + right_xs, FH)
+    assert len(boxes) == 48
+
+    seg = segment_boxes(boxes, FW, FH, min_boxes=DEFAULT_MIN_BOXES)  # дефолтные min_boxes И min_text_aspect
+    assert seg.text_aspect == pytest.approx(2.25)
+    assert seg.is_shelf is True
+    assert len(seg.crops) == 3
+
+
+def test_text_aspect_boundary_is_inclusive_at_exactly_default_threshold():
+    """Граница порога (брифа, п. 3в): аспект РОВНО 1.2 -> `is_shelf=True`
+    (условие `text_aspect >= min_text_aspect`, `>=` — включительно, тот же
+    принцип, что `n_row_boxes >= min_boxes` в `test_exactly_min_boxes_threshold_
+    is_inclusive` выше). Ширина охвата 480 (=[300,395]+[685,780], gap=290) /
+    row_height 400 = aspect 1.2 ровно."""
+    left_xs = [(300.0 + 5 * i, 320.0 + 5 * i) for i in range(16)]  # span [300,395]
+    right_xs = [(685.0 + 5 * i, 705.0 + 5 * i) for i in range(16)]  # span [685,780], gap=290
+    boxes = full_height_boxes(left_xs + right_xs, FH)
+
+    seg = segment_boxes(boxes, FW, FH, min_boxes=DEFAULT_MIN_BOXES)
+    assert seg.text_aspect == pytest.approx(DEFAULT_MIN_TEXT_ASPECT)
+    assert seg.is_shelf is True  # РОВНО на пороге -> проходит (>=, включительно)
+    assert len(seg.crops) == 2
+
+
+def test_text_aspect_boundary_just_below_threshold_is_excluded():
+    """Тот же боковой сдвиг, что и тест выше, но правая колонка на 4px левее
+    (span [681,776] вместо [685,780]) -> ширина охвата 476 / row_height 400 =
+    aspect 1.19 < 1.2 -> `is_shelf=False`. Пара с тестом выше документирует
+    ОБЕ стороны границы порога буквально соседними значениями аспекта."""
+    left_xs = [(300.0 + 5 * i, 320.0 + 5 * i) for i in range(16)]  # span [300,395]
+    right_xs = [(681.0 + 5 * i, 701.0 + 5 * i) for i in range(16)]  # span [681,776], gap=286
+    boxes = full_height_boxes(left_xs + right_xs, FH)
+
+    seg = segment_boxes(boxes, FW, FH, min_boxes=DEFAULT_MIN_BOXES)
+    assert seg.text_aspect == pytest.approx(1.19)
+    assert seg.is_shelf is False  # чуть НИЖЕ порога -> не проходит
+    assert seg.crops == ((0, 0, FW, FH),)
 
 
 # --------------------------------------------------------------------------------------
@@ -618,17 +747,22 @@ def test_segment_shelf_with_fake_detector_no_boxes_is_not_a_shelf():
 
 
 def test_segment_shelf_with_fake_detector_shelf_pattern_triggers_gate():
+    """`min_text_aspect=0.0` — тест про обвязку детектор+геометрия (v1), тот же
+    узкий паттерн (аспект 0.93), что и `test_two_separated_clusters_*` выше."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(16)]
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(16)]
     boxes = full_height_boxes(left_xs + right_xs, H)
     fake = _FakeDetector(boxes)
     image_arr = np.random.default_rng(2).integers(0, 256, size=(H, W, 3)).astype(np.uint8)
-    seg = segment_shelf(image_arr, detector=fake, min_boxes=DEFAULT_MIN_BOXES)
+    seg = segment_shelf(image_arr, detector=fake, min_boxes=DEFAULT_MIN_BOXES, min_text_aspect=0.0)
     assert seg.is_shelf is True
     assert len(seg.crops) == 2
 
 
 def test_segment_shelf_min_boxes_override_is_respected():
+    """`min_text_aspect=0.0` на `seg_lowered` — иначе гейт v2 (аспект 0.86 <
+    1.2) держал бы `is_shelf=False` даже после снижения `min_boxes`, и тест
+    перестал бы проверять именно override `min_boxes`."""
     left_xs = [(50.0 + 5 * i, 70.0 + 5 * i) for i in range(5)]
     right_xs = [(700.0 + 5 * i, 720.0 + 5 * i) for i in range(5)]  # 10 боксов, < 30 по умолчанию
     boxes = full_height_boxes(left_xs + right_xs, H)
@@ -636,5 +770,5 @@ def test_segment_shelf_min_boxes_override_is_respected():
     image_arr = np.zeros((H, W, 3), dtype=np.uint8)
     seg_default = segment_shelf(image_arr, detector=fake)
     assert seg_default.is_shelf is False
-    seg_lowered = segment_shelf(image_arr, detector=fake, min_boxes=10)
+    seg_lowered = segment_shelf(image_arr, detector=fake, min_boxes=10, min_text_aspect=0.0)
     assert seg_lowered.is_shelf is True

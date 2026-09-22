@@ -18,6 +18,7 @@ from __future__ import annotations
 import dataclasses
 import io
 
+import numpy as np
 from PIL import Image
 from starlette.testclient import TestClient
 
@@ -97,6 +98,7 @@ def test_default_settings_have_shelf_crop_disabled():
     settings = Settings()
     assert settings.cv_shelf_crop is False
     assert settings.cv_shelf_min_boxes == 30
+    assert settings.cv_shelf_min_text_aspect == 1.2  # agents/ML-3-shelf-gate.md
     assert settings.cv_shelf_check_neighbors is False
 
 
@@ -215,6 +217,72 @@ def test_flag_on_applies_to_flat_mode_too(client: TestClient, app, monkeypatch):
     assert r.status_code == 200
     assert r.json() == {"slug": "shato-vymysel-cabernet"}
     assert idx.received_sizes[0] == (200, 900)  # левая половина (center_index=0)
+
+
+# --------------------------------------------------------------------------------------
+# agents/ML-3-shelf-gate.md (22.09) — гейт v2 (`text_aspect`), сквозная проводка
+# `settings.cv_shelf_min_text_aspect -> _apply_shelf_crop -> segment_shelf(...)`.
+# В отличие от тестов выше, здесь подменяется НЕ `segment_shelf` целиком, а только
+# `detect_boxes` (боксы) — реальная гейт-логика `cv.shelf_crop.segment_boxes` (v1 И
+# v2) считается взаправду поверх фейковых боксов, тот же приём, что packages/cv/
+# tests/test_shelf_crop.py::test_text_aspect_regression_pattern_below_default_
+# threshold_is_not_a_shelf (тот же паттерн: 2 X-кластера, aspect=1.0 < 1.2).
+# --------------------------------------------------------------------------------------
+
+
+def _fake_detect_boxes_regression_pattern(image_arr, detector=None):
+    """Синтетика формы "87.88" (reports/ml-eng-ml2.md): 2 X-кластера, >= 30
+    боксов, охват текста [300,395]+[605,700]=400 узкий относительно row_height
+    (=0.4*кадра=400 на full-height боксах, см. packages/cv/tests/test_shelf_
+    crop.py) -> text_aspect=1.0 < DEFAULT_MIN_TEXT_ASPECT=1.2. Кадр ожидается
+    1000x1000 (`_make_jpeg(1000, 1000)` в тестах ниже)."""
+    h, w = image_arr.shape[:2]
+    xs = [(300.0 + 5 * i, 320.0 + 5 * i) for i in range(16)] + [(605.0 + 5 * i, 625.0 + 5 * i) for i in range(16)]
+    return np.array([[[x0, 0], [x1, 0], [x1, h], [x0, h]] for x0, x1 in xs], dtype=np.float32)
+
+
+def test_flag_on_ml2_regression_pattern_no_longer_cropped_by_default_text_aspect_gate(
+    client: TestClient, app, monkeypatch,
+):
+    """Регрессия ML-2 живьём (95.2%->93.5%, `87.88_...webp`): гейт v1 в одиночку
+    (колонки>=2 И боксов>=30) срабатывал на ОДНОЙ бутылке — с дефолтным гейтом
+    v2 этого брифа тот же паттерн обязан остаться НЕ полкой, байты — побитово
+    исходные."""
+    import cv.shelf_crop as shelf_crop_module
+
+    monkeypatch.setattr(shelf_crop_module, "detect_boxes", _fake_detect_boxes_regression_pattern)
+    idx = _RecordingImageIndex()
+    app.state.image_index = idx
+    app.state.settings = dataclasses.replace(app.state.settings, cv_shelf_crop=True)
+    assert app.state.settings.cv_shelf_min_text_aspect == 1.2  # дефолт брифа, не переопределяем
+
+    payload = _make_jpeg(1000, 1000)
+    r = _photo(client, payload, flat=False)
+    assert r.status_code == 200, r.text
+    assert idx.search_calls == 1
+    assert idx.received_bytes[0] == payload  # НЕ кроп — байты побитово исходные (regression ML-2 закрыта)
+
+
+def test_flag_on_ml2_regression_pattern_still_crops_when_text_aspect_gate_disabled_via_config(
+    client: TestClient, app, monkeypatch,
+):
+    """Тот же паттерн и подмена `detect_boxes`, что тест выше, но
+    `cv_shelf_min_text_aspect=0.0` через КОНФИГ (не аргумент функции напрямую) —
+    доказывает, что именно проводка `settings.cv_shelf_min_text_aspect ->
+    segment_shelf(min_text_aspect=...)` в `_apply_shelf_crop` включает новый
+    гейт, а не что-то ещё в конвейере."""
+    import cv.shelf_crop as shelf_crop_module
+
+    monkeypatch.setattr(shelf_crop_module, "detect_boxes", _fake_detect_boxes_regression_pattern)
+    idx = _RecordingImageIndex()
+    app.state.image_index = idx
+    app.state.settings = dataclasses.replace(app.state.settings, cv_shelf_crop=True, cv_shelf_min_text_aspect=0.0)
+
+    payload = _make_jpeg(1000, 1000)
+    r = _photo(client, payload, flat=False)
+    assert r.status_code == 200, r.text
+    assert idx.search_calls == 1
+    assert idx.received_bytes[0] != payload  # ПЕРЕКОДИРОВАНО — кроп применился (старое поведение v1)
 
 
 # --------------------------------------------------------------------------------------

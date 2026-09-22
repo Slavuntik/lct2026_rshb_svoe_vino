@@ -42,6 +42,24 @@ reports/qa-auto-field-photos.md) — причина: боевой централ
    в этом случае передать исходные байты дальше ПОБИТОВО, без единого перекодирования
    (регрессия на не-полочных фото структурно невозможна).
 
+## Гейт v2 — `text_aspect` против одиночной бутылки (ml-lead, 22.09,
+reports/ml-lead-shelf-gate-v2.md; бриф agents/ML-3-shelf-gate.md)
+
+Живая приёмка ML-2 (`reports/ml-eng-ml2.md`) нашла ложное срабатывание гейта v1 на
+ОДНОЙ бутылке со сложной вёрсткой этикетки (`87.88_28-08-2026_16-56-20.webp`):
+2 OCR-разрыва ВНУТРИ этикетки дали `col_method=ocr`, `n_row_boxes=37>=30` — гейт v1
+пропустил её как "полку", кроп срезал ~38% кадра, живая регрессия 95.2%→93.5%.
+Доп. сигнал: `text_aspect` = (охват ВСЕХ текстовых боксов уже выбранного ряда по X,
+`rx1.max()-rx0.min()`, БЕЗОТНОСИТЕЛЬНО того, на сколько колонок их потом разрезали)
+/ (высота ряда, `ry1-ry0`) — настоящая полка (много бутылок в ширину) даёт широкий
+ряд, одна бутылка — этикетка почти квадратная или выше, чем шире. Порог
+`DEFAULT_MIN_TEXT_ASPECT=1.2` — запас 0.09 над МАКСИМУМОМ среди всех ложных
+срабатываний v1 на ВСЕХ 100 фото организаторов (1.106; у регрессионного кейса —
+1.06), не подогнан под сам кейс. `is_shelf` v2 = `is_shelf` v1 И `text_aspect >=
+min_text_aspect` — новый сигнал может только СУЖАТЬ множество срабатываний v1,
+никогда не расширять. Recall на полевых фото частично падает (задокументировано в
+отчёте ml-lead) — цена нуля ложных срабатываний на каталоге.
+
 `segment_boxes()` — чистая геометрия (боксы уже даны, никакой модели) — основная
 цель юнит-тестов брифа (синтетические паттерны боксов). `detect_boxes()`/
 `segment_shelf()` — обвязка вокруг RapidOCR (лениво импортируется, деградирует на
@@ -72,6 +90,11 @@ import numpy as np
 Box = tuple[int, int, int, int]  # x0, y0, x1, y1 в пикселях исходного кадра, левый верх/правый низ
 
 DEFAULT_MIN_BOXES = 30  # см. докстринг модуля, "Гейт"
+# см. докстринг модуля, "Гейт v2" (ml-lead, reports/ml-lead-shelf-gate-v2.md, 22.09):
+# запас 0.09 над МАКСИМУМОМ среди ложных срабатываний v1 на ВСЕХ 100 фото
+# организаторов (1.106) — посчитан на всех 100, не подогнан под регрессионный кейс
+# (у него 1.06).
+DEFAULT_MIN_TEXT_ASPECT = 1.2
 DEFAULT_SEARCH_FRAC = 0.4  # expand_from_center: доля кадра по каждую сторону от центра
 DEFAULT_SMOOTH_FRAC = 0.045  # expand_from_center: ширина сглаживающего окна (доля bins)
 DEFAULT_ROW_BINS = 500
@@ -115,6 +138,8 @@ class ShelfSegmentation:
     `col_method` — "ocr" (реальные разрывы X-покрытия), "geometric" (Sobel-фолбэк)
     или "none" (колонок < 2 даже после фолбэка/боксов нет). `n_row_boxes` — боксов
     внутри выбранного ряда (вход гейта); `n_boxes` — боксов на всём кадре (диагностика).
+    `text_aspect` — гейт v2 (см. докстринг модуля, "Гейт v2"), диагностика как
+    `n_row_boxes`/`col_method`: 0.0, если ряд пуст/вырожден.
     """
 
     crops: tuple[Box, ...]
@@ -123,6 +148,7 @@ class ShelfSegmentation:
     n_row_boxes: int
     col_method: str
     n_boxes: int
+    text_aspect: float = 0.0
     candidate_indices: tuple[int, ...] = (0,)
 
     @property
@@ -320,6 +346,7 @@ def segment_boxes(
     gray: np.ndarray | None = None,
     gate: bool = True,
     min_boxes: int = DEFAULT_MIN_BOXES,
+    min_text_aspect: float = DEFAULT_MIN_TEXT_ASPECT,
     search_frac: float = DEFAULT_SEARCH_FRAC,
     smooth_frac: float = DEFAULT_SMOOTH_FRAC,
     border_tie_frac: float = DEFAULT_BORDER_TIE_FRAC,
@@ -330,18 +357,21 @@ def segment_boxes(
     исход, `is_shelf=False`, `crops` — ровно весь кадр (см. докстринг модуля,
     "Алгоритм", п.4). `gray` — кадр в оттенках серого для геометрического
     фолбэка колонок; `None` -> фолбэк недоступен (тот же исход, что фолбэк не
-    нашёл >= 2 сегментов — `col_method="none"`).
+    нашёл >= 2 сегментов — `col_method="none"`). `min_text_aspect` — гейт v2 (см.
+    докстринг модуля, "Гейт v2"); `0.0` эквивалентно старому поведению (только v1).
     """
     if len(boxes) == 0:
         return ShelfSegmentation(
             crops=((0, 0, frame_w, frame_h),), center_index=0, is_shelf=False,
-            n_row_boxes=0, col_method="none", n_boxes=0,
+            n_row_boxes=0, col_method="none", n_boxes=0, text_aspect=0.0,
         )
     x0, y0, x1, y1 = intervals_xy(boxes)
     ry0, ry1 = expand_from_center(y0, y1, frame_h, search_frac=search_frac, smooth_frac=smooth_frac)
     row_mask = (y1 > ry0) & (y0 < ry1)
     n_row_boxes = int(row_mask.sum())
     rx0, rx1 = x0[row_mask], x1[row_mask]
+    row_height = ry1 - ry0
+    text_aspect = float((rx1.max() - rx0.min()) / row_height) if n_row_boxes and row_height > 0 else 0.0
 
     cols = run_clusters(rx0, rx1, frame_w)
     col_method = "ocr"
@@ -353,11 +383,15 @@ def segment_boxes(
         else:
             col_method = "none"
 
-    is_shelf = len(cols) >= 2 and n_row_boxes >= min_boxes
+    # bool(...) — text_aspect/min_text_aspect могут прийти numpy-скалярами (row_height
+    # из np.float32-арифметики выше), np.bool_ ломает `is seg.is_shelf is True/False` в
+    # тестах/вызывающем коде (see test_shelf_crop.py); n_row_boxes/len(cols) уже Python.
+    is_shelf = bool(len(cols) >= 2 and n_row_boxes >= min_boxes and text_aspect >= min_text_aspect)
     if gate and not is_shelf:
         return ShelfSegmentation(
             crops=((0, 0, frame_w, frame_h),), center_index=0, is_shelf=False,
             n_row_boxes=n_row_boxes, col_method=col_method, n_boxes=len(boxes),
+            text_aspect=text_aspect,
         )
 
     if len(cols) < 2:
@@ -374,7 +408,7 @@ def segment_boxes(
     return ShelfSegmentation(
         crops=crops, center_index=center_index, is_shelf=is_shelf,
         n_row_boxes=n_row_boxes, col_method=col_method, n_boxes=len(boxes),
-        candidate_indices=candidate_indices,
+        text_aspect=text_aspect, candidate_indices=candidate_indices,
     )
 
 
@@ -462,6 +496,7 @@ def segment_shelf(
     *,
     gate: bool = True,
     min_boxes: int = DEFAULT_MIN_BOXES,
+    min_text_aspect: float = DEFAULT_MIN_TEXT_ASPECT,
     detector: ShelfDetector | None = None,
 ) -> ShelfSegmentation:
     """Точка входа для боевого кода (`apps/api/app/cv/service.py`): детекция +
@@ -471,8 +506,8 @@ def segment_shelf(
     боевой путь всегда использует общий `_DEFAULT_DETECTOR` (детектор без
     распознавания недоступен/сбоит -> `detect_boxes` отдаёт 0 боксов -> честный
     `is_shelf=False`, не исключение — та же деградация, что весь остальной OCR
-    контур пакета)."""
+    контур пакета). `min_text_aspect` — гейт v2, см. `segment_boxes()`."""
     h, w = image_arr.shape[:2]
     boxes = detect_boxes(image_arr, detector=detector)
     gray = cv2.cvtColor(image_arr, cv2.COLOR_RGB2GRAY) if len(boxes) else None
-    return segment_boxes(boxes, w, h, gray=gray, gate=gate, min_boxes=min_boxes)
+    return segment_boxes(boxes, w, h, gray=gray, gate=gate, min_boxes=min_boxes, min_text_aspect=min_text_aspect)

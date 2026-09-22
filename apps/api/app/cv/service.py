@@ -730,7 +730,9 @@ def _apply_shelf_crop(image_bytes: bytes, settings: Settings, image_index: Image
     from cv.imageio import decode_image, encode_jpeg
 
     arr = decode_image(image_bytes)  # ValueError на битые байты — как и раньше, просто раньше по времени
-    seg = shelf_crop.segment_shelf(arr, min_boxes=settings.cv_shelf_min_boxes)
+    seg = shelf_crop.segment_shelf(
+        arr, min_boxes=settings.cv_shelf_min_boxes, min_text_aspect=settings.cv_shelf_min_text_aspect,
+    )
     if not seg.is_shelf:
         return image_bytes
 

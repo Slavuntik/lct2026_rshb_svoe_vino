@@ -313,7 +313,11 @@ class Settings:
     # центральный кроп кадра на фото ЦЕЛОЙ ПОЛКИ (Field/) содержит 3-4+ бутылки вместо
     # одной, top-1 падает до 1/8 (qa-auto, reports/qa-auto-field-photos.md). Дефолт
     # ВЫКЛЮЧЕН до приёмки живым API — та же дисциплина, что cv_fusion/cv_text_rerank
-    # (reports/ml-eng-ml2.md — цифры приёмки на 62/8/22 живых фото).
+    # (reports/ml-eng-ml2.md — цифры приёмки на 62/8/22 живых фото). ML-3 (22.09,
+    # reports/ml-eng-ml3.md) добавила гейт v2 (`cv_shelf_min_text_aspect` ниже) —
+    # закрыла именно регрессию ML-2 на каталоге, но живая приёмка нашла НОВУЮ
+    # регрессию того же класса на честном NONE (Field/F09) и поле 8 не сдвинулось
+    # (1/8) — дефолт остаётся ВЫКЛЮЧЕН.
     cv_shelf_crop: bool = field(
         default_factory=lambda: _bool_env("CV_SHELF_CROP", False)
     )
@@ -324,6 +328,15 @@ class Settings:
         # целевые полевые ряды — 41-118, пересечения при 30 нет; без гейта — катастрофа,
         # 95.2%→51.6% на 62 фото каталога).
         default_factory=lambda: int(os.environ.get("CV_SHELF_MIN_BOXES", "30"))
+    )
+    # agents/ML-3-shelf-gate.md (22.09, reports/ml-lead-shelf-gate-v2.md): гейт v2 —
+    # доп. сигнал против ложного срабатывания v1 на ОДНОЙ бутылке со сложной вёрсткой
+    # этикетки (packages/cv/cv/shelf_crop.py::DEFAULT_MIN_TEXT_ASPECT). `text_aspect`
+    # (охват текстовых боксов ряда по X / высота ряда) >= это значение — порог 1.2
+    # подобран ml-lead на ВСЕХ 100 фото организаторов (запас 0.09 над максимумом
+    # ложных срабатываний v1, 1.106; регрессия ML-2 — 1.06, гейтом v2 исключается).
+    cv_shelf_min_text_aspect: float = field(
+        default_factory=lambda: float(os.environ.get("CV_SHELF_MIN_TEXT_ASPECT", "1.2"))
     )
     # agents/ML-2-shelf-crop.md, доп. пункт (риски reports/ml-lead-shelf-crop.md, п.2):
     # раздел Вороного между колонками — без нахлёста, что даёт off-by-one на кадрах, где

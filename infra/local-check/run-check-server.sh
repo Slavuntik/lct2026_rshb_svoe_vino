@@ -28,6 +28,16 @@
 # на 8 полевых целевых (1/8, как и без флага) — не готово к бою, инфраструктура оставлена
 # для дальнейшей работы поверх неё.
 #
+# ML-3 (reports/ml-eng-ml3.md, 22.09): доп. сигнал SHELF_MIN_TEXT_ASPECT (гейт
+# text_aspect>=1.2 поверх v1) закрыл РОВНО регрессию ML-2 (62/62 без изменений
+# относительно флага-выключен, включая именной "87.88_...webp") — но живая приёмка
+# нашла НОВУЮ регрессию: тот же класс ложного срабатывания на честном NONE (F09
+# field/, not_in_catalog False->True), которого не было БЕЗ флага, и поле 8
+# целевых не сдвинулось (1/8, как и в ML-2) — гейт v1+v2 срабатывает на 6/8
+# (совпадает с офлайн-прогнозом ml-lead), но распознавание по кропу на TEXT_
+# SOURCE=ocr не даёт top-1 ни на одном из них. Дефолт "0" остаётся, SHELF_MIN_
+# TEXT_ASPECT ниже — для дальнейших ручных опытов.
+#
 # Использование: infra/local-check/run-check-server.sh        (порт 8080)
 #                PORT=8081 TEXT_SOURCE=vlm_local infra/local-check/run-check-server.sh
 #                SHELF_CROP=1 infra/local-check/run-check-server.sh   (см. предупреждение выше)
@@ -52,6 +62,7 @@ exec env \
   CV_OCR_LABEL_SIZE="${OCR_LABEL_SIZE:-1280}" \
   CV_FUSION_CROPS="${FUSION_CROPS:-8}" \
   CV_SHELF_CROP="${SHELF_CROP:-0}" CV_SHELF_MIN_BOXES="${SHELF_MIN_BOXES:-30}" \
+  CV_SHELF_MIN_TEXT_ASPECT="${SHELF_MIN_TEXT_ASPECT:-1.2}" \
   CV_SHELF_CHECK_NEIGHBORS="${SHELF_CHECK_NEIGHBORS:-0}" \
   VISION_LLM_URL="${LLM_GATEWAY_URL:-}" VISION_LLM_KEY="${LLM_GATEWAY_KEY:-}" \
   VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.5}" \
