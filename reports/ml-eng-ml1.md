@@ -35,10 +35,14 @@ Diff по 100 фото: изменилась РОВНО эта позиция, 0
 
 ## Тесты
 `packages/cv`: 371 passed (было 354). `apps/api`: 346 passed, 11 skipped (было
-322/11). Новое: `test_scan_photo_fusion_ml1_merge_text.py`,
+322/11, дважды подряд). Новое: `test_scan_photo_fusion_ml1_merge_text.py`,
 `test_scan_photo_fusion_ml1_winery_alias.py`; расширены `test_text_fusion.py`
 (recall на синтетике Голубицкого) и `test_scan_photo_fusion.py`
-(`_enable_fusion(winery_aliases=...)`).
+(`_enable_fusion(winery_aliases=...)`). Найден и исправлен баг изоляции:
+`cv.config.CASE_DATA_DIR` резолвится один раз при импорте и не видит
+`monkeypatch.setenv("CASE_DATA_DIR", ...)` — без явного `CV_WINERY_ALIASES_JSON`
+тесты тихо падали на боевой `case-data/winery_aliases.json` (вскрылось только в
+полном прогоне apps/api, не в изоляции — строки теста совпали с ним по содержанию).
 
 ## Как воспроизвести
 `rsync -a --exclude='.lock' packages/cv/data-d1/qdrant/ case-data/real-photos-labels/qdrant-d1-copy/`.
