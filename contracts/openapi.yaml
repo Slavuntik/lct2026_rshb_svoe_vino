@@ -1,7 +1,13 @@
-# Контракт API «Свой Сомелье» v0.2 — ЗАМОРОЖЕН, правки только через оркестратора.
+# Контракт API «Свой Сомелье» v0.2 — ЗАМОРОЖЕН, правки — только через architect (TEAM.md,
+# зона contracts/, с 22.09; было «оркестратор» — устарело).
 # Изменения v0.2 (по ревью 01): +/auth/guest, +/events, +/chat/feedback, +/analogs,
 # citation получил порядковый номер n, убран budget_rub_max (цен в каталоге нет),
 # введён словарь кодов ошибок.
+# v0.3.3 (22.09, architect): +GET /wines/{wine_id}/pairings — гастропары к распознанному
+#   вину (контракт contracts/post-scan.md v1.0, задача пост-скана 22.09). Заодно info.version
+#   синхронизирован с де-факто версией: поле не менялось с 0.2.0 (commit 1fe521b, 15.09) через
+#   уже свершившиеся v0.2.1/v0.2.2/v0.3/v0.3.2 (см. историю коммитов contracts/openapi.yaml) —
+#   не переприсваиваю задним числом их отдельные номера, только ловлю заголовок с реальностью.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -11,7 +17,7 @@
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.2.0
+  version: 0.3.3
 servers:
   - url: /v1
 paths:
@@ -212,6 +218,60 @@ paths:
                   derived: { type: object }
                   source_url: { type: string, format: uri }
                   similar: { type: array, items: { type: string } }
+
+  /wines/{wine_id}/pairings:
+    get:
+      summary: >
+        Гастропары «к чему подать это вино» — v0.3.3 (22.09, contracts/post-scan.md v1.0)
+      description: >
+        Резолвит wine_id тем же путём, что GET /wines/{wine_id} (наш каталог, затем каталог
+        кейса) — 404 not_found на тех же условиях. Три уровня данных по убыванию точности:
+        catalog (source.food_pairings как есть, score=null), sensory (derived.sensory —
+        реальный вектор через pipeline/ref/food_pairing_rules.yaml), heuristic (нет ни того,
+        ни другого — обычный случай для каталога кейса при сканировании: вектор строится из
+        color + ключевых слов сахара/игристости в name/description, таблица дефолтов в
+        contracts/post-scan.md §1). basis=unavailable, когда даже color пуст. pairings — не
+        более output_contract.top_n=3 (food_pairing_rules.yaml, число не меняем); message
+        непусто ⟺ pairings=[] (честное «нет данных», не ошибка).
+      parameters:
+        - { name: wine_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wine_id, basis, pairings]
+                properties:
+                  wine_id: { type: string }
+                  basis: { type: string, enum: [catalog, sensory, heuristic, unavailable] }
+                  pairings:
+                    type: array
+                    maxItems: 3
+                    items:
+                      type: object
+                      required: [tag]
+                      properties:
+                        tag:
+                          type: string
+                          description: >
+                            При basis=catalog — строка как в source.food_pairings (словарь
+                            портала, свободный). При sensory/heuristic — один из 9 тегов
+                            pipeline/ref/food_pairing_rules.yaml::portal_tag_defaults.
+                        score: { type: number, minimum: 0, maximum: 1, nullable: true, description: "null при basis=catalog" }
+                        triggered_rules:
+                          type: array
+                          description: "[] при basis=catalog"
+                          items:
+                            type: object
+                            properties:
+                              id: { type: string }
+                              explain: { type: string, description: "дословно rules[].explain из food_pairing_rules.yaml" }
+                  message:
+                    type: string
+                    nullable: true
+                    description: непусто, когда pairings=[] (basis=unavailable либо ни одно правило не сработало)
+        "404": { description: "not_found — wine_id не резолвится ни нашим каталогом, ни каталогом кейса (как GET /wines/<wine_id>)" }
 
   /chat:
     post:
