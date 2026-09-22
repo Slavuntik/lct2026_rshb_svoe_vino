@@ -13,11 +13,19 @@ approx ANN, не заглушка cv_pad — она сама сработает 
 ВООБЩЕ без эталона в индексе, см. docstring fuse()).
 
 Три готовых ответа на фото:
-  local  = fuse(CV, OCR-текст)            — RapidOCR 640+960 (box_thresh=0.3/unclip=2.0,
-                                             код-дефолты после hack-v9) + кроп этикетки
-                                             1280, через пробел — ровно RapidOcrReader.read()
-                                             (features/ocr_rapidS_640+ocr_rapidS_960+
-                                             ocr_lab_rapidS_1280.jsonl).
+  local  = fuse(CV, OCR-текст)            — RapidOCR 640+960 + кроп этикетки 1280
+                                             (box_thresh=0.3/unclip=2.0, код-дефолты
+                                             после hack-v9) — СВЕЖИЙ прямой вызов
+                                             cv.verify.LabelVerifier.read_query_text()
+                                             (features/ocr_live_verifier.jsonl, см.
+                                             build_ocr_text()/regen_live_ocr() —
+                                             22.09, разбор тимлида: статичные кэши
+                                             ocr_rapidS_640/960/lab_rapidS_1280.jsonl
+                                             разошлись со свежим чтением на 74/100
+                                             фото (в основном шум); на 94.55 расхождение
+                                             ОДНОГО токена меняло топ-1 (93.97 не
+                                             затронут — текст идентичен) — reports/
+                                             ml-lead-choose-rule.md, "Задача 1".
   model  = fuse(CV, VLM-текст)            — 27B через шлюз, тот же промпт/парсинг что
                                              `app/cv/vision_llm.py` (features/ocr_vlm.jsonl).
   merge  = fuse(CV, VLM-текст+" "+OCR)    — боевой CV_FUSION_MERGE_MODEL_TEXT=1 (сейчас
@@ -57,12 +65,16 @@ approx ANN, не заглушка cv_pad — она сама сработает 
                          живым hack-v12, где алиас-файл ещё не был на стенде)
   --none              — таблица смены ответа на 38 фото без вина в каталоге
   --dump-json PATH     — сохранить детальный результат (вне git)
+  --regen-ocr          — перегенерировать features/ocr_live_verifier.jsonl (боевой
+                         RapidOCR путь, ~100 с) и выйти; нужно один раз или при
+                         обновлении движка/весов RapidOCR
 """
 from __future__ import annotations
 
 import argparse
 import csv
 import json
+import os
 import random
 from pathlib import Path
 
@@ -133,11 +145,40 @@ def load_jsonl_text(tag):
     return {json.loads(l)["photo"]: json.loads(l)["text"] for l in f.read_text().splitlines() if l.strip()}
 
 
+def regen_live_ocr() -> None:
+    """Перегенерировать features/ocr_live_verifier.jsonl — прямой вызов cv.verify.
+    LabelVerifier(engine="rapid", rapid_sizes=(640,960)).read_query_text() (боевой
+    read_query_text_rapid(), см. build_ocr_text()) на все 100 фото. Нужно один раз
+    (или заново, если движок/веса RapidOCR обновятся) — файл живёт вне git."""
+    os.environ.setdefault("CV_OCR_ENGINE", "rapid")
+    os.environ.setdefault("CV_OCR_RAPID_SIZES", "640,960")
+    from cv.verify import LabelVerifier
+
+    photos = json.loads((FEAT / "photos.json").read_text())
+    v = LabelVerifier(engine="rapid", rapid_sizes=(640, 960))
+    out = FEAT / "ocr_live_verifier.jsonl"
+    with out.open("w", encoding="utf-8") as fh:
+        for i, name in enumerate(photos, 1):
+            text = v.read_query_text((BASE / "real-photos" / name).read_bytes())
+            fh.write(json.dumps({"photo": name, "text": text}, ensure_ascii=False) + "\n")
+            fh.flush()
+            if i % 20 == 0:
+                print(f"regen_live_ocr: {i}/{len(photos)}", flush=True)
+    print("готово:", out)
+
+
 def build_ocr_text(photos):
-    """RapidOcrReader.read() бит-в-бит: sizes=(640,960) + label_size=1280, через пробел,
-    только непустые части (packages/cv/cv/ocr_rapid.py::read(), строки 402-418)."""
-    a, b, c = load_jsonl_text("rapidS_640"), load_jsonl_text("rapidS_960"), load_jsonl_text("lab_rapidS_1280")
-    return {p: " ".join(t for t in (a.get(p, ""), b.get(p, ""), c.get(p, "")) if t.strip()) for p in photos}
+    """features/ocr_live_verifier.jsonl — СВЕЖИЙ прямой вызов cv.verify.LabelVerifier(
+    engine="rapid", rapid_sizes=(640,960)).read_query_text() (=read_query_text_rapid(),
+    боевой путь service.py) на каждое фото ОДИН раз (см. qa/real_photos_choose_rule.py
+    коммит 22.09, разбор тимлида: кэш ocr_rapidS_640+960+lab_rapidS_1280.jsonl разошёлся
+    со свежим чтением на 74/100 фото — RapidOCR нестабильно читает шумные фрагменты
+    около этикетки между прогонами движка/версий; на фото 94.55 расхождение ОДНОГО
+    токена ("ебрют" вместо "MaJop") меняло топ-1 — см. reports/ml-lead-choose-rule.md,
+    раздел "Задача 1". Прямой вызов — тот же код, что видит живой сервер ПРЯМО СЕЙЧАС,
+    не устаревающий кэш трёх отдельных файлов."""
+    live = load_jsonl_text("live_verifier")
+    return {p: live.get(p, "") for p in photos}
 
 
 # --------------------------------------------------------------------------------------
@@ -314,7 +355,13 @@ def main():
     ap.add_argument("--none", action="store_true", help="смена ответа на 38 NONE-фото")
     ap.add_argument("--seed", type=int, default=20260922)
     ap.add_argument("--dump-json", default="")
+    ap.add_argument("--regen-ocr", action="store_true",
+                     help="перегенерировать features/ocr_live_verifier.jsonl (боевой RapidOCR путь) и выйти")
     a = ap.parse_args()
+
+    if a.regen_ocr:
+        regen_live_ocr()
+        return
 
     photos, idx_of, labels, in_cat, none_photos = load_labels()
     CV, slugs, pos = load_cv(len(photos))
