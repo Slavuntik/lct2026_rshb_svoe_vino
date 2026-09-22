@@ -54,8 +54,11 @@ ex = {s: {"category": cg.get(s, ""), "sugar": sugar_of(s, pn.get(s, []), cat[s].
 sub = {s: cat[s] for s in all_slugs}
 tv_full = TextIndexV2(sub, fields=("name", "winery", "grape", "category", "sugar"), extra=ex)
 tv_win = TextIndexV2(sub, fields=("winery",), extra=ex)
+photos_set = set(photos)  # область — живые фото каталога (features/photos.json); part3-field.csv
+# (полевые фото полок, появился 22.09 параллельно) — другая выборка, не участвует в этой метрике
 labels = {r["photo"]: r["true_slug"] for p in sorted(LAB.glob("part*.csv"))
-          for r in csv.DictReader(p.open(newline="", encoding="utf-8")) if r["confidence"] in ("sure", "likely")}
+          for r in csv.DictReader(p.open(newline="", encoding="utf-8"))
+          if r["confidence"] in ("sure", "likely") and r["photo"] in photos_set}
 
 
 def load(v):
