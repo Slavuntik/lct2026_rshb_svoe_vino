@@ -46,6 +46,13 @@ const PAIRINGS_SOURCE_CAPTION: Partial<Record<WinePairingsBasis, DictionaryPath>
  * и не прячем блок молча. Сетевая ошибка — отдельное явное состояние (common.errorGeneric),
  * не вечный "Подбираем…". Один и тот же блок для WineCardScreen и инлайн-результата скана —
  * WineCardContent уже общий код-путь для обоих экранов, отдельного дублирования не нужно.
+ *
+ * Решение тимлида (22.09, после отчёта frontend): старый статический рендер
+ * source.food_pairings ("Сочетания") убран из карточки — этот блок при basis=catalog
+ * показывает тот же список с честной подписью источника, второй копии не нужно. Раньше
+ * architect фиксировал в contracts/post-scan.md §1 "новый эндпоинт не подменяет этот
+ * рендер" — тимлид снял этот запрет отдельным сообщением, контракт не редактировался
+ * (не моя зона), но фактическое поведение UI уже соответствует новому решению.
  */
 function WinePairingsBlock({ wineId }: { wineId: string }) {
   const { t } = useI18n();
@@ -164,19 +171,6 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
             </div>
           )}
         </dl>
-
-        {source.food_pairings && source.food_pairings.length > 0 && (
-          <div>
-            <p className="field__label">{t("wineCard.foodPairingsLabel")}</p>
-            <div className="row">
-              {source.food_pairings.map((pairing) => (
-                <span key={pairing} className="chip">
-                  {pairing}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         <a
           className="btn btn--ghost"

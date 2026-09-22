@@ -101,15 +101,22 @@ describe("WineCardContent — ссылка «Открыть на «Своё Ви
 });
 
 describe("WineCardContent — regression: карточка каталога (все поля) выглядит как раньше", () => {
-  it("полная карточка по-прежнему показывает крепость/подачу/сочетания/вкусовой профиль", () => {
+  it("полная карточка по-прежнему показывает крепость/подачу/«К чему подать»/вкусовой профиль", async () => {
     renderApp(<WineCardContent wine={fullCardWithSourceUrl("https://example.com/wines/demo")} />);
 
     expect(screen.getByText(/крепость/i)).toBeInTheDocument();
     const servingRow = screen.getByText(/подача/i).closest("div");
     expect(servingRow).not.toBeNull();
     expect(within(servingRow as HTMLElement).getByText(/°C/)).toBeInTheDocument();
-    expect(screen.getByText(/сочетания/i)).toBeInTheDocument();
     expect(screen.getByText(/вкусовой профиль/i)).toBeInTheDocument();
+
+    // Решение тимлида (22.09): старый статический блок "Сочетания" (source.food_pairings
+    // напрямую) убран — «К чему подать» (GET /wines/{id}/pairings) теперь единственный
+    // рендер этих данных, basis=catalog для этой фикстуры (food_pairings непуст).
+    const pairingsBlock = await screen.findByTestId("wine-pairings-block");
+    expect(within(pairingsBlock).getByText("К чему подать")).toBeInTheDocument();
+    expect(await within(pairingsBlock).findByText("Морепродукты")).toBeInTheDocument();
+    expect(within(pairingsBlock).getByText(/по данным карточки вина/i)).toBeInTheDocument();
   });
 });
 

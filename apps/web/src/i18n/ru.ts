@@ -112,7 +112,6 @@ export const ru = {
     regionLabel: "Регион",
     abvLabel: "Крепость",
     servingTempLabel: "Подача",
-    foodPairingsLabel: "Сочетания",
     sensoryTitle: "Вкусовой профиль",
     notFound: "Карточка вина не найдена.",
     askSomelier: "Спросить сомелье об этом вине",
