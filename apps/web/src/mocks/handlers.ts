@@ -21,7 +21,7 @@ import type {
   WaitlistPayload,
   WinePairingsResponse,
 } from "../lib/apiTypes";
-import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
+import { chunkAnswer, pickChatResponse, pickChatResponseForWine } from "./fixtures/chat";
 import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
 import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
 import { caseFallbackWines, findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
@@ -383,7 +383,11 @@ export const handlers: HttpHandler[] = [
   // --- chat (SSE) ---
   http.post(`${API}/chat`, async ({ request }) => {
     const body = (await request.json()) as ChatPayload;
-    const script = pickChatResponse(body.message);
+    // v0.3.5 (задача тимлида 22.09): wine_id (только первый запрос диалога, ChatScreen.tsx)
+    // резолвится в ответ ИМЕННО про это вино в обход разбора текста — тот самый обход
+    // проблемы "текстовый поиск по префиллу путает вина-близнецы из одной серии в ~8%
+    // случаев" (см. reports/frontend-wine-id-chat.md). Не резолвится/не передан — как раньше.
+    const script = (body.wine_id && pickChatResponseForWine(body.wine_id)) || pickChatResponse(body.message);
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream<Uint8Array>({

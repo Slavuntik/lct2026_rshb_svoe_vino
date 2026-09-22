@@ -57,3 +57,31 @@ the script») — 502 даже на давно существующем `/v1/eve
 
 1. `apps/api/app/schemas.py` разошёлся с ратифицированным `openapi.yaml` (name/winery/color/
    sugar nullability) — стоит явно поручить backend сверку, я не трогал (не моя зона).
+
+## Обновление (22.09, доп-задача тимлида: wine_id в первом запросе чата)
+
+Причина: префилл «Спросить сомелье об этом вине» резолвился текстовым поиском только в 91.8%
+случаев (вина-близнецы из одной серии) — с `wine_id` сомелье гарантированно говорит про
+отсканированное/открытое вино. Контракт (`openapi` 0.3.5) architect оформляет параллельно.
+
+1. `ChatPayload.wine_id?: string` в `apiTypes.ts`. `ChatScreen.tsx`: `location.state.wineId`
+   читается в `initialWineIdRef` при монтировании и консьюмится РОВНО один раз, в первом
+   вызове `handleAsk` (до `await apiClient.chat`, а не после — сбой первого запроса не должен
+   "вернуть" wine_id второму); переключение в режим «Аналог импортного» и обратно ref не трогает
+   (это не `/v1/chat`-запрос) — слаг остаётся для настоящего первого вопроса.
+2. `ScanScreen.tsx::handleAskSomelierAboutResult` и `WineCardScreen.tsx::handleAskSomelier`
+   добавляют `wineId: <card.wine_id>` в `navigate(..., {state})` рядом с `prefillMessage`; нет
+   карточки — `if (!result?.card) return` / `if (!wine) return`, как и раньше, значит и
+   `wineId` в этом случае просто не будет.
+3. Мок: `mocks/fixtures/chat.ts::pickChatResponseForWine(wineId)` — детерминированный ответ
+   ИМЕННО про это вино (описание + цитата на его `wine_id`), в обход `pickChatResponse(text)`
+   по ключевым словам; `handlers.ts` пробует его первым, если `wine_id` пришёл и резолвится,
+   иначе — прежний текстовый разбор (`(body.wine_id && pickChatResponseForWine(...)) ||
+   pickChatResponse(body.message)`).
+4. Тесты (+5, было 99 → **104**): по одному интеграционному на каждый экран (клик «Спросить
+   сомелье…» на реальном `ScanScreen`/`WineCardScreen` → реальный `ChatScreen` на `/app/chat` →
+   первый `apiClient.chat` несёт нужный `wine_id`); в `ChatScreen.test.tsx` — обычный чат без
+   перехода от вина шлёт запрос с `wine_id=undefined`, второй вопрос диалога уже без слага
+   первого, и переключение в «Аналог импортного» и обратно не расходует его впустую.
+5. `cd apps/web && npm test && npm run typecheck && npm run build` — 17 файлов / 104 теста,
+   typecheck/build зелёные, Node 24.18.0. Коммит отдельный, с pathspec.

@@ -316,6 +316,14 @@ export type ChatFilters = Partial<{
 export interface ChatPayload {
   message: string;
   filters?: ChatFilters;
+  /**
+   * v0.3.5 (задача тимлида 22.09, openapi 0.3.5 — architect оформляет параллельно): слаг вина,
+   * ТОЛЬКО первый запрос диалога после перехода «Спросить сомелье об этом вине»
+   * (ScanScreen.tsx/WineCardScreen.tsx) — гарантирует ответ про то самое отсканированное/
+   * открытое вино вместо текстового поиска по префиллу (91.8% попаданий — вина-близнецы из
+   * одной серии путаются). Нет слага — поле не шлём (ChatScreen.tsx::initialWineIdRef).
+   */
+  wine_id?: string;
 }
 
 export interface ChatFeedbackPayload {

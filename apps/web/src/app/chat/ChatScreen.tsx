@@ -71,23 +71,34 @@ function CitationBadge({ citation }: { citation: CitationView }) {
 /**
  * Экран 4/6 — чат с сомелье. /chat отдаёт SSE (lib/sse.ts парсит token/citation/done/refusal);
  * тот же экран несёт сцену «аналог импортного» (v0.2: POST /analogs, чип-переключатель режима).
+ * v0.3.5: location.state.wineId (из ScanScreen/WineCardScreen «Спросить сомелье об этом
+ * вине») уходит в ChatPayload.wine_id ровно первым запросом — см. initialWineIdRef.
  */
 export function ChatScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Форма location.state — общая для обоих полей ниже, один каст вместо двух.
+  const locationState = location.state as { prefillMessage?: string; wineId?: string } | null;
+
   const [mode, setMode] = useState<"ask" | "analog">("ask");
-  const [message, setMessage] = useState(() => {
-    const state = location.state as { prefillMessage?: string } | null;
-    return state?.prefillMessage ?? "";
-  });
+  const [message, setMessage] = useState(() => locationState?.prefillMessage ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<ChatFilters>({});
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [busy, setBusy] = useState(false);
 
   const startedAtRef = useRef(0);
+  /**
+   * v0.3.5 (задача тимлида 22.09): слаг вина из навигации «Спросить сомелье об этом вине»
+   * (ScanScreen.tsx/WineCardScreen.tsx) — текстовый поиск по префиллу попадал в нужное вино
+   * только в 91.8% случаев (вина-близнецы из одной серии), wine_id в ПЕРВОМ запросе /v1/chat
+   * гарантирует правильное вино. Только первый вопрос диалога — handleAsk читает и тут же
+   * обнуляет ref, дальше по диалогу wine_id не тянем, даже если это тот же экран/сессия.
+   * useRef, не state: значение нужно ровно один раз, синхронно, без лишнего ре-рендера.
+   */
+  const initialWineIdRef = useRef<string | undefined>(locationState?.wineId);
 
   function patchAssistant(id: string, patch: Partial<Extract<ChatEntry, { kind: "assistant" }>>) {
     setEntries((prev) =>
@@ -105,6 +116,12 @@ export function ChatScreen() {
 
     track("chat_message_sent", { has_filters: Object.keys(filters).length > 0 });
     startedAtRef.current = performance.now();
+
+    // Консьюмим ref СРАЗУ (не в момент вызова apiClient.chat ниже) — "первый запрос" значит
+    // первый вызов handleAsk вообще, не первый успешный ответ; повторный вопрос после сбоя
+    // первого уже не должен тащить wine_id, как и любой следующий.
+    const wineId = initialWineIdRef.current;
+    initialWineIdRef.current = undefined;
 
     let citationCount = 0;
 
@@ -153,7 +170,10 @@ export function ChatScreen() {
     };
 
     try {
-      await apiClient.chat({ message: question, filters: Object.keys(filters).length ? filters : undefined }, onEvent);
+      await apiClient.chat(
+        { message: question, filters: Object.keys(filters).length ? filters : undefined, wine_id: wineId },
+        onEvent,
+      );
     } catch {
       setEntries((prev) =>
         prev.map((entry) => (entry.id === assistantId ? { id: entry.id, kind: "refusal", text: t("chat.sendError") } : entry)),

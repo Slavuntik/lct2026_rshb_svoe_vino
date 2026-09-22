@@ -1,8 +1,10 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
+import { apiClient } from "../../lib/apiClient";
 import { renderApp } from "../../test/renderApp";
+import { ChatScreen } from "../chat/ChatScreen";
 import { WineCardScreen } from "./WineCardScreen";
 
 function renderCard(wineId: string, state?: { from: string }) {
@@ -76,5 +78,26 @@ describe("WineCardScreen", () => {
 
     const link = screen.getByRole("link", { name: /открыть на «своё вино»/i });
     expect(link).toHaveAttribute("href", "https://vino-svoe.ru/wines/case-shato-yuzhny-sklon-saperavi-2019");
+  });
+
+  it("«Спросить сомелье об этом вине» — первый запрос /v1/chat уносит wine_id открытой карточки (задача тимлида 22.09)", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
+    renderApp(
+      <Routes>
+        <Route path="/app/wine/:wineId" element={<WineCardScreen />} />
+        <Route path="/app/chat" element={<ChatScreen />} />
+      </Routes>,
+      "/app/wine/tihaya-buhta-chardonnay-reserve-2023",
+    );
+    await screen.findByText("Шардоне Резерв");
+
+    fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
+
+    // Приземлились на реальном ChatScreen с префиллом — отправляем ровно его.
+    await screen.findByDisplayValue(/расскажи про шардоне резерв/i);
+    fireEvent.click(screen.getByRole("button", { name: /^спросить$/i }));
+
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy.mock.calls[0][0].wine_id).toBe("tihaya-buhta-chardonnay-reserve-2023");
   });
 });

@@ -75,6 +75,23 @@ export function pickChatResponse(message: string): ChatScriptFixture | null {
   return null;
 }
 
+/**
+ * v0.3.5 (задача тимлида 22.09): ChatPayload.wine_id — первый запрос диалога после «Спросить
+ * сомелье об этом вине» (ScanScreen.tsx/WineCardScreen.tsx) отвечает про ИМЕННО это вино
+ * детерминированно, не гадая по ключевым словам текста (pickChatResponse выше путает
+ * вина-близнецы из одной серии — та самая причина фичи, ~8% промахов текстовым поиском).
+ * wine_id не резолвится (устаревший/битый слаг) → null, handlers.ts откатывается на
+ * pickChatResponse(text) как раньше.
+ */
+export function pickChatResponseForWine(wineId: string): ChatScriptFixture | null {
+  const wine = findWineBySlug(wineId);
+  if (!wine) return null;
+  return {
+    answer: `Конечно — вот что можно рассказать про «${wine.source.name}» от ${wine.source.winery_name} [1]: ${wine.source.description}`,
+    citations: [citationFor(1, wineId)],
+  };
+}
+
 /** Дробим текст на куски по несколько слов — эмулируем токен-стрим SSE. */
 export function chunkAnswer(text: string, wordsPerChunk = 3): string[] {
   const words = text.split(" ");

@@ -6,6 +6,7 @@ import type { DishPairingResponse, ScanPhotoRichResponse } from "../../lib/apiTy
 import { findWineBySlug } from "../../mocks/fixtures/wines";
 import { storage } from "../../lib/storage";
 import { renderApp } from "../../test/renderApp";
+import { ChatScreen } from "../chat/ChatScreen";
 import { ScanScreen } from "./ScanScreen";
 
 // apiClient.scanPhoto — реальный multipart-транспорт (File/FormData) проверен отдельно,
@@ -184,6 +185,21 @@ function renderScan() {
   );
 }
 
+/** Только для «Спросить сомелье об этом вине» → wine_id (задача тимлида 22.09): нужен
+ * НАСТОЯЩИЙ ChatScreen на /app/chat (не CHAT_PROBE), чтобы проверить, что первый запрос
+ * /v1/chat реально уносит wine_id. Отдельный хелпер — renderScan() выше остаётся для всех
+ * остальных тестов файла нетронутым (CHAT_PROBE проще и их не касается). */
+function renderScanWithRealChat() {
+  return renderApp(
+    <Routes>
+      <Route path="/app/scan" element={<ScanScreen />} />
+      <Route path="/app/wine/:wineId" element={<WineProbe />} />
+      <Route path="/app/chat" element={<ChatScreen />} />
+    </Routes>,
+    "/app/scan",
+  );
+}
+
 function pngFile(name: string) {
   return new File(["fake-photo-bytes"], name, { type: "image/png" });
 }
@@ -249,6 +265,23 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
 
     await waitFor(() => expect(screen.getByText("CHAT_PROBE")).toBeInTheDocument());
+  });
+
+  it("«Спросить сомелье об этом вине» — первый запрос /v1/chat уносит wine_id отсканированного вина (задача тимлида 22.09)", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
+    mockScanPhoto(confidentResponse());
+    renderScanWithRealChat();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
+
+    await screen.findByTestId("scan-photo-result");
+    fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
+
+    // Приземлились на реальном ChatScreen с префиллом — отправляем ровно его.
+    await screen.findByDisplayValue(/расскажи про шардоне резерв/i);
+    fireEvent.click(screen.getByRole("button", { name: /^спросить$/i }));
+
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy.mock.calls[0][0].wine_id).toBe("tihaya-buhta-chardonnay-reserve-2023");
   });
 
   it("not_in_catalog с candidates — «Возможно, это одно из:» с фото, без выдумки одной карточки (v0.4.11)", async () => {

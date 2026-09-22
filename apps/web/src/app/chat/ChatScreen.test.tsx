@@ -30,6 +30,18 @@ function renderChat() {
   );
 }
 
+/** Задача тимлида 22.09: тот же роут, но location.state несёт {prefillMessage, wineId} — как
+ * реально приходит из ScanScreen.tsx/WineCardScreen.tsx «Спросить сомелье об этом вине». */
+function renderChatWithWineState(wineId: string, prefillMessage: string) {
+  return renderApp(
+    <Routes>
+      <Route path="/app/chat" element={<ChatScreen />} />
+      <Route path="/app/wine/:wineId" element={<WineProbe />} />
+    </Routes>,
+    { pathname: "/app/chat", state: { prefillMessage, wineId } },
+  );
+}
+
 describe("ChatScreen — SSE-парсер и честные отказы", () => {
   it("собирает token/citation/done и показывает цитаты с номерами [n]", async () => {
     renderChat();
@@ -147,5 +159,49 @@ describe("ChatScreen — SSE-парсер и честные отказы", () =>
 
     const notFound = await screen.findByTestId("analog-not-found");
     expect(notFound.textContent).toMatch(/популярные/i);
+  });
+});
+
+describe("ChatScreen — wine_id в первом запросе /v1/chat (задача тимлида 22.09)", () => {
+  it("обычный чат без перехода от вина — запрос /v1/chat уходит без поля wine_id", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
+    renderChat();
+
+    sendMessage("что взять к стейку");
+
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy.mock.calls[0][0].wine_id).toBeUndefined();
+  });
+
+  it("wine_id из location.state уходит РОВНО первым запросом — второй вопрос диалога уже без него", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
+    renderChatWithWineState("severny-sklon-krasnostop-2021", "Расскажи про Красностоп Крепкий от Усадьба Северный Склон");
+
+    sendMessage("Расскажи про Красностоп Крепкий");
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy.mock.calls[0][0].wine_id).toBe("severny-sklon-krasnostop-2021");
+
+    sendMessage("а что ещё есть в таком стиле?");
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(2));
+    expect(chatSpy.mock.calls[1][0].wine_id).toBeUndefined();
+  });
+
+  it("режим «аналог импортного» не расходует wine_id — он остаётся для следующего вопроса в режиме «Вопрос»", async () => {
+    const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
+    const analogSpy = vi.spyOn(apiClient, "postAnalogs");
+    renderChatWithWineState("severny-sklon-krasnostop-2021", "Расскажи про Красностоп Крепкий от Усадьба Северный Склон");
+
+    // POST /analogs — не /v1/chat, "первый запрос чата" ещё не случился.
+    fireEvent.click(screen.getByRole("button", { name: /аналог импортного/i }));
+    fireEvent.change(screen.getByPlaceholderText(/люблю просекко/i), { target: { value: "люблю Просекко" } });
+    fireEvent.click(screen.getByRole("button", { name: /найти аналог/i }));
+    await waitFor(() => expect(analogSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /^вопрос$/i }));
+    sendMessage("Расскажи про Красностоп Крепкий");
+
+    await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
+    expect(chatSpy.mock.calls[0][0].wine_id).toBe("severny-sklon-krasnostop-2021");
   });
 });

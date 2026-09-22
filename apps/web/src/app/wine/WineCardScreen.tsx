@@ -52,10 +52,16 @@ export function WineCardScreen() {
     navigate(`/app/wine/${encodeURIComponent(id)}`, { state: { from: "similar" } });
   }
 
+  /** v0.3.5 (задача тимлида 22.09): wine_id вместе с префиллом — ChatScreen шлёт его ПЕРВЫМ
+   * запросом /v1/chat, гарантируя ответ про именно эту открытую карточку вина (текстовый
+   * поиск по префиллу путает вина-близнецы из одной серии в ~8% случаев). */
   function handleAskSomelier() {
     if (!wine) return;
     navigate("/app/chat", {
-      state: { prefillMessage: t("chat.prefillAskAboutWine", { name: wine.source.name, winery: wine.source.winery_name }) },
+      state: {
+        prefillMessage: t("chat.prefillAskAboutWine", { name: wine.source.name, winery: wine.source.winery_name }),
+        wineId: wine.wine_id,
+      },
     });
   }
 

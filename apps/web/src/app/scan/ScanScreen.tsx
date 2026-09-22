@@ -310,6 +310,9 @@ export function ScanScreen() {
     }
   }
 
+  /** v0.3.5 (задача тимлида 22.09): wine_id вместе с префиллом — ChatScreen шлёт его ПЕРВЫМ
+   * запросом /v1/chat, гарантируя ответ про именно это отсканированное вино (текстовый поиск
+   * по префиллу путает вина-близнецы из одной серии в ~8% случаев). */
   function handleAskSomelierAboutResult() {
     if (!result?.card) return;
     navigate("/app/chat", {
@@ -318,6 +321,7 @@ export function ScanScreen() {
           name: result.card.source.name,
           winery: result.card.source.winery_name,
         }),
+        wineId: result.card.wine_id,
       },
     });
   }
