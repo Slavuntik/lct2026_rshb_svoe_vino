@@ -36,6 +36,8 @@ agents/B3-eval-route.md — `flat_scan_response()` ниже несёт ровн�
 """
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile as StarletteUploadFile
@@ -65,6 +67,21 @@ from ..schemas import (
 from ..security import Principal, get_current_principal, get_current_principal_optional
 
 router = APIRouter(prefix="/scan", tags=["scan"])
+
+logger = logging.getLogger(__name__)
+# Задача тимлида 22.09 (reports/devops-stand-vlm.md: "источник текста этикетки vlm/ocr
+# нигде не виден снаружи процесса" — 0 строк vision_llm: в журнале при 5 успешных
+# запросах, т.к. vision_llm.py логирует только сбой/фолбэк, warning). Голый `uvicorn
+# app.main:app` (infra/ams3/somelye-api.service, infra/Dockerfile.api — без --log-level)
+# root-логгер не трогает и хендлер не ставит: root остаётся на дефолтном WARNING, и
+# INFO-запись ниже без этого хендлера не долетела бы НИКУДА (проверено: lastResort
+# питона ловит только WARNING+) — источник так и остался бы невидим на успехе. Хендлер
+# ставится только на этот логгер (не на root) — блока на остальные модули нет.
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+    logger.addHandler(_handler)
 
 
 @router.post("/resolve", response_model=ScanResolveResponse)
@@ -259,6 +276,19 @@ async def scan_photo(
         raise ApiError(400, "validation_error", f"Не удалось обработать изображение: {exc}") from exc
 
     _record_photo_scan(db, principal, len(data), result, best_effort=False)
+
+    # Задача тимлида 22.09 (reports/devops-stand-vlm.md, находка "источник нигде не
+    # виден") — result.text_source/label_text (CV_FUSION, app/cv/service.py) в HTTP-ответ
+    # НЕ идут (контракт не меняется), только в лог, только источник/длина/время — без
+    # содержимого текста и без ключей шлюза. text_source is None <=> CV_FUSION=0 (путь
+    # без чтения этикетки моделью/OCR) — логировать нечего. Только rich-ветка: flat и
+    # /v1/eval/predict (общий flat_scan_response выше) — приватная выборка кейсодержателя,
+    # тот же принцип, что архив ниже её не пишет (contracts/image-scan.md v0.4.10).
+    if result.text_source is not None:
+        logger.info(
+            "scan_photo: текст этикетки прочитан source=%s len=%d ms=%d",
+            result.text_source, len(result.label_text or ""), result.timing_ms,
+        )
 
     # v0.4.10: архив сканов для контрольной выборки — только rich (интерфейс); flat и
     # /v1/eval/predict не архивируются: через них идёт приватная выборка кейсодержателя.
