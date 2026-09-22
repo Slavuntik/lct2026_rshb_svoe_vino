@@ -19,6 +19,7 @@
 | hack-v13 (22.09 14:47, драйвер `LLM_PROVIDER=openai` для сомелье-чата `/v1/chat` — свой GPU-шлюз, Qwen3.8-27b, `packages/llm` e9c4cde; env `LLM_PROVIDER`/`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL` тимлид уже поставил на сервере (бэкап `.bak-before-llm`), применились этим рестартом — чат-путь, CV/OCR/индекс не тронуты) | 96.8% (60/62) | **98.4% (61/62)** | 4412 / 6634 / 9139 |
 | hack-v14 (22.09 15:53, backend `dcf8e20` — чат `/v1/chat`: intent-роутинг учитывает активные `Filters` + один повтор поиска без фильтров перед честным отказом, `CHAT_MAX_TOKENS=450` и короче системный промпт, единый логгер `"app"` на INFO, прогрев RAG-ретривера на старте процесса; скан-путь CV/OCR/RAG-индекс не тронут) | 96.8% (60/62) | 98.4% (перенос из hack-v13, не переизмерялось) | 4584 / 6889 / 7373 |
 | hack-v15 (22.09 17:04, ml-engineer `d044f27`+`455c2bb` — бюджет скана `CV_SCAN_BUDGET_S=7.5с` (OCR/verify() наконец ждут с дедлайном), предохранитель модели (3 сбоя подряд → пауза 60с), модель+локальный путь считаются параллельно и выбираются `CV_FUSION_CHOOSE` (env переключён на `confident_else_cv` — решение тимлида), `VISION_LLM_TIMEOUT_S` 6.5→6.0, прогрев OCR+VLM) | **96.8% (60/62)** | не переизмерялся (только `--flat-only`) | **4370 / 5180 / 6921** |
+| hack-v16 (22.09 22:36 код / 22:37 индекс, «Что подать» по фото блюда + `wine_id` в чате + RAG-индекс 2103 вина — CV/OCR/скан-путь не тронут) | **96.8% (60/62)**, 0 расхождений с hack-v15 | не переизмерялся (перенос 98.4%, hack-v13) | **4348 / 5203 / 6568** |
 
 Ни одного ответа дольше 10 с. top-5 не измерялся ни на одной волне до hack-v13 (flat-режим, как у
 скрипта организаторов, без поля `matches`) — hack-v13 первая и пока единственная строка с top-5,
@@ -207,4 +208,60 @@ Rich на 3 фото (п.6, напрямую по HTTP на `http://89.110.72.10
 cd packages/cv && CASE_DATA_DIR=/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data \
   .venv/bin/python ../../qa/real_photos_eval.py --ocr crop320 --only zzz \
   --served ../../../case-data/real-photos-labels/served/stand-hack-v{14,15}.jsonl
+```
+
+## hack-v16 (22.09, devops) — «Что подать» по фото блюда, `wine_id` в чате, RAG-индекс 2103 вина
+
+`git push origin main` (19 коммитов ролей, `7a71351..b492bbe`) → тег `hack-v16` на `b492bbe` → push тега
+→ GitHub Actions подхватил сам. Подтверждение НЕ по файлам: код-рестарт `ExecMainStartTimestamp`
+22:36:11 МСК, `healthz warm:true` за ~31с (502 в первые ~26с — нормальный старт процесса);
+`rag_index_version`/`cv_index_version` этим рестартом не менялись (20260828.1/case-20260921-d1-b384) —
+код поднялся ещё на старом RAG-индексе, как и ожидалось (данные CI не доставляет).
+
+RAG-индекс (2103 вина вместо 1978, backend `a686bf4`+`8cd0355`, решение тимлида): blue-green без
+простоя, а не заливка поверх боевого — встроенный Qdrant однопроцессный. `rsync --exclude .lock`
+`case-data/rag-index-20260922/` (копия для devops, сверена `diff -rq` байт-в-байт с закоммиченным
+`packages/rag/data`, 90 МБ) → **новый** каталог `/opt/somelye/data/rag-20260922/` на сервере;
+`labels.jsonl` **2103 строки**, `manifest.json` version `20260922.1`, wines 2103/wineries 138/knowledge
+5592 — подтверждено на сервере ДО переключения. Бэкап `/opt/somelye/somelye.env.bak-before-hack-v16` →
+`sed -i` заменил только `RAG_DATA_DIR=/opt/somelye/data/rag` на `.../rag-20260922` (diff имён переменных
+до/после — пусто, больше ничего не тронуто) → `sudo systemctl restart somelye-api`. Второй рестарт
+22:37:22 МСК, `healthz warm:true` за ~7с, `rag_index_version` **20260828.1→20260922.1** подтверждён;
+теперь в прогреве участвует и кэш каталога для подбора к блюду (`768e410`), в булеву `healthz.warm` не
+входит, но связность до первого ответа не нарушена (та же оговорка, что у RAG-ретривера в hack-v14).
+Старый `/opt/somelye/data/rag/` (1978 вин) НЕ удалён — путь отката.
+
+Дым по новому — **строго ДО прогона 100 фото**, гостевой токен → `POST /v1/auth/guest` 201/168мс:
+- `POST /v1/pairing/dish` на 3 тегах, цвета/сахар ожидаемые — «Мясо и стейки»→BBQ: 6/6 красное, 251мс;
+  «Рыба»→Блюда из рыбы: 6/6 белое, 187мс; «Выпечка и десерты»: 5 сладкое+1 полусладкое, 170мс
+  (синонимы `_SYNONYMS` в `dish_recognition.py` резолвят все три к каноническим тегам
+  `food_pairing_rules.yaml`).
+- `POST /v1/pairing/dish-photo` с фото бутылки (`real-photos/1.73_...webp`) → `status=bottle`, не
+  `food`, `timing_ms=2969` (классификация через `vlm`), 4.59с сетевых.
+- `POST /v1/chat` с `wine_id` близнеца серии Союз-Вино
+  (`soyuz-vino-kubanskoe-traditsionnoe-beloe-suhoe-07-belye-sorta-vinograda-11`, вариант 0.7Л) →
+  citation №1 ровно про запрошенное вино («Кубанское Традиционное Белое Сухое 0.7 · Союз-Вино · Кубань
+  · ...»), 8.85с.
+- 2 вопроса жюри («Посоветуй красное вино к стейку до 2000 рублей», «Какое красное вино подать к
+  стейку?») — **0 отказов**, первый честно «не могу учесть бюджет... нет информации о ценах» и даёт
+  вина, 7.68с/7.32с, по 3 цитаты каждый.
+
+100 фото `--flat-only` на самом стенде (тишина 22:40:48→22:48:12 МСК, 7м24с) → `stand-hack-v16.jsonl`,
+100/100, 0 ошибок HTTP. `qa/real_photos_eval.py --served`: top-1 **96.8% (60/62)**, половины A/B
+100.0%/93.5% — БЕЗ изменений от hack-v15. Diff всех 100 фото hack-v15→hack-v16: **0 расхождений**
+`flat_slug` (байт-в-байт) — сильнее ожидания задания («расхождения только вне 62»): ни одного
+расхождения вообще, ожидаемо, поскольку ни один из 8 коммитов волны не трогает `packages/cv`.
+`flat_ms` (`numpy.percentile`, линейная интерполяция) p50/p95/max = **4348/5203/6568 мс**, n=100, 0 фото
+дороже лимита 10 с.
+
+Снимок `qa/scan-eval-runs/real-photos-stand/eval_report_snapshot.json` обновлён строкой hack-v16;
+`f1_top5`/`rich_latency_ms` — перенос из hack-v13 (не переизмерялись, задание — только `--flat-only`
+плюс дым чата/pairing выше). Заливка на стенд (`/opt/somelye/data/eval_report_snapshot.json`) НЕ
+выполнена — по заданию этой волны.
+
+Как воспроизвести:
+```
+cd packages/cv && CASE_DATA_DIR=/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data \
+  .venv/bin/python ../../qa/real_photos_eval.py --ocr crop320 --only zzz \
+  --served ../../../case-data/real-photos-labels/served/stand-hack-v{15,16}.jsonl
 ```
