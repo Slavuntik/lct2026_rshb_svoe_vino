@@ -15,6 +15,10 @@
 # заметно свободнее, чем на ams3 (4 vCPU) — 8 кропов CV + двухмасштабный RapidOCR как фолбэк
 # укладываются с запасом, точность выше (офлайн 93.5% против 90.3% у 2 кропов).
 #
+# CV_OCR_LABEL_SIZE=1280 (agents/H3-label-crop-ocr.md): третий проход — детектор+
+# распознаватель RapidOCR на КРОПЕ ЭТИКЕТКИ (боксы из прохода 960 выше переиспользуются,
+# лишней детекции нет) — +1 фото офлайн (90.3% -> 91.9% top-1, 2 кропа CV). "0" выключает.
+#
 # Использование: infra/local-check/run-check-server.sh        (порт 8080)
 #                PORT=8081 TEXT_SOURCE=vlm_local infra/local-check/run-check-server.sh
 set -euo pipefail
@@ -35,6 +39,7 @@ exec env \
   LLM_PROVIDER=mock \
   CV_FUSION=1 CV_FUSION_W=0.3 CV_FUSION_TEXT_SOURCE="${TEXT_SOURCE:-vlm_both}" \
   CV_OCR_ENGINE="${OCR_ENGINE:-rapid}" CV_OCR_RAPID_SIZES="${OCR_RAPID_SIZES:-640,960}" \
+  CV_OCR_LABEL_SIZE="${OCR_LABEL_SIZE:-1280}" \
   CV_FUSION_CROPS="${FUSION_CROPS:-8}" \
   VISION_LLM_URL="${LLM_GATEWAY_URL:-}" VISION_LLM_KEY="${LLM_GATEWAY_KEY:-}" \
   VISION_LLM_LOCAL_URL=http://127.0.0.1:8093/v1 VISION_LLM_TIMEOUT_S="${VISION_LLM_TIMEOUT_S:-6.5}" \
