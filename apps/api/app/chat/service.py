@@ -82,8 +82,18 @@ def stream_chat_events(
     filters_for_prompt: dict[str, str] | None = None,
     taste_vector: dict[str, float] | None = None,
     top_k: int = 8,
+    max_tokens: int = 1024,
 ) -> Iterator[dict]:
     """Генератор логических событий чата — потребляется routers/chat.py.
+
+    `max_tokens` (reports/backend-chat-retrieval.md, 22.09, п.3): дефолт 1024
+    сохраняет старое поведение Protocol LLM (llm/base.py) для прямых
+    вызывающих (тесты, будущие клиенты) — routers/chat.py передаёт настоящий
+    бюджет из settings.chat_max_tokens (~450), чтобы демо-ответ не растягивался
+    на десятки секунд молчания после первого токена. Обрыв по лимиту токенов
+    посреди предложения обрабатывается тем же путём, что и LLMUnavailable
+    после первого чанка ниже — «токены уже ушли клиенту, откатить нельзя»,
+    закрываем как обычный (пусть и укороченный) ответ, не ошибку.
 
     Формы yield:
       {"type": "refusal", "reason": str}                                   — терминально
@@ -113,7 +123,7 @@ def stream_chat_events(
 
     chunks: list[str] = []
     try:
-        for chunk in llm.chat_stream(messages):
+        for chunk in llm.chat_stream(messages, max_tokens=max_tokens):
             chunks.append(chunk)
             yield {"type": "token", "text": chunk}
     except LLMUnavailable:

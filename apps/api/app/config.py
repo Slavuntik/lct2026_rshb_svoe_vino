@@ -413,6 +413,17 @@ class Settings:
     rate_limit_max_requests: int = field(
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "5"))
     )
+    # reports/backend-chat-retrieval.md (22.09, тимлид, п.3): на демо-стенде
+    # первый вопрос «Какое красное вино подать к стейку?» без лимита ушёл на
+    # 497 токенов / ~84 с до конца (первый токен — за приемлемые 4.5 с, но
+    # долгое молчание ПОСЛЕ него плохо смотрится на сцене демо). 450 — запас
+    # под системный промпт "3 вина, по 1-2 предложения, с [n]" (app/chat/
+    # prompt.py::SYSTEM_PROMPT) с небольшим хвостом на длинные названия вин;
+    # driver default (llm/base.py Protocol) остаётся 1024 для всех, кто вызывает
+    # llm.chat_stream()/chat() напрямую, не через этот эндпоинт (тесты и т.п.).
+    chat_max_tokens: int = field(
+        default_factory=lambda: int(os.environ.get("CHAT_MAX_TOKENS", "450"))
+    )
     cors_origins: str = field(
         # v0.3 (ревью 02, п.6): дефолт — localhost dev-порты Vite (apps/web,
         # server.port=5173 в vite.config.ts; 4173 — `vite preview`), а не "*"

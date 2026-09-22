@@ -241,6 +241,64 @@ def test_chat_sse_over_http_delivers_tokens_in_llm_yield_order(client: TestClien
     assert received == chunks
 
 
+# --- v0.3.4 (22.09, reports/backend-chat-retrieval.md, п.3): бюджет длины ответа ---
+
+def test_chat_passes_configured_max_tokens_to_llm_chat_stream(client: TestClient, app):
+    """Первый прогон стенда без лимита ушёл на 497 токенов / ~84 с до конца
+    (первый токен — приемлемые 4.5 с, но долгое молчание ПОСЛЕ него плохо
+    смотрится на демо). /v1/chat обязан передавать settings.chat_max_tokens
+    в llm.chat_stream(), не полагаться на driver default в Protocol LLM
+    (llm/base.py, 1024)."""
+    captured: list[dict] = []
+
+    class _CapturingLLM:
+        def chat(self, messages, **kw):
+            return "ответ [1]"
+
+        def chat_stream(self, messages, **kw):
+            captured.append(kw)
+            yield "ответ [1]"
+
+    app.state.llm = _CapturingLLM()
+
+    tokens = register_user(client, email="maxtok1@example.com")
+    r = client.post("/v1/chat", json={"message": "Что подать к стейку?"}, headers=auth_header(tokens))
+    assert r.status_code == 200
+
+    assert captured, "chat_stream должен был быть вызван ровно один раз"
+    assert captured[0].get("max_tokens") == app.state.settings.chat_max_tokens
+
+
+def test_default_chat_max_tokens_setting_is_450():
+    from app.config import Settings
+
+    assert Settings().chat_max_tokens == 450
+
+
+def test_stream_chat_events_forwards_max_tokens_to_chat_stream():
+    """Юнит-уровень (без HTTP): stream_chat_events() принимает max_tokens и
+    пробрасывает его в llm.chat_stream() как есть; дефолт 1024 (тот же, что у
+    Protocol LLM) сохраняет старое поведение для прямых вызывающих (тесты),
+    которые не передают его вовсе."""
+    from app.rag.mock import MockRetriever
+
+    captured: list[dict] = []
+
+    class _CapturingLLM:
+        def chat_stream(self, messages, **kw):
+            captured.append(kw)
+            yield "[1] ответ"
+
+    list(stream_chat_events(
+        message="Что подать к стейку?", retriever=MockRetriever(), llm=_CapturingLLM(), max_tokens=450,
+    ))
+    assert captured[0]["max_tokens"] == 450
+
+    captured.clear()
+    list(stream_chat_events(message="Что подать к стейку?", retriever=MockRetriever(), llm=_CapturingLLM()))
+    assert captured[0]["max_tokens"] == 1024, "дефолт без явного max_tokens не должен был измениться"
+
+
 # --- v0.3.3: collections не форсируется — intent-роутинг ретривера жив -------
 
 def test_stream_chat_events_calls_search_without_forcing_collections():
@@ -335,6 +393,27 @@ def test_system_prompt_refuses_off_topic_questions_not_just_insufficient_excerpt
 
     assert "не о вине" in SYSTEM_PROMPT or "не про вино" in SYSTEM_PROMPT
     assert "откажись" in SYSTEM_PROMPT
+
+
+def test_system_prompt_is_honest_about_not_filtering_by_price():
+    """reports/backend-chat-retrieval.md (22.09, п.2): в каталоге кейса
+    (strapi_output0709.csv) поля цены нет вовсе — ни одна выдержка её не
+    несёт, ретривер по цене не фильтрует. Промпт обязан требовать честность
+    об этом, а не позволять модели молчать или выдумывать бюджет/цифру."""
+    from app.chat.prompt import SYSTEM_PROMPT
+
+    assert "цен" in SYSTEM_PROMPT.lower()  # "цену"/"цены"/"ценам" и т.п.
+    assert "не выдумывай стоимость" in SYSTEM_PROMPT or "не фильтруешь" in SYSTEM_PROMPT
+
+
+def test_system_prompt_asks_for_short_bounded_wine_recommendations():
+    """reports/backend-chat-retrieval.md (22.09, п.3): вместе с max_tokens
+    (settings.chat_max_tokens) промпт просит модель САМУ уложиться в короткий
+    формат, а не полагаться только на жёсткую обрезку посреди слова."""
+    from app.chat.prompt import SYSTEM_PROMPT
+
+    assert "3 вин" in SYSTEM_PROMPT
+    assert "[n]" in SYSTEM_PROMPT
 
 
 def test_format_taste_vector_has_no_identity_fields():

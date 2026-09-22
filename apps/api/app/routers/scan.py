@@ -70,18 +70,16 @@ router = APIRouter(prefix="/scan", tags=["scan"])
 
 logger = logging.getLogger(__name__)
 # Задача тимлида 22.09 (reports/devops-stand-vlm.md: "источник текста этикетки vlm/ocr
-# нигде не виден снаружи процесса" — 0 строк vision_llm: в журнале при 5 успешных
-# запросах, т.к. vision_llm.py логирует только сбой/фолбэк, warning). Голый `uvicorn
-# app.main:app` (infra/ams3/somelye-api.service, infra/Dockerfile.api — без --log-level)
-# root-логгер не трогает и хендлер не ставит: root остаётся на дефолтном WARNING, и
-# INFO-запись ниже без этого хендлера не долетела бы НИКУДА (проверено: lastResort
-# питона ловит только WARNING+) — источник так и остался бы невидим на успехе. Хендлер
-# ставится только на этот логгер (не на root) — блока на остальные модули нет.
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    _handler = logging.StreamHandler()
-    _handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
-    logger.addHandler(_handler)
+# нигде не виден снаружи процесса"): logger.info() ниже несёт источник чтения этикетки.
+# ДО 22.09 (reports/backend-text-source.md) здесь стоял точечный handler+setLevel —
+# единственный способ долететь до вывода под голым `uvicorn app.main:app`
+# (infra/ams3/somelye-api.service, infra/Dockerfile.api — без --log-level), т.к. root
+# по Python-дефолту на WARNING без хендлеров. Решение тимлида 22.09 (п.4, тот же
+# отчёт): убрать точечные хендлеры по файлам, настроить ОДИН handler+INFO на логгер
+# пространства имён "app" целиком, в app/main.py — этот модуль (`app.routers.scan`,
+# дочерний логгер) получает и уровень, и вывод через propagate (Python-дефолт, не
+# трогаем), без своего handler'а. Два handler'а на одну запись дали бы дубли строк
+# в выводе процесса — ровно то, чего просил избежать тимлид.
 
 
 @router.post("/resolve", response_model=ScanResolveResponse)

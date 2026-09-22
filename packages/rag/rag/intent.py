@@ -17,10 +17,40 @@ travel/fact: `classify()` возвращает `"pairing"`, а не готовы
 и докстринг `Retriever.search`), а не жёсткое исключение knowledge: если
 вин в фильтрованном пуле не хватило на top_k, остаток добирается статьями,
 а не наоборот.
+
+reports/backend-chat-retrieval.md (22.09, разбор EMPTY_RETRIEVAL на фразе
+задания «Посоветуй красное к стейку до 2000 рублей»): у `classify()` было
+ДВА слепых пятна, из-за которых типовые вопросы жюри («Белое до 1500»,
+«Посоветуй что-нибудь к рыбе», «Розовое к лёгкому ужину», «Что-нибудь из
+Крыма» — без лексемы «вин[оаеуы]» и без глагола «подать/взять/выбрать/
+заказать») уходили в default-ветку (`collections=("wines","knowledge")`,
+`apply_refusal=True`) вместо pairing (`wines`-приоритет, refusal НЕ
+проверяется на первом проходе): (1) сигнал был ЧИСТО текстовый, хотя
+`Retriever.search()` уже получает `filters` — непустой Filters (цвет/сахар/
+регион/сорт), извлечённый детерминированно из той же таксономии вина
+(apps/api/app/chat/filters.py), теперь тоже считается "вопрос про вино"
+(`classify(query, filters)`, `filters_active()`, rag/types.py) — не ловит
+посторонние вопросы («Посоветуй фильм ужасов» не даёт ни одного поля
+Filters); (2) короткий гастро-фрагмент «к/под …» матчился только ЯКОРЕМ в
+начале строки (старый `_SHORT_PAIRING_FRAGMENT_RE`) — «Посоветуй что-нибудь
+к рыбе» (27 симв., фрагмент не в начале) уходил в default. Регэксп ниже
+теперь ищет тот же короткий фрагмент ГДЕ УГОДНО в пределах лимита длины (защита от ложных
+срабатываний внутри длинных предложений — длина, не позиция), проверено на
+всех 78 вопросах packages/rag/eval/goldset.jsonl (11 refusal — ни один не
+матчится ни по длине, ни по токену) и на всех pick/pairing — 0 регрессий,
+см. отчёт.
+
+Ни то, ни другое НЕ трогает эвристику для калибровки/eval (rag/calibrate.py,
+rag/eval.py) — обе зовут `Retriever.search()`/`infer_collections()` БЕЗ
+`filters` (текст голд-сета не несёт Filters), так что `hit@8` на голд-сете
+не мог измениться от пункта (1) по построению; пункт (2) — чисто текстовый и
+проверен отдельно (см. выше).
 """
 from __future__ import annotations
 
 import re
+
+from rag.types import Filters, filters_active
 
 _TRAVEL_RE = re.compile(
     r"винодельн|вино.?тур|винный тур|экскурси|куда (съездить|поехать)|"
@@ -45,10 +75,17 @@ _PAIRING_RE = re.compile(
 # содержат лексему «вин[оаеуы]» или «что подать/взять/выбрать/заказать» — эти
 # глаголы не добавляли покрытия, только ложные срабатывания на не-винных фразах.
 # Терпимый гастро-фрагмент без глагола — реплика-продолжение в чате
-# («к устрицам», «под стейк»): предлог в начале короткой фразы. Порог длины
-# отсекает длинные предложения, где «к»/«под» — обычный предлог не по теме
-# (иначе поймали бы полкаталога фактов не туда).
-_SHORT_PAIRING_FRAGMENT_RE = re.compile(r"^\s*(к|под)\s+\S", re.IGNORECASE)
+# («к устрицам», «под стейк») ИЛИ короткий гастро-хвост целой фразы
+# («Посоветуй что-нибудь к рыбе» — см. модульный докстринг, 22.09): предлог
+# «к»/«под» как отдельное слово, ГДЕ УГОДНО в пределах лимита длины, не
+# обязательно в начале строки. Защита от ложных срабатываний — сам лимит
+# длины (короткая фраза целиком про гастро-подбор), не позиция: длинное
+# предложение вида «Расскажи подробнее, к чему может привести долгая
+# выдержка в дубе» отсекается длиной (>30 симв.), а не тем, что «к» не
+# первое слово — иначе поймали бы полкаталога фактов не туда. \b перед
+# группой и \s+ сразу после неё требуют «к»/«под» ИМЕННО отдельным словом
+# (не начало «как»/«код», не «попурри»), см. rag/eval/goldset.jsonl.
+_SHORT_PAIRING_FRAGMENT_RE = re.compile(r"\b(к|под)\s+\S", re.IGNORECASE)
 _SHORT_FRAGMENT_MAX_LEN = 30
 
 DEFAULT_COLLECTIONS: tuple[str, ...] = ("wines", "knowledge")
@@ -59,11 +96,21 @@ PAIRING_FALLBACK: tuple[str, ...] = ("wines", "knowledge")
 def _is_pairing_like(q: str) -> bool:
     if _PAIRING_RE.search(q):
         return True
-    return len(q) <= _SHORT_FRAGMENT_MAX_LEN and bool(_SHORT_PAIRING_FRAGMENT_RE.match(q))
+    return len(q) <= _SHORT_FRAGMENT_MAX_LEN and bool(_SHORT_PAIRING_FRAGMENT_RE.search(q))
 
 
-def classify(query: str) -> str:
-    """travel | fact | pairing | default — первое совпадение по приоритету."""
+def classify(query: str, filters: Filters | None = None) -> str:
+    """travel | fact | pairing | default — первое совпадение по приоритету.
+
+    `filters` — опционально, уже извлечённые Filters (color/sugar/region/
+    grapes/stillness, apps/api/app/chat/filters.py). Непустой Filters —
+    дополнительный, точный сигнал "вопрос про вино" (reports/
+    backend-chat-retrieval.md, 22.09, см. докстринг модуля): в отличие от
+    расширения текстовых паттернов ниже, он НЕ рискует поймать посторонний
+    вопрос («Посоветуй фильм ужасов» не извлекает ни одного поля). Дефолт
+    None сохраняет старое чисто-текстовое поведение — используется
+    rag.calibrate/rag.eval, которые вызывают search()/classify() без Filters
+    вообще (см. докстринг модуля)."""
     q = (query or "").strip()
     if not q:
         return "default"
@@ -71,7 +118,7 @@ def classify(query: str) -> str:
         return "travel"
     if _FACT_RE.search(q):
         return "fact"
-    if _is_pairing_like(q):
+    if _is_pairing_like(q) or filters_active(filters):
         return "pairing"
     return "default"
 

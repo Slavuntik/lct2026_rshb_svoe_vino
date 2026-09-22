@@ -81,6 +81,9 @@ def chat(
         for event in stream_chat_events(
             message=body.message, retriever=retriever, llm=llm,
             filters=filters, filters_for_prompt=filters_for_prompt, taste_vector=taste_vector,
+            # reports/backend-chat-retrieval.md (22.09, п.3): бюджет длины ответа —
+            # без лимита первый прогон стенда ушёл на 497 токенов / ~84 с до конца.
+            max_tokens=settings.chat_max_tokens,
         ):
             if event["type"] == "token":
                 yield {"data": json.dumps(event, ensure_ascii=False)}

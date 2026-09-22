@@ -102,6 +102,105 @@ def test_refusal_empty_candidate_pool_still_returns_empty(tiny_index):
 
 
 # --------------------------------------------------------------------------
+# 22.09 (reports/backend-chat-retrieval.md, п.2 «пустая выдача после
+# ослабления фильтров — только тогда refusal»): Retriever.search() повторяет
+# эвристику БЕЗ фильтров ровно один раз, если первая попытка (с фильтрами
+# вызывающего) пуста, вместо того чтобы сразу честно отказать. Наблюдавшийся
+# случай — «Посоветуй красное к стейку до 2000 рублей»: Filters(color=
+# "красное") сам по себе не виноват (красных вин много), но текст запроса
+# («до 2000 рублей» — цены нет ни в одной выдержке, strapi_output0709.csv не
+# несёт поля цены вовсе) проседает по реранк-скору ниже общего порога
+# refusal. _search_auto() замокан — тестируем ТОЛЬКО логику повтора в
+# search(), изолированно от реального пайплайна (embeddings/rerank/threshold
+# арифметика — отдельные тесты выше и test_intent_routing.py).
+# --------------------------------------------------------------------------
+
+def test_search_loosens_filters_once_before_refusal_on_empty_result(tiny_index, monkeypatch):
+    from rag.types import Candidate, Filters
+
+    calls: list[Filters | None] = []
+    sentinel = [Candidate(id="x", kind="wine", score=1.0, text="t", url="u", meta={})]
+
+    def fake_search_auto(query, filters, top_k):
+        calls.append(filters)
+        return [] if filters is not None else sentinel
+
+    monkeypatch.setattr(tiny_index, "_search_auto", fake_search_auto)
+
+    results = tiny_index.search("вино к рыбе", filters=Filters(color="красное"), top_k=8)
+
+    assert results == sentinel, "второй проход (без фильтров) обязан вернуть найденное, не []"
+    assert calls == [Filters(color="красное"), None], (
+        "ровно 2 попытки: сначала с фильтрами вызывающего, потом без них"
+    )
+
+
+def test_search_does_not_retry_when_no_filters_were_active(tiny_index, monkeypatch):
+    calls: list = []
+
+    def fake_search_auto(query, filters, top_k):
+        calls.append(filters)
+        return []
+
+    monkeypatch.setattr(tiny_index, "_search_auto", fake_search_auto)
+
+    results = tiny_index.search("вино к рыбе", top_k=8)  # filters не передан вовсе
+
+    assert results == []
+    assert len(calls) == 1, "без активных фильтров ослаблять нечего — только один проход"
+
+
+def test_search_does_not_retry_when_filters_object_has_no_recognized_fields(tiny_index, monkeypatch):
+    from rag.types import Filters
+
+    calls: list = []
+
+    def fake_search_auto(query, filters, top_k):
+        calls.append(filters)
+        return []
+
+    monkeypatch.setattr(tiny_index, "_search_auto", fake_search_auto)
+
+    # Filters() явно передан, но пуст (все поля None/[]) — не считается активным.
+    results = tiny_index.search("вино к рыбе", filters=Filters(), top_k=8)
+
+    assert results == []
+    assert len(calls) == 1
+
+
+def test_search_does_not_retry_when_first_attempt_already_found_results(tiny_index, monkeypatch):
+    from rag.types import Candidate, Filters
+
+    calls: list = []
+    sentinel = [Candidate(id="x", kind="wine", score=1.0, text="t", url="u", meta={})]
+
+    def fake_search_auto(query, filters, top_k):
+        calls.append(filters)
+        return sentinel
+
+    monkeypatch.setattr(tiny_index, "_search_auto", fake_search_auto)
+
+    results = tiny_index.search("вино к рыбе", filters=Filters(color="красное"), top_k=8)
+
+    assert results == sentinel
+    assert len(calls) == 1, "нашли с первого раза — второй (ослабленный) проход не нужен"
+
+
+def test_search_explicit_collections_bypasses_loosening_retry_entirely(tiny_index, monkeypatch):
+    from rag.types import Filters
+
+    called: list = []
+    monkeypatch.setattr(tiny_index, "_search_auto", lambda *a, **kw: called.append(1))
+
+    # Явный collections — воля вызывающего побеждает целиком (docstring
+    # Retriever.search): даже пустая выдача НЕ запускает ослабление/retry,
+    # потому что _search_auto (и вся эвристика) в этой ветке не участвует.
+    tiny_index.search("вино", filters=Filters(color="красное"), collections=("wines",), top_k=8)
+
+    assert called == [], "explicit collections обязан обходить эвристику (и её retry) целиком"
+
+
+# --------------------------------------------------------------------------
 # Калибровка (rag/calibrate.py) — арифметика на фиктивном hybrid, без индекса
 # --------------------------------------------------------------------------
 

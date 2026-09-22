@@ -114,3 +114,69 @@ def test_search_scene2_pairing_question_returns_only_wines_on_tiny_index(tiny_in
     assert results
     for c in results:
         assert c.kind == "wine"
+
+
+# --- 22.09 (reports/backend-chat-retrieval.md): filters-осведомлённый classify() ---
+# EMPTY_RETRIEVAL на фразе задания «Посоветуй красное к стейку до 2000 рублей»:
+# classify() не видел, что Filters (извлечённые apps/api из той же реплики) уже
+# несут color/sugar/region/grapes/stillness — точный, недвусмысленный сигнал "вопрос
+# про вино", не рискующий поймать постороннее («Посоветуй фильм ужасов» не извлекает
+# ни одного поля Filters).
+
+def test_classify_active_filters_force_pairing_even_without_text_signal():
+    from rag.types import Filters
+
+    # Ни лексемы «вин[оаеуы]», ни гастро-глагола/фрагмента в начале строки — но
+    # Filters несёт распознанный атрибут вина.
+    assert classify("Белое до 1500", Filters(color="белое")) == "pairing"
+    assert classify("Розовое к лёгкому ужину", Filters(color="розовое")) == "pairing"
+    assert classify("Что-нибудь из Крыма", Filters(region="krym")) == "pairing"
+    assert classify("Хочу что-то сладкое", Filters(sugar="сладкое")) == "pairing"
+
+
+def test_classify_empty_or_missing_filters_do_not_force_pairing():
+    from rag.types import Filters
+
+    # Filters() без единого распознанного поля — как будто filters не передан:
+    # посторонний вопрос остаётся default, а не подбором вина.
+    assert classify("Посоветуй хороший фильм ужасов на вечер.", Filters()) == "default"
+    assert classify("Посоветуй хороший фильм ужасов на вечер.", None) == "default"
+
+
+def test_classify_filters_argument_is_optional_and_backward_compatible():
+    # Старые однопараметровые вызовы classify(q) (rag.calibrate/rag.eval — см.
+    # докстринг модуля) продолжают работать так же, как до этой правки.
+    assert classify("Найдите белое сухое вино из Самары.") == "pairing"
+    assert classify("просто текст без явных маркеров") == "default"
+
+
+def test_classify_travel_and_fact_priority_unaffected_by_filters():
+    # Travel/fact проверяются РАНЬШЕ pairing (и раньше filters_active) — активный
+    # Filters не должен перебивать их приоритет.
+    from rag.types import Filters
+
+    assert classify("Расскажите про винодельню в Крыму", Filters(region="krym")) == "travel"
+    assert classify("Что такое танины в красном вине?", Filters(color="красное")) == "fact"
+
+
+# --- 22.09: короткий гастро-фрагмент «к/под …» теперь ищется где угодно в
+# пределах лимита длины, не только в начале строки (см. докстринг intent.py) ---
+
+def test_short_pairing_fragment_matches_mid_sentence_now():
+    # «Посоветуй что-нибудь к рыбе» (одна из типовых фраз жюри, 27 симв.) —
+    # фрагмент «к рыбе» не в начале строки, раньше уходило в default.
+    assert classify("Посоветуй что-нибудь к рыбе") == "pairing"
+
+
+def test_short_pairing_fragment_still_respects_length_guard():
+    # Длинное предложение с «к» где-то в середине — не гастро-подбор; защита
+    # по-прежнему длина, не позиция (регресс, названный в исходном тесте ниже).
+    q = "Расскажи подробнее, к чему может привести долгая выдержка в дубе"
+    assert len(q) > 30
+    assert classify(q) == "default"
+
+
+def test_short_pairing_fragment_requires_whole_word_not_substring():
+    # "Как" не должен матчиться как "к " — \b перед группой требует границу
+    # слова, а \s+ сразу после неё — что дальше идёт пробел, а не буква.
+    assert classify("Как погода в Крыму?") == "default"

@@ -4,6 +4,9 @@ DATABASE_URL по умолчанию файловый SQLite рядом с пр�
 """
 from __future__ import annotations
 
+import logging
+import time
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -14,7 +17,7 @@ from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index
 from .db import make_engine, make_session_factory
 from .errors import register_error_handlers
 from .models import Base
-from .rag.factory import get_retriever
+from .rag.factory import get_retriever, warm_up_retriever
 from .routers import (
     analogs,
     auth,
@@ -33,6 +36,35 @@ from .routers import (
 )
 
 API_PREFIX = "/v1"
+
+# Решение тимлида 22.09 (reports/backend-chat-retrieval.md, п.4, поверх находки
+# reports/backend-text-source.md): единый логгер пространства имён "app" — ОДИН
+# handler+INFO на весь процесс здесь, а не точечные хендлеры по отдельным файлам
+# (был один такой в routers/scan.py, убран этой же правкой). Голый `uvicorn
+# app.main:app` (infra/ams3/somelye-api.service, infra/Dockerfile.api — без
+# --log-level) НЕ трогает root: тот остаётся на Python-дефолте WARNING без
+# хендлеров, и logging.lastResort тоже ловит только WARNING+ — INFO-записи
+# любого модуля apps/api (app.routers.scan, app.chat.filters, ...) без этого
+# не долетали бы никуда вообще (проверено эмпирически, см. reports/
+# backend-text-source.md). Дочерние логгеры ("app.<модуль>") подхватывают этот
+# handler через обычный propagate (Python-дефолт, не трогаем) — свой handler
+# ставить не нужно больше нигде в apps/api. Модульный уровень (не внутри
+# create_app()) + guard `if not _app_logger.handlers` — идемпотентно даже при
+# многократном create_app() за один процесс (apps/api/tests/conftest.py зовёт
+# create_app() на КАЖДЫЙ тест, сотни раз за прогон): без guard'а хендлеры
+# копились бы и каждая INFO-запись печаталась бы N раз — ровно те дубли строк
+# в выводе процесса, которых просил избежать тимлид. Модуль импортируется один
+# раз на процесс (Python кэширует import) — де-факто это тоже гарантирует
+# ровно один handler, guard — вторая, явная страховка на случай, если что-то
+# в тестовом раннере всё же перевыполнит тело модуля.
+_app_logger = logging.getLogger("app")
+_app_logger.setLevel(logging.INFO)
+if not _app_logger.handlers:
+    _app_handler = logging.StreamHandler()
+    _app_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    _app_logger.addHandler(_app_handler)
+
+logger = logging.getLogger(__name__)
 
 # Задача тимлида 22.09 (reports/backend-swagger.md): nginx стенда
 # (infra/ams3/nginx-somelye.conf) проксирует в API только /v1/ — старые
@@ -165,6 +197,19 @@ def create_app() -> FastAPI:
     # боевому near-dup запросу без этого прогрева (c03edd0). /healthz.warm —
     # AND обоих прогревов (app/routers/health.py).
     app.state.label_verifier_warm = warm_up_label_verifier(app.state.label_verifier, settings)
+    # Дополнение тимлида 22.09 (reports/backend-chat-retrieval.md, п.6): та же
+    # дисциплина для RAG-ретривера (packages/rag/rag/embeddings.py::DenseEmbedder,
+    # fastembed) — ленивая загрузка на первый search() заняла ~8 с на тех же 4 vCPU
+    # стенда, что и сканер, и совпала по времени с прогонами 100 фото, дав им хвост
+    # 7-9 с (reports/devops-hack-v13.md). Прогрев осознанно НЕ пишет в поле,
+    # участвующее в GET /healthz.warm ("healthz.warm трогать не нужно" — прямое
+    # указание тимлида, см. app/rag/factory.py::warm_up_retriever) — только в лог,
+    # тем же логгером "app" (см. блок настройки выше), время прогрева пишем сами
+    # (warm_up_retriever() возвращает только bool успеха/неудачи).
+    _rag_warmup_t0 = time.monotonic()
+    _rag_warm = warm_up_retriever(app.state.retriever, settings)
+    _rag_warmup_s = time.monotonic() - _rag_warmup_t0
+    logger.info("retriever warm-up: warm=%s, %.3f s", _rag_warm, _rag_warmup_s)
 
     # v0.3 (ревью 02, п.6): "оживить" cors_origins — раньше поле в Settings
     # существовало, но никто его не читал. Bearer-токены в Authorization,

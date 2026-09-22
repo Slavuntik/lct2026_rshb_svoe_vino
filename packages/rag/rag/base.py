@@ -25,7 +25,7 @@ from rag.rerank import build_reranker
 from rag.store import QdrantStore
 from rag.styles import StyleMatcher
 from rag.taste import build_taste_deck
-from rag.types import Candidate, Filters
+from rag.types import Candidate, Filters, filters_active
 
 __all__ = ["Filters", "Candidate", "Retriever", "get_retriever"]
 
@@ -120,13 +120,39 @@ class Retriever:
         на top_k — «wines приоритетно, knowledge добивкой», не наоборот.
         В типичном случае (topics про вино почти всегда находят >= top_k
         карточек без фильтра) второй проход не нужен — статьи не примешиваются
-        вовсе, что и решает жалобу F (8 цитат из статей вместо карточек вин)."""
+        вовсе, что и решает жалобу F (8 цитат из статей вместо карточек вин).
+
+        reports/backend-chat-retrieval.md (22.09, п.2 «пустая выдача после
+        ослабления фильтров — только тогда refusal»): пустой результат этой
+        эвристики (ни одной карточки/статьи — настоящий кандидат на refusal)
+        при АКТИВНЫХ filters (filters_active(), rag/types.py) не отдаётся
+        как есть — один повторный проход БЕЗ фильтров, прежде чем честно
+        сдаться. Наблюдавшийся случай: «Посоветуй красное к стейку до 2000
+        рублей» — Filters(color="красное") не виноват сам по себе (красных
+        вин в каталоге много), скор после реранка проседает из-за ЦЕНЫ В
+        ТЕКСТЕ ЗАПРОСА, которой физически нет ни в одном документе (в
+        каталоге кейса, strapi_output0709.csv, поля "цена" нет вовсе — см.
+        отчёт) — жёсткий цветовой фильтр здесь просто складывается с этим и
+        уводит top-скор ниже общего порога refusal. Второй проход без
+        фильтров — тот же принцип, что и pairing-приоритет выше: не дать
+        одному калиброванному числу отказать там, где кандидаты есть.
+        collections=None здесь ЯВНО (не текущий `collections` аргумента) —
+        сохраняет вызывающего внутри эвристики (auto-routing), а не форсирует
+        конкретный набор коллекций."""
         if collections is not None:
             return self.hybrid.search(query, filters=filters, collections=collections, top_k=top_k)
 
-        if classify(query) == "pairing":
-            return self._search_pairing(query, filters, top_k)
+        results = self._search_auto(query, filters, top_k)
+        if results or not filters_active(filters):
+            return results
+        return self._search_auto(query, None, top_k)
 
+    def _search_auto(self, query: str, filters: Filters | None, top_k: int) -> list[Candidate]:
+        """Эвристика-роутер БЕЗ ослабления фильтров (один проход) — используется
+        search() дважды: сначала с фильтрами вызывающего, при пустой выдаче
+        (и только тогда) — второй раз с filters=None."""
+        if classify(query, filters) == "pairing":
+            return self._search_pairing(query, filters, top_k)
         return self.hybrid.search(query, filters=filters, collections=infer_collections(query), top_k=top_k)
 
     def _search_pairing(self, query: str, filters: Filters | None, top_k: int) -> list[Candidate]:
