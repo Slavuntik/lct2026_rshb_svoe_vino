@@ -102,8 +102,11 @@ def test_contract_paths_match_app_exactly_no_undocumented_extras(client: TestCli
     v0.4.6 (коммит 1f3e6e9): временное именованное исключение для
     `/v1/eval/predict` (было в этом месте — см. git-историю файла,
     reports/b3-eval-route.md "Предложения к контрактам") снято — оркестратор
-    вписал путь в contracts/image-scan.md, тест снова проверяет точное
-    совпадение без изъятий."""
+    вписал путь в contracts/image-scan.md. 22.09 (`POST /v1/pairing/dish-photo`,
+    `POST /v1/pairing/dish`, reports/backend-dish-photo.md): та же история —
+    architect ратифицировал contracts/post-scan.md v1.1 §4 / openapi.yaml 0.3.4
+    ДО коммита backend, так что оба пути в контракте с самого начала — временное
+    исключение здесь не понадобилось вовсе."""
     contract = _load_all_contract_paths()
     app_schema = client.app.openapi()
     app_paths = set(app_schema["paths"])

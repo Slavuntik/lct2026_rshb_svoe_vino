@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
 import { CONSENT_VERSION } from "../../lib/consent";
@@ -61,6 +61,37 @@ describe("TastePassportScreen — свайпы шлют события по сл
       expect(events.find((e) => e.name === "swipe")?.props).toMatchObject({ verdict: "skip" });
     } finally {
       restore();
+    }
+  });
+
+  it("вкусовой профиль показывает название и страну стиля (top_styles_named), не сырой слаг (аудит architect openapi 0.3.6, тот же класс дефекта, что qa-manual-hack-v16.md §5.1, регресс)", async () => {
+    renderApp(<TastePassportScreen />, "/app/taste");
+    await waitFor(() => expect(screen.getByText("Шардоне Резерв")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Нравится" }));
+
+    // tihaya-buhta-chardonnay-reserve-2023.derived.reference_style_matches = ["chablis"]
+    // (mocks/fixtures/wines.ts) -> mocks/fixtures/styles.ts: {name:"Шабли", country:"Франция"}.
+    await waitFor(() => expect(screen.getByText("Шабли (Франция)")).toBeInTheDocument());
+    expect(screen.queryByText("chablis")).not.toBeInTheDocument();
+  });
+
+  it("вкусовой профиль — запасной путь: top_styles_named отсутствует, top_styles непуст — честная подпись, не слаг (регресс)", async () => {
+    const profileSpy = vi.spyOn(apiClient, "getTasteProfile").mockResolvedValue({
+      vector: { sweetness: 0.1, acidity: 0.1, tannin: 0.1, body: 0.1, oak: 0.1, aromatic_intensity: 0.1, bubbles: 0 },
+      top_styles: ["chablis", "prosecco"],
+      // top_styles_named НЕ передан вовсе (контракт опционален) — старый сервер/сборка.
+      top_styles_named: undefined,
+      swipes_count: 2,
+    });
+    try {
+      renderApp(<TastePassportScreen />, "/app/taste");
+
+      await waitFor(() => expect(screen.getByText("Стиль 1")).toBeInTheDocument());
+      expect(screen.getByText("Стиль 2")).toBeInTheDocument();
+      expect(screen.queryByText("chablis")).not.toBeInTheDocument();
+      expect(screen.queryByText("prosecco")).not.toBeInTheDocument();
+    } finally {
+      profileSpy.mockRestore();
     }
   });
 

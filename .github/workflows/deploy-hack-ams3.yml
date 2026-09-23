@@ -7,6 +7,7 @@ name: Deploy hack stand (ams3)
 #
 # Секреты репозитория: AMS3_HOST, AMS3_SSH_KEY (приватный ключ CI), AMS3_KNOWN_HOSTS;
 # необязательный GIGACHAT_AUTH_KEY — ключ российской LLM для «Сомелье».
+# необязательные VISION_LLM_URL + VISION_LLM_KEY — шлюз VLM (наш GPU-сервер) для чтения этикетки.
 
 on:
   workflow_dispatch:
@@ -85,4 +86,6 @@ jobs:
           HOST: ${{ secrets.AMS3_HOST }}
           # Необязательный: есть — стенд переключается на GigaChat с этим ключом; нет — LLM не трогается.
           GIGACHAT_AUTH_KEY: ${{ secrets.GIGACHAT_AUTH_KEY }}
+          VISION_LLM_URL: ${{ secrets.VISION_LLM_URL }}
+          VISION_LLM_KEY: ${{ secrets.VISION_LLM_KEY }}
         run: bash infra/ams3/push-release.sh "$HOST" ~/.ssh/ams3_ci

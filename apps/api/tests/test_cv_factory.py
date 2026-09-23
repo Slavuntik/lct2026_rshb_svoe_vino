@@ -141,3 +141,107 @@ def test_warm_up_verifier_returns_true_and_calls_verify_with_nonempty_candidates
 def test_warm_up_verifier_returns_false_without_raising_when_real_verifier_fails():
     """Симметрично warm_up_image_index — ошибка прогрева не роняет старт."""
     assert warm_up_label_verifier(_VerifyExplodes(), _settings(verifier_provider="real")) is False
+
+
+# --- agents/H2-rapidocr-multiscale.md: warm_up_label_verifier() греет ВЫБРАННЫЙ
+# движок (verifier.ocr_engine) — "rapid" греет read_query_text(), не verify() -----
+
+
+class _RapidVerifyMustNotBeCalled:
+    """`verify()` НЕ должен вызываться на прогреве в режиме rapid — та на своём
+    внутреннем fallback-пути (без ocr_text) ВСЕГДА грузит PaddleOCR (packages/cv/
+    cv/verify.py), а весь смысл CV_OCR_ENGINE=rapid — не тащить PaddleOCR в
+    память на дешёвом CPU."""
+
+    ocr_engine = "rapid"
+
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        raise AssertionError("rapid-движок: verify() не должен вызываться на прогреве")
+
+    def read_query_text(self, image: bytes) -> str:
+        return ""
+
+
+def test_warm_up_verifier_rapid_engine_does_not_call_verify():
+    assert warm_up_label_verifier(_RapidVerifyMustNotBeCalled(), _settings(verifier_provider="real")) is True
+
+
+class _RapidReadQueryTextOK:
+    ocr_engine = "rapid"
+
+    def __init__(self) -> None:
+        self.calls: list[bytes] = []
+
+    def read_query_text(self, image: bytes) -> str:
+        self.calls.append(image)
+        return ""
+
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        raise AssertionError("rapid-движок: verify() не должен вызываться на прогреве")
+
+
+def test_warm_up_verifier_rapid_engine_calls_read_query_text_exactly_once():
+    verifier = _RapidReadQueryTextOK()
+    assert warm_up_label_verifier(verifier, _settings(verifier_provider="real")) is True
+    assert len(verifier.calls) == 1
+
+
+class _RapidReadQueryTextExplodes:
+    ocr_engine = "rapid"
+
+    def read_query_text(self, image: bytes) -> str:
+        raise RuntimeError("движок RapidOCR недоступен — ровно то, что warm-up обязан пережить")
+
+
+def test_warm_up_verifier_rapid_engine_returns_false_without_raising_on_failure():
+    assert warm_up_label_verifier(_RapidReadQueryTextExplodes(), _settings(verifier_provider="real")) is False
+
+
+def test_warm_up_verifier_rapid_engine_skips_entirely_on_mock_provider():
+    """VERIFIER_PROVIDER=mock — нечего греть независимо от ocr_engine, ни verify(),
+    ни read_query_text() не должны вызываться."""
+
+    class _RapidMustNotBeCalledAtAll:
+        ocr_engine = "rapid"
+
+        def verify(self, image, candidates):
+            raise AssertionError("mock-провайдер: verify() не должен вызываться")
+
+        def read_query_text(self, image):
+            raise AssertionError("mock-провайдер: read_query_text() не должен вызываться")
+
+    assert warm_up_label_verifier(_RapidMustNotBeCalledAtAll(), _settings(verifier_provider="mock")) is True
+
+
+class _PaddleEngineExplicitStillUsesVerify:
+    """Регресс: `ocr_engine == "paddle"` (явно, не только отсутствие атрибута)
+    обязан сохранить СТАРОЕ поведение (verify()), даже когда объект технически
+    несёт read_query_text — дефолт брифа 'paddle до приёмки' не переключается
+    молча."""
+
+    ocr_engine = "paddle"
+
+    def __init__(self) -> None:
+        self.verify_calls = 0
+
+    def verify(self, image: bytes, candidates: list[dict]) -> str | None:
+        self.verify_calls += 1
+        return None
+
+    def read_query_text(self, image: bytes) -> str:
+        raise AssertionError("paddle-движок не должен вызывать read_query_text() на прогреве")
+
+
+def test_warm_up_verifier_explicit_paddle_engine_still_uses_verify_not_read_query_text():
+    verifier = _PaddleEngineExplicitStillUsesVerify()
+    assert warm_up_label_verifier(verifier, _settings(verifier_provider="real")) is True
+    assert verifier.verify_calls == 1
+
+
+def test_warm_up_verifier_object_without_ocr_engine_attribute_still_uses_verify():
+    """Регресс на СУЩЕСТВУЮЩИЕ двойники этого файла (`_VerifyOK` и т.п.) — они не
+    несут `ocr_engine` вовсе; `getattr(..., "paddle")` обязан мягко деградировать
+    к старому поведению, не падать с AttributeError."""
+    verifier = _VerifyOK()
+    assert warm_up_label_verifier(verifier, _settings(verifier_provider="real")) is True
+    assert len(verifier.calls) == 1

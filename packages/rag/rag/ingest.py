@@ -16,17 +16,17 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 from rag import config, refdata
 from rag.calibrate import calibrate_refusal_threshold, load_goldset_safe
+from rag.case_data import build_supplemental_wine_records
 from rag.embeddings import BM25Index, DenseEmbedder
 from rag.hybrid import HybridSearcher
 from rag.rerank import build_reranker
 from rag.store import QdrantStore
+from rag.types import SourceRecord  # реэкспорт — см. докстринг класса в rag/types.py
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -45,15 +45,6 @@ def _load_catalog_card(catalog_dir: Path, subdir: str, slug: str) -> dict | None
         return None
     with open(path, encoding="utf-8") as f:
         return json.load(f)
-
-
-@dataclass
-class SourceRecord:
-    id: str
-    kind: str
-    text: str
-    url: str
-    payload: dict[str, Any]
 
 
 def build_wine_records(build_dir: Path, catalog_dir: Path) -> list[SourceRecord]:
@@ -166,11 +157,24 @@ def run_ingest(
     data_dir: Path | None = None,
     embedder: DenseEmbedder | None = None,
     goldset_path: Path | None = None,
+    case_data_dir: Path | None = None,
 ) -> dict:
+    """`case_data_dir` (22.09, reports/backend-rag-rebuild.md): дополняет
+    коллекцию "wines" вином из `<case_data_dir>/case_catalog.json`, которых
+    НЕТ в `source_dir/index.jsonl` (пайплайн vines — снимок 25.08, 1978 вин;
+    каталог кейса-сканера на 22.09 — 2103, 125 отсутствуют). Дефолт —
+    `config.CASE_DATA_DIR` (тот же env `CASE_DATA_DIR`, что и у apps/api) —
+    ЖИВОЙ, не отключаемый молча: на машине без case-data (CI, чистый чекаут)
+    `rag.case_data.load_case_catalog()` честно отдаёт `{}` при отсутствующем
+    файле (тот же принцип graceful degradation, что goldset_path без файла
+    выше), дополнение становится no-op, ingest не падает. Явный несуществующий
+    путь (тесты, `tests/conftest.py::tiny_index`) отключает дополнение вовсе —
+    синтетическим фикстурам чужие 125 реальных вин ни к чему."""
     t_start = time.perf_counter()
     build_dir = source_dir or config.BUILD_DIR
     cat_dir = catalog_dir or config.CATALOG_DIR
     ddir = data_dir or config.DATA_DIR
+    cdir = case_data_dir if case_data_dir is not None else config.CASE_DATA_DIR
     payloads_dir = ddir / "payloads"
     bm25_dir = ddir / "bm25"
     labels_path = ddir / "labels.jsonl"
@@ -183,8 +187,12 @@ def run_ingest(
     timings: dict[str, float] = {}
 
     t0 = time.perf_counter()
+    wine_records = build_wine_records(build_dir, cat_dir)
+    known_wine_slugs = {r.id for r in wine_records}
+    case_data_supplement = build_supplemental_wine_records(cdir, known_wine_slugs)
+    wine_records = wine_records + case_data_supplement
     collections = {
-        "wines": build_wine_records(build_dir, cat_dir),
+        "wines": wine_records,
         "wineries": build_winery_records(build_dir, cat_dir),
         "knowledge": build_knowledge_records(build_dir),
     }
@@ -275,6 +283,13 @@ def run_ingest(
         "timings": timings,
         "refusal_threshold": refusal_calibration.get("threshold"),
         "refusal_calibration": refusal_calibration,
+        # reports/backend-rag-rebuild.md (22.09): вина из case_catalog.json,
+        # которых не было в source_dir/index.jsonl — см. run_ingest(case_data_dir=).
+        "case_data_supplement": {
+            "case_data_dir": str(cdir),
+            "added": len(case_data_supplement),
+            "added_slugs": sorted(r.id for r in case_data_supplement),
+        },
     }
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)

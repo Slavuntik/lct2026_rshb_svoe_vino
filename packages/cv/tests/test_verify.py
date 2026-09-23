@@ -289,6 +289,128 @@ def test_verify_returns_none_immediately_on_empty_candidates(synthetic_bottle_im
     assert v._ocr is None  # пустой список кандидатов проверяется ДО обращения к OCR-движку
 
 
+# --- v0.4.12 (agents/B9-text-rerank-integration.md): `ocr_text` — переиспользование
+# текста, прочитанного один раз apps/api для cv.text_rerank, без повторного OCR ------
+#
+# Все тесты ниже, где `ocr_text` ПЕРЕДАН, намеренно используют ДЕШЁВОЕ синтетическое
+# фото (`synthetic_bottle_image`) и свежий `LabelVerifier()` — реальный движок PaddleOCR
+# в этих сценариях не должен грузиться ВООБЩЕ (см. `v._ocr is None`), поэтому его
+# отсутствие не влияет на результат: сама суть параметра в том, что фото не читается.
+
+
+def test_verify_with_ocr_text_never_touches_read_text(monkeypatch, synthetic_bottle_image):
+    """Явный `ocr_text` -> `read_text()` (реальный OCR-проход) не вызывается вовсе —
+    решение принимается ровно по переданной строке. `monkeypatch` на `read_text`
+    бросает исключение при вызове, так что любой (даже случайный) вызов OCR уронит тест."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться, когда ocr_text передан")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="сухое 2024 0.75л")
+
+    assert result == "aligote-barrel-2024"
+    assert v._ocr is None  # движок ни разу не тронут — не только read_text() не звался
+
+
+def test_verify_empty_string_ocr_text_is_provided_not_none(monkeypatch, synthetic_bottle_image):
+    """`ocr_text=""` — ВАЛИДНОЕ значение "передано, но нечего сопоставлять" (отличается
+    от `None` = "не передано, прочитай сам"): OCR не вызывается, решение — воздержание
+    (как `match_candidates("", ...)`), а не попытка прочитать текст заново."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться — ocr_text передан (пустой, но не None)")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="")
+
+    assert result is None
+    assert v._ocr is None
+
+
+def test_verify_without_ocr_text_argument_still_calls_read_text(monkeypatch, synthetic_bottle_image):
+    """Бит-в-бит регресс на старое поведение: БЕЗ параметра (2-позиционный вызов, как
+    до этой волны) `verify()` по-прежнему сам вызывает `read_text()` — ровно один раз.
+    `read_text` замокан (не настоящий PaddleOCR) — тест быстрый, проверяет ФАКТ вызова
+    и то, что его результат реально используется для решения, а не сам движок OCR."""
+    from cv.imageio import encode_jpeg
+
+    calls: list[np.ndarray] = []
+
+    def _fake_read_text(self, image_arr):
+        calls.append(image_arr)
+        return "2024"
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES)  # старая, 2-позиционная сигнатура
+
+    assert result == "aligote-barrel-2024"
+    assert len(calls) == 1, "read_text() обязан вызваться РОВНО один раз, когда ocr_text не передан"
+
+
+def test_verify_ocr_text_none_default_matches_omitting_the_argument(monkeypatch, synthetic_bottle_image):
+    """`ocr_text=None` явно передан -> тот же результат, что и при полном отсутствии
+    аргумента (дефолт) — `None` не самостоятельная ветка, а именно значение по
+    умолчанию (contracts/image-scan.md v0.4.12: "старое поведение без параметра —
+    бит в бит")."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setattr(LabelVerifier, "read_text", lambda self, image_arr: "2025")
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    omitted = v.verify(data, _ALIGOTE_CANDIDATES)
+    explicit_none = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text=None)
+
+    assert omitted == explicit_none == "aligote-barrel-2025"
+
+
+def test_verify_on_corrupt_bytes_raises_value_error_even_with_ocr_text_given():
+    """decode -> ValueError остаётся ПЕРВЫМ шагом независимо от `ocr_text` — битые
+    байты не долетают до сопоставления, даже если текст уже на руках у вызывающего."""
+    v = LabelVerifier()
+    with pytest.raises(ValueError):
+        v.verify(b"not an image, just garbage bytes 0123456789", _ALIGOTE_CANDIDATES, ocr_text="2024")
+
+
+def test_verify_debug_trace_reports_provided_ocr_text_verbatim_without_ocr(
+    monkeypatch, capsys, synthetic_bottle_image
+):
+    """CV_VERIFY_DEBUG=1 + `ocr_text` передан -> трассировка несёт РОВНО переданную
+    строку (не заново прочитанную), и движок OCR по-прежнему не тронут."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image_arr):
+        raise AssertionError("read_text() не должен вызываться в debug-режиме, когда ocr_text передан")
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _boom)
+    monkeypatch.setenv("CV_VERIFY_DEBUG", "1")
+
+    v = LabelVerifier()
+    data = encode_jpeg(synthetic_bottle_image)
+    result = v.verify(data, _ALIGOTE_CANDIDATES, ocr_text="сухое 2024 0.75л")
+
+    assert result == "aligote-barrel-2024"
+    assert v._ocr is None
+
+    err = capsys.readouterr().err
+    line = next(line for line in err.splitlines() if "[cv.verify]" in line)
+    payload = json.loads(line.split("[cv.verify] ", 1)[1])
+    assert payload["ocr_text"] == "сухое 2024 0.75л"
+    assert payload["decision"] == "aligote-barrel-2024"
+
+
 # --- Интеграция с реальным PaddleOCR: DoD брифа (near-dup год, воздержание, бюджет) --
 #
 # aligote-barrel-2024/2025 в devfix — буквально один и тот же файл фото (одна этикетка,
@@ -376,3 +498,450 @@ def test_verify_p95_latency_budget(label_verifier):
 
     report = benchmark(label_verifier, [data], _ALIGOTE_CANDIDATES, n=8)
     assert report["p95_ms"] <= 700, f"verify() p95={report['p95_ms']}ms превышает бюджет 700мс: {report}"
+
+
+# --- v0.4.12 (agents/B9-text-rerank-integration.md): read_query_text() — реальный
+# PaddleOCR, DoD "публичный метод чтения текста запроса, переиспользуемый ocr_text" ---
+
+
+def test_read_query_text_equals_manual_normalize_and_read_text_pipeline(label_verifier):
+    """`read_query_text()` — ровно decode -> normalize_query() -> read_text(), тот же
+    кроп, что видит verify() изнутри без ocr_text. Сравниваем с РУЧНЫМ повторением тех
+    же трёх шагов на том же фото — обязаны дать побитово одинаковую строку."""
+    from cv import imageio
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+    from cv.normalize import normalize_query
+
+    ref = _make_bottle_label(2024)
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    via_public_method = label_verifier.read_query_text(data)
+
+    arr = imageio.decode_image(data)
+    normalized = normalize_query(arr, enabled=True)
+    via_manual_steps = label_verifier.read_text(normalized)
+
+    assert via_public_method == via_manual_steps
+    assert "2024" in via_public_method
+
+
+def test_verify_ocr_text_overrides_what_the_photo_actually_shows(label_verifier):
+    """Сильное доказательство "OCR не повторяется": фото реально несёт год 2025
+    (читаемый ракурс) — не в этом кандидатском словаре. Если бы verify() читал OCR
+    заново, он честно получил бы 2025 и воздержался (2025 не в списке кандидатов ниже
+    — только 2024/2026). Передаём заведомо ДРУГОЙ текст (2026) явным `ocr_text` — решение
+    обязано последовать за ПЕРЕДАННЫМ текстом, а не за тем, что реально на фото."""
+    from cv.augment import render_synthetic_views
+    from cv.imageio import encode_jpeg
+
+    ref = _make_bottle_label(2025)  # фото реально показывает 2025
+    views = render_synthetic_views(ref, n=_READABLE_VIEW_INDEX + 1, seed=_READABLE_VIEW_SEED)
+    data = encode_jpeg(views[_READABLE_VIEW_INDEX])
+
+    # Санити: реальный OCR этого фото читает именно 2025, не 2026 — иначе тест
+    # ничего не доказывает (могло бы случайно совпасть).
+    real_text = label_verifier.read_query_text(data)
+    assert "2025" in real_text
+    assert "2026" not in real_text
+
+    candidates: list[VerifyCandidate] = [
+        {"slug": "aligote-barrel-2024", "name": "Алиготе Баррель", "vintage": 2024},
+        {"slug": "aligote-barrel-2026", "name": "Алиготе Баррель", "vintage": 2026},
+    ]
+    result = label_verifier.verify(data, candidates, ocr_text="урожай 2026 сухое")
+
+    assert result == "aligote-barrel-2026", "решение обязано следовать ЗА ПЕРЕДАННЫМ текстом, не за фото"
+
+
+# --- agents/H1-cpu-path.md, задача 1: CV_OCR_QUERY_MODE/CV_OCR_CENTER_SIZE ----------
+#
+# Все тесты этого раздела — БЕЗ реального PaddleOCR (брифа п.4: "без сети, без
+# PaddleOCR в юнитах"): `_StubOCR` подменяет `self._ocr` НАПРЯМУЮ (обходит ленивую
+# `_load()`, у которой `if self._ocr is not None: return`), так что тестируется
+# только кадрирование/маршрутизация — какой МАССИВ и с какой целью даунскейла
+# доходит до движка, — а не сам PaddleOCR.
+
+
+class _StubOCR:
+    """Двойник PaddleOCR-движка: помнит форму каждого массива, который РЕАЛЬНО
+    дошёл бы до `predict()`, ничего не распознаёт (пустой список кандидатов текста —
+    `read_text()` тогда честно отдаёт "")."""
+
+    def __init__(self):
+        self.seen: list[np.ndarray] = []
+
+    def predict(self, image_arr):
+        self.seen.append(image_arr)
+        return []
+
+
+def _stubbed_verifier(**kwargs) -> tuple[LabelVerifier, _StubOCR]:
+    v = LabelVerifier(**kwargs)
+    stub = _StubOCR()
+    v._ocr = stub  # пропускаем _load() целиком — модель никогда не тронута
+    return v, stub
+
+
+def test_default_ocr_query_mode_is_detector():
+    """Дефолт брифа: 'дефолт пока detector, включим после приёмки' — молчаливой
+    смены поведения быть не должно."""
+    assert LabelVerifier().ocr_query_mode == "detector"
+
+
+def test_default_center_size_is_640():
+    assert LabelVerifier().center_size == 640
+
+
+def test_ocr_query_mode_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", "center")
+    assert LabelVerifier().ocr_query_mode == "center"
+
+
+def test_ocr_query_mode_env_var_is_case_and_whitespace_normalized(monkeypatch):
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", " CENTER \n")
+    assert LabelVerifier().ocr_query_mode == "center"
+
+
+def test_ocr_center_size_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_CENTER_SIZE", "800")
+    assert LabelVerifier().center_size == 800
+
+
+def test_center_crop_constant_pins_brief_fractions():
+    """Те же доли, что apps/api/app/cv/vision_llm.py::CENTER_CROP (вход VLM) и
+    qa/real_photos_features.py::CWIDE (офлайн-эксперимент) — намеренно один и тот
+    же кроп во всех трёх путях чтения этикетки (agents/H1-cpu-path.md)."""
+    from cv.verify import CENTER_CROP
+
+    assert CENTER_CROP == (0.15, 0.05, 0.85, 0.98)
+
+
+def test_center_crop_slices_full_frame_by_fixed_fractions():
+    from cv.verify import _center_crop
+
+    arr = np.arange(1000 * 2000 * 3, dtype=np.uint8).reshape(1000, 2000, 3)
+    cropped = _center_crop(arr)
+    assert cropped.shape == (930, 1400, 3)  # (0.98-0.05)*1000, (0.85-0.15)*2000
+    assert np.array_equal(cropped, arr[50:980, 300:1700])
+
+
+def test_read_text_size_param_overrides_ocr_size_downscale_target():
+    """agents/H1-cpu-path.md: `size=` — независимая цель даунскейла от
+    `self.ocr_size` (та используется только когда `size` не передан)."""
+    v, stub = _stubbed_verifier(ocr_size=320)
+    big = np.zeros((100, 2000, 3), dtype=np.uint8)
+
+    v.read_text(big, size=640)
+
+    assert stub.seen[0].shape == (32, 640, 3)  # 100*640/2000=32, широкая сторона -> 640
+
+
+def test_read_text_without_size_param_keeps_using_ocr_size():
+    """Регресс: старое поведение (без `size=`) не сдвинулось — цель даунскейла
+    по-прежнему `self.ocr_size`, бит-в-бит как до этой правки."""
+    v, stub = _stubbed_verifier(ocr_size=320)
+    big = np.zeros((100, 2000, 3), dtype=np.uint8)
+
+    v.read_text(big)
+
+    assert max(stub.seen[0].shape[:2]) == 320
+
+
+def test_read_query_text_center_feeds_full_frame_crop_not_detector_square():
+    """`CV_OCR_QUERY_MODE=center`: массив, дошедший до движка, — кроп ПОЛНОГО
+    кадра (930x1400 после CENTER_CROP), даунскейленный до `center_size` (640) —
+    НЕ квадрат 320x320, который даёт режим "detector" (см. следующий тест)."""
+    from cv.imageio import encode_jpeg
+
+    v, stub = _stubbed_verifier(query_mode="center", center_size=640)
+    data = encode_jpeg(np.zeros((1000, 2000, 3), dtype=np.uint8))
+
+    v.read_query_text(data)
+
+    assert stub.seen[0].shape == (425, 640, 3)  # 930x1400 -> downscale до максимума 640
+
+
+def test_read_query_text_detector_mode_feeds_normalized_square_regardless_of_input_shape():
+    """Режим "detector" (дефолт): `normalize_query()` ВСЕГДА отдаёт квадратный
+    канонический канвас (448x448 по умолчанию), какой бы ни была форма входа —
+    после даунскейла до `ocr_size` (320) движок видит 320x320, не форму входа."""
+    from cv.imageio import encode_jpeg
+
+    v, stub = _stubbed_verifier(query_mode="detector", ocr_size=320)
+    data = encode_jpeg(np.zeros((1000, 2000, 3), dtype=np.uint8))
+
+    v.read_query_text(data)
+
+    assert stub.seen[0].shape == (320, 320, 3)
+
+
+def test_read_query_text_center_on_corrupt_bytes_raises_value_error():
+    v = LabelVerifier(query_mode="center")
+    with pytest.raises(ValueError):
+        v.read_query_text_center(b"not an image, just garbage bytes 0123456789")
+    with pytest.raises(ValueError):
+        v.read_query_text_center(b"")
+
+
+def test_read_query_text_dispatches_to_center_when_mode_is_center(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import encode_jpeg
+
+    calls: list[bytes] = []
+
+    def _fake_center(self, image):
+        calls.append(image)
+        return "CENTER-RESULT"
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _fake_center)
+    v = LabelVerifier(query_mode="center")
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "CENTER-RESULT"
+    assert calls == [data]
+
+
+def test_read_query_text_does_not_dispatch_to_center_when_mode_is_detector(monkeypatch, synthetic_bottle_image):
+    """Регресс: дефолтный режим НЕ трогает `read_query_text_center()` вовсе —
+    маршрутизация однонаправленная, не пробует оба пути."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_center() не должен вызываться в режиме detector")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _boom)
+    v, _stub = _stubbed_verifier()  # дефолт "detector"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.read_query_text(data)  # не должно поднять AssertionError выше
+
+
+def test_verify_internal_fallback_ignores_ocr_query_mode(monkeypatch, synthetic_bottle_image):
+    """agents/H1-cpu-path.md п.1: 'Верификатор near-dup (verify) получает тот же
+    текст — как сейчас' — собственный fallback `verify()` (когда `ocr_text` не
+    передан) по-прежнему читает ЧЕРЕЗ `normalize_query()` (детектор), НЕЗАВИСИМО
+    от `CV_OCR_QUERY_MODE`. Режим влияет ТОЛЬКО на `read_query_text()`."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setenv("CV_OCR_QUERY_MODE", "center")
+    calls: list[tuple[tuple[int, ...], int | None]] = []
+
+    def _fake_read_text(self, image_arr, *, size=None):
+        calls.append((image_arr.shape, size))
+        return ""
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+    v = LabelVerifier()
+    assert v.ocr_query_mode == "center"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.verify(data, [{"slug": "x", "name": "x", "vintage": None}])
+
+    assert len(calls) == 1
+    shape, size = calls[0]
+    assert shape == (448, 448, 3)  # normalize_query() дефолтный NORM_SIZE_DEFAULT — детектор, не центр-кроп
+    assert size is None  # verify() не передаёт size= — read_text() сам использует self.ocr_size
+
+
+# --- agents/H2-rapidocr-multiscale.md, задача 2: CV_OCR_ENGINE/CV_OCR_RAPID_SIZES ---
+#
+# Все тесты этого раздела — БЕЗ реального RapidOCR (брифа п.5: "юнит-тесты не должны
+# требовать rapidocr/onnxruntime") — движок подменяется напрямую (`v._rapid = ...`)
+# или методы диспетчеризации — monkeypatch, та же дисциплина, что H1-раздел выше
+# применяет к PaddleOCR/`_StubOCR`.
+
+
+def test_default_ocr_engine_is_paddle():
+    """Дефолт брифа: 'paddle до приёмки' — молчаливой смены поведения быть не должно."""
+    assert LabelVerifier().ocr_engine == "paddle"
+
+
+def test_ocr_engine_env_var_overrides_constructor_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_ENGINE", "rapid")
+    assert LabelVerifier().ocr_engine == "rapid"
+
+
+def test_ocr_engine_env_var_is_case_and_whitespace_normalized(monkeypatch):
+    monkeypatch.setenv("CV_OCR_ENGINE", " RAPID \n")
+    assert LabelVerifier().ocr_engine == "rapid"
+
+
+def test_default_rapid_sizes_is_640_960():
+    assert LabelVerifier().rapid_sizes == (640, 960)
+
+
+def test_rapid_sizes_env_var_overrides_default(monkeypatch):
+    monkeypatch.setenv("CV_OCR_RAPID_SIZES", "640,800,960")
+    assert LabelVerifier().rapid_sizes == (640, 800, 960)
+
+
+def test_rapid_sizes_constructor_param_overrides_default():
+    assert LabelVerifier(rapid_sizes=(960,)).rapid_sizes == (960,)
+
+
+def test_rapid_sizes_env_var_overrides_constructor_param(monkeypatch):
+    monkeypatch.setenv("CV_OCR_RAPID_SIZES", "1280")
+    assert LabelVerifier(rapid_sizes=(640,)).rapid_sizes == (1280,)
+
+
+def test_read_query_text_dispatches_to_rapid_when_engine_is_rapid(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import encode_jpeg
+
+    calls: list[bytes] = []
+
+    def _fake_rapid(self, image):
+        calls.append(image)
+        return "RAPID-RESULT"
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_rapid", _fake_rapid)
+    v = LabelVerifier(engine="rapid")
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "RAPID-RESULT"
+    assert calls == [data]
+
+
+def test_read_query_text_does_not_dispatch_to_rapid_when_engine_is_paddle(monkeypatch, synthetic_bottle_image):
+    """Регресс: дефолтный движок "paddle" НЕ трогает `read_query_text_rapid()` вовсе."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_rapid() не должен вызываться в режиме paddle")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_rapid", _boom)
+    v, _stub = _stubbed_verifier()  # дефолт "paddle"/"detector"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.read_query_text(data)  # не должно поднять AssertionError выше
+
+
+def test_read_query_text_rapid_mode_ignores_center_query_mode_setting(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md п.2: `CV_OCR_ENGINE=rapid` не читает
+    `CV_OCR_QUERY_MODE` вовсе — даже явный 'center' (или 'detector') не должен
+    маршрутизировать в `read_query_text_center()` (тот — PaddleOCR)."""
+    from cv.imageio import encode_jpeg
+
+    def _boom(self, image):
+        raise AssertionError("read_query_text_center() (PaddleOCR) не должен вызываться в режиме rapid")
+
+    monkeypatch.setattr(LabelVerifier, "read_query_text_center", _boom)
+    calls: list[bytes] = []
+    monkeypatch.setattr(
+        LabelVerifier, "read_query_text_rapid", lambda self, image: (calls.append(image), "ok")[1]
+    )
+    v = LabelVerifier(engine="rapid", query_mode="center")  # оба режима заданы явно
+    data = encode_jpeg(synthetic_bottle_image)
+
+    assert v.read_query_text(data) == "ok"
+    assert calls == [data]
+
+
+def test_read_query_text_rapid_decodes_and_delegates_to_reader_read_center(monkeypatch, synthetic_bottle_image):
+    from cv.imageio import decode_image, encode_jpeg
+
+    class _StubReader:
+        def __init__(self):
+            self.seen: list[np.ndarray] = []
+
+        def read_center(self, arr):
+            self.seen.append(arr)
+            return "ok"
+
+    v = LabelVerifier(engine="rapid")
+    stub = _StubReader()
+    v._rapid = stub  # пропускаем _rapid_reader()/реальный RapidOcrReader целиком
+    data = encode_jpeg(synthetic_bottle_image)
+
+    result = v.read_query_text_rapid(data)
+
+    assert result == "ok"
+    assert len(stub.seen) == 1
+    assert np.array_equal(stub.seen[0], decode_image(data))
+
+
+def test_read_query_text_rapid_on_corrupt_bytes_raises_value_error():
+    v = LabelVerifier(engine="rapid")
+    with pytest.raises(ValueError):
+        v.read_query_text_rapid(b"not an image, just garbage bytes 0123456789")
+    with pytest.raises(ValueError):
+        v.read_query_text_rapid(b"")
+
+
+def test_rapid_reader_created_lazily_once_and_cached(monkeypatch):
+    """Брифа п.1: 'ленивая загрузка, один экземпляр движка на масштаб' — на уровне
+    LabelVerifier это означает ОДИН `RapidOcrReader` на инстанс верификатора,
+    переиспользуемый между вызовами, не пересоздаваемый каждый раз."""
+    import cv.ocr_rapid as ocr_rapid_module
+
+    construct_calls = {"n": 0}
+
+    class _StubReader:
+        def __init__(self, sizes):
+            construct_calls["n"] += 1
+            self.sizes = sizes
+
+        def read_center(self, arr):
+            return ""
+
+    monkeypatch.setattr(ocr_rapid_module, "RapidOcrReader", _StubReader)
+    v = LabelVerifier(engine="rapid", rapid_sizes=(640, 960))
+
+    r1 = v._rapid_reader()
+    r2 = v._rapid_reader()
+
+    assert r1 is r2
+    assert construct_calls["n"] == 1
+    assert r1.sizes == (640, 960)
+
+
+def test_read_query_text_rapid_never_touches_paddleocr_load(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md: 'PaddleOCR при rapid НЕ грузится на
+    прогреве' — на уровне `read_query_text()` это значит `_load()`/`self._ocr`
+    (PaddleOCR) вообще не затрагиваются в режиме rapid."""
+    from cv.imageio import encode_jpeg
+
+    class _StubReader:
+        def read_center(self, arr):
+            return "стаб-текст"
+
+    def _boom(self):
+        raise AssertionError("_load() (PaddleOCR) не должен вызываться в режиме rapid")
+
+    monkeypatch.setattr(LabelVerifier, "_load", _boom)
+    v = LabelVerifier(engine="rapid")
+    v._rapid = _StubReader()
+    data = encode_jpeg(synthetic_bottle_image)
+
+    text = v.read_query_text(data)
+
+    assert text == "стаб-текст"
+    assert v._ocr is None  # PaddleOCR так и не тронут
+
+
+def test_verify_internal_fallback_ignores_ocr_engine(monkeypatch, synthetic_bottle_image):
+    """agents/H2-rapidocr-multiscale.md: verify()'s собственный fallback (когда
+    `ocr_text` не передан) ВСЕГДА PaddleOCR через `normalize_query()`, независимо
+    от `CV_OCR_ENGINE=rapid` — та же дисциплина, что H1 уже установил для
+    `CV_OCR_QUERY_MODE` (см. `test_verify_internal_fallback_ignores_ocr_query_mode`
+    выше). Режим/движок влияют ТОЛЬКО на `read_query_text()`."""
+    from cv.imageio import encode_jpeg
+
+    monkeypatch.setenv("CV_OCR_ENGINE", "rapid")
+    calls: list[tuple[tuple[int, ...], int | None]] = []
+
+    def _fake_read_text(self, image_arr, *, size=None):
+        calls.append((image_arr.shape, size))
+        return ""
+
+    monkeypatch.setattr(LabelVerifier, "read_text", _fake_read_text)
+    v = LabelVerifier()
+    assert v.ocr_engine == "rapid"
+    data = encode_jpeg(synthetic_bottle_image)
+
+    v.verify(data, [{"slug": "x", "name": "x", "vintage": None}])
+
+    assert len(calls) == 1
+    shape, size = calls[0]
+    assert shape == (448, 448, 3)  # normalize_query() — fallback verify() никогда не берёт RapidOCR
+    assert size is None

@@ -75,12 +75,29 @@ class VerifyCandidate(TypedDict):
 
 
 class LabelVerifier(Protocol):
-    def verify(self, image: bytes, candidates: list[VerifyCandidate]) -> str | None:
+    def verify(
+        self, image: bytes, candidates: list[VerifyCandidate], ocr_text: str | None = None
+    ) -> str | None:
         """Среди near-dup кандидатов (одна этикетка, разные год/категория/
         объём) выбирает точный slug по тексту на фото (OCR: год, категория,
         объём), сверяя с name/vintage кандидатов, либо None, если не смог
         уверенно различить — вызывающий код тогда честно откатывается на
-        top-1 ANN без ocr_verified=True. Бюджет ≤ 700 мс p95 (v0.4.4)."""
+        top-1 ANN без ocr_verified=True. Бюджет ≤ 700 мс p95 (v0.4.4).
+
+        `ocr_text` (v0.4.12, agents/B9-text-rerank-integration.md): если
+        `app/cv/service.py` уже прочитал текст этого фото через
+        `read_query_text()` (для `cv.text_rerank`), передаёт его сюда —
+        второй проход OCR не выполняется, текст используется как есть.
+        `None` (дефолт) — верификатор читает OCR сам, старое поведение."""
+
+    def read_query_text(self, image: bytes) -> str:
+        """v0.4.12: один проход OCR по нормализованному кропу этикетки
+        запроса (`normalize_query()` + PaddleOCR) — тот же кроп, что видит
+        `verify()` изнутри, когда ему не передан `ocr_text`. Публичный метод,
+        чтобы `app/cv/service.py` прочитал текст РОВНО ОДИН раз за запрос и
+        переиспользовал его и для `cv.text_rerank` (переранжирование top-K),
+        и для `verify(ocr_text=...)` — вместо двух независимых вызовов OCR
+        на одно и то же фото."""
 
 
 def get_image_index() -> ImageIndex:  # pragma: no cover - см. app/cv/factory.py

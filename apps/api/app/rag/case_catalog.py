@@ -100,6 +100,18 @@ def lookup(slug: str) -> CaseWine | None:
     )
 
 
+def all_slugs() -> list[str]:
+    """Все slug'и, известные `case_catalog.json` — корпус для IDF текстового
+    переранжирования (contracts/image-scan.md v0.4.12, agents/B9-text-rerank-
+    integration.md: "тексты кандидатов — каталог кейса"; `app/cv/service.py`
+    строит `cv.text_rerank.CatalogText`/IDF по каждому slug'у через `lookup()`
+    ниже). Пустой список, если `case_catalog.json` недоступен — та же честная
+    деградация, что и у `lookup()` (вызывающий код тогда получает пустой IDF-
+    словарь, `text_score()` возвращает 0.0 для всех — переранжирование
+    становится no-op, не падает)."""
+    return list(_load_catalog(str(_case_catalog_path())).keys())
+
+
 def source_url(slug: str) -> str:
     """contracts/image-scan.md v0.4.11 п.3: "source_url слага кейса —
     https://vino-svoe.ru/wines/<slug>" — независимо от того, знает ли

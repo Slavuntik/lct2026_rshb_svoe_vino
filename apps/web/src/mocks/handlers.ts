@@ -8,6 +8,7 @@ import type {
   ChatPayload,
   ChatStreamEvent,
   ConsentScope,
+  DishPairingPayload,
   GuestAuthPayload,
   LoginPayload,
   PostConsentPayload,
@@ -18,10 +19,12 @@ import type {
   ScanResolveResponse,
   SwipePayload,
   WaitlistPayload,
+  WinePairingsResponse,
 } from "../lib/apiTypes";
-import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
-import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
-import { caseFallbackWines, findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
+import { chunkAnswer, pickChatResponse, pickChatResponseForWine } from "./fixtures/chat";
+import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
+import { popularStyleNames, resolveStyle, styleNamesFor, winesForStyle } from "./fixtures/styles";
+import { caseFallbackWines, findWineBySlug, similarWinesFor, wines, type WineFixture } from "./fixtures/wines";
 import {
   applySwipe,
   createAccount,
@@ -306,7 +309,8 @@ export const handlers: HttpHandler[] = [
     const { searchTerms: _searchTerms, ...card } = demoWine;
     return HttpResponse.json({
       slug: demoWine.wine_id,
-      card,
+      // v0.3.6: card = ровно тело GET /wines/{id} (v0.4.1 image-scan.md) — тот же similar_wines.
+      card: { ...card, similar_wines: similarWinesFor(card.similar ?? []) },
       confidence: { top1_score: 0.94, gap: 0.31, f1_top1: 0.87, f1_top5: 0.95 },
       ocr_verified: true,
       timing_ms: 780,
@@ -325,13 +329,68 @@ export const handlers: HttpHandler[] = [
       return errorJson(404, "not_found", "Карточка вина не найдена.");
     }
     const { searchTerms: _searchTerms, ...card } = wine;
-    return HttpResponse.json(card);
+    // v0.3.6: similar_wines — обогащение тех же слагов, что в similar (оставлен для обратной
+    // совместимости/запасного пути на клиенте, см. reports/frontend-jury-pass-fixes.md).
+    return HttpResponse.json({ ...card, similar_wines: similarWinesFor(card.similar ?? []) });
+  }),
+
+  // v0.3.3 (contracts/post-scan.md v1.0): гастропары. Мок — упрощённый стенд-ин, не порт
+  // мини-DSL food_pairing_rules.yaml (та логика — зона backend, apps/api/app/rag): все наши
+  // фикстуры несут непустой food_pairings -> basis=catalog реалистично покрывает dev-режим;
+  // basis=unavailable — честный фолбэк для гипотетического вина без него. sensory/heuristic
+  // здесь не воспроизводятся (нет фикстуры без food_pairings, где было бы видно) — эти basis
+  // у компонента проверены юнит-тестом через vi.spyOn(apiClient.getWinePairings).
+  http.get(`${API}/wines/:wineId/pairings`, ({ params }) => {
+    const wine = findWineBySlug(String(params.wineId));
+    if (!wine) {
+      return errorJson(404, "not_found", "Карточка вина не найдена.");
+    }
+    const catalogPairings = wine.source.food_pairings ?? [];
+    if (catalogPairings.length > 0) {
+      return HttpResponse.json({
+        wine_id: wine.wine_id,
+        basis: "catalog",
+        pairings: catalogPairings.slice(0, 3).map((tag) => ({ tag, score: null, triggered_rules: [] })),
+        message: null,
+      } satisfies WinePairingsResponse);
+    }
+    return HttpResponse.json({
+      wine_id: wine.wine_id,
+      basis: "unavailable",
+      pairings: [],
+      message: "Недостаточно данных, чтобы подобрать сочетания для этого вина.",
+    } satisfies WinePairingsResponse);
+  }),
+
+  // --- pairing/dish («Что подать» по фото блюда, задача тимлида 22.09) ---
+  // Контракт (post-scan.md v1.1) architect оформляет параллельно — мок построен буквально по
+  // схеме брифа, детерминирован по имени файла (тот же приём, что /scan/photo выше).
+  http.post(`${API}/pairing/dish-photo`, async ({ request }) => {
+    const form = await request.formData();
+    const image = form.get("image");
+    const filename = image instanceof File ? image.name : "dish.jpg";
+    return HttpResponse.json(buildDishPhotoResponse(filename));
+  }),
+
+  http.post(`${API}/pairing/dish`, async ({ request }) => {
+    const body = (await request.json()) as DishPairingPayload;
+    // contracts/post-scan.md v1.1 §4.2: category — строго один из 9 тегов, иное значение
+    // (включая пустое) -> 400 validation_error, а не честный "unsure" (это не фото со
+    // случайной моделью — пользователь выбирает строго из наших же 9 чипов).
+    if (!body.category || !isDishCategory(body.category)) {
+      return errorJson(400, "validation_error", `Неизвестная категория блюда: «${body.category ?? ""}».`);
+    }
+    return HttpResponse.json(buildDishCategoryResponse(body.category, body.dish));
   }),
 
   // --- chat (SSE) ---
   http.post(`${API}/chat`, async ({ request }) => {
     const body = (await request.json()) as ChatPayload;
-    const script = pickChatResponse(body.message);
+    // v0.3.5 (задача тимлида 22.09): wine_id (только первый запрос диалога, ChatScreen.tsx)
+    // резолвится в ответ ИМЕННО про это вино в обход разбора текста — тот самый обход
+    // проблемы "текстовый поиск по префиллу путает вина-близнецы из одной серии в ~8%
+    // случаев" (см. reports/frontend-wine-id-chat.md). Не резолвится/не передан — как раньше.
+    const script = (body.wine_id && pickChatResponseForWine(body.wine_id)) || pickChatResponse(body.message);
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream<Uint8Array>({
@@ -454,9 +513,12 @@ export const handlers: HttpHandler[] = [
   http.get(`${API}/taste/profile`, ({ request }) => {
     const account = accountFromRequest(request);
     if (!account) return unauthorized();
+    const topStyles = topStylesFor(account);
+    // v0.3.6: top_styles_named — обогащение тех же слагов, что в top_styles (запасной путь).
     return HttpResponse.json({
       vector: account.vector,
-      top_styles: topStylesFor(account),
+      top_styles: topStyles,
+      top_styles_named: styleNamesFor(topStyles),
       swipes_count: account.swipes.length,
     });
   }),

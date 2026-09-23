@@ -27,6 +27,17 @@ BUILD_DIR = Path(os.environ.get("RAG_BUILD_DIR", str(VINES_ROOT / "build")))
 CATALOG_DIR = Path(os.environ.get("RAG_CATALOG_DIR", str(VINES_ROOT / "catalog")))
 REF_DIR = Path(os.environ.get("RAG_REF_DIR", str(VINES_ROOT / "ref")))
 
+# Каталог кейса-сканера (case_catalog.json/strapi_output0709.csv) — ВНЕ vines,
+# read-only, никогда не коммитится (см. apps/api/app/rag/case_catalog.py —
+# тот же env/дефолт, дословно, для единообразия между двумя местами, что
+# читают один и тот же файл по разным заботам). reports/backend-rag-rebuild.md
+# (22.09): 125 из 2103 вин каталога сканера отсутствуют в VINES_ROOT/build
+# (снят пайплайном vines 25.08) — rag.case_data дополняет ими коллекцию
+# "wines" при ingest, см. rag/ingest.py::run_ingest(case_data_dir=...).
+CASE_DATA_DIR = Path(
+    os.environ.get("CASE_DATA_DIR", "/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data")
+)
+
 # --- Собственное хранилище индекса (пишем только сюда) ------------------
 DATA_DIR = Path(os.environ.get("RAG_DATA_DIR", str(PACKAGE_ROOT / "data")))
 QDRANT_PATH = Path(os.environ.get("RAG_QDRANT_PATH", str(DATA_DIR / "qdrant")))

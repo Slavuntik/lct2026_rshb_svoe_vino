@@ -8,6 +8,7 @@ import type { AnalogsResponse, ChatFilters, ChatStreamEvent } from "../../lib/ap
 interface CitationView {
   n: number;
   wineId?: string;
+  chunkId?: string;
   quote?: string;
   url?: string;
 }
@@ -26,23 +27,36 @@ function nextId(): string {
 }
 
 /**
- * Один бейдж-цитата: [n] + короткая выдержка, ссылка на первоисточник если есть url
- * («правило каталога №5»). Общий для обеих групп — привязанных к [n] в тексте и
- * «непривязанных» источников v0.3.2 (см. блок «Источники» ниже).
+ * Один бейдж-цитата: [n] + короткая выдержка. Правило ссылок (задача тимлида 22.09, п.2):
+ * цитата-вино (есть event.wine_id) ведёт ВНУТРЬ, на /app/wine/:wineId, через навигацию
+ * приложения — WineCardScreen сам отправит wine_card_viewed{from:"chat"} на загрузке карточки
+ * (тот же паттерн, что уже используют ChatScreen "analog"-результаты и ScanScreen.goToWine),
+ * поэтому здесь трекать нечего. Внешняя ссылка на vino-svoe.ru для вина остаётся только внутри
+ * самой карточки (WineCardContent) — source_link_clicked на этом бейдже больше не эмитим,
+ * т.к. клик по нему теперь НЕ переход на первоисточник. Цитата-статья (chunk_id, без wine_id)
+ * — как раньше, честная внешняя ссылка (у статьи нет своей внутренней карточки). Общий рендер
+ * для обеих групп — привязанных к [n] в тексте и «непривязанных» источников v0.3.2 (см. блок
+ * «Источники» ниже).
  */
 function CitationBadge({ citation }: { citation: CitationView }) {
-  const label = citation.quote ? citation.quote.slice(0, 40) : citation.wineId;
+  const navigate = useNavigate();
+  const label = citation.quote ? citation.quote.slice(0, 40) : citation.wineId ?? citation.chunkId;
+
+  if (citation.wineId) {
+    const wineId = citation.wineId;
+    return (
+      <button
+        type="button"
+        className="badge text-mono"
+        onClick={() => navigate(`/app/wine/${encodeURIComponent(wineId)}`, { state: { from: "chat" } })}
+      >
+        [{citation.n}] {label}
+      </button>
+    );
+  }
   if (citation.url) {
     return (
-      <a
-        className="badge text-mono"
-        href={citation.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => {
-          if (citation.wineId) track("source_link_clicked", { wine_id: citation.wineId });
-        }}
-      >
+      <a className="badge text-mono" href={citation.url} target="_blank" rel="noopener noreferrer">
         [{citation.n}] {label}
       </a>
     );
@@ -57,23 +71,34 @@ function CitationBadge({ citation }: { citation: CitationView }) {
 /**
  * Экран 4/6 — чат с сомелье. /chat отдаёт SSE (lib/sse.ts парсит token/citation/done/refusal);
  * тот же экран несёт сцену «аналог импортного» (v0.2: POST /analogs, чип-переключатель режима).
+ * v0.3.5: location.state.wineId (из ScanScreen/WineCardScreen «Спросить сомелье об этом
+ * вине») уходит в ChatPayload.wine_id ровно первым запросом — см. initialWineIdRef.
  */
 export function ChatScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Форма location.state — общая для обоих полей ниже, один каст вместо двух.
+  const locationState = location.state as { prefillMessage?: string; wineId?: string } | null;
+
   const [mode, setMode] = useState<"ask" | "analog">("ask");
-  const [message, setMessage] = useState(() => {
-    const state = location.state as { prefillMessage?: string } | null;
-    return state?.prefillMessage ?? "";
-  });
+  const [message, setMessage] = useState(() => locationState?.prefillMessage ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<ChatFilters>({});
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [busy, setBusy] = useState(false);
 
   const startedAtRef = useRef(0);
+  /**
+   * v0.3.5 (задача тимлида 22.09): слаг вина из навигации «Спросить сомелье об этом вине»
+   * (ScanScreen.tsx/WineCardScreen.tsx) — текстовый поиск по префиллу попадал в нужное вино
+   * только в 91.8% случаев (вина-близнецы из одной серии), wine_id в ПЕРВОМ запросе /v1/chat
+   * гарантирует правильное вино. Только первый вопрос диалога — handleAsk читает и тут же
+   * обнуляет ref, дальше по диалогу wine_id не тянем, даже если это тот же экран/сессия.
+   * useRef, не state: значение нужно ровно один раз, синхронно, без лишнего ре-рендера.
+   */
+  const initialWineIdRef = useRef<string | undefined>(locationState?.wineId);
 
   function patchAssistant(id: string, patch: Partial<Extract<ChatEntry, { kind: "assistant" }>>) {
     setEntries((prev) =>
@@ -91,6 +116,12 @@ export function ChatScreen() {
 
     track("chat_message_sent", { has_filters: Object.keys(filters).length > 0 });
     startedAtRef.current = performance.now();
+
+    // Консьюмим ref СРАЗУ (не в момент вызова apiClient.chat ниже) — "первый запрос" значит
+    // первый вызов handleAsk вообще, не первый успешный ответ; повторный вопрос после сбоя
+    // первого уже не должен тащить wine_id, как и любой следующий.
+    const wineId = initialWineIdRef.current;
+    initialWineIdRef.current = undefined;
 
     let citationCount = 0;
 
@@ -110,7 +141,7 @@ export function ChatScreen() {
                   ...entry,
                   citations: [
                     ...entry.citations,
-                    { n: event.n, wineId: event.wine_id, quote: event.quote, url: event.url },
+                    { n: event.n, wineId: event.wine_id, chunkId: event.chunk_id, quote: event.quote, url: event.url },
                   ].sort((a, b) => a.n - b.n),
                 }
               : entry,
@@ -139,7 +170,10 @@ export function ChatScreen() {
     };
 
     try {
-      await apiClient.chat({ message: question, filters: Object.keys(filters).length ? filters : undefined }, onEvent);
+      await apiClient.chat(
+        { message: question, filters: Object.keys(filters).length ? filters : undefined, wine_id: wineId },
+        onEvent,
+      );
     } catch {
       setEntries((prev) =>
         prev.map((entry) => (entry.id === assistantId ? { id: entry.id, kind: "refusal", text: t("chat.sendError") } : entry)),

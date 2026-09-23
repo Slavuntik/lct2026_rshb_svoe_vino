@@ -21,7 +21,7 @@
 import { http, HttpResponse } from "msw";
 import { afterEach, describe, expect, it } from "vitest";
 import { apiClient } from "./apiClient";
-import type { ScanPhotoRichResponse } from "./apiTypes";
+import type { DishPairingResponse, ScanPhotoRichResponse } from "./apiTypes";
 import { server } from "../mocks/server";
 
 function mockScanPhotoOnce() {
@@ -66,5 +66,38 @@ describe("apiClient.scanPhoto — настоящий multipart через нат
     const response = await apiClient.scanPhoto(blob);
 
     expect(response.slug).toBe("label.jpg");
+  });
+});
+
+// Тот же транспорт-паттерн (FormData, поле "image", photoFileName), что apiClient.scanPhoto —
+// задача тимлида 22.09 («Что подать» по фото блюда). Мок mocks/handlers.ts читает имя файла
+// для ветвления (notfood/bottle/unsure/food, см. mocks/fixtures/dishPairing.ts) так же, как
+// живой /scan/photo мок ветвится по "notfound"/"unknown" — стоит проверить хотя бы раз, что
+// реальное имя файла действительно доезжает по этому же транспорту, а не превращается в "blob".
+describe("apiClient.pairingDishPhoto — тот же настоящий multipart-транспорт (Node)", () => {
+  afterEach(() => server.resetHandlers());
+
+  it("реальное имя файла доезжает до сервера в multipart-теле", async () => {
+    server.use(
+      http.post("http://localhost/v1/pairing/dish-photo", async ({ request }) => {
+        const form = await request.formData();
+        const image = form.get("image");
+        const filename = image instanceof File ? image.name : null;
+        return HttpResponse.json({
+          status: "food",
+          // dish — ВСЕГДА объект (contracts/openapi.yaml 0.3.4 DishPairingResponse.dish не
+          // nullable); source="vlm" — реальный успешный путь классификации, не выдуманный "test".
+          dish: { name: filename, category: "BBQ", alternatives: [], ingredients: [], source: "vlm" },
+          wines: [],
+          message: null,
+          timing_ms: 10,
+        } satisfies DishPairingResponse);
+      }),
+    );
+    const file = new File(["fake-photo-bytes"], "dish-photo-real-name.jpg", { type: "image/jpeg" });
+
+    const response = await apiClient.pairingDishPhoto(file);
+
+    expect(response.dish.name).toBe("dish-photo-real-name.jpg");
   });
 });

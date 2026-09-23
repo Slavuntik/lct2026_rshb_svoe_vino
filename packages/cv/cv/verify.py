@@ -45,6 +45,63 @@ routing апстрим в `apps/api` решил не звать OCR) — лог�
 задачи — см. reports/g4-family-gap.md, "q2"). Извлечение — по границе слова
 (`\\b...\\b`), не по вхождению подстроки: "мускат" НЕ обязан ложно совпадать внутри
 "мускатель" (разные, не вложенные категории на реальных этикетках Массандры).
+
+## Режим чтения текста запроса: детектор vs центральный кроп (agents/H1-cpu-path.md)
+
+`read_query_text()` (v0.4.12) кадрирует запрос ДО OCR двумя разными способами,
+переключается `CV_OCR_QUERY_MODE`:
+
+- `"detector"` (ДЕФОЛТ — включим `"center"` после приёмки живым API): как раньше,
+  бит-в-бит — `normalize_query()` (детектор этикетки `cv/normalize.py`: силуэт
+  бутылки → нижние 2/3 → развёртка цилиндра) на канонический квадрат
+  `NORM_SIZE_DEFAULT` (448), затем `read_text()` даунскейлит до `self.ocr_size`
+  (`CV_OCR_SIZE`, дефолт 320) перед движком.
+- `"center"`: без детектора вовсе — фиксированный центральный кроп ПОЛНОГО кадра
+  запроса, доли `CENTER_CROP` (0.15/0.05/0.85/0.98 по x0/y0/x1/y1) — ТЕ ЖЕ доли,
+  что видит VLM (`apps/api/app/cv/vision_llm.py::CENTER_CROP`) и офлайн-эксперимент
+  (`qa/real_photos_features.py::CWIDE`), — даунскейл до `self.center_size`
+  (`CV_OCR_CENTER_SIZE`, дефолт 640), см. `read_query_text_center()`.
+
+Основание (оркестратор, 21.09, офлайн на 62 живых фото каталога): детектор
+кадрирует ТУЖЕ, чем нужно OCR — мелкие слова этикетки (винодельня, сорт) часто
+обрезаются или остаются нечитаемыми при последующем даунскейле до 320px. Широкий
+кроп на 640px читает больше текста и при этом БЫСТРЕЕ (медиана 1.0 с против 1.7 с
+на Mac — детектор+развёртка цилиндра стоят своего времени, а сам кроп 640px везёт
+меньше пикселей в OCR, чем 448px с последующим даунскейлом до 320). 800px хуже 640
+(больше шума матчится как "текст"). Изолированный эффект на офлайн-прогоне: top-1
+75.8% → 83.9% (дальнейшие поправки — гомоглифы, гейт винодельни — накопительно
+поверх этого режима, см. cv/text_fusion.py и app/cv/service.py).
+
+`verify()` НЕ меняется этой правкой: её собственный fallback-путь (когда `ocr_text`
+не передан) по-прежнему использует `normalize_query()` напрямую, независимо от
+`CV_OCR_QUERY_MODE` — режим влияет только на то, что `read_query_text()` возвращает
+ВЫЗЫВАЮЩЕМУ коду (`app/cv/service.py`), а тот уже сам передаёт этот текст в
+`verify(ocr_text=...)` (v0.4.12, без изменений в этой волне).
+
+## Движок текста запроса: PaddleOCR vs RapidOCR (agents/H2-rapidocr-multiscale.md)
+
+Третье измерение (ортогональное `CV_OCR_QUERY_MODE` выше) — переключатель
+`CV_OCR_ENGINE` (`"paddle"` дефолт, пока не приняли живым API; `"rapid"`):
+
+- `"paddle"`: бит-в-бит то, что описано выше (`CV_OCR_QUERY_MODE` решает detector/
+  center, движок — PaddleOCR через `read_text()`/`_load()`).
+- `"rapid"`: `read_query_text()` ВСЕГДА читает центральный кроп (`CENTER_CROP`, те
+  же доли) через `cv.ocr_rapid.RapidOcrReader` (ONNX Runtime, два масштаба
+  `CV_OCR_RAPID_SIZES` объединяются пробелом) — `CV_OCR_QUERY_MODE` в этом режиме
+  НЕ читается вовсе: у быстрого движка нет офлайн-обоснования для форка на
+  детекторный кроп (H1 изучал детектор/центр только для PaddleOCR). Основание
+  (reports/cpu-path-study.md, 62 живых фото): RapidOCR читает кроп 640px за 0.34с
+  против 4.0с у PaddleOCR на слабом CPU (не зависит от бага oneDNN paddlepaddle
+  3.3.1), а объединение текстов 640+960px даёт 90.3%/93.5% top-1 (2/8 кропов CV)
+  против 85.5% боевого PaddleOCR-пути.
+
+**PaddleOCR НЕ грузится вовсе, пока `CV_OCR_ENGINE=rapid`**, если только `verify()`
+не понадобился её СОБСТВЕННЫЙ проход OCR (fallback-путь без `ocr_text`, см. выше —
+он всегда PaddleOCR, независимо от `CV_OCR_ENGINE`): экономия RAM и времени старта
+на дешёвом CPU — прогрев (`app/cv/factory.py::warm_up_label_verifier`) греет
+ВЫБРАННЫЙ движок (RapidOCR через `read_query_text()`, не `verify()`), а не всегда
+PaddleOCR. В слиянии (`CV_FUSION=1`) c `CV_FUSION_VERIFY=0` (дефолт) `verify()`
+вообще не вызывается — PaddleOCR тогда не грузится за весь процесс ни разу.
 """
 from __future__ import annotations
 
@@ -131,6 +188,32 @@ _COLOR_KEYWORDS: dict[str, str] = {
 DEFAULT_SCORE_THRESH = 0.5  # ниже — OCR сам неуверен в строке, в токенизацию не пускаем
 DEFAULT_LANG = "ru"  # PaddleOCR: кириллица + латиница (цифры/латинские слова — общий алфавит)
 DEFAULT_OCR_SIZE = 320  # даунскейл перед OCR — доминирующий рычаг бюджета 700 мс, см. LabelVerifier.read_text
+
+# agents/H1-cpu-path.md: режим кадрирования read_query_text() — см. докстринг модуля,
+# "Режим чтения текста запроса". "detector" — старое поведение (normalize_query()),
+# "center" — центральный кроп кадра CENTER_CROP без детектора. Дефолт "detector" ПОКА
+# (переключаем после приёмки живым API) — не меняем поведение молча.
+DEFAULT_OCR_QUERY_MODE = "detector"
+DEFAULT_OCR_CENTER_SIZE = 640  # CV_OCR_CENTER_SIZE: 640 — плато замера (800 хуже, больше шума)
+# agents/H2-rapidocr-multiscale.md: CV_OCR_ENGINE — см. докстринг модуля, "Движок текста
+# запроса". "paddle" ПОКА (дефолт до приёмки живым API) — не переключаем поведение молча.
+DEFAULT_OCR_ENGINE = "paddle"
+# Доли ширины/высоты ПОЛНОГО кадра запроса (x0, y0, x1, y1) — центральная бутылка,
+# целиком видимая. ТЕ ЖЕ доли, что apps/api/app/cv/vision_llm.py::CENTER_CROP (вход
+# VLM) и qa/real_photos_features.py::CWIDE (офлайн-эксперимент) — намеренно один и
+# тот же кроп для всех трёх путей чтения этикетки.
+CENTER_CROP = (0.15, 0.05, 0.85, 0.98)
+
+
+def _center_crop(image_arr: np.ndarray) -> np.ndarray:
+    """Кроп центральной бутылки ПОЛНОГО кадра по долям `CENTER_CROP` — НЕ детектор
+    этикетки (`cv/normalize.py::detect_label_region`), просто фиксированные доли
+    ширины/высоты входного массива. `np.ascontiguousarray` — срез numpy не владеет
+    памятью непрерывно построчно, а `cv2.resize`/PaddleOCR ожидают C-contiguous вход
+    (тот же приём, что `qa/real_photos_features.py` для варианта "cwide")."""
+    h, w = image_arr.shape[:2]
+    x0, y0, x1, y1 = CENTER_CROP
+    return np.ascontiguousarray(image_arr[int(h * y0) : int(h * y1), int(w * x0) : int(w * x1)])
 
 
 class VerifyCandidate(TypedDict):
@@ -359,6 +442,10 @@ class LabelVerifier:
         lang: str = DEFAULT_LANG,
         score_thresh: float = DEFAULT_SCORE_THRESH,
         ocr_size: int = DEFAULT_OCR_SIZE,
+        query_mode: str = DEFAULT_OCR_QUERY_MODE,
+        center_size: int = DEFAULT_OCR_CENTER_SIZE,
+        engine: str = DEFAULT_OCR_ENGINE,
+        rapid_sizes: tuple[int, ...] | None = None,
     ):
         self.lang = lang
         self.score_thresh = score_thresh
@@ -366,7 +453,29 @@ class LabelVerifier:
         # На слабом CPU это доминирующая статья бюджета: ams3 ставит 256 (2.5 с против
         # 2.9 с при 320, тот же вердикт); 224 уже теряет текст — верификатор воздерживается.
         self.ocr_size = int(os.environ.get("CV_OCR_SIZE", ocr_size))
+        # agents/H1-cpu-path.md: режим read_query_text() ("detector"|"center", см.
+        # докстринг модуля) и сторона даунскейла центрального кропа в режиме "center"
+        # (НЕЗАВИСИМА от ocr_size выше — тот применяется только в режиме "detector").
+        self.ocr_query_mode = os.environ.get("CV_OCR_QUERY_MODE", query_mode).strip().lower()
+        self.center_size = int(os.environ.get("CV_OCR_CENTER_SIZE", center_size))
+        # agents/H2-rapidocr-multiscale.md: CV_OCR_ENGINE ("paddle"|"rapid", см. докстринг
+        # модуля "Движок текста запроса") и масштабы RapidOCR (CV_OCR_RAPID_SIZES,
+        # "640,960" -> (640, 960)) — читается ЖИВЬЁМ здесь (тест может monkeypatch.setenv()
+        # ДО конструктора), тот же принцип, что ocr_query_mode выше. Импорт cv.ocr_rapid
+        # ЗДЕСЬ (внутри __init__, не на верху модуля) дешёвый — сам модуль не тянет
+        # rapidocr/onnxruntime на своём верху (см. его докстринг) — но остаётся ленивым
+        # относительно ЭТОГО модуля, разрывая порядковую хрупкость взаимного импорта
+        # (cv.ocr_rapid импортирует CENTER_CROP/_center_crop ИЗ cv.verify на своём верху).
+        self.ocr_engine = os.environ.get("CV_OCR_ENGINE", engine).strip().lower()
+        from cv.ocr_rapid import DEFAULT_RAPID_SIZES, parse_sizes
+
+        raw_rapid_sizes = os.environ.get("CV_OCR_RAPID_SIZES")
+        if raw_rapid_sizes is not None:
+            self.rapid_sizes = parse_sizes(raw_rapid_sizes)
+        else:
+            self.rapid_sizes = tuple(rapid_sizes) if rapid_sizes is not None else DEFAULT_RAPID_SIZES
         self._ocr = None
+        self._rapid = None  # cv.ocr_rapid.RapidOcrReader, создаётся лениво _rapid_reader()
 
     def _load(self) -> None:
         if self._ocr is not None:
@@ -400,20 +509,28 @@ class LabelVerifier:
             **extra,
         )
 
-    def read_text(self, image_arr: np.ndarray) -> str:
+    def read_text(self, image_arr: np.ndarray, *, size: int | None = None) -> str:
         """RGB ndarray -> распознанный текст (строки объединены пробелом), только
         куски с confidence >= `score_thresh`. Пустая строка, если OCR ничего не нашёл
         или сам движок упал (деградация, не исключение — см. `verify()`).
 
-        Даунскейл до `ocr_size` ПЕРЕД детекцией — доминирующий рычаг бюджета 700 мс:
-        детекция+распознавание PaddleOCR масштабируются с числом пикселей, а нужный
-        текст (год/объём/категория) остаётся читаемым и на уменьшенном кадре — замер
-        (см. reports/g-report.md): 448px ~800 мс, 320px ~420 мс, тот же текст, тот же
-        результат сопоставления."""
+        Даунскейл до `size` (по умолчанию `self.ocr_size`) ПЕРЕД детекцией —
+        доминирующий рычаг бюджета 700 мс: детекция+распознавание PaddleOCR
+        масштабируются с числом пикселей, а нужный текст (год/объём/категория)
+        остаётся читаемым и на уменьшенном кадре — замер (см. reports/g-report.md):
+        448px ~800 мс, 320px ~420 мс, тот же текст, тот же результат сопоставления.
+
+        `size` (agents/H1-cpu-path.md) — явное переопределение цели даунскейла,
+        НЕЗАВИСИМОЕ от `self.ocr_size`: `read_query_text_center()` передаёт
+        `self.center_size` (обычно 640, шире, чем ocr_size=320 детекторного режима) —
+        центральный кроп кадра крупнее нормализованного 448px-квадрата детектора, ему
+        нужна другая цель даунскейла. `None` (дефолт) — старое поведение 1:1,
+        `self.ocr_size`."""
         self._load()
+        target = self.ocr_size if size is None else size
         h, w = image_arr.shape[:2]
-        if max(h, w) > self.ocr_size:
-            scale = self.ocr_size / max(h, w)
+        if max(h, w) > target:
+            scale = target / max(h, w)
             image_arr = cv2.resize(
                 image_arr, (max(1, round(w * scale)), max(1, round(h * scale))), interpolation=cv2.INTER_AREA
             )
@@ -432,23 +549,110 @@ class LabelVerifier:
         kept = [t for t, s in zip(texts, scores) if s >= self.score_thresh]
         return " ".join(kept)
 
-    def verify(self, image: bytes, candidates: list[VerifyCandidate]) -> str | None:
-        """Контракт (image-scan.md v0.4.4). `image` — ЗАПРОС целиком (как в `ImageIndex.
-        search()`), не предварительно вырезанный регион — `verify()` сам нормализует.
+    def read_query_text_center(self, image: bytes) -> str:
+        """Один проход OCR по ЦЕНТРАЛЬНОМУ кропу ПОЛНОГО кадра запроса (`_center_crop()`,
+        доли `CENTER_CROP`) — БЕЗ детектора этикетки `normalize_query()` (agents/
+        H1-cpu-path.md, см. докстринг модуля "Режим чтения текста запроса"). Даунскейл —
+        до `self.center_size` (CV_OCR_CENTER_SIZE), не `self.ocr_size` (тот — для режима
+        "detector"). `read_query_text()` вызывает этот метод при `self.ocr_query_mode ==
+        "center"`; вызывается и напрямую (например, qa-скриптами офлайн-эксперимента).
+        `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`, что и
+        `read_query_text()`/`verify()`."""
+        arr = imageio.decode_image(image)
+        cropped = _center_crop(arr)
+        return self.read_text(cropped, size=self.center_size)
+
+    def _rapid_reader(self):
+        """`cv.ocr_rapid.RapidOcrReader` на self, создаётся один раз (agents/
+        H2-rapidocr-multiscale.md, п.1 — "ленивая загрузка, один экземпляр движка на
+        масштаб"). Импорт `cv.ocr_rapid` ЗДЕСЬ (внутри метода) — см. комментарий в
+        `__init__` про порядок импорта: `cv.ocr_rapid` сам импортирует `CENTER_CROP`/
+        `_center_crop` ИЗ этого модуля на своём верху."""
+        if self._rapid is None:
+            from cv.ocr_rapid import RapidOcrReader
+
+            self._rapid = RapidOcrReader(sizes=self.rapid_sizes)
+        return self._rapid
+
+    def read_query_text_rapid(self, image: bytes) -> str:
+        """Один проход RapidOCR (`cv.ocr_rapid.RapidOcrReader`, все `self.rapid_sizes`
+        масштабов объединены пробелом) по ЦЕНТРАЛЬНОМУ кропу ПОЛНОГО кадра запроса —
+        симметрично `read_query_text_center()`, но с движком RapidOCR вместо PaddleOCR
+        (agents/H2-rapidocr-multiscale.md, см. докстринг модуля "Движок текста
+        запроса"). НЕТ отдельного детекторного режима: RapidOCR-путь не читает
+        `self.ocr_query_mode` вовсе (H1 изучал detector/center только для PaddleOCR).
+        `read_query_text()` вызывает этот метод при `self.ocr_engine == "rapid"`;
+        вызывается и напрямую (прогрев `app/cv/factory.py::warm_up_label_verifier`,
+        qa-скрипты). `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`,
+        что и остальные методы чтения текста запроса. Сбой самого движка RapidOCR
+        (импорт/конструктор/распознавание) деградирует до пустой строки ВНУТРИ
+        `RapidOcrReader` (warning, не исключение) — не поднимается сюда."""
+        arr = imageio.decode_image(image)
+        return self._rapid_reader().read_center(arr)
+
+    def read_query_text(self, image: bytes) -> str:
+        """Один проход OCR по запросу: decode -> кроп -> распознавание. Движок и кроп
+        зависят от `self.ocr_engine`/`self.ocr_query_mode` (agents/H1-cpu-path.md,
+        agents/H2-rapidocr-multiscale.md, см. докстринг модуля "Движок текста запроса"):
+        `self.ocr_engine == "rapid"` — делегирует `read_query_text_rapid()` (RapidOCR,
+        всегда центральный кроп, `self.ocr_query_mode` НЕ читается в этой ветке вовсе);
+        иначе (дефолт `"paddle"`) — `self.ocr_query_mode`: `"detector"` (дефолт) —
+        `normalize_query()` (тот же кроп этикетки, что видит `ImageIndex.search()`),
+        бит-в-бит старое поведение; `"center"` — делегирует `read_query_text_center()`
+        (центральный кроп кадра, без детектора, но PaddleOCR).
+
+        Публичный метод (contracts/image-scan.md v0.4.12, agents/B9-text-
+        rerank-integration.md): apps/api читает текст этикетки запроса РОВНО
+        ОДИН раз за запрос и переиспользует его и для `cv.text_rerank`
+        (переранжирование top-K ANN-кандидатов текстом), и для `verify()`
+        (см. параметр `ocr_text` там) — вместо двух независимых проходов
+        PaddleOCR по одному и тому же кропу (OCR — доминирующая статья
+        бюджета, 294/554 мс p50/p95 на Mac, см. reports/g5-accuracy.md).
+        `ValueError` на битые/пустые байты — тот же `imageio.decode_image()`,
+        что и раньше видел `verify()` первым шагом (все режимы)."""
+        if self.ocr_engine == "rapid":
+            return self.read_query_text_rapid(image)
+        if self.ocr_query_mode == "center":
+            return self.read_query_text_center(image)
+        arr = imageio.decode_image(image)
+        normalized = normalize_query(arr, enabled=True)
+        return self.read_text(normalized)
+
+    def verify(
+        self, image: bytes, candidates: list[VerifyCandidate], ocr_text: str | None = None
+    ) -> str | None:
+        """Контракт (image-scan.md v0.4.4; параметр `ocr_text` — v0.4.12).
+        `image` — ЗАПРОС целиком (как в `ImageIndex.search()`), не
+        предварительно вырезанный регион — `verify()` сам нормализует (или
+        переиспользует уже прочитанный текст, см. `ocr_text` ниже).
+
+        `ocr_text` (v0.4.12, agents/B9-text-rerank-integration.md): когда
+        apps/api уже прочитал текст этого же запроса для `cv.text_rerank`
+        (тем же кропом `normalize_query()`, через `read_query_text()` выше) —
+        повторный проход PaddleOCR на РОВНО ТОТ ЖЕ нормализованный кроп был
+        бы чистой потерей бюджета. Если передан (не `None`) — используется
+        КАК ЕСТЬ, `read_text()` НЕ вызывается вообще (пустая строка `""` —
+        валидное значение "передан, но нечего сопоставлять", тоже не трогает
+        OCR — отличается от `None`, означающего "не передан, прочитай сам").
+        `None` (дефолт, отсутствие аргумента) — старое поведение, БИТ В БИТ:
+        `arr` декодируется и используется ТОЧНО так же, как до этого параметра.
 
         `CV_VERIFY_DEBUG=1` (TODO-2, ревью 05) — структурированный лог в stderr на
         каждый вызов (см. докстринг модуля, "Трассировка"). Флаг проверяется В НАЧАЛЕ
         и НЕ меняет ничего в основной ветке: при выключенном флаге код после этой
         проверки идентичен версии до правки (тот же `match_candidates()`, тот же
         порядок вызовов, без дополнительной работы)."""
-        arr = imageio.decode_image(image)  # ValueError на битые/пустые байты — до OCR
+        arr = imageio.decode_image(image)  # ValueError на битые/пустые байты — до OCR, как раньше
         debug = _verify_debug_enabled()
         if not candidates:
             if debug:
                 _log_verify_trace(candidates=[], ocr_text=None, trace={"reason": "no_candidates", "decision": None})
             return None
-        normalized = normalize_query(arr, enabled=True)
-        text = self.read_text(normalized)
+        if ocr_text is not None:
+            text = ocr_text  # v0.4.12: переиспользуем — read_text() (OCR) не вызывается
+        else:
+            normalized = normalize_query(arr, enabled=True)
+            text = self.read_text(normalized)
         if not debug:
             return match_candidates(text, candidates)
         decision, trace = match_candidates_trace(text, candidates)

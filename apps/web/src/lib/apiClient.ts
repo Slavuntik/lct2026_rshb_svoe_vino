@@ -17,6 +17,8 @@ import {
   type LoginPayload,
   type PostConsentPayload,
   type RegisterPayload,
+  type DishPairingPayload,
+  type DishPairingResponse,
   type ScanPhotoRichResponse,
   type ScanResolvePayload,
   type ScanResolveResponse,
@@ -26,6 +28,7 @@ import {
   type TokenPair,
   type WaitlistPayload,
   type WineCardResponse,
+  type WinePairingsResponse,
 } from "./apiTypes";
 
 // apiClient — не React-компонент, у него нет доступа к <I18nProvider>. Пока в приложении
@@ -146,6 +149,30 @@ export const apiClient = {
 
   getWine(wineId: string): Promise<WineCardResponse> {
     return request(`/wines/${encodeURIComponent(wineId)}`);
+  },
+
+  /**
+   * v0.3.3 (contracts/post-scan.md v1.0): гастропары «к чему подать» — резолвит wine_id тем
+   * же путём, что getWine (404 not_found на тех же условиях). basis честно называет источник.
+   */
+  getWinePairings(wineId: string): Promise<WinePairingsResponse> {
+    return request(`/wines/${encodeURIComponent(wineId)}/pairings`);
+  },
+
+  /**
+   * Задача тимлида 22.09 («Что подать» по фото блюда): визуальное распознавание блюда,
+   * тот же транспорт-паттерн, что scanPhoto (FormData, поле "image", честное имя файла
+   * через photoFileName). Контракт готовит architect параллельно — см. apiTypes.ts.
+   */
+  pairingDishPhoto(image: Blob): Promise<DishPairingResponse> {
+    const form = new FormData();
+    form.set("image", image, photoFileName(image));
+    return request("/pairing/dish-photo", { method: "POST", body: form });
+  },
+
+  /** Ручной выбор категории (без фото) и исправление по чипам alternatives/unsure — тот же ответ. */
+  pairingDish(payload: DishPairingPayload): Promise<DishPairingResponse> {
+    return request("/pairing/dish", { method: "POST", body: JSON.stringify(payload) });
   },
 
   /** SSE-стрим: разбор через lib/sse.ts, события летят в onEvent по мере прихода. */

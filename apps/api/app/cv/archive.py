@@ -81,6 +81,22 @@ def archive_scan(
         "top1_score": result.top1_score,
         "gap": result.gap,
         "ocr_verified": result.ocr_verified,
+        # Задача тимлида 22.09 (reports/devops-stand-vlm.md: "источник текста этикетки
+        # vlm/ocr нигде не виден снаружи процесса") — PhotoScanResult уже несёт оба поля
+        # (app/cv/service.py, CV_FUSION), сюда просто прокидываются как есть; None вне
+        # CV_FUSION (путь без чтения этикетки моделью/OCR). Поля вне contracts/image-
+        # scan.md v0.4.10 ("<id>.json" перечисление) — см. "Предложения к контрактам" в
+        # reports/backend-text-source.md, архитектор не спрошен.
+        "text_source": result.text_source,
+        "label_text": result.label_text,
+        # Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) —
+        # сравнение локального (CV+OCR) и модельного (текущая склейка) ответов
+        # слияния, посчитанных на тех же CV-векторах; None вне CV_FUSION. Для
+        # офлайн-анализа ml-lead ("Дефолт переключим после оффлайн-проверки").
+        "local_slug": result.local_slug,
+        "model_slug": result.model_slug,
+        "answers_agree": result.answers_agree,
+        "chosen_answer_side": result.chosen_answer_side,
         "not_in_catalog": result.not_in_catalog,
         "matches": result.matches[:5],
         "timing_ms": result.timing_ms,

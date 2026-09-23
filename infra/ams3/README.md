@@ -58,6 +58,8 @@ bash infra/ams3/push-release.sh <ams3>                       # код + веб +
 
 - **Код:** тег `hack-v*` или ручной запуск workflow `Deploy hack stand (ams3)`; локально — `push-release.sh`.
 - **Индекс после пересборки на Mac:** `sync-data.sh <ams3>` → `ssh somelye@<ams3> 'sudo systemctl restart somelye-api'`.
+  Без простоя (blue/green, отдельный каталог + переключение) — CV: «Смена CV-индекса без простоя»
+  ниже; RAG: «Смена RAG-индекса без простоя» ниже (`switch-rag`/`rollback-rag`, с 22.09).
 - **Откат:** `DEPLOY_REF=<коммит> bash infra/ams3/push-release.sh <ams3>`.
 
 ## Секреты GitHub
@@ -73,6 +75,8 @@ Secrets → New repository secret:
 | `AMS3_SSH_KEY` | приватная половина ключа CI целиком, со строками BEGIN/END: `pbcopy < ~/.ssh/ci_do_ams3` |
 | `AMS3_KNOWN_HOSTS` | вывод `ssh-keyscan 89.110.72.101` целиком |
 | `GIGACHAT_AUTH_KEY` | *необязательный* — авторизационный ключ GigaChat; есть → «Сомелье» на GigaChat |
+| `VISION_LLM_URL` | *необязательный* — адрес OpenAI-совместимого шлюза GPU-сервера (`https://…/v1`); вместе с ключом включает чтение этикетки моделью |
+| `VISION_LLM_KEY` | *необязательный* — ключ шлюза. Оба значения едут на сервер через stdin, в репозитории их нет (репозиторий публичный) |
 
 Пользователь `somelye` зашит в `push-release.sh` — отдельный секрет не нужен. Без секретов
 workflow не падает, а вежливо пропускает выкат (джоба `guard`).
@@ -113,6 +117,38 @@ pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^L
 
 Вернуть заглушку — `LLM_PROVIDER=mock` в том же файле и рестарт.
 
+## Подключение LLM через шлюз (свой Qwen 27B, пока нет ключа GigaChat)
+
+Решение Вячеслава (22.09, `reports/backend-llm-openai.md`): пока нет ключа GigaChat, сомелье-чат
+(`/v1/chat`) подключается к GPU-серверу команды через OpenAI-совместимый шлюз (LiteLLM,
+`/v1/chat/completions`, Bearer-ключ, модель по умолчанию `qwen3.8-27b`, SSE-стрим шлюз
+поддерживает) — драйвер `packages/llm/llm/drivers/openai.py`, `LLM_PROVIDER=openai`. Тот же
+драйвер годится для любого другого OpenAI-совместимого шлюза/модели: достаточно сменить
+`LLM_BASE_URL`/`LLM_MODEL`, код трогать не нужно.
+
+Это ДРУГИЕ переменные, чем `VISION_LLM_URL`/`VISION_LLM_KEY` из раздела «Секреты GitHub» выше
+(те — чтение этикетки на скане, `packages/cv`, секреты GitHub, приходят через `push-release.sh`;
+эти — текстовый чат, `packages/llm`, секретов GitHub под них пока нет), даже если физически
+указывают на один и тот же шлюз. Адрес шлюза — тоже секрет (не только ключ): в репозиторий,
+GitHub Secrets проекта и чат не попадает, ставится только на сервере.
+
+1. Получить у Вячеслава адрес шлюза (`https://<gpu-host>/v1`) и ключ.
+2. Поставить вручную через SSH, оба значения — из буфера обмена, не литералом в команде (тот же
+   приём, что «Запасной путь без CI» для GigaChat выше, только в два захода — под каждое значение):
+
+```bash
+pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r u; sed -i "/^LLM_PROVIDER=/d; /^LLM_BASE_URL=/d" /opt/somelye/somelye.env; printf "LLM_PROVIDER=openai\nLLM_BASE_URL=%s\n" "$u" >> /opt/somelye/somelye.env'
+pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^LLM_API_KEY=/d" /opt/somelye/somelye.env; printf "LLM_API_KEY=%s\n" "$k" >> /opt/somelye/somelye.env; sudo /usr/bin/systemctl restart somelye-api'
+```
+
+   `LLM_MODEL` можно не задавать — дефолт драйвера уже `qwen3.8-27b` (`somelye.env.example`,
+   закомментированный блок).
+3. Проверить: `sudo systemctl status somelye-api` без ошибок и живой запрос в чат через интерфейс
+   стенда — ответ перестаёт быть детерминированной заглушкой мока.
+
+Вернуть заглушку — `LLM_PROVIDER=mock` в `/opt/somelye/somelye.env` (строки `LLM_BASE_URL`/
+`LLM_API_KEY` можно оставить или удалить тем же `sed -i`) и рестарт.
+
 ## Диагностика
 
 ```bash
@@ -122,3 +158,62 @@ curl -s http://<ams3>/v1/metrics/scan   # F1 top-1/top-5 последнего п
 ```
 
 При `OOM` в `journalctl` — убавить `MemoryMax` в юните (VPN всегда в приоритете), не наоборот.
+
+
+## Индекс base-384 и слияние с текстом этикетки (с 21.09)
+
+Индекс собран на Mac (`packages/cv/data-d1`, энкодер `google/siglip2-base-patch16-384`, эталоны после
+чистки D1). Перенос на сервер — тем же `sync-data.sh`, указав индекс:
+
+```bash
+CV_INDEX_DIR=packages/cv/data-d1 infra/ams3/sync-data.sh 89.110.72.101
+```
+
+Скрипт везёт и модель base-384 (1.4 ГБ), и сырой CSV каталога для текстового индекса. В
+`somelye.env` стенда — строки `CV_MODEL`, `CV_FUSION*` из `somelye.env.example`. Чтение этикетки
+моделью на GPU-сервере включается секретами `VISION_LLM_URL` + `VISION_LLM_KEY`; без них слияние
+работает на тексте RapidOCR (~82-90% top-1 на живых фото — см. ниже; было ~76% с PaddleOCR).
+
+## RapidOCR вместо PaddleOCR для текста слияния (agents/H2-rapidocr-multiscale.md, с 21.09)
+
+`CV_OCR_ENGINE=rapid` (`somelye.env.example`) переключает `read_query_text()` (текст
+слияния/OCR-фолбэк, когда VLM не ответила) на RapidOCR (ONNX Runtime, детектор+распознаватель
+PP-OCRv5 mobile, `CV_OCR_RAPID_SIZES=640,960` — объединение двух масштабов текстом) — на этом
+4-vCPU боксе ~0.34 с на кроп 640px против 4.0 с у PaddleOCR (не зависит от бага oneDNN выше).
+PaddleOCR при этом НЕ грузится в процесс вовсе, пока `CV_FUSION_VERIFY` не включён (=0 дефолт на
+стенде) — near-dup verify() всё ещё PaddleOCR, но он на стенде не вызывается. `deploy.sh`
+предзагружает модели RapidOCR (сеть на ams3 есть) идемпотентно ДО рестарта сервиса — первый
+боевой запрос не должен ловить холодное скачивание. `CV_FUSION_CROPS=2` (не 8 — бюджет 4 vCPU,
+см. `somelye.env.example`).
+
+### Смена CV-индекса без простоя
+
+Встроенный Qdrant читает файлы индекса напрямую, поэтому новый индекс нельзя заливать поверх
+работающего. Порядок: (1) `CV_INDEX_DIR=packages/cv/data-d1 CV_INDEX_DST=cv-d1 infra/ams3/sync-data.sh <host>`
+— индекс едет в `/opt/somelye/data/cv-d1`, стенд продолжает читать старый; (2) в `/opt/somelye/somelye.env`
+переключить `CV_DATA_DIR=/opt/somelye/data/cv-d1` и `CV_MODEL` под энкодер индекса; (3) выкат тегом
+`hack-vN` (или рестарт сервиса) — новый процесс стартует уже на новом индексе. Старый каталог
+удалить после проверки `healthz` (`cv_index_version`). Шаги (2)-(3) здесь ручные — для RAG-индекса
+то же самое теперь делает скрипт, см. ниже.
+
+### Смена RAG-индекса без простоя (`switch-rag`/`rollback-rag`, с 22.09)
+
+Тот же embedded-Qdrant, то же правило «не поверх работающего», но полностью скриптом —
+`infra/ams3/sync-data.sh` умеет заливку в отдельный каталог (`RAG_INDEX_DIR`/`RAG_INDEX_DST`, по
+образцу `CV_INDEX_DIR`/`CV_INDEX_DST` выше) и сам свитч:
+
+```bash
+RAG_INDEX_DIR=packages/rag/data-v2 RAG_INDEX_DST=rag-20261001 infra/ams3/sync-data.sh 89.110.72.101
+infra/ams3/sync-data.sh switch-rag 89.110.72.101 rag-20261001
+```
+
+Заливка проверяет целостность (число строк `labels.jsonl` и `version` из `manifest.json` — лок./
+удал. должны совпасть, иначе `exit 1` и `switch-rag` запускать рано). `switch-rag` сам бэкапит
+`somelye.env` (`.bak-before-rag-<таймстамп>`), запоминает прежнее значение `RAG_DATA_DIR` на сервере
+(`/opt/somelye/data/.rag_data_dir.prev`), правит `somelye.env`, перезапускает `somelye-api`, ждёт
+`healthz warm:true` (тот же цикл, что `deploy.sh`) и сверяет `rag_index_version` с `manifest.json`
+целевого каталога. Откат одной командой: `infra/ams3/sync-data.sh rollback-rag 89.110.72.101` —
+переключает на каталог из `.rag_data_dir.prev` той же процедурой; повторный вызов — тумблер туда-
+обратно. `DRY_RUN=1` перед любой из трёх форм — только печать, без изменений на диске/в env/в
+сервисе. Старые каталоги (`rag/`, `rag-<версия>/`) не удаляются автоматически — только показываются
+через `du -sh` в выводе `switch-rag`/`rollback-rag`, чистить вручную по своему решению.

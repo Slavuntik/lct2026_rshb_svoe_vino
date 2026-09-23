@@ -56,6 +56,21 @@ def discover_refs_from_slug_refs_json(refs_json: Path, uploads_dir: Path) -> dic
     интерьер вместо бутылки, см. `ref_quality_meta` в самом JSON). Поддерживаем ОБЕ
     схемы: `files`, если есть (старые фикстуры/тесты), иначе `chosen`+`candidates`.
 
+    D1 (agents/D1-ref-collisions.md, находка оркестратора 21.09): `candidates` — это
+    ВСЁ, что нашёл матчер по совпадению нормализованного имени файла, а не обязательно
+    "тоже это вино". Имена вроде `Screenshot_7.webp` встречаются у РАЗНЫХ винодельен —
+    кандидаты вокруг `chosen` для таких слогов сплошь и рядом чужие бутылки/афиши/
+    виноградники под чужим слогом. РАНЬШЕ эта функция клала В ИНДЕКС весь `candidates`
+    (кроме дубля chosen) как доп. реальные ракурсы — для коллизий это заносило в позицию
+    чужие фото, и реальное фото чужого вина могло находиться как этот слог. ТЕПЕРЬ доп.
+    ракурсами идёт только `extra_refs` — отдельное поле, которое `qa/case_census.py`
+    заполняет ИСКЛЮЧИТЕЛЬНО через ручной оверрайд (`qa/manual_photo_matches.yaml`,
+    значение-список), т.е. только после того, как человек глазами подтвердил, что
+    доп. файл — другой ракурс ТОЙ ЖЕ бутылки. `candidates` остаётся в JSON как аудиторский
+    след ("что вообще нашёл матчер"), но больше не читается здесь — отсутствующий
+    `extra_refs` (слог не входил в ручной пересмотр коллизий) значит "без доп. ракурсов",
+    не "все candidates подряд".
+
     `usable is False` — исключаем: пересборка без шумных эталонов становится той же
     командой с обновлённым JSON (дёшево через кэш эмбеддингов — исключённые слаги
     просто не попадают в refs, остальные бьют в `.embed_cache` как раньше). Слаги без
@@ -75,8 +90,8 @@ def discover_refs_from_slug_refs_json(refs_json: Path, uploads_dir: Path) -> dic
             filenames = list(info.get("files") or [])
         else:
             chosen = info.get("chosen")
-            candidates = [c for c in (info.get("candidates") or []) if c != chosen]
-            filenames = ([chosen] if chosen else []) + candidates
+            extra = [c for c in (info.get("extra_refs") or []) if c != chosen]  # см. докстринг — НЕ candidates
+            filenames = ([chosen] if chosen else []) + extra
         paths = []
         for fname in filenames:
             p = uploads_dir / fname

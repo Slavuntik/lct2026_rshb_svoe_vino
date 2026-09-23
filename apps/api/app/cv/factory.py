@@ -63,16 +63,30 @@ warm_up_image_index() теперь зовёт search(), не embed() — зао�
 и энкодер (search() вызывает его внутри себя), embed()-прогрев отдельно стал
 избыточен. Результат обоих прогревов — app.state.image_index_warm/
 label_verifier_warm; GET /healthz.warm — AND обоих.
+
+agents/H2-rapidocr-multiscale.md: warm_up_label_verifier() теперь греет ВЫБРАННЫЙ
+движок чтения текста запроса (`verifier.ocr_engine`, packages/cv/cv/verify.py) —
+"paddle" (дефолт) не изменился (холостой verify()); "rapid" греет
+`cv.ocr_rapid.RapidOcrReader` через `read_query_text()`, НЕ verify() (та на своём
+внутреннем fallback-пути всегда грузит PaddleOCR — прогрев через неё при rapid
+свёл бы на нет экономию RAM/времени старта, ради которой CV_OCR_ENGINE=rapid и
+существует). GET /healthz.warm не меняется — AND обоих прогревов, как раньше.
 """
 from __future__ import annotations
 
+import io
+import logging
 import os
 import struct
+import time
 import zlib
 
 from ..config import Settings
+from . import vision_llm
 from .interface import ImageIndex, LabelVerifier, VerifyCandidate
 from .mock import MockImageIndex, MockLabelVerifier
+
+logger = logging.getLogger(__name__)
 
 
 def get_image_index(settings: Settings) -> ImageIndex:
@@ -199,18 +213,180 @@ _WARMUP_VERIFY_CANDIDATES: list[VerifyCandidate] = [
 ]
 
 
+# Задача тимлида 22.09 (страховка лимита 10с приватной проверки, reports/
+# devops-hack-v13.md): пути системных шрифтов с поддержкой кириллицы, СРЕДИ УЖЕ
+# УСТАНОВЛЕННЫХ в ОС — никаких сетевых загрузок (правила безопасности агента:
+# "Downloading or executing files from untrusted sources" запрещено). Первый
+# существующий побеждает. `infra/ams3/bootstrap.sh` (стенд, Linux) шрифты НЕ
+# ставит вовсе — сервер может не иметь НИ ОДНОГО кириллического TTF; на этот
+# случай ниже (`_label_font`) есть честный фолбэк на `ImageFont.load_default()`
+# (см. её докстринг про то, почему это не ломает сам смысл прогрева).
+_CYRILLIC_FONT_CANDIDATES: tuple[str, ...] = (
+    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",  # macOS (дев-машина)
+    "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Debian/Ubuntu, fonts-dejavu-core
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+)
+
+
+def _label_font(size: int):
+    """Шрифт для `_synthetic_label_image()` — первый кириллический кандидат,
+    который реально есть на диске И грузится; иначе `PIL.ImageFont.
+    load_default(size=...)` (Pillow >=10.1 — pyproject.toml пином >=10.4).
+    Дефолтный шрифт PIL кириллицу не покрывает (рисует "тофу"-прямоугольники,
+    проверено эмпирически) — но это НЕ ломает функциональную цель прогрева:
+    цифры/латиница на этикетке ("2021", "0.75", "13%", см. `_synthetic_label_
+    image()`) читаются движком ЛЮБЫМ шрифтом и уже достаточны, чтобы детектор
+    текста нашёл боксы и третий проход RapidOCR по кропу этикетки
+    (CV_OCR_LABEL_SIZE) реально выполнил инференс, а не только сконструировал
+    движок (проверено эмпирически на реальном RapidOCR — см. отчёт)."""
+    for path in _CYRILLIC_FONT_CANDIDATES:
+        if os.path.exists(path):
+            try:
+                from PIL import ImageFont
+
+                return ImageFont.truetype(path, size)
+            except Exception:  # noqa: BLE001 — шрифт есть, но не грузится: пробуем следующий/фолбэк
+                continue
+    from PIL import ImageFont
+
+    return ImageFont.load_default(size=size)
+
+
+def _synthetic_label_image() -> bytes:
+    """PIL-картинка этикетки с кириллическим текстом для прогрева текстовой ветки
+    CV_FUSION (задача тимлида 22.09, п.2) — СГЕНЕРИРОВАНА, не фото кейса (в git
+    можно, `case-data/` не трогается). Несколько строк разного размера по образцу
+    реальной этикетки (винодельня/название/сорт/категория/год/объём),
+    отцентрованных в нижней половине кадра — в той же зоне, что `CENTER_CROP`
+    (0.15/0.05/0.85/0.98, `cv.verify.CENTER_CROP` он же `app/cv/vision_llm.py::
+    CENTER_CROP`) вырезает у РЕАЛЬНОГО фото запроса, так что и RapidOCR/PaddleOCR
+    (`LabelVerifier.read_query_text()`), и VLM (`vision_llm.read_label()`) видят
+    текст в ожидаемом месте кадра, как в бою.
+
+    Ленивый импорт PIL (не на верху модуля) — та же дисциплина, что у остальных
+    ленивых импортов пакета (не тянуть лишнее в модули, которые попадают в
+    процесс всегда): Pillow уже базовая зависимость apps/api (case_thumbs.py),
+    так что импорт здесь дешёвый и гарантированно доступен."""
+    from PIL import Image, ImageDraw
+
+    width, height = 900, 1300
+    img = Image.new("RGB", (width, height), (243, 240, 233))
+    draw = ImageDraw.Draw(img)
+    lines = (
+        ("ВИНОДЕЛЬНЯ ТЕСТОВАЯ", 46),
+        ("Шато Прогрев Резерв", 40),
+        ("Каберне Совиньон", 32),
+        ("СУХОЕ КРАСНОЕ ВИНО", 28),
+        ("2021", 30),
+        ("0.75 л  13% об.", 26),
+    )
+    y = int(height * 0.40)
+    for text, size in lines:
+        font = _label_font(size)
+        x0, y0, x1, y1 = draw.textbbox((0, 0), text, font=font)
+        draw.text(((width - (x1 - x0)) / 2, y), text, fill=(15, 15, 15), font=font)
+        y += size + 18
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=90)
+    return buf.getvalue()
+
+
+def _warm_up_cv_fusion_text_branch(verifier: LabelVerifier, settings: Settings) -> bool:
+    """Задача тимлида 22.09, п.2 (страховка лимита 10с приватной проверки): прогрев
+    ВЫШЕ (плейсхолдер 2x2 белый) греет движки ФОРМАЛЬНО (конструктор ONNX/
+    PaddleOCR вызывается на КАЖДОМ масштабе — см. `RapidOcrReader._engine_for()`,
+    packages/cv/cv/ocr_rapid.py), но БЕЗ единого бокса текста третий проход
+    RapidOCR по кропу этикетки (`CV_OCR_LABEL_SIZE`, дефолт 1280px) не выполняет
+    РЕАЛЬНЫЙ инференс вовсе — `label_bbox()` требует хотя бы один найденный бокс,
+    которого на пустой картинке нет (см. докстринг `_read_label_pass` в
+    ocr_rapid.py: движок КОНСТРУИРУЕТСЯ всегда, но вызывается только если боксы
+    есть). Здесь — ОДИН полный проход текстовой ветки на синтетической этикетке С
+    НАСТОЯЩИМ ТЕКСТОМ (`_synthetic_label_image()`): `read_query_text()` (RapidOCR
+    во ВСЕХ масштабах, включая третий проход по кропу этикетки — или PaddleOCR,
+    смотря по `CV_OCR_ENGINE`, дисциплина та же, что у прогрева выше) + один
+    запрос к VLM-шлюзу (GPU-сервер, `VISION_LLM_URL` — наш шлюз, сетевой вызов
+    разрешён брифом), если адрес задан. Эмпирически проверено на реальном
+    RapidOCR (packages/cv, апробация этой волны): синтетическая картинка выше
+    даёт boxes на масштабе 960px и валидный `label_bbox()` — третий проход
+    (1280px) реально выполняет `_run_engine()`, не только конструирует движок.
+
+    Только при `settings.cv_fusion` (нечего греть, если слияние выключено —
+    `_fusion_text_and_vectors()` в этом режиме не вызывается вовсе). Сбой
+    ЛОКАЛЬНОГО OCR — тот же честный сигнал, что и у прогрева выше (влияет на
+    возврат этой функции, а через него — на итоговый `warm_up_label_verifier()`).
+    Сбой VLM (внешняя сеть, шлюз может быть занят/недоступен на старте —
+    ПРЯМОЕ указание брифа) — НЕ должен ни ронять старт процесса, ни переводить
+    прогрев в `warm=false`: только WARNING в лог (`CV_FUSION` и без ответившей
+    VLM продолжает работать честным фолбэком на OCR, см. `_fusion_text_and_
+    vectors`) — ключ шлюза не логируется (тот же принцип, что `vision_llm.py`)."""
+    if not settings.cv_fusion:
+        return True
+    start = time.monotonic()
+    image_bytes = _synthetic_label_image()
+    try:
+        verifier.read_query_text(image_bytes)
+        ok = True
+    except Exception as exc:  # noqa: BLE001 — прогрев не должен ронять старт процесса
+        logger.warning("cv_fusion warm-up: OCR текстовой ветки не прогрелся (%s)", type(exc).__name__)
+        ok = False
+    if settings.vision_llm_url:
+        try:
+            vision_llm.read_label(
+                image_bytes,
+                url=settings.vision_llm_url, key=settings.vision_llm_key, model=settings.vision_llm_model,
+                timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
+            )
+        except Exception as exc:  # noqa: BLE001 — внешняя сеть: не блокирует старт, не портит warm
+            logger.warning(
+                "cv_fusion warm-up: запрос к VLM-шлюзу не удался (%s) — не блокирует старт, warm не меняет",
+                type(exc).__name__,
+            )
+    logger.info(
+        "cv_fusion warm-up: текстовая ветка прогрета за %.2fс (ocr_ok=%s)",
+        time.monotonic() - start, ok,
+    )
+    return ok
+
+
 def warm_up_label_verifier(verifier: LabelVerifier, settings: Settings) -> bool:
-    """Холостой verify() заглушки СРАЗУ при старте — симметрично
-    warm_up_image_index(), но для PaddleOCR (packages/cv/cv/verify.py::
-    LabelVerifier._load(), ленивая загрузка на первый verify()). Прогревается
-    ТОЛЬКО при VERIFIER_PROVIDER=real (мок мгновенный, нечего греть — то же
-    правило, что и у image_index). Ошибка прогрева не роняет старт (см.
-    warm_up_image_index) — /healthz.warm сигнализирует состояние наружу (AND
-    обоих прогревов, см. app/routers/health.py)."""
+    """Холостой прогрев ВЫБРАННОГО движка чтения текста запроса СРАЗУ при старте —
+    симметрично warm_up_image_index(). Прогревается ТОЛЬКО при
+    VERIFIER_PROVIDER=real (мок мгновенный, нечего греть — то же правило, что и у
+    image_index). Ошибка прогрева не роняет старт (см. warm_up_image_index) —
+    /healthz.warm сигнализирует состояние наружу (AND обоих прогревов, см.
+    app/routers/health.py).
+
+    agents/H2-rapidocr-multiscale.md: `verifier.ocr_engine == "rapid"` — греет
+    `RapidOcrReader` через `read_query_text()` (`cv.verify.LabelVerifier.
+    read_query_text_rapid()`), а НЕ `verify()` — тот на своём внутреннем
+    fallback-пути (без `ocr_text`) ВСЕГДА грузит PaddleOCR, независимо от
+    `CV_OCR_ENGINE` (packages/cv/cv/verify.py, докстринг "Движок текста запроса"),
+    так что прогрев через `verify()` при rapid молча тащил бы PaddleOCR в память —
+    ровно та трата RAM/времени старта на дешёвом CPU, которую rapid должен
+    экономить (brief п.2). `getattr(..., "paddle")` — мягкий дефолт: двойники
+    тестов этого файла (без реального `LabelVerifier`) не несут `ocr_engine`
+    вовсе и обязаны сохранить СТАРОЕ поведение (`verify()`), не молча
+    переключиться на новую ветку.
+
+    Задача тимлида 22.09, п.2: ДОБАВЛЯЕТ `_warm_up_cv_fusion_text_branch()` —
+    прогрев на синтетической этикетке С ТЕКСТОМ поверх плейсхолдера выше (не
+    вместо него — плейсхолдер остаётся байт-в-байт для всех существующих
+    сценариев/тестов этого файла, работает и когда `CV_FUSION=0`). Срабатывает
+    ТОЛЬКО при `settings.cv_fusion` — см. её докстринг."""
     if settings.verifier_provider != "real":
         return True
     try:
-        verifier.verify(_PLACEHOLDER_IMAGE, _WARMUP_VERIFY_CANDIDATES)
-        return True
+        if getattr(verifier, "ocr_engine", "paddle") == "rapid":
+            verifier.read_query_text(_PLACEHOLDER_IMAGE)
+        else:
+            verifier.verify(_PLACEHOLDER_IMAGE, _WARMUP_VERIFY_CANDIDATES)
+        ok = True
     except Exception:
-        return False
+        ok = False
+    if settings.cv_fusion:
+        ok = _warm_up_cv_fusion_text_branch(verifier, settings) and ok
+    return ok

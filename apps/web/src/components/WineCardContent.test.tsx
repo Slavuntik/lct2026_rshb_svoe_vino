@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { WineCardContent } from "./WineCardContent";
+import { apiClient } from "../lib/apiClient";
 import type { WineCardResponse } from "../lib/apiTypes";
 import { findWineBySlug } from "../mocks/fixtures/wines";
 import { renderApp } from "../test/renderApp";
@@ -100,14 +101,81 @@ describe("WineCardContent — ссылка «Открыть на «Своё Ви
 });
 
 describe("WineCardContent — regression: карточка каталога (все поля) выглядит как раньше", () => {
-  it("полная карточка по-прежнему показывает крепость/подачу/сочетания/вкусовой профиль", () => {
+  it("полная карточка по-прежнему показывает крепость/подачу/«К чему подать»/вкусовой профиль", async () => {
     renderApp(<WineCardContent wine={fullCardWithSourceUrl("https://example.com/wines/demo")} />);
 
     expect(screen.getByText(/крепость/i)).toBeInTheDocument();
     const servingRow = screen.getByText(/подача/i).closest("div");
     expect(servingRow).not.toBeNull();
     expect(within(servingRow as HTMLElement).getByText(/°C/)).toBeInTheDocument();
-    expect(screen.getByText(/сочетания/i)).toBeInTheDocument();
     expect(screen.getByText(/вкусовой профиль/i)).toBeInTheDocument();
+
+    // Решение тимлида (22.09): старый статический блок "Сочетания" (source.food_pairings
+    // напрямую) убран — «К чему подать» (GET /wines/{id}/pairings) теперь единственный
+    // рендер этих данных, basis=catalog для этой фикстуры (food_pairings непуст).
+    const pairingsBlock = await screen.findByTestId("wine-pairings-block");
+    expect(within(pairingsBlock).getByText("К чему подать")).toBeInTheDocument();
+    expect(await within(pairingsBlock).findByText("Морепродукты")).toBeInTheDocument();
+    expect(within(pairingsBlock).getByText(/по данным карточки вина/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * v0.3.3 (contracts/post-scan.md v1.0, задача тимлида 22.09): «К чему подать» —
+ * GET /wines/{id}/pairings. Ответ мокается напрямую через vi.spyOn (не через MSW-фикстуру
+ * mocks/handlers.ts — та лишь покрывает basis=catalog для dev-режима, см. её комментарий);
+ * здесь нужен полный контроль над basis/pairings/message для всех трёх видимых состояний.
+ */
+describe("WineCardContent — «К чему подать» (contracts/post-scan.md v1.0)", () => {
+  function baseWine(): WineCardResponse {
+    const wine = findWineBySlug("tihaya-buhta-chardonnay-reserve-2023");
+    if (!wine) throw new Error("fixture-вино не найдено в mocks/fixtures/wines");
+    const { searchTerms: _searchTerms, ...card } = wine;
+    return card;
+  }
+
+  it("basis=sensory, pairings непусты — чипы тегов + честная подпись источника", async () => {
+    vi.spyOn(apiClient, "getWinePairings").mockResolvedValue({
+      wine_id: "tihaya-buhta-chardonnay-reserve-2023",
+      basis: "sensory",
+      pairings: [
+        { tag: "Сыры", score: 0.83, triggered_rules: [{ id: "fat_needs_acidity", explain: "жир сыра просит кислотность" }] },
+        { tag: "Блюда из рыбы", score: 0.6, triggered_rules: [] },
+      ],
+      message: null,
+    });
+
+    renderApp(<WineCardContent wine={baseWine()} />);
+
+    const block = await screen.findByTestId("wine-pairings-block");
+    expect(within(block).getByText("К чему подать")).toBeInTheDocument();
+    expect(await within(block).findByText("Сыры")).toBeInTheDocument();
+    expect(within(block).getByText("Блюда из рыбы")).toBeInTheDocument();
+    expect(within(block).getByText(/по вкусовому профилю вина/i)).toBeInTheDocument();
+  });
+
+  it("pairings=[] — виден message текстом, не пустая тишина", async () => {
+    vi.spyOn(apiClient, "getWinePairings").mockResolvedValue({
+      wine_id: "tihaya-buhta-chardonnay-reserve-2023",
+      basis: "unavailable",
+      pairings: [],
+      message: "Недостаточно данных, чтобы подобрать сочетания.",
+    });
+
+    renderApp(<WineCardContent wine={baseWine()} />);
+
+    const block = await screen.findByTestId("wine-pairings-block");
+    expect(await within(block).findByText("Недостаточно данных, чтобы подобрать сочетания.")).toBeInTheDocument();
+    expect(within(block).queryByText(/подбираем/i)).not.toBeInTheDocument();
+  });
+
+  it("сетевая ошибка — явное состояние, не вечное «Подбираем, к чему подать…»", async () => {
+    vi.spyOn(apiClient, "getWinePairings").mockRejectedValue(new Error("network down"));
+
+    renderApp(<WineCardContent wine={baseWine()} />);
+
+    const block = await screen.findByTestId("wine-pairings-block");
+    expect(await within(block).findByText(/что-то пошло не так/i)).toBeInTheDocument();
+    expect(within(block).queryByText(/подбираем/i)).not.toBeInTheDocument();
   });
 });

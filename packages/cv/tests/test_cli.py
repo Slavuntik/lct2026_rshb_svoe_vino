@@ -156,15 +156,20 @@ def test_discover_refs_from_slug_refs_json_primary_and_extra_real(tmp_path):
 def test_discover_refs_from_slug_refs_json_supports_chosen_candidates_schema(tmp_path):
     """F3 (qa/case_census.py) переехал с `files: list[str]` на `chosen: str` +
     `candidates: list[str]` + `usable: bool` (16.09.2026, прямо в процессе этой волны,
-    см. cv/cli.py::discover_refs_from_slug_refs_json). `chosen` идёт первым эталоном
-    (даже если стоит не первым в `candidates`), остальные candidates — доп-ракурсы."""
+    см. cv/cli.py::discover_refs_from_slug_refs_json). `chosen` идёт первым эталоном.
+
+    D1 (agents/D1-ref-collisions.md, 21.09.2026): `candidates` САМ ПО СЕБЕ больше НЕ
+    читается как источник доп. ракурсов — это аудиторский список "что нашёл матчер",
+    который для коллизий (`Screenshot_N.webp` и т.п. общих стемов) сплошь и рядом несёт
+    чужие бутылки под этим слогом (см. test_..._extra_refs_only_source_of_extra_real_
+    views ниже и test_..._raw_candidates_beyond_chosen_are_never_auto_included). Тут
+    `slug-multi` не несёт `extra_refs` -> доп. ракурсов НЕТ, даже при len(candidates)>1."""
     uploads = _write_uploads(tmp_path, {"a.webp": b"a", "b.webp": b"b", "c.webp": b"c"})
     refs_json = tmp_path / "slug_refs.json"
     refs_json.write_text(
         json.dumps(
             {
                 "mapping": {
-                    # chosen НЕ первый в candidates -> всё равно должен встать первым
                     "slug-multi": {"chosen": "b.webp", "candidates": ["a.webp", "b.webp", "c.webp"], "usable": True},
                     "slug-single": {"chosen": "a.webp", "candidates": ["a.webp"], "usable": True},
                     "slug-noise": {"chosen": "c.webp", "candidates": ["c.webp"], "usable": False},
@@ -176,8 +181,64 @@ def test_discover_refs_from_slug_refs_json_supports_chosen_candidates_schema(tmp
 
     out = discover_refs_from_slug_refs_json(refs_json, uploads)
     assert set(out.keys()) == {"slug-multi", "slug-single"}
-    assert out["slug-multi"] == [uploads / "b.webp", uploads / "a.webp", uploads / "c.webp"]
+    assert out["slug-multi"] == [uploads / "b.webp"]  # ТОЛЬКО chosen — candidates не доверяем как доп-ракурсам
     assert out["slug-single"] == [uploads / "a.webp"]
+
+
+def test_discover_refs_from_slug_refs_json_extra_refs_only_source_of_extra_real_views(tmp_path):
+    """D1: доп. реальные ракурсы приходят ТОЛЬКО из `extra_refs` (человек вручную
+    подтвердил "тоже это вино" — qa/manual_photo_matches.yaml, значение-список,
+    qa/case_census.py::run_matcher). Порядок — как в extra_refs; chosen всегда первый
+    даже если случайно повторён внутри extra_refs (дедуп по значению, не по позиции)."""
+    uploads = _write_uploads(tmp_path, {"a.webp": b"a", "b.webp": b"b", "c.webp": b"c"})
+    refs_json = tmp_path / "slug_refs.json"
+    refs_json.write_text(
+        json.dumps(
+            {
+                "mapping": {
+                    "slug-vetted": {
+                        "chosen": "b.webp",
+                        "candidates": ["a.webp", "b.webp", "c.webp"],  # аудит: "a"/"c" рассматривались
+                        "extra_refs": ["c.webp", "b.webp"],  # только "c" вручную подтверждён; "b" == chosen, дедуп
+                        "usable": True,
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = discover_refs_from_slug_refs_json(refs_json, uploads)
+    assert out["slug-vetted"] == [uploads / "b.webp", uploads / "c.webp"]
+
+
+def test_discover_refs_from_slug_refs_json_raw_candidates_beyond_chosen_are_never_auto_included(tmp_path):
+    """Регресс-тест на находку оркестратора 21.09 (roze-2: Табия Розе -> афиша фестиваля
+    выбрана из кандидатов с тем же стемом Screenshot_17.webp у другой винодельни).
+    Даже когда `candidates` содержит несколько ПРАВДОПОДОБНЫХ файлов и `extra_refs`
+    отсутствует вовсе, в индекс идёт только `chosen` — чужие кандидаты никогда не
+    просачиваются доп-ракурсами по умолчанию."""
+    uploads = _write_uploads(
+        tmp_path, {"tabiya-roze.webp": b"a", "afisha.webp": b"b", "foreign-winery-bottle.webp": b"c"}
+    )
+    refs_json = tmp_path / "slug_refs.json"
+    refs_json.write_text(
+        json.dumps(
+            {
+                "mapping": {
+                    "roze-2": {
+                        "chosen": "tabiya-roze.webp",
+                        "candidates": ["tabiya-roze.webp", "afisha.webp", "foreign-winery-bottle.webp"],
+                        "usable": True,
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    out = discover_refs_from_slug_refs_json(refs_json, uploads)
+    assert out["roze-2"] == [uploads / "tabiya-roze.webp"]
 
 
 def test_discover_refs_from_slug_refs_json_honors_usable_false(tmp_path):

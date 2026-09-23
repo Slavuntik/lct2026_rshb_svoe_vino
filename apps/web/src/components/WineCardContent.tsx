@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { SensoryVectorView } from "./SensoryVectorView";
 import { WineImage } from "./WineImage";
-import { useI18n } from "../i18n";
+import { useI18n, type DictionaryPath } from "../i18n";
 import { track } from "../lib/analytics";
-import type { WineCardResponse } from "../lib/apiTypes";
+import { apiClient } from "../lib/apiClient";
+import type { WineCardResponse, WinePairing, WinePairingsBasis } from "../lib/apiTypes";
 
 interface WineCardContentProps {
   wine: WineCardResponse;
@@ -22,6 +24,86 @@ function isVinoSvoeUrl(sourceUrl: string): boolean {
   } catch {
     return false;
   }
+}
+
+type PairingsState =
+  | { status: "loading" }
+  | { status: "ready"; pairings: WinePairing[]; basis: WinePairingsBasis }
+  | { status: "empty"; message: string }
+  | { status: "failed" };
+
+const PAIRINGS_SOURCE_CAPTION: Partial<Record<WinePairingsBasis, DictionaryPath>> = {
+  catalog: "wineCard.pairingsSourceCatalog",
+  sensory: "wineCard.pairingsSourceSensory",
+  heuristic: "wineCard.pairingsSourceHeuristic",
+};
+
+/**
+ * v0.3.3 (contracts/post-scan.md v1.0, задача тимлида 22.09 п.1а): «К чему подать» —
+ * GET /wines/{id}/pairings, три уровня basis с честной подписью источника (фронт не гадает,
+ * откуда теги — catalog/sensory/heuristic каждый несёт свою подпись). Контракт: pairings=[] ⟺
+ * message непусто — показываем message текстом (это покрывает и basis=unavailable), не молчим
+ * и не прячем блок молча. Сетевая ошибка — отдельное явное состояние (common.errorGeneric),
+ * не вечный "Подбираем…". Один и тот же блок для WineCardScreen и инлайн-результата скана —
+ * WineCardContent уже общий код-путь для обоих экранов, отдельного дублирования не нужно.
+ *
+ * Решение тимлида (22.09, после отчёта frontend): старый статический рендер
+ * source.food_pairings ("Сочетания") убран из карточки — этот блок при basis=catalog
+ * показывает тот же список с честной подписью источника, второй копии не нужно. Раньше
+ * architect фиксировал в contracts/post-scan.md §1 "новый эндпоинт не подменяет этот
+ * рендер" — тимлид снял этот запрет отдельным сообщением, контракт не редактировался
+ * (не моя зона), но фактическое поведение UI уже соответствует новому решению.
+ */
+function WinePairingsBlock({ wineId }: { wineId: string }) {
+  const { t } = useI18n();
+  const [state, setState] = useState<PairingsState>({ status: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    setState({ status: "loading" });
+    apiClient
+      .getWinePairings(wineId)
+      .then((response) => {
+        if (cancelled) return;
+        if (response.pairings.length > 0) {
+          setState({ status: "ready", pairings: response.pairings, basis: response.basis });
+        } else {
+          setState({ status: "empty", message: response.message || t("wineCard.pairingsEmptyFallback") });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setState({ status: "failed" });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // t() сознательно не в зависимостях — не перезапрашиваем на смену локали "на лету"
+    // (её сейчас и не бывает), только на смену самого вина.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wineId]);
+
+  const sourceCaption = state.status === "ready" ? PAIRINGS_SOURCE_CAPTION[state.basis] : undefined;
+
+  return (
+    <div className="card stack" data-testid="wine-pairings-block">
+      <h2>{t("wineCard.pairingsTitle")}</h2>
+      {state.status === "loading" && <p className="text-small">{t("wineCard.pairingsLoading")}</p>}
+      {state.status === "failed" && <p className="field__error">{t("common.errorGeneric")}</p>}
+      {state.status === "empty" && <p className="text-small">{state.message}</p>}
+      {state.status === "ready" && (
+        <>
+          {sourceCaption && <p className="text-caption">{t(sourceCaption)}</p>}
+          <div className="row">
+            {state.pairings.map((pairing) => (
+              <span key={pairing.tag} className="chip">
+                {pairing.tag}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -90,19 +172,6 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
           )}
         </dl>
 
-        {source.food_pairings && source.food_pairings.length > 0 && (
-          <div>
-            <p className="field__label">{t("wineCard.foodPairingsLabel")}</p>
-            <div className="row">
-              {source.food_pairings.map((pairing) => (
-                <span key={pairing} className="chip">
-                  {pairing}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
         <a
           className="btn btn--ghost"
           href={wine.source_url}
@@ -120,6 +189,8 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
           <SensoryVectorView vector={derived.sensory} />
         </div>
       )}
+
+      <WinePairingsBlock wineId={wine.wine_id} />
     </>
   );
 }

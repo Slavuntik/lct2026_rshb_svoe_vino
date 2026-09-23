@@ -42,3 +42,30 @@ def get_retriever(settings: Settings) -> Retriever:
             "reports/b-report.md)."
         )
     raise ValueError(f"Неизвестный RAG_PROVIDER={provider!r}, ожидается mock|real")
+
+
+def warm_up_retriever(retriever: Retriever, settings: Settings) -> bool:
+    """Один холостой search() СРАЗУ при старте процесса — симметрично
+    warm_up_image_index()/warm_up_label_verifier() (app/cv/factory.py, ревью 04
+    блокер 2 / ревью 05 TODO-1). Дополнение тимлида 22.09 (reports/
+    backend-chat-retrieval.md, п.6): на стенде эмбеддер fastembed (dense-модель
+    packages/rag/rag/embeddings.py::DenseEmbedder) грузится ЛЕНИВО на первый
+    боевой search() — ~8 с на тех же 4 vCPU, что и сканер. Без прогрева это
+    совпадает по времени с прогонами 100 фото и даёт им хвост 7-9 с
+    (reports/devops-hack-v13.md: p50/p95/max 4.4/6.6/9.1 с). Прогревается
+    ТОЛЬКО при RAG_PROVIDER=real (мок мгновенный, нечего греть — то же правило,
+    что у image_index/label_verifier). Ошибка прогрева НЕ роняет старт (лучше
+    поднятый процесс с холодным первым чатом, чем не поднятый вовсе).
+
+    Осознанно НЕ пишет в app.state.*_warm, которое участвует в GET /healthz.warm
+    (app/routers/health.py) — прямое указание тимлида ("healthz.warm трогать не
+    нужно"): чат и сканер разные бюджеты/сцены демо, смешивать их AND'ом
+    незачем. Время прогрева логирует вызывающий (app/main.py), не эта функция —
+    здесь только факт успеха/неудачи."""
+    if settings.rag_provider != "real":
+        return True
+    try:
+        retriever.search("вино", top_k=1)
+        return True
+    except Exception:
+        return False

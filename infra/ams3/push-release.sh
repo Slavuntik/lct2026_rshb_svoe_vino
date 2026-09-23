@@ -31,6 +31,13 @@ tar -czf - -C "$ROOT/apps/web/dist" . \
 # Ключ GigaChat из секрета GitHub (GIGACHAT_AUTH_KEY) — едет через stdin, а не аргументом:
 # так его не видно ни в списке процессов, ни в командной строке на сервере. Нет секрета —
 # конфиг сервера не трогаем (остаётся то, что там уже стоит, например LLM_PROVIDER=mock).
+# Шлюз VLM (чтение этикетки для слияния CV+текст): адрес и ключ — секреты GitHub VISION_LLM_URL и
+# VISION_LLM_KEY. Оба едут через stdin (ни в аргументах, ни в репозитории: репозиторий станет
+# публичным, а адрес — наш GPU-сервер). TLS проверяется штатно (сертификат Let's Encrypt на IP).
+if [ -n "${VISION_LLM_KEY:-}" ] && [ -n "${VISION_LLM_URL:-}" ]; then
+  printf '%s\n%s\n' "$VISION_LLM_URL" "$VISION_LLM_KEY" | $SSH "somelye@$HOST" \
+    'read -r u; read -r k; f=/opt/somelye/somelye.env; sed -i "/^VISION_LLM_URL=/d; /^VISION_LLM_KEY=/d" "$f"; printf "VISION_LLM_URL=%s\nVISION_LLM_KEY=%s\n" "$u" "$k" >> "$f"'
+fi
 if [ -n "${GIGACHAT_AUTH_KEY:-}" ]; then
   printf '%s\n' "$GIGACHAT_AUTH_KEY" | $SSH "somelye@$HOST" \
     'read -r k; f=/opt/somelye/somelye.env; sed -i "/^GIGACHAT_AUTH_KEY=/d; /^LLM_PROVIDER=/d" "$f"; printf "LLM_PROVIDER=gigachat\nGIGACHAT_AUTH_KEY=%s\n" "$k" >> "$f"'

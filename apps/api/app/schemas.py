@@ -82,12 +82,100 @@ class ScanResolveResponse(BaseModel):
     analog_reason: str | None = None
 
 
+class SimilarWineItem(BaseModel):
+    """contracts/openapi.yaml v0.3.6 — item формы `similar_wines` (см. ниже):
+    те же слаги/порядок, что `similar`, обогащённые именем/винодельней/фото.
+    `winery` — отображаемое имя (source.winery_name, фолбэк — слаг
+    source.winery), тот же приём, что `PairingWineItem.winery`."""
+    wine_id: str
+    name: str
+    winery: str | None = None
+    image_url: str | None = None
+
+
 class WineResponse(BaseModel):
     wine_id: str
     source: dict
     derived: dict
     source_url: str
+    # DEPRECATED (contracts/openapi.yaml v0.3.6) — голые слаги, без имени/
+    # винодельни (дефект жюри, reports/qa-manual-hack-v16.md п.5.1). Оставлено
+    # для обратной совместимости — новые клиенты читают similar_wines ниже.
     similar: list[str] = Field(default_factory=list)
+    # v0.3.6 — те же слаги и тот же порядок, что similar; слаг без пригодного
+    # имени в каталоге в similar_wines не попадает, но остаётся в similar
+    # (app/rag/cards.py::build_wine_card, "similar_wines" может быть короче).
+    similar_wines: list[SimilarWineItem] = Field(default_factory=list)
+
+
+# --- GET /v1/wines/{wine_id}/pairings (contracts/post-scan.md v1.0, 22.09) --
+
+class TriggeredRule(BaseModel):
+    id: str
+    explain: str  # дословно rules[].explain из pipeline/ref/food_pairing_rules.yaml
+
+
+class WinePairingItem(BaseModel):
+    tag: str
+    # null при basis=catalog (contracts/openapi.yaml 0.3.3) — свой текст
+    # портала, не скорингованный нашим движком.
+    score: float | None = Field(default=None, ge=0, le=1)
+    triggered_rules: list[TriggeredRule] = Field(default_factory=list)
+
+
+class WinePairingsResponse(BaseModel):
+    wine_id: str
+    basis: Literal["catalog", "sensory", "heuristic", "unavailable"]
+    pairings: list[WinePairingItem] = Field(max_length=3)
+    message: str | None = None  # непусто ⟺ pairings=[]
+
+
+# --- POST /v1/pairing/dish-photo, POST /v1/pairing/dish --------------------
+# "Что подать" по фото блюда (contracts/post-scan.md v1.1 §4, contracts/
+# openapi.yaml 0.3.4, 22.09, architect — ратифицировано; имена схем/полей
+# ниже сверены построчно с openapi.yaml::components.schemas.{DishInfo,
+# PairingWineItem,DishPairingResponse}, см. reports/backend-dish-photo.md,
+# "Расхождения с контрактом" — два предложения к контракту зафиксированы там
+# (пул кандидатов, порог нечёткого совпадения), схема ответа ниже совпадает
+# с openapi.yaml дословно).
+
+class DishInfo(BaseModel):
+    # openapi.yaml::DishInfo.name: "НЕ null — пустая строка, когда нечего
+    # показать" — поле держим ненуллабельным сознательно (не str | None).
+    name: str = ""
+    # category: null, если status != food (не резолвлен/не применим).
+    category: str | None = None
+    alternatives: list[str] = Field(default_factory=list)
+    ingredients: list[str] = Field(default_factory=list)
+    source: Literal["vlm", "vlm_local", "zero_shot", "user", "none"]
+
+
+class PairingWineItem(BaseModel):
+    wine_id: str
+    name: str
+    winery: str | None = None
+    color: str | None = None
+    sugar: str | None = None
+    image_url: str | None = None
+    reason: str  # детерминированный текст — из шаблона (catalog) либо rules[].explain (rules)
+    basis: Literal["catalog", "rules"]
+
+
+class DishPairingResponse(BaseModel):
+    status: Literal["food", "not_food", "bottle", "unsure"]
+    dish: DishInfo
+    wines: list[PairingWineItem] = Field(default_factory=list, max_length=6)
+    message: str | None = None
+    timing_ms: int
+
+
+class DishManualRequest(BaseModel):
+    """`POST /v1/pairing/dish` — ручной выбор/исправление категории.
+    `category` — свободный текст (валидируется/приводится к одному из 9
+    тегов `app/dish_recognition.py::resolve_category`, 400 validation_error
+    на нераспознанном)."""
+    category: str = Field(max_length=100)
+    dish: str | None = Field(default=None, max_length=200)
 
 
 class ChatFilters(BaseModel):
@@ -100,6 +188,10 @@ class ChatFilters(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(max_length=1000)
     filters: ChatFilters | None = None
+    # openapi 0.3.5 (architect, 22.09, задача тимлида по reports/backend-rag-rebuild.md
+    # п.3-4): слаг вина, которое фронт уже показывает (скан/карточка) — опционален,
+    # пустая строка трактуется как отсутствие (app/chat/service.py::stream_chat_events).
+    wine_id: str | None = Field(default=None, max_length=200)
 
 
 class ChatFeedbackRequest(BaseModel):
@@ -172,7 +264,18 @@ class TasteCandidatesResponse(BaseModel):
 
 class TasteProfileResponse(BaseModel):
     vector: dict[str, float]
+    # DEPRECATED (contracts/openapi.yaml v0.3.6) — голые слаги эталонных
+    # стилей, без имени/страны (тот же класс дефекта, что WineResponse.similar
+    # — найдено аудитом architect по жалобе жюри, не отдельной жалобой на этот
+    # эндпоинт). Оставлено для обратной совместимости — новые клиенты читают
+    # top_styles_named ниже.
     top_styles: list[str]
+    # v0.3.6 — те же слаги и тот же порядок, что top_styles, форма как у
+    # list_reference_styles()/AnalogsStyle (contracts/rag-interface.md);
+    # переиспользуем AnalogsStyle 1:1 — та же сущность "эталонный стиль".
+    # Слаг вне справочника стилей в top_styles_named не попадает, но
+    # остаётся в top_styles (routers/taste.py::_resolve_style_names).
+    top_styles_named: list[AnalogsStyle] = Field(default_factory=list)
     swipes_count: int
 
 

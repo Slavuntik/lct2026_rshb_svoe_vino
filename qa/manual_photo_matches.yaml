@@ -119,3 +119,136 @@ shato-taman-saperavi: 2024gu_Normal_Sh_T_Saperavi_suhoe_krasnoe_0_75_4b0f666d71.
 shato-taman-shardone: 2024gu_Normal_Sh_T_Shardone_suhoe_beloe_0_75_a190db1db4.webp  # Кубань-Вино — Шато Тамань. Шардоне
 vinodelnya-byurne-kaberne-fran-krasnoe-suhoe-135: Kab_Fran_2020_no_bg_preview_carve_photos_467c50d49a.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ ФРАН сухое красное
 vinodelnya-byurne-kaberne-sovinon-krasnoe-suhoe-135: Kab_Sov_2019_no_bg_preview_carve_photos_6680889d32.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ СОВИНЬОН сухое красное
+
+# --------------------------------------------------------------------------------------
+# D1 (agents/D1-ref-collisions.md, 21.09.2026): разбор коллизий ИМЕНИ ФАЙЛА — не
+# путать с F4 выше (F4 = имя фото в CSV настолько отличалось от файла, что матчер вообще
+# промахнулся). Здесь матчер НАШЁЛ >1 физический файл с одинаковым нормализованным
+# стемом (`Screenshot_7.webp`, `Shardone.webp`, `мерло.webp`... — общие/родовые имена,
+# под которыми РАЗНЫЕ винодельни грузили СВОИ фото в Strapi) и `resolve_best_candidate()`
+# (площадь фото) мог выбрать афишу/чужую бутылку/виноградник вместо своей бутылки —
+# см. находку оркестратора в agents/D1-ref-collisions.md. Разобрано ГЛАЗАМИ (Read):
+# все 66 слогов slug_refs.json["multi_candidate_slugs"] + 10 слогов с usable=false и
+# заданным ref_quality_class (пересечение — 9 из 10; вне пересечения — ona-skazala-da,
+# единственный кандидат) = 67 разных слогов. Контакт-листы (PIL, кандидат = файл+хэш+
+# разрешение, шапка = slug/винодельня/название/цвет/сорт из case_catalog.json) —
+# case-data/ref-review/sheets/ (вне git, не входит в поставку).
+#
+# Формат ЗДЕСЬ — YAML-СПИСОК `[chosen, *extra]`, не строка (расширение схемы, см.
+# load_manual_matches/run_matcher в qa/case_census.py). В отличие от строковой формы
+# F4 выше, список ПРИМЕНЯЕТСЯ, ДАЖЕ ЕСЛИ автоматика уже что-то выбрала — это и есть
+# починка коллизии, не "второе мнение поверх уже успешного матча". Второй и следующие
+# элементы (если есть) — другой РЕАЛЬНЫЙ ракурс ТОЙ ЖЕ бутылки, подтверждённый вручную;
+# уходят в новое поле `extra_refs` и ТОЛЬКО они индексируются доп. ракурсами —
+# cv/cli.py::discover_refs_from_slug_refs_json (обновлён вместе с census, см. тесты
+# там же) больше не доверяет сырому `candidates` как источнику доп. ракурсов, именно
+# потому что для коллизий это чужие бутылки/афиши под чужим слогом. Пустой список `[]`
+# — явное решение "ни один из candidates не подходит, слог честно без эталона"
+# (п.3 брифа) — сомнение разрешается ИСКЛЮЧЕНИЕМ, не угадыванием.
+#
+# Ни один слог не тронут "на всякий случай": 15 ниже — реальная починка (auto-chosen
+# был чужим файлом), 3 — явный отказ (единственное доступное фото — чужое вино,
+# доказано текстом на этикетке/буквальным совпадением photo_csv с соседним слогом).
+# Остальные 49 из 67 (+ ona-skazala-da) — auto-chosen проверен глазами и подтверждён
+# верным, правка не нужна, запись в словарь НЕ заводилась (список — в конце блока).
+# Полные метрики ДО/ПОСЛЕ и вывод по всем 67 — reports/d1-ref-collisions.md.
+
+# -- 15 починок: auto-chosen был чужим файлом (доказательство — что на этикетке) -------
+
+aratti-shardone-beloe-suhoe:
+  - Shardone_dc6ec8d1cb.webp  # этикетка "АРАТТИ ШАРДОНЕ 2023"; auto-chosen + 4 др. кандидата — чужие "БАЛАКЛАВА CHARDONNAY Brut" (та же фотопара, что у shardone-balaklava), 1 — виноградник без бренда
+
+bukovinka:
+  - Screenshot_10_a566dcdabb.webp  # этикетка "ТАБИЯ / БУКОВИНКА" (пешка); auto-chosen — афиша "Российский винодельческий форум"
+
+glera-manno:
+  - Screenshot_2_66036870aa.webp  # этикетка "MANNO"; auto-chosen — афиша "ЭНОТУРИЗМ РОССИИ", кандидат 2 — пейзаж без бренда, 3 — афиша винной ярмарки в Казани
+
+krasnostop-zolotovskij:
+  - krasnostop_cca9e0b43e.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / КРАСНОСТОП ЗОЛОТОВСКИЙ"; auto-chosen — фото винограда на лозе (ref_quality_class=vineyard_scenery, было usable=false)
+
+lesnaya-proseka:
+  - Screenshot_4_7c7945f9a9.webp  # этикетка "...ПРОСЕКА" (лесной мотив); auto-chosen — фото здания ресторана винодельни (ref_quality_class=other_noise, было usable=false), кандидат 3 — иллюстрация пикника (клипарт)
+
+magnatum-blanc-de-blancs:
+  - 2_8fdb34dcf3.webp  # этикетка "MAGNATUM ... Blanc de Blancs"; auto-chosen — лайфстайл-стол с тортом и разными бутылками; кандидат 1 — чужой коньяк "FANAGORIA GRAND", 2/4 — бочки/аэрофото завода без бренда
+
+merlo-1:
+  - merlo_89592556f7.webp  # этикетка "MANTRA ESTATE / MERLOT"; auto-chosen — чужая "ГАЛИЦКИЙ • ГАЛИЦКИЙ / МЕРЛО" (та же фотопара, что у слога merlo — там она и оставлена верной, см. список ниже)
+
+oleg:
+  - Screenshot_9_78adaf4455.webp  # этикетка "ТАБИЯ / ОЛЕГ" (ладья); auto-chosen — афиша фестиваля "ИН ВАЙН" Владивосток, кандидаты 2/4 — афиша "Винная ярмарка" Казань
+
+pino-nuar:
+  - pino_nuar_4915dc36a6.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / ПИНО НУАР / Красная горка"; auto-chosen — чужая "БАЛАКЛАВА PINOT NOIR" (та же фотопара, что у balaklava-pino-nuar — там она и оставлена верной)
+
+pobeda:
+  - Screenshot_7_53531eb2bc.webp  # этикетка "Победа / ТАБИЯ"; auto-chosen — человек разливает вино в бокалы (ref_quality_class=person_with_wine, было usable=false; пример из находки оркестратора), кандидат 2 — чужие бутылки "MANCOPIA", 4 — сервировка стола
+
+risling:
+  - risling_86f49d6fb2.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / РИСЛИНГ"; auto-chosen — фото винограда на лозе (ref_quality_class=vineyard_scenery, было usable=false)
+
+risling-1:
+  - Screenshot_11_a9d7c8f8df.webp  # этикетка "ТАБИЯ / РИСЛИНГ" (конь); auto-chosen — афиша "НАРМА, фестиваль современного искусства" Дербент (ref_quality_class=logo_graphic, было usable=false), кандидат 3 — афиша "Городской ФЕСТ"
+
+roze-2:
+  - Screenshot_17_6d600742f0.webp  # этикетка бледно-розовая "ТАБИЯ" (пешка); auto-chosen — афиша "Chateau Pinot, Четверг 27 августа" (ref_quality_class=person_with_wine, было usable=false) — исходный пример из находки оркестратора (agents/D1-ref-collisions.md)
+
+rozovoe-zoloto:
+  - Screenshot_16_a237793391.webp  # этикетка "ТАБИЯ / РОЗОВОЕ ЗОЛОТО" (пешка); auto-chosen — фото винной полки магазина "INKERMAN" (ref_quality_class=interior_marketing, было usable=false)
+
+rustok-glera-ru-140:
+  - Screenshot_3_dce2afc6e1.webp  # этикетка "ROOTSTOCK COLLECTION / GLERA RU 140"; auto-chosen — лайфстайл: пара целуется на винограднике (ref_quality_class=person_with_wine, было usable=false), кандидат 1 — чужой логотип "LITAVSHCHUK VINEYARDS & WINERY"
+
+# -- 3 отказа: единственное доступное фото доказуемо чужое, своего фото в поставке нет -
+
+agora-yachting-cabernet-sauvignon: []  # единственное фото (Agora_Rezerv_Yahting_Sovinon_kopiya...) поровну делится с agora-yachting-sauvignon (одна и та же "Название фото" в CSV у обеих позиций) — этикетка прямо гласит "WHITE DRY WINE", противоречит красному "Каберне Совиньон" в каталоге; оставлено верным слогу agora-yachting-sauvignon (Совиньон Блан, белое — совпадает)
+
+vibes-vermentino-viognier-barrel-fermented-2022: []  # все 3 кандидата — одна и та же этикетка "VIBES Silvaner 2022 Barrel Fermented" (photo_csv тоже буквально "03-Silvaner-2022-Barrel-Fermented.webp") — чужой сорт (Сильванер, не Верментино-Вионье); своего фото в поставке нет
+
+zhemchuzhnaya-9-czitron-shardone: []  # оба кандидата — этикетка "АЛИГОТЕ, ЦИТРОН" (photo_csv буквально "Алиготе, Цитрон бел.сух.webp" — совпадает с именем фото соседнего слога zhemchuzhnaya-9-aligote-czitron, откуда и скопирован в CSV); для "Цитрон, Шардоне" (без Алиготе) своего фото в поставке нет
+
+# -- 2 доп. слога, вне 67 (len(candidates)==1, usable было True — не попадали в
+# исходную выборку по len(candidates)>1/usable=false): перепутанное превью по наводке
+# разметчика L1 (reports/l-real-labels-part1.md, "Предложения к контрактам") + поиск
+# top1 на реальном фото (см. reports/l-real-labels-part1.md, пример 005) — проверено
+# тем же методом (Read на файл, этикетка против названия/сорта в case_catalog.json).
+# Оба — winery Фанагория, линейка "Velvet Season" (несколько сортов, одинаковый дизайн
+# этикетки, отличается только цветная плашка сорта) — фото для ЭТИХ ДВУХ слогов на
+# самом деле чужие сорта той же линейки, не Мускат Оттонель/Рислинг:
+
+fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13: []  # единственный кандидат — этикетка "VELVET SEASON / SAPERAVI / Десертное / Поздний сбор" — чужой сорт (Саперави, не Мускат Оттонель, и не белое); своего фото в поставке нет
+
+fanagoriya-velvet-season-risling-beloe-sladkoe-12: []  # единственный кандидат — этикетка "VELVET SEASON / CABERNET / Десертное / Поздний сбор" — чужой сорт (Каберне, не Рислинг, и не белое); своего фото в поставке нет
+
+# -- 49 слогов, где auto-chosen проверен глазами и ПОДТВЕРЖДЁН верным — правка не
+# нужна, оверрайд не заводился (этикетка/бренд на фото совпадает с winery_name/name/
+# color/grapes из case_catalog.json; посторонние кандидаты — либо тот же кадр,
+# переаплоуженный под новым хэшем, либо виноградник/афиша/групповое фото без
+# конкретного бренда, либо чужая позиция, ЗАКОННО делящая одну фотографию по CSV —
+# cv/cli.py всё равно не индексирует такие кандидаты доп-ракурсом без extra_refs):
+# agora-muskat, agora-yachting-sauvignon, arie-vyderzhka-bochka-francziya-2020,
+# aristov-kyuve-aleksandr-roze-de-pino, b-yu-rne-krasnostop-suhoe-krasnoe-classic,
+# b-yu-rne-pino-gri-beloe-suhoe, balaklava-muskat, balaklava-pino-nuar,
+# bryut-rozovoe-zolotaya-balka, chateau-tamagne-eno-traminer-i-shardone,
+# czitronnyj-magaracha, di-kaspiko-di-caspico-fiori-di-mare-verde,
+# grand-jete-blanc-de-blancs, grand-jete-cuvee, igristoe-vino-ekstra-bryut-beloe-di-caspico,
+# igristoe-vino-endemy-bianka-bryut-beloe, igristoe-vino-endemy-pino-blan-bryut-beloe,
+# kaberne-sovinon-2, leto-vecrfn-2024-suhoe-vino, loco-cimbali-shardone-beloe-suhoe-127,
+# mancopia-kaberne-sovinon, mancopia-saperavi, merlo, polusladkoe-beloe-zolotaya-balka,
+# polusladkoe-krasnoe-zb-vajn-frizzante, polusladkoe-krasnoe-zolotaya-balka,
+# polusladkoe-rozovoe-zolotaya-balka, polusuhoe-beloe-zolotaya-balka,
+# polusuhoe-rozovoe-zb-vajn-frizzante, pozdnij-sbor-beloe, pozdnij-sbor-krasnoe,
+# rubin-golodrigi, shardone-balaklava, sovinon-blan-krasnaya-gorka,
+# soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11, suhoe-beloe-zb-vajn-frizzante,
+# twopeters_kaberne_sovinion, twopeters_saperavi, twopeters_shardone,
+# vermentino-viognier-2022, vibes-montepulchano-kaberne-fran-pti-verdo,
+# vibes-silvaner-barrel-fermented-2022, vysokij-bereg-risling-zelenaya-seriya-1,
+# zb-vajn-risling-polusuhoe-beloe, zb-vajn-roze-suhoe-rozovoe,
+# zb-vajn-spumante-polusuhoe-beloe, zhemchuzhnaya-9-aligote-czitron,
+# zhemchuzhnaya-9-kaberne-sovinon-pino-nuar
+#
+# ona-skazala-da — честно БЕЗ эталона, usable=false ПОДТВЕРЖДЕНО (не ложная отбраковка):
+# единственный кандидат (Generated_Image_June_22_2026_10_44_PM_1..., AI-сгенерированный
+# лайфстайл-кадр — стол с бокалами на закате, люди на заднем плане) не показывает ни
+# бутылку крупным планом, ни этикетку; альтернативного фото в поставке нет.
