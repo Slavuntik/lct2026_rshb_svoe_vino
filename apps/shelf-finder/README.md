@@ -125,3 +125,24 @@ Python/ONNX-прогон, а не выполнение Safari. Детектор 
 пропущенные им бутылки этот эксперимент не оценивает.
 
 После завершения запустите `python scripts/summarize_strong.py artifacts/strong-audit`: он создаёт `report.md` и `review-template.csv`. Для ручной разметки копируйте шаблон в `review.csv`; шаблон перезаписывается при повторном запуске, отдельный файл разметки не затрагивается.
+
+### Визуальная сверка результатов
+
+Сверка всех 939 областей выполнена Codex по изображениям; это не независимая
+экспертная разметка. См. [результат проверки](docs/visual-review-2026-09-24.md)
+и [явные вердикты](docs/visual-review-notes-2026-09-24.json).
+Наблюдения фиксируются отдельно от предсказаний моделей:
+
+```bash
+node scripts/review-sheets.mjs artifacts/strong-audit
+# Только для того же results.json (проверяется SHA-256):
+cp docs/visual-review-notes-2026-09-24.json artifacts/strong-audit/visual-review-notes.json
+python scripts/finalize_visual_review.py artifacts/strong-audit
+```
+
+`visual-review/index.html` показывает цветные рамки и вердикты, `review.csv`
+и `review.json` содержат запись для каждой области. Зелёный означает совпадение
+названия/дизайна; красный — отклонённый первый кандидат; жёлтый — неопределённость;
+серый — ошибочную область. Это не доказательство наличия/отсутствия всех SKU.
+`visual_product_id` не следует автоматически переносить в обучающие метки:
+точный SKU, год и крепость не подтверждены, `reviewed_id` остаётся пустым.
