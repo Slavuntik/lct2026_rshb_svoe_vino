@@ -8,19 +8,23 @@ import type {
   ChatPayload,
   ChatStreamEvent,
   ConsentScope,
+  DishPairingPayload,
   GuestAuthPayload,
   LoginPayload,
   PostConsentPayload,
   RegisterPayload,
+  ScanCandidateWine,
   ScanPhotoRichResponse,
   ScanResolvePayload,
   ScanResolveResponse,
   SwipePayload,
   WaitlistPayload,
+  WinePairingsResponse,
 } from "../lib/apiTypes";
-import { chunkAnswer, pickChatResponse } from "./fixtures/chat";
-import { popularStyleNames, resolveStyle, winesForStyle } from "./fixtures/styles";
-import { findWineBySlug, wines, type WineFixture } from "./fixtures/wines";
+import { chunkAnswer, pickChatResponse, pickChatResponseForWine } from "./fixtures/chat";
+import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
+import { popularStyleNames, resolveStyle, styleNamesFor, winesForStyle } from "./fixtures/styles";
+import { caseFallbackWines, findWineBySlug, similarWinesFor, wines, type WineFixture } from "./fixtures/wines";
 import {
   applySwipe,
   createAccount,
@@ -86,6 +90,34 @@ function scoreWine(wine: WineFixture, normalizedText: string, hints?: ScanResolv
   return score;
 }
 
+// Мини-имитация фолбэка B7 (apps/api/app/foreign_scan_lookup.py, read-only для нас):
+// пустые matches + узнаваемый сорт/стиль в тексте -> российские аналоги. Не копирует
+// pipeline/ref/grape_synonyms.yaml — только достаточно детерминизма для UI-тестов и мока;
+// живой /v1/scan/resolve на :8000 уже отдаёт это по-настоящему (проверено curl'ом, см.
+// reports/c2-analogs-ui.md).
+const FOREIGN_ANALOG_RULES: { pattern: RegExp; label: string; wineIds: string[] }[] = [
+  { pattern: /risling|riesling/, label: "рислинг", wineIds: ["severny-sklon-riesling-poluslad-2023"] },
+  {
+    pattern: /chianti|sangiovese|санджовезе/,
+    label: "санджовезе",
+    wineIds: ["severny-sklon-krasnostop-2021", "sokoliny-utes-merlot-cabernet-2020"],
+  },
+];
+
+function foreignAnalogFallback(text: string): Pick<ScanResolveResponse, "analogs" | "analog_reason"> {
+  const normalized = text.toLowerCase();
+  for (const rule of FOREIGN_ANALOG_RULES) {
+    if (!rule.pattern.test(normalized)) continue;
+    const analogWines = rule.wineIds.map(findWineBySlug).filter((wine): wine is WineFixture => Boolean(wine));
+    if (analogWines.length === 0) continue;
+    return {
+      analogs: analogWines.map(toAnalogWine),
+      analog_reason: `«${text}» вне каталога российских вин — аналоги по стилю: ${rule.label}`,
+    };
+  }
+  return { analogs: [], analog_reason: null };
+}
+
 function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): ScanResolveResponse {
   const normalized = text.toLowerCase();
   const scored = wines
@@ -95,7 +127,7 @@ function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): Sca
     .slice(0, 5);
 
   if (scored.length === 0) {
-    return { matches: [], low_confidence: true };
+    return { matches: [], low_confidence: true, ...foreignAnalogFallback(text) };
   }
 
   const matches = scored.map(({ wine, score }) => ({
@@ -108,7 +140,7 @@ function resolveFromText(text: string, hints?: ScanResolvePayload["hints"]): Sca
   const [best, second] = matches;
   const lowConfidence = matches.length > 1 ? best.confidence - second.confidence < 0.12 : best.confidence < 0.75;
 
-  return { matches, low_confidence: lowConfidence };
+  return { matches, low_confidence: lowConfidence, analogs: [], analog_reason: null };
 }
 
 function toAnalogWine(wine: WineFixture): AnalogWine {
@@ -117,6 +149,23 @@ function toAnalogWine(wine: WineFixture): AnalogWine {
     name: wine.source.name,
     winery_name: wine.source.winery_name,
     region_name: wine.source.region_name,
+  };
+}
+
+// v0.4.11: candidates — top-5 схлопнутых позиций ANN-поиска, обогащённые данными карточки
+// (agents/B8-candidates-card.md). Мок берёт данные из той же карточки, что отдал бы
+// GET /wines/{id} — source_url/image_url тут passthrough, не придуманный vino-svoe.ru-паттерн
+// (у наших фикстур source_url — example.com, и так оно и должно приехать от живого API,
+// когда candidate — позиция НАШЕГО каталога, а не фолбэка каталога кейса).
+function toCandidateWine(wine: WineFixture, score: number): ScanCandidateWine {
+  return {
+    wine_id: wine.wine_id,
+    name: wine.source.name,
+    winery_name: wine.source.winery_name,
+    region_name: wine.source.region_name,
+    image_url: wine.source.image_url,
+    source_url: wine.source_url,
+    score,
   };
 }
 
@@ -233,13 +282,24 @@ export const handlers: HttpHandler[] = [
     }
 
     if (notInCatalog) {
+      // v0.4.9: не катастрофический провал абсолютного пола (CV_ABS_FLOOR=0.82) — реалистичнее
+      // для кейса margin-провал у самой границы: top1 близко к полу, gap меньше CV_MARGIN_FLOOR.
+      // Именно этот профиль и объясняет, почему честнее показать candidates, чем "нет в каталоге".
       return HttpResponse.json({
         slug: "",
         card: null,
-        confidence: { top1_score: 0.21, gap: 0.02, f1_top1: 0.87, f1_top5: 0.95 },
+        confidence: { top1_score: 0.79, gap: 0.015, f1_top1: 0.87, f1_top5: 0.95 },
         ocr_verified: false,
         timing_ms: 640,
         not_in_catalog: true,
+        candidates: [
+          toCandidateWine(wines[0], 0.79),
+          toCandidateWine(wines[3], 0.776),
+          // Один из трёх — позиция каталога КЕЙСА (её нет в нашем RAG, source_url на
+          // vino-svoe.ru): демонстрирует и фолбэк-лукап GET /wines/{id}, и ссылку
+          // «Открыть на «Своё Вино»» на настоящем клике, не только в юнит-тесте.
+          toCandidateWine(caseFallbackWines[0], 0.758),
+        ],
         similar: wines.slice(0, 2).map(toAnalogWine),
         analogs: wines.slice(2, 4).map(toAnalogWine),
       } satisfies ScanPhotoRichResponse);
@@ -249,11 +309,14 @@ export const handlers: HttpHandler[] = [
     const { searchTerms: _searchTerms, ...card } = demoWine;
     return HttpResponse.json({
       slug: demoWine.wine_id,
-      card,
+      // v0.3.6: card = ровно тело GET /wines/{id} (v0.4.1 image-scan.md) — тот же similar_wines.
+      card: { ...card, similar_wines: similarWinesFor(card.similar ?? []) },
       confidence: { top1_score: 0.94, gap: 0.31, f1_top1: 0.87, f1_top5: 0.95 },
       ocr_verified: true,
       timing_ms: 780,
       not_in_catalog: false,
+      // Поле есть всегда (v0.4.11), но при уверенном ответе UI его не рендерит — одна карточка.
+      candidates: [toCandidateWine(wines[0], 0.94), toCandidateWine(wines[2], 0.63)],
       similar: wines.slice(1, 3).map(toAnalogWine),
       analogs: wines.slice(3, 5).map(toAnalogWine),
     } satisfies ScanPhotoRichResponse);
@@ -266,13 +329,68 @@ export const handlers: HttpHandler[] = [
       return errorJson(404, "not_found", "Карточка вина не найдена.");
     }
     const { searchTerms: _searchTerms, ...card } = wine;
-    return HttpResponse.json(card);
+    // v0.3.6: similar_wines — обогащение тех же слагов, что в similar (оставлен для обратной
+    // совместимости/запасного пути на клиенте, см. reports/frontend-jury-pass-fixes.md).
+    return HttpResponse.json({ ...card, similar_wines: similarWinesFor(card.similar ?? []) });
+  }),
+
+  // v0.3.3 (contracts/post-scan.md v1.0): гастропары. Мок — упрощённый стенд-ин, не порт
+  // мини-DSL food_pairing_rules.yaml (та логика — зона backend, apps/api/app/rag): все наши
+  // фикстуры несут непустой food_pairings -> basis=catalog реалистично покрывает dev-режим;
+  // basis=unavailable — честный фолбэк для гипотетического вина без него. sensory/heuristic
+  // здесь не воспроизводятся (нет фикстуры без food_pairings, где было бы видно) — эти basis
+  // у компонента проверены юнит-тестом через vi.spyOn(apiClient.getWinePairings).
+  http.get(`${API}/wines/:wineId/pairings`, ({ params }) => {
+    const wine = findWineBySlug(String(params.wineId));
+    if (!wine) {
+      return errorJson(404, "not_found", "Карточка вина не найдена.");
+    }
+    const catalogPairings = wine.source.food_pairings ?? [];
+    if (catalogPairings.length > 0) {
+      return HttpResponse.json({
+        wine_id: wine.wine_id,
+        basis: "catalog",
+        pairings: catalogPairings.slice(0, 3).map((tag) => ({ tag, score: null, triggered_rules: [] })),
+        message: null,
+      } satisfies WinePairingsResponse);
+    }
+    return HttpResponse.json({
+      wine_id: wine.wine_id,
+      basis: "unavailable",
+      pairings: [],
+      message: "Недостаточно данных, чтобы подобрать сочетания для этого вина.",
+    } satisfies WinePairingsResponse);
+  }),
+
+  // --- pairing/dish («Что подать» по фото блюда, задача тимлида 22.09) ---
+  // Контракт (post-scan.md v1.1) architect оформляет параллельно — мок построен буквально по
+  // схеме брифа, детерминирован по имени файла (тот же приём, что /scan/photo выше).
+  http.post(`${API}/pairing/dish-photo`, async ({ request }) => {
+    const form = await request.formData();
+    const image = form.get("image");
+    const filename = image instanceof File ? image.name : "dish.jpg";
+    return HttpResponse.json(buildDishPhotoResponse(filename));
+  }),
+
+  http.post(`${API}/pairing/dish`, async ({ request }) => {
+    const body = (await request.json()) as DishPairingPayload;
+    // contracts/post-scan.md v1.1 §4.2: category — строго один из 9 тегов, иное значение
+    // (включая пустое) -> 400 validation_error, а не честный "unsure" (это не фото со
+    // случайной моделью — пользователь выбирает строго из наших же 9 чипов).
+    if (!body.category || !isDishCategory(body.category)) {
+      return errorJson(400, "validation_error", `Неизвестная категория блюда: «${body.category ?? ""}».`);
+    }
+    return HttpResponse.json(buildDishCategoryResponse(body.category, body.dish));
   }),
 
   // --- chat (SSE) ---
   http.post(`${API}/chat`, async ({ request }) => {
     const body = (await request.json()) as ChatPayload;
-    const script = pickChatResponse(body.message);
+    // v0.3.5 (задача тимлида 22.09): wine_id (только первый запрос диалога, ChatScreen.tsx)
+    // резолвится в ответ ИМЕННО про это вино в обход разбора текста — тот самый обход
+    // проблемы "текстовый поиск по префиллу путает вина-близнецы из одной серии в ~8%
+    // случаев" (см. reports/frontend-wine-id-chat.md). Не резолвится/не передан — как раньше.
+    const script = (body.wine_id && pickChatResponseForWine(body.wine_id)) || pickChatResponse(body.message);
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream<Uint8Array>({
@@ -395,9 +513,12 @@ export const handlers: HttpHandler[] = [
   http.get(`${API}/taste/profile`, ({ request }) => {
     const account = accountFromRequest(request);
     if (!account) return unauthorized();
+    const topStyles = topStylesFor(account);
+    // v0.3.6: top_styles_named — обогащение тех же слагов, что в top_styles (запасной путь).
     return HttpResponse.json({
       vector: account.vector,
-      top_styles: topStylesFor(account),
+      top_styles: topStyles,
+      top_styles_named: styleNamesFor(topStyles),
       swipes_count: account.swipes.length,
     });
   }),

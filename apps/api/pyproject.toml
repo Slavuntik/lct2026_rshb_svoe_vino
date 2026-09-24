@@ -23,8 +23,15 @@ dependencies = [
     # integration (пакет cv); теперь работа с изображением есть и в основном пути, поэтому
     # зависимость объявлена явно. Сам импорт в user_box.py ленивый: без pillow сканер
     # продолжает работать, отказывая только в рамке.
-    "pillow>=10.3",
     "llm",
+    # agents/B8-candidates-card.md: scripts/build_case_thumbs.py ресайзит
+    # эталоны кейса офлайн (длинная сторона 480px, webp q=80) — рантайм API
+    # (app/routers/case_thumbs.py) Pillow не использует вовсе, только
+    # статически раздаёт уже готовые файлы. Уже приходил транзитивно через
+    # "cv" (integration extra, packages/cv/pyproject.toml) — здесь объявлен
+    # напрямую, чтобы скрипт был runnable и на базовом `uv sync` (без
+    # --extra integration, который тянет тяжёлый torch+packages/cv).
+    "pillow>=10.4",
 ]
 
 [project.optional-dependencies]
@@ -43,6 +50,15 @@ dev = [
 integration = [
     "rag",
     "cv",
+    # torch>=2.3 приходит ТРАНЗИТИВНО через cv (packages/cv/pyproject.toml) — но uv
+    # применяет [tool.uv.sources] (ниже, CPU-only индекс для Linux) только к пакетам,
+    # которые ЭТОТ pyproject.toml требует НАПРЯМУЮ, не к транзитивным требованиям
+    # path-зависимости (проверено эмпирически: без этой строки `uv lock
+    # --upgrade-package torch` продолжал резолвить torch с обычного PyPI и тащить
+    # cuda-toolkit/nvidia-* для linux, несмотря на source-override ниже). Явная
+    # прямая запись здесь ничего не меняет по факту установки (версия та же,
+    # что уже требует cv) — только даёт uv повод посмотреть в [tool.uv.sources].
+    "torch>=2.3",
 ]
 # ПРИМЕЧАНИЕ (v0.4.4, ревью 04): на момент проверки этого шва packages/cv/
 # pyproject.toml не объявлял pillow_heif как зависимость, хотя cv/imageio.py
@@ -62,6 +78,24 @@ integration = [
 llm = { path = "../../packages/llm", editable = true }
 rag = { path = "../../packages/rag", editable = true }
 cv = { path = "../../packages/cv", editable = true }
+# E3-do-ams3: БЕЗ этого torch (тянется транзитивно через cv>=2.3, packages/cv/pyproject.toml
+# — не трогаем тот файл, не наша зона) резолвится с PyPI и на sys_platform=="linux" тащит
+# ПОЛНЫЙ CUDA-стек (проверено по факту в uv.lock ДО этой правки: cuda-bindings,
+# cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx],
+# nvidia-cudnn-cu13/-cusparselt-cu13/-nccl-cu13/-nvshmem-cu13 — 47 пакетов nvidia-*/cuda-*
+# в локе, десятки лишних сотен МБ поверх и без того немаленького torch-колеса) — образ
+# infra/Dockerfile.api строится на python:3.12-slim (Linux) и деплоится на дроплет БЕЗ GPU,
+# CUDA там не будет использована никогда. index.explicit=true — источник применяется ТОЛЬКО
+# к torch (marker сузивает его дальше до линуксовых колёс), никакой другой пакет тайно с
+# него резолвиться не может (защита uv по умолчанию для не-PyPI индексов). На macOS
+# (sys_platform=="darwin", дев-машина) marker не совпадает — там как и раньше PyPI, обычное
+# CPU/MPS-колесо torch для arm64, никакого effect'а на локальную разработку.
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [build-system]
 requires = ["hatchling"]

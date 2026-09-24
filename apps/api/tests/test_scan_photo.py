@@ -147,7 +147,7 @@ def test_scan_flat_default_env_yields_to_explicit_query_param(client: TestClient
     assert r.status_code == 200
     assert set(r.json().keys()) == {
         "slug", "card", "confidence", "ocr_verified", "timing_ms",
-        "not_in_catalog", "similar", "analogs", "matches",
+        "not_in_catalog", "similar", "analogs", "matches", "candidates",
     }  # rich-форма — explicit ?flat=0 пересилил env-дефолт
 
 
@@ -159,7 +159,7 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     body = r.json()
     assert set(body.keys()) == {
         "slug", "card", "confidence", "ocr_verified", "timing_ms",
-        "not_in_catalog", "similar", "analogs", "matches",
+        "not_in_catalog", "similar", "analogs", "matches", "candidates",
     }
     assert body["slug"] == "shato-vymysel-cabernet"
 
@@ -178,10 +178,16 @@ def test_rich_mode_confident_match_full_schema(client: TestClient):
     assert body["ocr_verified"] is False
 
     # v0.4.1 (пробел нашёл C): card — РОВНО тело GET /wines/{id}, включая
-    # similar, не усечённая форма без него.
-    assert set(body["card"].keys()) == {"wine_id", "source", "derived", "source_url", "similar"}
+    # similar, не усечённая форма без него. v0.3.6: то же самое верно для
+    # similar_wines — build_wine_card() один построитель на оба места, card
+    # получает его без отдельной правки (contracts/openapi.yaml v0.3.6, шапка
+    # файла).
+    assert set(body["card"].keys()) == {
+        "wine_id", "source", "derived", "source_url", "similar", "similar_wines",
+    }
     assert body["card"]["wine_id"] == "shato-vymysel-cabernet"
     assert isinstance(body["card"]["similar"], list)
+    assert isinstance(body["card"]["similar_wines"], list)
 
     wines_r = client.get(f"/v1/wines/{body['card']['wine_id']}", headers=auth_header(register_user(
         client, email="photo-card-parity@example.com")))
@@ -472,13 +478,21 @@ class _WeakDominantNullGapImageIndex:
 
 
 class _SpyLabelVerifier:
-    def __init__(self, answer: str | None = None):
+    def __init__(self, answer: str | None = None, ocr_text: str = ""):
         self.calls: list[list[dict]] = []
+        self.ocr_texts: list[str | None] = []  # v0.4.12: ocr_text реально передан verify()
+        self.read_query_text_calls = 0  # v0.4.12: "OCR ровно один раз на запрос"
         self._answer = answer
+        self._ocr_text = ocr_text
 
-    def verify(self, image_bytes: bytes, candidates: list[dict]) -> str | None:
+    def verify(self, image_bytes: bytes, candidates: list[dict], ocr_text: str | None = None) -> str | None:
         self.calls.append(candidates)
+        self.ocr_texts.append(ocr_text)
         return self._answer
+
+    def read_query_text(self, image_bytes: bytes) -> str:
+        self.read_query_text_calls += 1
+        return self._ocr_text
 
 
 def test_null_gap_with_high_score_is_confident_not_margin_failure(client: TestClient, app):
@@ -924,3 +938,384 @@ def test_rich_mode_analog_with_none_name_dropped_none_region_kept(client: TestCl
     assert all(w["wine_id"] != "rozovyy-mirazh" for w in r2.json()["similar"]), (
         "безымянный аналог обязан быть отброшен, а не ронять rich в 500"
     )
+
+
+# --- v0.4.11 (агент B8): candidates — top-5 позиций, обогащённых карточкой ---
+# (contracts/image-scan.md, "разбор чата кейса 21.09"; отчёт волны —
+# reports/b8-candidates-card.md). В отличие от `matches` (голый {slug, score}
+# для eval), это карточка-сводка для UI ("Возможно, это одно из:") — данные
+# из НАШЕГО каталога первым делом, иначе из каталога кейса
+# (app/rag/case_catalog.py) — та же деградация, что и у `card`/GET /wines/{id}.
+
+def test_candidates_field_enriched_from_our_catalog_for_confident_match(client: TestClient):
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert len(body["candidates"]) == 1
+    c = body["candidates"][0]
+    assert set(c.keys()) == {
+        "wine_id", "name", "winery_name", "region_name", "image_url", "source_url", "score",
+    }
+    assert c["wine_id"] == "shato-vymysel-cabernet"
+    assert c["name"] == "Шато Вымысел Каберне Совиньон"
+    assert c["winery_name"] == "Шато Вымысел"
+    assert c["region_name"] == "Кубань"
+    assert c["image_url"] == "https://example.com/mock-catalog/img/shato-vymysel-cabernet.webp"
+    assert c["source_url"] == "https://example.com/mock-catalog/wines/shato-vymysel-cabernet"
+    assert c["score"] == body["confidence"]["top1_score"] == body["matches"][0]["score"]
+
+
+def test_candidates_field_present_even_when_not_in_catalog(client: TestClient):
+    """Контракт: "Поле есть всегда" — UI решает, когда его показать
+    (not_in_catalog=true, "Возможно, это одно из:"), бэкенд не скрывает
+    данные заранее (тот же принцип, что и у matches, v0.4.3)."""
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+    body = r.json()
+    assert body["not_in_catalog"] is True
+    assert body["candidates"]
+    assert body["candidates"][0]["wine_id"] == "rozovyy-mirazh"
+    assert body["candidates"][0]["name"] == "Розовый Мираж"
+
+
+def test_candidates_is_empty_when_ann_finds_nothing(client: TestClient):
+    r = _photo(client, b"MOCKPHOTO:unknown", flat=False)
+    assert r.json()["candidates"] == []
+
+
+def test_candidates_align_with_matches_in_order_slug_and_score(client: TestClient, app):
+    """`candidates` — тот же top-K, что и `matches`, просто обогащённый:
+    1:1 по длине/порядку/score, wine_id совпадает со slug матча."""
+    app.state.image_index = _CloseScoresNoSharedFamilyImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    body = r.json()
+    assert len(body["candidates"]) == len(body["matches"]) == 5
+    assert [c["wine_id"] for c in body["candidates"]] == [m["slug"] for m in body["matches"]]
+    assert [c["score"] for c in body["candidates"]] == [m["score"] for m in body["matches"]]
+
+
+def test_candidates_fall_back_to_case_catalog_when_rag_does_not_know_slug(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаг НАРОЧНО отсутствует в app/rag/fixtures.py::WINES — ровно сценарий
+    контракта (122/2054 кейс-слагов вне нашего каталога). image_url/
+    source_url обязаны следовать конвенции фолбэка (case-thumbs / vino-svoe.ru),
+    не нашей mock-витрине."""
+    (tmp_path / "case_catalog.json").write_text(json.dumps({
+        "mapping": {
+            "case-massandra-muskatel-belyy": {
+                "name": "Мускатель белый", "winery_name": "Массандра", "region_name": "Крым",
+            },
+        },
+    }, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _CaseOnlySlugImageIndex:
+        index_version = "case-only-slug-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [Match(slug="case-massandra-muskatel-belyy", score=0.91, gap=0.3, view="real")]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _CaseOnlySlugImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    assert body["candidates"] == [{
+        "wine_id": "case-massandra-muskatel-belyy",
+        "name": "Мускатель белый",
+        "winery_name": "Массандра",
+        "region_name": "Крым",
+        "image_url": "/v1/case-thumbs/case-massandra-muskatel-belyy.webp",
+        "source_url": "https://vino-svoe.ru/wines/case-massandra-muskatel-belyy",
+        "score": 0.91,
+    }]
+
+
+def test_candidates_degrade_honestly_when_slug_unknown_everywhere(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаг не резолвится НИ нашим RAG, НИ каталогом кейса (пустой
+    CASE_DATA_DIR — не полагаемся на то, что на этой машине его там правда
+    нет, см. tests/test_case_catalog.py) — честная деградация, не 500."""
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+
+    class _UnknownEverywhereImageIndex:
+        index_version = "unknown-everywhere-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [Match(slug="totally-unknown-slug", score=0.8, gap=0.3, view="real")]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _UnknownEverywhereImageIndex()
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+
+    assert r.json()["candidates"] == [{
+        "wine_id": "totally-unknown-slug",
+        "name": "totally-unknown-slug",
+        "winery_name": None,
+        "region_name": None,
+        "image_url": None,
+        "source_url": "https://vino-svoe.ru/wines/totally-unknown-slug",
+        "score": 0.8,
+    }]
+
+
+def test_candidates_uses_slug_fallback_when_rag_name_is_explicitly_none(client: TestClient, monkeypatch):
+    """Хотфикс (эта волна): `.get("name", slug)` дефолтит только на
+    ОТСУТСТВУЮЩИЙ ключ, не на явный None (боевой каталог несёт его у
+    единичных позиций — тот же класс дыры, что и у AnalogsWineItem.name в
+    similar/analogs). `ScanCandidateItem.name` обязателен — без `or slug`
+    здесь был бы 500 pydantic ValidationError, не тихая деградация."""
+    from app.rag.fixtures import WINES_BY_SLUG
+    monkeypatch.setitem(WINES_BY_SLUG["rozovyy-mirazh"], "name", None)
+
+    r = _photo(client, b"MOCKPHOTO:weak:rozovyy-mirazh", flat=False)
+
+    assert r.status_code == 200, r.text
+    c = next(c for c in r.json()["candidates"] if c["wine_id"] == "rozovyy-mirazh")
+    assert c["name"] == "rozovyy-mirazh"
+
+
+# --- v0.4.12 (G5 packages/cv/cv/text_rerank.py, встраивание — agents/B9-text-
+# rerank-integration.md): текстовое переранжирование top-K ANN-кандидатов --------
+#
+# Пять слагов НАРОЧНО ничем не связаны (не near-dup, не семья) с ТЕСНЫМ кластером
+# score (шаг 0.001) — ровно сценарий бенефиса переранжирования: CV чуть ошибся
+# внутри тесной группы, текст (если распознан) может подвинуть верный слаг на
+# первое место. `rerank-candidate-delta` — единственный слаг каталога кейса, чья
+# винодельня ("Погреб Дельта") НИ ОДНИМ токеном не пересекается с остальными
+# четырьмя (Шато Восход / Долина Смыслов / Ферма Луны / Замок Рассвет) — при OCR
+# "Погреб Дельта" его text_score гарантированно максимален (idf_overlap=1.0,
+# rapidfuzz=100), а у ВСЕХ остальных idf_overlap=0 (общих токенов нет вовсе) и
+# fuzzy ограничен по построению — арифметика в докстринге ниже гарантирует победу
+# delta НЕЗАВИСИМО от точного значения rapidfuzz на несвязанных строках.
+
+_RERANK_SLUGS = [
+    "rerank-candidate-alpha", "rerank-candidate-beta", "rerank-candidate-gamma",
+    "rerank-candidate-delta", "rerank-candidate-epsilon",
+]
+_RERANK_WINERIES = {
+    "rerank-candidate-alpha": "Шато Восход",
+    "rerank-candidate-beta": "Долина Смыслов",
+    "rerank-candidate-gamma": "Ферма Луны",
+    "rerank-candidate-delta": "Погреб Дельта",
+    "rerank-candidate-epsilon": "Замок Рассвет",
+}
+_RERANK_INFORMATIVE_OCR_TEXT = "Погреб Дельта"
+
+
+def _write_rerank_case_catalog(tmp_path) -> None:
+    """5 слагов, у каждого — СВОЯ, ни с кем не пересекающаяся по токенам
+    винодельня (см. докстринг секции выше) — `name` пуст везде намеренно (не
+    добавляет общих токенов, чтобы арифметика IDF была именно такой, как
+    расписано в комментарии выше)."""
+    (tmp_path / "case_catalog.json").write_text(json.dumps({
+        "mapping": {slug: {"winery_name": winery} for slug, winery in _RERANK_WINERIES.items()},
+    }, ensure_ascii=False), encoding="utf-8")
+
+
+class _FiveCloseScoresImageIndex:
+    """5 разных слагов, шаг score 0.001 (максимально тесный кластер — любой
+    text_score с ненулевым весом обязан быть способен переставить порядок),
+    gap=0.5 у всех (комфортно выше CV_MARGIN_FLOOR=0.02 — тест про ПОРЯДОК
+    переранжирования, не про калибровку гейта not_in_catalog)."""
+
+    index_version = "five-close-scores-rerank-stub"
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        return [
+            Match(slug=slug, score=round(0.900 - i * 0.001, 3), gap=0.5, view="real")
+            for i, slug in enumerate(_RERANK_SLUGS)
+        ]
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_default_cv_text_rerank_settings_are_off_with_recommended_k_and_w():
+    """contracts/image-scan.md v0.4.12 (рекомендация G5, reports/g5-accuracy.md,
+    holdout n=374): "Дефолт в коде — выключено", K=5, w=0.01. Если этот тест
+    упал — кто-то поменял дефолт в config.py, не сверившись с рекомендацией."""
+    from app.config import Settings
+    settings = Settings()
+    assert settings.cv_text_rerank is False
+    assert settings.cv_text_rerank_k == 5
+    assert settings.cv_text_rerank_w == 0.01
+
+
+def test_text_rerank_disabled_is_byte_for_byte_unchanged_and_never_reads_ocr(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """CV_TEXT_RERANK=0 (дефолт) — даже когда переранжирование ГАРАНТИРОВАННО
+    изменило бы порядок, если бы читало OCR (тот же сценарий, что тест ниже
+    "промотирует кандидата"), ANN-порядок остаётся как есть, а
+    `read_query_text()` не вызывается вовсе — не только результат не меняется,
+    сам механизм не трогается (contracts/image-scan.md v0.4.12: "Дефолт в коде
+    — выключено")."""
+    _write_rerank_case_catalog(tmp_path)
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    spy = _SpyLabelVerifier(answer=None, ocr_text=_RERANK_INFORMATIVE_OCR_TEXT)
+    app.state.label_verifier = spy
+    assert app.state.settings.cv_text_rerank is False  # дефолт, явно не трогаем
+
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    assert spy.read_query_text_calls == 0, "read_query_text() не должен вызываться — text_rerank выключен"
+    assert [m["slug"] for m in body["matches"]] == _RERANK_SLUGS, "порядок обязан остаться raw ANN"
+    assert body["slug"] == "rerank-candidate-alpha"  # top-1 ANN как есть, никто не промотирован
+
+
+def test_text_rerank_enabled_with_informative_ocr_promotes_lower_ranked_candidate(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Главный DoD брифа: включено + OCR прочитал различающий токен ("Погреб
+    Дельта" — винодельня ИМЕННО rerank-candidate-delta, 4-й по сырому ANN-score
+    из пяти) -> delta поднимается на top-1. Арифметика (см. докстринг секции
+    выше): final(delta) = 0.897 + 0.01*1.35 = 0.9105; final(alpha, худший
+    случай) <= 0.900 + 0.01*0.35 = 0.9035 — delta обязан выиграть независимо от
+    точного значения rapidfuzz на НЕСВЯЗАННЫХ строках остальных четырёх."""
+    _write_rerank_case_catalog(tmp_path)
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    spy = _SpyLabelVerifier(answer=None, ocr_text=_RERANK_INFORMATIVE_OCR_TEXT)
+    app.state.label_verifier = spy
+    app.state.settings = dataclasses.replace(app.state.settings, cv_text_rerank=True)
+
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    assert body["slug"] == "rerank-candidate-delta"
+    assert body["matches"][0]["slug"] == "rerank-candidate-delta"
+    assert [m["slug"] for m in body["matches"]] == [
+        "rerank-candidate-delta", "rerank-candidate-alpha", "rerank-candidate-beta",
+        "rerank-candidate-gamma", "rerank-candidate-epsilon",
+    ], "delta обязан встать первым, остальные четыре — сохранить взаимный порядок (их text_score все нулевые/малые)"
+    # score в ответе — СОБСТВЕННЫЙ (не blended) score того матча, что теперь
+    # top-1: контракт не трогает калибровку гейта (CV_ABS_FLOOR/CV_MARGIN_FLOOR
+    # по-прежнему читают "чистый" ANN score, не cv_score+w*text_score).
+    assert body["matches"][0]["score"] == 0.897
+    assert body["confidence"]["top1_score"] == 0.897
+
+
+def test_text_rerank_enabled_with_empty_ocr_text_keeps_ann_order(client: TestClient, app, tmp_path, monkeypatch):
+    """Включено, но OCR ничего не прочитал (`""`) -> text_score=0 для всех ->
+    порядок остаётся ровно ANN (contracts/image-scan.md v0.4.12 п.1: "при
+    неинформативном OCR порядок CV не меняется")."""
+    _write_rerank_case_catalog(tmp_path)
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    spy = _SpyLabelVerifier(answer=None, ocr_text="")
+    app.state.label_verifier = spy
+    app.state.settings = dataclasses.replace(app.state.settings, cv_text_rerank=True)
+
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    assert [m["slug"] for m in body["matches"]] == _RERANK_SLUGS
+    assert body["slug"] == "rerank-candidate-alpha"
+
+
+def test_text_rerank_ocr_happens_exactly_once_per_request_and_is_reused_by_verifier(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """contracts/image-scan.md v0.4.12 п.2: "этот же текст передаётся
+    верификатору near-dup, второго прохода OCR нет". Все 5 кандидатов здесь
+    попадают в CV_VERIFY_PROXIMITY (шаг 0.001 << 0.04 дефолта) -> verify()
+    ГАРАНТИРОВАННО вызывается -> прямая проверка: read_query_text() ровно
+    один раз, а verify() получает РОВНО тот же текст, что он вернул."""
+    _write_rerank_case_catalog(tmp_path)
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    spy = _SpyLabelVerifier(answer=None, ocr_text=_RERANK_INFORMATIVE_OCR_TEXT)
+    app.state.label_verifier = spy
+    app.state.settings = dataclasses.replace(app.state.settings, cv_text_rerank=True)
+
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+
+    assert spy.read_query_text_calls == 1, "OCR обязан прочитаться РОВНО один раз на запрос"
+    assert spy.calls, "verify() обязан был вызваться — все 5 кандидатов в пределах CV_VERIFY_PROXIMITY"
+    assert spy.ocr_texts == [_RERANK_INFORMATIVE_OCR_TEXT], (
+        "verify() обязан получить РОВНО тот текст, что вернул read_query_text() — не читать заново"
+    )
+
+
+def test_text_rerank_flat_and_rich_agree_on_reranked_top1(client: TestClient, app, tmp_path, monkeypatch):
+    """contracts/image-scan.md v0.4.12 п.4: "flat и rich отдают один и тот же
+    порядок (flat — top-1 после переранжирования)" — независимый запрос в
+    flat-режиме обязан вернуть тот же промотированный слаг, что rich."""
+    _write_rerank_case_catalog(tmp_path)
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    app.state.settings = dataclasses.replace(app.state.settings, cv_text_rerank=True)
+
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    app.state.label_verifier = _SpyLabelVerifier(answer=None, ocr_text=_RERANK_INFORMATIVE_OCR_TEXT)
+    rich = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+
+    app.state.image_index = _FiveCloseScoresImageIndex()
+    app.state.label_verifier = _SpyLabelVerifier(answer=None, ocr_text=_RERANK_INFORMATIVE_OCR_TEXT)
+    flat = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=True)
+
+    assert rich.status_code == flat.status_code == 200
+    assert rich.json()["slug"] == flat.json()["slug"] == "rerank-candidate-delta"
+
+
+def test_text_rerank_unresolvable_candidate_degrades_honestly_instead_of_crashing(
+    client: TestClient, app, tmp_path, monkeypatch
+):
+    """Слаг среди top-K НЕИЗВЕСТЕН ни каталогу кейса, ни нашему RAG (реалистичный
+    рассинхрон индекса и каталожного слоя, тот же принцип честной деградации, что
+    и `_candidate_item`/`_verify_candidates`) — text_rerank обязан продолжить
+    работу (пустой `CatalogText`, text_score=0.0 для этого слага), не 500."""
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))  # пусто — ни один слаг не резолвится каталогом кейса
+    app.state.settings = dataclasses.replace(app.state.settings, cv_text_rerank=True)
+
+    class _UnresolvableSlugImageIndex:
+        index_version = "unresolvable-slug-rerank-stub"
+
+        def embed(self, image: bytes) -> list[float]:
+            return [0.0]
+
+        def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+            return [Match(slug="totally-unknown-everywhere", score=0.85, gap=0.5, view="real")]
+
+        def build(self, refs, version) -> None:
+            return None
+
+        def add(self, slug, images) -> None:
+            return None
+
+    app.state.image_index = _UnresolvableSlugImageIndex()
+    app.state.label_verifier = _SpyLabelVerifier(answer=None, ocr_text="что-то нечитаемое")
+
+    r = _photo(client, b"MOCKPHOTO:shato-vymysel-cabernet", flat=False)
+    assert r.status_code == 200, r.text
+    assert r.json()["slug"] == "totally-unknown-everywhere"

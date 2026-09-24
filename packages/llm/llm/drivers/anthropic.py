@@ -1,7 +1,7 @@
 """Anthropic Messages API (dev / judge в eval).
 
 env: LLM_BASE_URL (default https://api.anthropic.com), LLM_API_KEY, LLM_MODEL
-(default claude-3-5-haiku-latest — дешёвый дефолт для dev/eval-judge).
+(default claude-sonnet-5 — dev и проверка ответов; в проде хака — российская модель).
 
 Messages API отделяет системный промпт от messages: все role="system" из
 входного списка склеиваются в верхнеуровневое поле "system", остаются только
@@ -19,7 +19,7 @@ from ..base import LLMUnavailable, Msg
 from ._http import DEFAULT_TIMEOUT, open_stream_with_retries, request_json, wrap_stream_errors
 
 DEFAULT_BASE_URL = "https://api.anthropic.com"
-DEFAULT_MODEL = "claude-3-5-haiku-latest"
+DEFAULT_MODEL = "claude-sonnet-5"
 ANTHROPIC_VERSION = "2023-06-01"
 
 

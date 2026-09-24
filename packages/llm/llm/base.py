@@ -44,8 +44,8 @@ class LLMUnavailable(Exception):
 # Провайдеры, требующие сеть. Их конструкторы не обязаны трогать сеть сами по
 # себе (ленивая инициализация HTTP-клиента), поэтому импорт модулей безопасен
 # даже без ключей — фактический вызов упадёт в LLMUnavailable при отсутствии
-# LLM_API_KEY.
-_PROVIDERS = ("deepseek", "gigachat", "anthropic", "mock")
+# LLM_API_KEY (и, для openai, при отсутствии LLM_BASE_URL — тот же приём).
+_PROVIDERS = ("deepseek", "openai", "gigachat", "anthropic", "mock")
 
 
 def get_llm() -> LLM:
@@ -60,6 +60,10 @@ def get_llm() -> LLM:
         from .drivers.deepseek import DeepSeekLLM
 
         return DeepSeekLLM.from_env()
+    if provider == "openai":
+        from .drivers.openai import OpenAILLM
+
+        return OpenAILLM.from_env()
     if provider == "gigachat":
         from .drivers.gigachat import GigaChatLLM
 

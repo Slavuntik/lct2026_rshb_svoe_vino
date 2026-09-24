@@ -105,6 +105,43 @@ services:
       # не в apps/api/pyproject.toml — см. reports/e-report.md, «Блокеры».
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       ENVIRONMENT: prod
+      # --- CV-стек (сканер по фото, contracts/image-scan.md) — E3-do-ams3 -----------------
+      # IMAGE_PROVIDER/VERIFIER_PROVIDER: apps/api/app/config.py, дефолт в коде — "mock";
+      # здесь ЯВНО "real" (проверено по apps/api/app/cv/factory.py — иначе packages/cv и
+      # тома ниже не используются вообще, сканер работает на фикстурах). Значения по
+      # умолчанию для CV_* — эталон живого стенда оркестратора (reports/e3-do-ams3.md).
+      IMAGE_PROVIDER: real
+      VERIFIER_PROVIDER: real
+      # CV_DATA_DIR — packages/cv/cv/config.py: DATA_DIR; QDRANT_PATH и MANIFEST_PATH
+      # считаются ОТ НЕГО (DATA_DIR/qdrant, DATA_DIR/qdrant/manifest.json — манифест лежит
+      # ВНУТРИ qdrant-каталога, не рядом; проверено по факту в cv/index.py и на диске:
+      # packages/cv/data/qdrant/manifest.json, НЕ packages/cv/data/manifest.json — второй
+      # файл существует, но это осиротевший артефакт одного из прогонов pytest, ImageIndex
+      # его не читает). Том cv_index ниже наполняется КОПИЕЙ ЦЕЛОГО packages/cv/data/qdrant/ —
+      # манифест лежит внутри этого каталога, отдельно катать не нужно. Конкретный механизм
+      # доставки на диск хоста — предмет отдельного брифа (зависит от целевого хоста).
+      CV_DATA_DIR: /data/cv
+      # CASE_DATA_DIR — apps/api/app/cv/case_catalog.py (кириллические name/winery для
+      # верификатора near-dup; без файла — честная деградация в {} и откат на
+      # retriever.get_by_id(), НЕ падает, см. докстринг модуля) и packages/cv/cv/families.py
+      # (near-dup семьи, $CASE_DATA_DIR/families.json). Дефолт в коде — Mac-путь дев-машины
+      # (/Users/.../vines/case-data, 4+ ГБ ПОСТОРОННИХ файлов), на боевом хосте его нет и не
+      # нужен ЦЕЛИКОМ — только 2 маленьких json (~2.5 МБ), см. том case_data ниже.
+      CASE_DATA_DIR: /data/case
+      # Пороги верификации near-dup — ЯВНО, не молчаливым дефолтом кода (apps/api/app/
+      # config.py), чтобы хак-стенд не разъехался с калибровкой (F2, impostor-холдаут),
+      # если дефолты кода когда-нибудь поменяют, а этот файл забудут свериться.
+      CV_ABS_FLOOR: "0.82"
+      CV_MARGIN_FLOOR: "0.02"
+      CV_VERIFY_PROXIMITY: "0.04"
+      # HF_HOME — официальная env huggingface_hub/transformers, единственная точка правды
+      # для кэша SigLIP2 (~1.5 ГБ). HF_HUB_OFFLINE/TRANSFORMERS_OFFLINE=1 — apps/api/app/
+      # cv/factory.py уже выставляет их сам через os.environ.setdefault ПЕРЕД импортом
+      # cv.index (ревью 04, блокер 2) — дублируем здесь явно для документации контракта и
+      # чтобы offline был гарантирован ДО любого другого кода, не только cv/factory.py.
+      HF_HOME: /data/models
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
     volumes:
       # Только для чтения: api никогда не пишет индекс сам, только читает то, что положил
       # publish-index.sh (rsync + симлинк current, см. RUNBOOK «Деплой индекса»). Пустой
@@ -115,6 +152,34 @@ services:
       # обращении (лениво, см. DenseEmbedder/CrossEncoderReranker._ensure_loaded). Именованный
       # том, а не bind-mount под rag-data: живёт своей жизнью, publish-index.sh его не трогает.
       - fastembed_cache:/data/fastembed-cache
+      # --- CV: индекс (E3-do-ams3) -----------------------------------------------------
+      # НЕ :ro — embedded QdrantStore(path=...) (packages/cv/cv/store.py) открывает
+      # локальное хранилище в режиме чтения-записи безусловно (создаёт/трогает .lock даже
+      # когда приложение только ищет, не пишет) — :ro уронил бы старт при IMAGE_PROVIDER=real.
+      # Наполняется НЕ ребилдом на сервере (46 минут CPU на готовом Mac-индексе — не вариант),
+      # а копией готового packages/cv/data/qdrant — способ доставки на диск конкретного хоста
+      # (rsync/иначе) зависит от площадки, предмет отдельного брифа.
+      - cv_index:/data/cv
+      # --- CV: кэш моделей — HF (SigLIP2, HF_HOME выше) --------------------------------
+      - hf_cache:/data/models
+      # --- CV: ТОТ ЖЕ том hf_cache ВТОРЫМ mount'ом — кэш PaddleOCR/paddlex -------------
+      # paddlex (зависимость paddleocr>=3.0) ИГНОРИРУЕТ HF_HOME и кэширует модели детекции/
+      # распознавания (~100 МБ) в $HOME/.paddlex/official_models — ПРОВЕРЕНО ПО ФАКТУ,
+      # reports/g-report.md: "PaddleOCR... качает модели... отдельно от HF_HOME... в
+      # ~/.paddlex/official_models/". Домашний каталог пользователя контейнера "app" — /app
+      # (infra/Dockerfile.api: useradd --home-dir /app). Тот же именованный volume под двумя
+      # путями = один физический кэш на диске хоста: HF пишет свою поддиректорию (hub/...),
+      # paddle — свою (official_models/...), имена не пересекаются. Так бриф "hf_cache — кэш
+      # HF+Paddle" выполнен буквально ОДНИМ томом, а не два volume + два прогона rsync.
+      - hf_cache:/app/.paddlex
+      # --- CV: метаданные кейса (CASE_DATA_DIR выше) -----------------------------------
+      # Маленький (~2.5 МБ: slug_refs.json+families.json, НЕ весь vines/case-data — тот 4+ ГБ
+      # посторонних файлов). Добавлен сознательно, хотя изначальный список томов его не
+      # называл: иначе CASE_DATA_DIR=/data/case выше указывал бы в пустоту и верификатор
+      # молча деградировал бы без явной причины. Явно зафиксировано в reports/e3-do-ams3.md,
+      # не тихо. Способ наполнения — тот же отдельный брифом механизм синхронизации, что и у
+      # cv_index/hf_cache выше.
+      - case_data:/data/case
     depends_on:
       postgres:
         condition: service_healthy
@@ -123,16 +188,33 @@ services:
     # Без публикации на хост: только nginx и внутренняя сеть видят api:8000.
     expose:
       - "8000"
-    mem_limit: 2g
-    mem_reservation: 768m
+    # E3-do-ams3: было 2g — ГАРАНТИРОВАННЫЙ OOM с реальным CV-стеком (замер оркестратора на
+    # живом стенде: RSS 3.2 ГБ в работе, пик 3.9 ГБ при сборке индекса, см. reports/
+    # e3-do-ams3.md). 6g — потолок с запасом на пики (не только сборка индекса: конкурентные
+    # /scan/photo, RAG-модели в том же процессе — см. «Память: как считали» ниже про RAG).
+    # ВНИМАНИЕ оркестратору: это меняет расчёт RUNBOOK.md «Память: как считали» (8 ГБ на
+    # ОБА контура prod+staging на одном Contabo-хосте) — см. reports/e3-do-ams3.md,
+    # «Предложения», RUNBOOK.md сознательно НЕ тронут (не в списке файлов этого брифа).
+    mem_limit: 6g
+    mem_reservation: 3g
     cpus: 1.5
     healthcheck:
       # python есть гарантированно (это рантайм самого приложения) — не нужен ни curl, ни wget.
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3).read()"]
+      # E3-do-ams3: не только HTTP 200, но и JSON-поле warm==true (apps/api/app/routers/
+      # health.py — AND прогрева image_index/label_verifier, apps/api/app/cv/factory.py).
+      # Прогрев НЕ роняет старт при сбое (лучше поднятый процесс с warm=false, чем совсем не
+      # поднятый) — значит "процесс отвечает 200" НЕ означает "сканер готов принимать боевые
+      # фото"; healthz-гейт деплоя (infra/scripts/deploy-hack-do-ams3.sh) должен видеть
+      # именно это различие, не просто код ответа.
+      test: ["CMD", "python", "-c", "import json,sys,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz', timeout=3)); sys.exit(0 if d.get('warm') is True else 1)"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s   # холодный старт: загрузка embedding/reranker моделей (packages/rag)
+      # E3-do-ams3: было 30s — мало для SigLIP2+PaddleOCR даже с ПРОГРЕТОГО (уже на томе)
+      # дискового кэша на скромном CPU хоста; 90s — запас на медленный диск/CPU, НЕ на
+      # скачивание моделей по сети (HF_HUB_OFFLINE=1 — при отсутствии кэша упадёт быстро с
+      # ошибкой, не будет висеть ~340 с "холодного" сценария F2, reports/e3-do-ams3.md).
+      start_period: 90s
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "5" }
@@ -211,3 +293,14 @@ volumes:
     name: somelye_prod_nginx_cache
   fastembed_cache:
     name: somelye_prod_fastembed_cache
+  # --- CV (E3-do-ams3) — именованные тома, а не bind-mount: этот файл переиспользуется
+  # разными хостами/чекаутами с разным BASE_DIR (см. заметку про /opt/somelye/prod,
+  # захардкоженный в rag-data/releases выше буквально — НЕ трогаем, вне зоны этой правки,
+  # см. reports/e3-do-ams3.md, «Предложения»); именованный volume работает одинаково
+  # независимо от того, откуда запущен `docker compose`, обычный bind-mount так не умеет.
+  cv_index:
+    name: somelye_prod_cv_index
+  hf_cache:
+    name: somelye_prod_hf_cache
+  case_data:
+    name: somelye_prod_case_data

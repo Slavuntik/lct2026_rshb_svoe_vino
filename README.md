@@ -69,6 +69,12 @@ cd apps/web && npm i && npm run dev                                             
 Реальный поиск: собрать индекс пайплайном, затем `RAG_PROVIDER=real RAG_MODE=embedded` —
 интеграционные тесты: `RUN_RAG_INTEGRATION=1 pytest` в `apps/api`.
 
+Документация API (Swagger/ReDoc) отдаётся самим FastAPI под префиксом `/v1`, чтобы
+попадать в API и на стенде, где nginx проксирует в бэкенд только `/v1/*`
+(`infra/ams3/nginx-somelye.conf`): локально — `http://127.0.0.1:8000/v1/docs`
+(ReDoc: `/v1/redoc`, схема: `/v1/openapi.json`), на стенде —
+**http://89.110.72.101/v1/docs**.
+
 ## Прогон скрипта кейсодержателя
 
 `POST /v1/eval/predict` — фиксированный путь скрипта оценки ЛЦТ

@@ -6,8 +6,10 @@
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from rag.filtering import passes_filters
-from rag.types import Filters
+from rag.types import Filters, filters_active
 
 
 def test_passes_filters_color_pure_logic():
@@ -58,3 +60,56 @@ def test_grapes_filter_requires_intersection():
     payload = {"filters": {"grapes": ["merlo", "kaberne-fran"]}}
     assert passes_filters(payload, Filters(grapes=["merlo"])) is True
     assert passes_filters(payload, Filters(grapes=["shardone"])) is False
+
+
+# --------------------------------------------------------------------------
+# 22.09 (reports/backend-chat-retrieval.md): filters_active() — сигнал
+# rag.intent.classify() и rag.base.Retriever.search() (см. те модули).
+# --------------------------------------------------------------------------
+
+def test_filters_active_none_is_false():
+    assert filters_active(None) is False
+
+
+def test_filters_active_empty_object_is_false():
+    assert filters_active(Filters()) is False
+
+
+def test_filters_active_true_for_each_single_field():
+    assert filters_active(Filters(color="красное")) is True
+    assert filters_active(Filters(sugar="сухое")) is True
+    assert filters_active(Filters(region="krym")) is True
+    assert filters_active(Filters(grapes=["merlo"])) is True
+    assert filters_active(Filters(stillness="игристое")) is True
+
+
+def test_filters_active_empty_grapes_list_is_still_inactive():
+    # grapes=[] — дефолт dataclass, не "признак распознан".
+    assert filters_active(Filters(grapes=[])) is False
+
+
+def test_filters_active_is_duck_typed_not_isinstance_bound():
+    """Критично для apps/api/app/rag/interface.py::Filters — ОТДЕЛЬНЫЙ класс
+    с теми же полями (структурный контракт, "продублирован дословно"), без
+    общего базового класса и без гарантии тех же методов. filters_active()
+    обязан работать через getattr на ЛЮБОМ объекте с этими атрибутами, не
+    только на rag.types.Filters — иначе первый же боевой вызов из apps/api
+    ловит AttributeError (см. отчёт: ровно так и было с методом до правки)."""
+
+    @dataclass
+    class _DuckFilters:
+        color: str | None = None
+        sugar: str | None = None
+        region: str | None = None
+        grapes: list[str] | None = None
+        stillness: str | None = None
+
+    assert filters_active(_DuckFilters()) is False
+    assert filters_active(_DuckFilters(color="белое")) is True
+
+    class _NotAFilterAtAll:
+        pass
+
+    # Отсутствующие атрибуты — getattr(..., default) тихо считает их "не задано",
+    # не падает AttributeError.
+    assert filters_active(_NotAFilterAtAll()) is False

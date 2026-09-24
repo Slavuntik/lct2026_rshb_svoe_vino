@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { apiClient } from "../../lib/apiClient";
 import type { ScanPhotoRichResponse } from "../../lib/apiTypes";
+import { buildDishPhotoResponse } from "../../mocks/fixtures/dishPairing";
 import { findWineBySlug } from "../../mocks/fixtures/wines";
 import { renderApp } from "../../test/renderApp";
 import { ScanScreen } from "./ScanScreen";
@@ -27,6 +28,7 @@ function response(): ScanPhotoRichResponse {
     ocr_verified: true,
     timing_ms: 780,
     not_in_catalog: false,
+    candidates: [],
     similar: [],
     analogs: [],
   };
@@ -90,4 +92,29 @@ describe("ScanScreen — уточнение рамкой", () => {
     await waitFor(() => expect(screen.queryByTestId("aim-frame")).not.toBeInTheDocument());
     expect(scan).toHaveBeenCalledTimes(1);
   });
+
+  it("прицел сбрасывается при переходе к блюду и не мешает новому фото", async () => {
+    const scan = vi.spyOn(apiClient, "scanPhoto").mockResolvedValue(response());
+    const dish = vi.spyOn(apiClient, "pairingDishPhoto").mockResolvedValue(buildDishPhotoResponse("dish.png"));
+    renderScan();
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile()] } });
+    await screen.findByTestId("scan-photo-result");
+    fireEvent.click(screen.getByRole("button", { name: /покажите нужную бутылку/i }));
+    expect(screen.getByTestId("aim-frame")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^блюдо$/i }));
+    expect(screen.queryByTestId("scan-aim-offer")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/фото блюда/i), { target: { files: [pngFile()] } });
+    await screen.findByTestId("dish-food-result");
+    expect(dish).toHaveBeenCalledTimes(1);
+    expect(scan).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("scan-aim-offer")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^бутылка$/i }));
+    fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile()] } });
+    await screen.findByTestId("scan-photo-result");
+    expect(scan.mock.calls[1][1]).toBeUndefined();
+    expect(screen.queryByTestId("aim-frame")).not.toBeInTheDocument();
+  });
+
 });

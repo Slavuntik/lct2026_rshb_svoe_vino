@@ -260,7 +260,18 @@ def tiny_index(tmp_path_factory, tiny_source) -> Retriever:
     build_dir, catalog_dir = tiny_source
     data_dir = tmp_path_factory.mktemp("rag_data")
     no_goldset = data_dir / "no-such-goldset.jsonl"
+    # case_data_dir — заведомо несуществующий путь (22.09, reports/
+    # backend-rag-rebuild.md): run_ingest() без явного case_data_dir по
+    # умолчанию дополняет "wines" из РЕАЛЬНОГО config.CASE_DATA_DIR (тот же
+    # принцип, что и goldset_path выше) — мини-фикстуре чужие 125 реальных
+    # вин каталога кейса не нужны, изоляция та же, что у no_goldset.
+    no_case_data = data_dir / "no-such-case-data"
     run_ingest(
-        version="test", source_dir=build_dir, catalog_dir=catalog_dir, data_dir=data_dir, goldset_path=no_goldset
+        version="test",
+        source_dir=build_dir,
+        catalog_dir=catalog_dir,
+        data_dir=data_dir,
+        goldset_path=no_goldset,
+        case_data_dir=no_case_data,
     )
     return Retriever(data_dir=data_dir, reranker=NoOpReranker())

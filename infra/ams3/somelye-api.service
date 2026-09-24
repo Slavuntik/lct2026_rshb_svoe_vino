@@ -1,0 +1,28 @@
+[Unit]
+Description=Svoy Somelye API — хак-стенд сканера (ams3)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=somelye
+Group=somelye
+WorkingDirectory=/opt/somelye/app/apps/api
+EnvironmentFile=/opt/somelye/somelye.env
+ExecStart=/opt/somelye/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+# Прогрев энкодера, верификатора и первого search qdrant на CPU — до нескольких минут.
+TimeoutStartSec=900
+# Бокс общий с боевым VPN: при пике памяти OOM-киллер должен бить по стенду, не по xray/hysteria.
+# Замер: 3.2 ГБ в работе, пик 3.9 ГБ.
+MemoryHigh=4500M
+MemoryMax=5500M
+# При конкуренции за CPU VPN (вес по умолчанию 100) получает приоритет.
+CPUWeight=40
+Nice=5
+NoNewPrivileges=yes
+ProtectSystem=full
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -40,6 +40,9 @@ def test_swipe_then_profile_reflects_liked_wine_sensory_vector(client: TestClien
     body = r.json()
     assert body["swipes_count"] == 1
     assert body["top_styles"] == ["valpolicella"]
+    # v0.3.6 (architect, тот же аудит, что similar_wines): человекочитаемое
+    # имя стиля, тот же порядок/слаг, что top_styles.
+    assert body["top_styles_named"] == [{"slug": "valpolicella", "name": "Вальполичелла", "country": "Италия"}]
     # sensory той самой фикстуры: acidity 0.55
     assert abs(body["vector"]["acidity"] - 0.55) < 1e-6
 
@@ -51,7 +54,31 @@ def test_profile_defaults_to_neutral_vector_before_any_swipe(client: TestClient)
     body = r.json()
     assert body["swipes_count"] == 0
     assert body["top_styles"] == []
+    assert body["top_styles_named"] == []  # пустой top_styles -> пустой top_styles_named
     assert all(v == 0.5 for v in body["vector"].values())
+
+
+# --- v0.3.6 (architect, contracts/openapi.yaml — тот же аудит, что similar_wines):
+# top_styles_named — {slug,name,country} по тем же слагам/порядку, что top_styles. ---
+
+def test_profile_top_styles_named_skips_slug_unknown_to_style_catalog(client: TestClient, app, monkeypatch):
+    """Стиль-слаг в top_styles, которого справочник не резолвит (реалистичный
+    дрейф данных, тот же класс деградации, что "слаг не в каталоге" у
+    similar_wines) — пропущен в top_styles_named, но остаётся в top_styles;
+    ответ честно 200, не 500."""
+    tokens = register_user(client, email="t-style-ghost@example.com", scopes=["base", "profiling"])
+    headers = auth_header(tokens)
+    r = client.post("/v1/taste/swipes", json={"wine_id": "shato-vymysel-cabernet", "verdict": "like"},
+                     headers=headers)
+    assert r.status_code == 204
+
+    monkeypatch.setattr(app.state.retriever, "list_reference_styles", lambda top_n=5: [])
+
+    r = client.get("/v1/taste/profile", headers=headers)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["top_styles"] == ["valpolicella"]
+    assert body["top_styles_named"] == []
 
 
 def test_dislikes_do_not_pull_vector_but_count_towards_swipes_count(client: TestClient):

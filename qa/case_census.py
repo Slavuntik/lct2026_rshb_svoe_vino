@@ -246,10 +246,38 @@ def resolve_best_candidate(
     return sorted(candidates, key=lambda fn: (-area(fn), fn))[0]
 
 
+def load_manual_matches(path: Path) -> dict[str, str | list[str]]:
+    """agents/F4-data-hygiene.md, задача 2: ручной словарь `slug -> filename` (uploads/)
+    для случаев, где имя фото в CSV настолько отличается от загруженного файла, что ни
+    точный ключ, ни фолбэк по подстроке не находят уверенного кандидата (см. докстринг
+    qa/manual_photo_matches.yaml для метода разбора). Отсутствующий файл -> пустой
+    словарь (тот же принцип, что `cv.cli.load_near_dup_groups` — не ошибка, а "словаря
+    пока нет"). `yaml` — ленивый импорт (тот же приём, что PIL в `make_pil_size_lookup`
+    выше): чистая логика модуля не должна требовать лишней зависимости на уровне файла.
+
+    D1 (agents/D1-ref-collisions.md, задача 4): значение может быть СПИСКОМ, а не только
+    строкой — `[chosen, *extra]` (подтверждённые вручную «тоже это вино» доп. ракурсы)
+    или `[]` (явное решение «ни один кандидат не подходит» для слога с len(candidates)>1,
+    см. run_matcher). Список пропускается как список (не превращается в строку) — см.
+    ветвление в run_matcher, где отличие str/list меняет ПРАВИЛО применения оверрайда."""
+    if not path.is_file():
+        return {}
+    import yaml
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path}: ожидался плоский словарь slug -> filename, получено {type(payload)}")
+    out: dict[str, str | list[str]] = {}
+    for k, v in payload.items():
+        out[str(k)] = [str(x) for x in v] if isinstance(v, list) else str(v)
+    return out
+
+
 def run_matcher(
     slug_table: dict[str, dict[str, str]],
     upload_filenames: Iterable[str],
     size_lookup: Callable[[str], tuple[int, int] | None] = lambda fn: None,
+    manual_matches: dict[str, str | list[str]] | None = None,
 ) -> dict[str, Any]:
     index = build_upload_index(upload_filenames)
     mapping: dict[str, Any] = {}
@@ -294,6 +322,59 @@ def run_matcher(
                     )
         mapping[slug] = entry
 
+    # F4, задача 2: словарь (значение-строка) консультируется ТОЛЬКО для слогов, которых
+    # автоматика выше НЕ сматчила (chosen is None) — никогда не может перекрыть уже
+    # успешный автоматический матч, даже если словарь устарел/содержит опечатку. Ссылка
+    # на файл, которого больше нет на диске (устаревшая запись словаря), тоже молча
+    # пропускается — не ошибка сборки.
+    #
+    # D1 (agents/D1-ref-collisions.md, задача 4): значение-СПИСОК — это ручной разбор
+    # коллизии `len(candidates) > 1` (Screenshot_N.webp и т.п. — РАЗНЫЕ винодельни
+    # используют один и тот же нормализованный стем, resolve_best_candidate() выше мог
+    # выбрать ЧУЖОЙ файл среди кандидатов). В отличие от строки, список ПРИМЕНЯЕТСЯ
+    # ДАЖЕ КОГДА entry["chosen"] уже проставлен автоматикой — это и есть исправляемый
+    # баг, не "второе мнение поверх успеха". `[chosen, *extra]` -> chosen становится
+    # эталоном, extra уходит в НОВОЕ поле `extra_refs` (доп. ракурсы «тоже это вино»,
+    # подтверждённые вручную — cv/cli.py::discover_refs_from_slug_refs_json индексирует
+    # ТОЛЬКО их, не сырой `candidates`, см. докстринг там). `[]` — явное решение "ни
+    # один кандидат не подходит" (agents/D1-ref-collisions.md п.3): chosen -> None,
+    # candidates -> [] (слог честно возвращается в no_ref_slugs ниже), extra_refs не
+    # пишем вовсе. Файлы, которых больше нет на диске, тихо отфильтровываются из списка
+    # (тот же принцип, что для строки) — если после фильтрации список пуст, это
+    # трактуется как reject, а не как "словарь сломан".
+    known_files = {fn for files in index.values() for fn in files}
+    applied_manual: set[str] = set()
+    for slug, value in (manual_matches or {}).items():
+        entry = mapping.get(slug)
+        if entry is None:
+            continue
+        if isinstance(value, list):
+            vetted = [fn for fn in value if fn in known_files]
+            if vetted:
+                entry["chosen"] = vetted[0]
+                entry["candidates"] = vetted
+                entry["extra_refs"] = vetted[1:]
+                entry["match_method"] = "manual_override_reviewed"
+            else:
+                entry["chosen"] = None
+                entry["candidates"] = []
+                entry.pop("extra_refs", None)
+                entry["match_method"] = "manual_override_rejected"
+            applied_manual.add(slug)
+        else:
+            filename = value
+            if entry["chosen"] is not None or filename not in known_files:
+                continue
+            entry["chosen"] = filename
+            entry["candidates"] = [filename]
+            entry["match_method"] = "manual_override"
+            applied_manual.add(slug)
+    if applied_manual:
+        rejected = {s for s in applied_manual if mapping[s]["chosen"] is None}
+        no_ref_slugs = [s for s in no_ref_slugs if s not in applied_manual]
+        no_ref_slugs = sorted(set(no_ref_slugs) | rejected)
+        unmatched_by_name = [e for e in unmatched_by_name if e["slug"] not in applied_manual]
+
     multi_candidate_slugs = sorted(s for s, e in mapping.items() if len(e["candidates"]) > 1)
 
     shared_files: dict[str, list[str]] = defaultdict(list)
@@ -308,6 +389,7 @@ def run_matcher(
         "unmatched_by_name": sorted(unmatched_by_name, key=lambda d: d["slug"]),
         "multi_candidate_slugs": multi_candidate_slugs,
         "shared_files": shared_families,
+        "manual_override_count": len(applied_manual),
     }
 
 
@@ -674,6 +756,7 @@ def write_slug_refs(path: Path, result: dict[str, Any]) -> None:
         "unmatched_by_name": result["unmatched_by_name"],
         "multi_candidate_slugs": result["multi_candidate_slugs"],
         "shared_files": result["shared_files"],
+        "manual_override_count": result.get("manual_override_count", 0),
         "generated_by": "qa/case_census.py",
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
@@ -691,6 +774,11 @@ def main(argv: list[str] | None = None) -> int:
         "--stats-out", type=Path, default=_QA_DIR / "case-census-run" / "stats.json",
         help="куда сохранить сводный JSON статистики (своя зона qa/, не case-data/)",
     )
+    parser.add_argument(
+        "--manual-matches", type=Path, default=_QA_DIR / "manual_photo_matches.yaml",
+        help="ручной словарь slug -> filename для слогов вне автоматического матчера "
+        "(F4, agents/F4-data-hygiene.md, задача 2) — отсутствующий файл -> пустой словарь",
+    )
     args = parser.parse_args(argv)
 
     case_dir: Path = args.case_data_dir
@@ -703,8 +791,9 @@ def main(argv: list[str] | None = None) -> int:
     upload_filenames = sorted(p.name for p in uploads_dir.iterdir() if p.is_file())
 
     size_lookup = make_pil_size_lookup(uploads_dir)
+    manual_matches = load_manual_matches(args.manual_matches)
 
-    result = run_matcher(slug_table, upload_filenames, size_lookup=size_lookup)
+    result = run_matcher(slug_table, upload_filenames, size_lookup=size_lookup, manual_matches=manual_matches)
     chosen_file_by_slug = {slug: e["chosen"] for slug, e in result["mapping"].items()}
     families = build_families(slug_table, chosen_file_by_slug)
 
@@ -716,6 +805,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = {
         "slugs_total": len(slug_table),
         "slugs_matched": matched,
+        "slugs_matched_manual_override": result.get("manual_override_count", 0),
         "slugs_no_ref": len(result["no_ref_slugs"]),
         "slugs_unmatched_by_name": len(result["unmatched_by_name"]),
         "multi_candidate_slugs": len(result["multi_candidate_slugs"]),

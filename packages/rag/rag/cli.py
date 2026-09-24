@@ -21,7 +21,9 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         version=args.version,
         source_dir=Path(args.source) if args.source else None,
         catalog_dir=Path(args.catalog) if args.catalog else None,
+        data_dir=Path(args.data) if args.data else None,
         goldset_path=Path(args.goldset) if args.goldset else None,
+        case_data_dir=Path(args.case_data) if args.case_data else None,
     )
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
     return 0
@@ -34,7 +36,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         print(f"Голд-сет пуст или не найден: {goldset_path}", file=sys.stderr)
         return 1
 
-    retriever = Retriever()
+    retriever = Retriever(data_dir=Path(args.data) if args.data else None)
     # Хедлайн — routing="heuristic": как реально позовёт прод (/chat вызывает
     # search(q) без явных collections, эвристика rag/intent.py решает сама,
     # контракт v0.3 п.3). routing="oracle" — потолок retrieval-ядра при
@@ -73,12 +75,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_ingest = sub.add_parser("ingest", help="Индексация каталога vines: Qdrant + BM25 + labels")
     p_ingest.add_argument("--source", default=None, help=f"build_dir vines (default: {config.BUILD_DIR})")
     p_ingest.add_argument("--catalog", default=None, help=f"catalog_dir vines (default: {config.CATALOG_DIR})")
+    p_ingest.add_argument(
+        "--data", default=None, help=f"куда писать индекс (default: {config.DATA_DIR}) — reports/backend-rag-rebuild.md: "
+        "используйте для сборки ВНЕ packages/rag/data, например в case-data/, не трогая боевой индекс"
+    )
     p_ingest.add_argument("--version", default=None, help="YYYYMMDD.N (default: сегодняшняя дата)")
     p_ingest.add_argument(
         "--goldset",
         default=None,
         help=f"голд-сет для калибровки refusal-порога (default: {config.DEFAULT_GOLDSET_PATH}; "
         "пусто/нет файла -> калибровка пропускается, refusal выключен)",
+    )
+    p_ingest.add_argument(
+        "--case-data",
+        default=None,
+        help=f"каталог кейса-сканера, дополняет 'wines' вне source/index.jsonl (default: {config.CASE_DATA_DIR}; "
+        "нет case_catalog.json на машине -> дополнение молча пропускается)",
     )
     p_ingest.set_defaults(func=cmd_ingest)
 
@@ -87,6 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_eval.add_argument("--out", default=str(DEFAULT_REPORT))
     p_eval.add_argument("--top-k", type=int, default=8)
     p_eval.add_argument("--bench-n", type=int, default=100, help="Число запросов для замера p95")
+    p_eval.add_argument("--data", default=None, help=f"индекс для прогона (default: {config.DATA_DIR})")
     p_eval.set_defaults(func=cmd_eval)
 
     return parser

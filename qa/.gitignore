@@ -1,6 +1,12 @@
 # Рантайм-артефакты qa/ — не деликты, генерируются заново при каждом прогоне.
 # .venv/, __pycache__/, *.pyc уже покрыты корневым .gitignore; здесь — то, что специфично qa/.
 .pytest_cache/
+
+# Кэш qa/accuracy_lab.py (agents/G5-accuracy.md): CV top-20 (3 варианта кропа) + OCR
+# (2 варианта) по 2054 синтетическим фото + результаты свипов — дорогой, но полностью
+# восстановимый прогоном `accuracy_lab.py cache` (см. докстринг модуля); не деликт,
+# тот же принцип, что scan-eval-runs/* ниже. Ключевые цифры — в reports/g5-accuracy.md.
+.cache/
 e2e/.dev-server.log
 e2e/.api-server.log
 e2e/.qa-real-run.db
@@ -36,6 +42,16 @@ scan-eval-runs/case-20260917-final-b7/*
 !scan-eval-runs/case-20260917-final-b7/report.md
 !scan-eval-runs/case-20260917-final-b7/README.md
 !scan-eval-runs/case-20260917-final-b7/eval_report_snapshot.json
+!scan-eval-runs/case-20260918-honest/
+scan-eval-runs/case-20260918-honest/*
+!scan-eval-runs/case-20260918-honest/report.json
+!scan-eval-runs/case-20260918-honest/report.md
+!scan-eval-runs/case-20260918-honest/README.md
+!scan-eval-runs/case-20260918-honest/eval_report_snapshot.json
+!scan-eval-runs/ams3-parity-sample/
+scan-eval-runs/ams3-parity-sample/*
+!scan-eval-runs/ams3-parity-sample/README.md
+!scan-eval-runs/ams3-parity-sample/report.md
 
 # Синтетические «полевые» фото сканера (агент F2, qa/gen_synthetic_scan_photos.py) +
 # локальный CV-индекс, построенный поверх них (qa/run_cv_index_baseline.py) — оба
@@ -52,3 +68,8 @@ synthetic/
 # Числа прогона — в reports/f3-case-census.md и qa/acceptance.md §9 (цитатой), не сырым
 # JSON-файлом.
 case-census-run/
+
+# ИСКЛЮЧЕНИЕ (оркестратор, 2026-09-22): первый замер на ЖИВЫХ фото организаторов, снятый на
+# самом стенде — снимок метрик для /v1/metrics/scan и README; фото и разметка остаются вне git.
+!scan-eval-runs/real-photos-stand/
+!scan-eval-runs/real-photos-stand/**

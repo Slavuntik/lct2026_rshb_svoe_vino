@@ -117,7 +117,7 @@ portal_tag_defaults:
   Устрицы:      {acidity: 0.85, body: 0.35, salt: 0.9, weight: 0.2}
   Сыры:         {fat: 0.7, salt: 0.7, umami: 0.6, weight: 0.5}
   Блюда из рыбы: {fat: 0.4, protein_heavy: 0.5, weight: 0.4}
-  Блюда из птицы: {fat: 0.5, protein_heavy: 0.6, weight: 0.5}
+  Блюда из птицы: {fat: 0.5, protein_heavy: 0.55, weight: 0.5}
   Салаты:       {acidity: 0.7, weight: 0.25, fat: 0.3}
   Брускетты:    {acidity: 0.6, salt: 0.6, weight: 0.3}
   BBQ:          {smoke: 0.9, fat: 0.7, protein_heavy: 0.85, weight: 0.85}

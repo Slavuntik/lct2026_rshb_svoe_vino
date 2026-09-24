@@ -63,15 +63,28 @@ export const ru = {
     dropHintActive: "Отпустите, чтобы загрузить",
     dropOrChoose: "или выберите файл",
     choosePhoto: "Выбрать фото",
-    quietPhotoCaption: "Фото используется только для поиска и не сохраняется.",
+    // 22.09 (задача тимлида): полки путают CV сильнее, чем отдельная бутылка (top-1 12.5%
+    // на фото целой полки против 95.2% на фото одной бутылки, reports/qa-auto-field-photos.md;
+    // автонарезка полки в бой не пошла, reports/ml-eng-ml3.md) — подпись явно просит один кадр.
+    quietPhotoCaption: "Лучше всего — одна бутылка в центре кадра, этикетка крупно, ровно и без бликов.",
     photoSearching: "Ищем по фото… обычно до 3 секунд.",
     photoError: "Не удалось распознать фото. Попробуйте другое или введите текст ниже.",
     newPhoto: "Сканировать другое вино",
     askSomelierAboutThis: "Спросить сомелье об этом вине",
+    // not_in_catalog почти всегда означает "не уверены, какое именно", а не "такого вина нет
+    // вовсе" (приватная проверка кейса содержит только вина каталога) — поэтому основной текст
+    // веток candidates/candidatesSubtitle; notInCatalogTitle/Message — честный остаток на
+    // случай, когда даже кандидатов нет (candidates пуст).
+    candidatesTitle: "Возможно, это одно из:",
+    candidatesSubtitle: "Честно: не нашли точное совпадение — вот ближайшие вина из каталога «Своё Вино».",
+    // Полный список кандидатов (5 из 5, ANN не смог сузить) — типичный след кадра со
+    // множеством бутылок в объективе (полка), где подсказка "снимите одну крупнее" уместна;
+    // при < 5 кандидатах намеренно не показываем — сама подсказка НЕ означает "это полка"
+    // (candidates.length === 5, ScanScreen.tsx).
+    candidatesManyHint: "Попробуйте снять одну бутылку крупнее.",
     notInCatalogTitle: "Такого вина в каталоге нет",
     notInCatalogMessage:
       "Честно: не нашли точное совпадение в каталоге «Своё Вино». Вот похожие варианты и аналоги из других виноделен.",
-    similarWinesTitle: "Похожие вина",
     analogsTitle: "Аналоги из других виноделен",
     // --- наведение рамки (v0.4.10): выбор нужной бутылки — главный резерв точности ---
     aimTitle: "Покажите нужную бутылку",
@@ -80,6 +93,58 @@ export const ru = {
     aimScanWhole: "Искать по всему кадру",
     aimRetake: "Выбрать другое фото",
     aimFrameLabel: "Рамка вокруг бутылки",
+    // --- v0.3.3 (contracts/post-scan.md v1.0): «Похоже по вкусу», POST /v1/analogs по
+    // сортам/названию уже полученной карточки — не тот же блок, что analogsTitle выше
+    // (тот приходит готовым в ответе /scan/photo; этот — отдельный запрос по стилю). ---
+    tasteAnalogsTitle: "Похоже по вкусу",
+    tasteAnalogsLoading: "Подбираем вина по вкусу…",
+    tasteAnalogsStyleFound: "По стилю «{style}»",
+    tasteAnalogsInYourTaste: "В вашем вкусе",
+    tastePassportCta: "Пройти вкусовой паспорт",
+    // --- «Что подать» по фото блюда (задача тимлида 22.09, POST /v1/pairing/dish-photo,
+    // POST /v1/pairing/dish) — переключатель «Бутылка | Блюдо» на этом же экране, камера и
+    // загрузка общие с веткой вина выше. ---
+    modeBottleLabel: "Бутылка",
+    modeDishLabel: "Блюдо",
+    // Задача тимлида 23.09 (qa-manual-hack-v16.md §2): режим «Блюдо» делит зону загрузки с
+    // «Бутылка», но подписи — свои, не бутылочные («Фото этикетки» / совет про этикетку).
+    dishPhotoLabel: "Фото блюда",
+    dishPhotoCaption: "Лучше всего — само блюдо крупным планом, при дневном свете и без резких теней.",
+    dishSearching: "Распознаём блюдо… обычно до 3 секунд.",
+    // Категорийный подбор (чип alternatives/unsure или ручной выбор без фото) не анализирует
+    // снимок — свой честный лоадер, не «Распознаём» (это про VLM/CV-разбор фото, которого
+    // в этом пути нет вовсе — qa-manual поймал "Распознаём блюдо" мелькающим без фото).
+    dishCategoryLoading: "Подбираем вина под категорию…",
+    dishError: "Не удалось распознать блюдо. Попробуйте другое фото или выберите категорию ниже.",
+    // contracts/post-scan.md v1.1 §4.1: alternatives — ДРУГИЕ теги категории, которые модель
+    // тоже держала в уме (не альтернативные названия блюда) — текст честно про категорию.
+    dishAlternativesTitle: "Может быть, это другая категория?",
+    // Крайний случай: dish.source="zero_shot" даёт категорию по образу фото, но не название;
+    // 22.09 backend иногда шлёт "" вместо null на пустое имя (contracts/openapi.yaml 0.3.4
+    // ещё не догнан реализацией) — заголовок карточки в любом случае не должен быть пустым.
+    dishUnnamedFallback: "Блюдо",
+    dishWinesTitle: "Что подать",
+    dishNoWinesFallback: "Пока нет идей, что подать к этому блюду.",
+    dishNotFoodTitle: "Это не похоже на блюдо",
+    dishNotFoodFallback: "Честно: на фото не удалось узнать блюдо. Попробуйте другое фото или выберите категорию ниже.",
+    dishBottleFallback: "Похоже, на фото бутылка вина, а не блюдо.",
+    // Дословная формулировка из задания тимлида (22.09, п.1 UI) — то же фото уходит в /v1/scan/photo.
+    dishBottleCta: "Похоже на бутылку — отсканировать?",
+    dishUnsureTitle: "Не уверены, что за блюдо",
+    dishManualCategoryTitle: "Или выберите категорию блюда",
+    dishNewPhoto: "Загрузить другое фото блюда",
+    // 9 категорий — те же строки, что ключи portal_tag_defaults в pipeline/ref/
+    // food_pairing_rules.yaml (используются и как подпись чипа, и как значение "category"
+    // в запросе POST /v1/pairing/dish — см. DISH_CATEGORIES в ScanScreen.tsx).
+    dishCategoryOysters: "Устрицы",
+    dishCategoryCheese: "Сыры",
+    dishCategoryFish: "Блюда из рыбы",
+    dishCategoryPoultry: "Блюда из птицы",
+    dishCategorySalads: "Салаты",
+    dishCategoryBruschetta: "Брускетты",
+    dishCategoryBbq: "BBQ",
+    dishCategoryAsian: "Азиатская кухня",
+    dishCategoryDesserts: "Выпечка и десерты",
     // --- текст (запасной путь) ---
     orDivider: "или",
     textFallbackTitle: "Не получилось сфотографировать?",
@@ -90,6 +155,7 @@ export const ru = {
     resolving: "Ищем в каталоге…",
     noMatchesTitle: "Ничего не нашли",
     noMatchesMessage: "Попробуйте переформулировать текст или другое фото — честно, такого вина в базе нет.",
+    analogsFoundTitle: "Похожие российские вина",
     lowConfidenceTitle: "Похоже на одно из этих вин",
     lowConfidenceSubtitle: "Не уверены на 100% — выберите нужное.",
     confidenceLabel: "совпадение {percent}%",
@@ -113,16 +179,31 @@ export const ru = {
   wineCard: {
     backToScan: "К сканеру",
     sourceLink: "Первоисточник",
+    // v0.4.11: и наш каталог, и карточка-фолбэк каталога кейса отдают source_url на
+    // vino-svoe.ru — WineCardContent сам решает по хосту ссылки, какую подпись показать.
+    sourceLinkVinoSvoe: "Открыть на «Своё Вино»",
     similarTitle: "Похожие вина",
+    // Приоритет 1 (qa-manual-hack-v16.md §5.1, задача тимлида 23.09): раньше рендерился сырой
+    // слаг (nesterov-winery-krasnostop-...-12) — GET /wines/{id}.similar был string[] без имени.
+    // С openapi 0.3.6 основной путь — similar_wines (имя/винодельня/фото, WineCardScreen.tsx).
+    // Этот ключ — честная подпись ЗАПАСНОГО пути (similar, голые слаги), когда similar_wines
+    // пуст/отсутствует у конкретной карточки — не подставляем имя, придуманное из слага.
+    similarItemFallback: "Похожее вино {index}",
     grapesLabel: "Сорта",
     regionLabel: "Регион",
     abvLabel: "Крепость",
     servingTempLabel: "Подача",
-    foodPairingsLabel: "Сочетания",
     sensoryTitle: "Вкусовой профиль",
     notFound: "Карточка вина не найдена.",
     askSomelier: "Спросить сомелье об этом вине",
     loading: "Открываем карточку…",
+    // --- v0.3.3 (contracts/post-scan.md v1.0): «К чему подать», GET /wines/{id}/pairings ---
+    pairingsTitle: "К чему подать",
+    pairingsLoading: "Подбираем, к чему подать…",
+    pairingsEmptyFallback: "Пока нет идей, к чему подать это вино.",
+    pairingsSourceCatalog: "По данным карточки вина",
+    pairingsSourceSensory: "По вкусовому профилю вина",
+    pairingsSourceHeuristic: "Оценочно — по цвету и описанию",
   },
   chat: {
     title: "Спросите сомелье",
@@ -164,6 +245,13 @@ export const ru = {
     swipesCount: "Свайпов: {count}",
     vectorTitle: "Ваш вкусовой вектор",
     topStylesTitle: "Похоже на стили",
+    // Задача тимлида 23.09 (аудит architect, openapi 0.3.6 — тот же класс дефекта, что similar):
+    // top_styles_named ({slug,name,country}) — основной путь, показываем имя стиля и страну
+    // (формат — как у chat.analogStyleFound, уже привычный по остальному интерфейсу).
+    // top_styles (голые слаги) — запасной путь, когда top_styles_named пуст/отсутствует: та же
+    // честная порядковая подпись, что у wineCard.similarItemFallback, без выдумки имени.
+    topStyleNamed: "{name} ({country})",
+    topStyleFallback: "Стиль {index}",
     emptyTitle: "Вина закончились",
     emptyMessage: "Вы продегустировали все вина из демо-набора.",
     axisSweetness: "Сладость",

@@ -207,6 +207,205 @@ class TestRunMatcher:
         assert result["multi_candidate_slugs"] == ["aligote-barrel-2024"]
         assert result["mapping"]["aligote-barrel-2024"]["chosen"] in uploads
 
+    # -- manual_matches (F4, agents/F4-data-hygiene.md, задача 2) --------------------
+
+    def test_manual_override_applied_when_automatic_match_fails(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp", "some_other_photo_aaaaaaaaaa.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"orphan-slug": "some_other_photo_aaaaaaaaaa.webp"}
+        )
+        entry = result["mapping"]["orphan-slug"]
+        assert entry["chosen"] == "some_other_photo_aaaaaaaaaa.webp"
+        assert entry["match_method"] == "manual_override"
+        assert "orphan-slug" not in result["no_ref_slugs"]
+        assert result["manual_override_count"] == 1
+
+    def test_manual_override_never_beats_a_successful_automatic_match(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp", "decoy_aaaaaaaaaa.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"zb-vajn-spumante-bryut-beloe": "decoy_aaaaaaaaaa.webp"}
+        )
+        entry = result["mapping"]["zb-vajn-spumante-bryut-beloe"]
+        assert entry["chosen"] == "Spumante_belyj_bryut_d34e854a7b.webp"  # автоматический, не decoy
+        assert entry["match_method"] == "cyrillic_transliteration"
+        assert result["manual_override_count"] == 0
+
+    def test_manual_override_ignores_stale_reference_to_missing_file(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"orphan-slug": "file_removed_since_curation.webp"}
+        )
+        assert result["mapping"]["orphan-slug"]["chosen"] is None
+        assert "orphan-slug" in result["no_ref_slugs"]
+        assert result["manual_override_count"] == 0
+
+    def test_manual_override_unknown_slug_is_ignored_not_an_error(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        result = cc.run_matcher(
+            self._slug_table(), uploads, manual_matches={"not-a-real-slug-in-this-table": "whatever.webp"}
+        )
+        assert result["manual_override_count"] == 0
+
+    def test_no_manual_matches_behaves_exactly_like_before(self):
+        uploads = ["Spumante_belyj_bryut_d34e854a7b.webp"]
+        with_none = cc.run_matcher(self._slug_table(), uploads, manual_matches=None)
+        without_arg = cc.run_matcher(self._slug_table(), uploads)
+        assert with_none["mapping"] == without_arg["mapping"]
+        assert with_none["manual_override_count"] == 0
+
+    # -- manual_matches, значение-список (D1, agents/D1-ref-collisions.md, задача 4) --
+
+    def test_manual_override_list_form_overrides_existing_automatic_match(self):
+        """Ключевое отличие от строковой формы: список ПРИМЕНЯЕТСЯ, даже если
+        автоматика уже что-то выбрала — это и есть починка коллизии (resolve_best_
+        candidate мог выбрать ЧУЖОЙ файл среди кандидатов с общим стемом)."""
+        uploads = ["DSC09173_aaaaaaaaaa.webp", "DSC09173_bbbbbbbbbb.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        auto = cc.run_matcher(table, uploads)
+        assert auto["mapping"]["aligote-barrel-2024"]["chosen"] == "DSC09173_aaaaaaaaaa.webp"  # тай-брейк по алфавиту
+
+        result = cc.run_matcher(
+            table, uploads, manual_matches={"aligote-barrel-2024": ["DSC09173_bbbbbbbbbb.webp"]}
+        )
+        entry = result["mapping"]["aligote-barrel-2024"]
+        assert entry["chosen"] == "DSC09173_bbbbbbbbbb.webp"
+        assert entry["candidates"] == ["DSC09173_bbbbbbbbbb.webp"]
+        assert entry["extra_refs"] == []
+        assert entry["match_method"] == "manual_override_reviewed"
+        assert result["manual_override_count"] == 1
+        assert "aligote-barrel-2024" not in result["multi_candidate_slugs"]  # разрешилась до 1 файла
+
+    def test_manual_override_list_form_extra_refs_are_vetted_extra_angles(self):
+        uploads = ["DSC09173_aaaaaaaaaa.webp", "DSC09173_bbbbbbbbbb.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        result = cc.run_matcher(
+            table, uploads,
+            manual_matches={"aligote-barrel-2024": ["DSC09173_bbbbbbbbbb.webp", "DSC09173_aaaaaaaaaa.webp"]},
+        )
+        entry = result["mapping"]["aligote-barrel-2024"]
+        assert entry["chosen"] == "DSC09173_bbbbbbbbbb.webp"
+        assert entry["extra_refs"] == ["DSC09173_aaaaaaaaaa.webp"]
+        assert entry["candidates"] == ["DSC09173_bbbbbbbbbb.webp", "DSC09173_aaaaaaaaaa.webp"]
+
+    def test_manual_override_list_form_empty_list_rejects_slug_honestly(self):
+        """agents/D1-ref-collisions.md п.3: "ни один кандидат не подходит" -> честный
+        no_ref, не угаданный файл. `[]` — явное решение, отличное от "нет записи в
+        словаре вовсе" (которое оставило бы автоматический — возможно неверный — выбор)."""
+        uploads = ["DSC09173_aaaaaaaaaa.webp", "DSC09173_bbbbbbbbbb.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        result = cc.run_matcher(table, uploads, manual_matches={"aligote-barrel-2024": []})
+        entry = result["mapping"]["aligote-barrel-2024"]
+        assert entry["chosen"] is None
+        assert entry["candidates"] == []
+        assert "extra_refs" not in entry
+        assert entry["match_method"] == "manual_override_rejected"
+        assert "aligote-barrel-2024" in result["no_ref_slugs"]
+        assert result["manual_override_count"] == 1
+
+    def test_manual_override_list_form_filters_missing_files_but_keeps_the_rest(self):
+        uploads = ["DSC09173_aaaaaaaaaa.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        result = cc.run_matcher(
+            table, uploads,
+            manual_matches={"aligote-barrel-2024": ["DSC09173_aaaaaaaaaa.webp", "file_gone_since_curation.webp"]},
+        )
+        entry = result["mapping"]["aligote-barrel-2024"]
+        assert entry["chosen"] == "DSC09173_aaaaaaaaaa.webp"
+        assert entry["extra_refs"] == []
+
+    def test_manual_override_list_form_all_files_missing_is_treated_as_reject(self):
+        uploads = ["DSC09173_aaaaaaaaaa.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        result = cc.run_matcher(
+            table, uploads, manual_matches={"aligote-barrel-2024": ["file_gone_since_curation.webp"]}
+        )
+        entry = result["mapping"]["aligote-barrel-2024"]
+        assert entry["chosen"] is None
+        assert entry["match_method"] == "manual_override_rejected"
+        assert "aligote-barrel-2024" in result["no_ref_slugs"]
+
+    def test_manual_override_list_form_unknown_slug_is_ignored_not_an_error(self):
+        uploads = ["DSC09173_aaaaaaaaaa.webp"]
+        table = {"aligote-barrel-2024": self._slug_table()["aligote-barrel-2024"]}
+        result = cc.run_matcher(
+            table, uploads, manual_matches={"not-a-real-slug-in-this-table": ["whatever.webp"]}
+        )
+        assert result["manual_override_count"] == 0
+
+
+class TestLoadManualMatches:
+    def test_missing_file_returns_empty_dict(self, tmp_path: Path):
+        assert cc.load_manual_matches(tmp_path / "does-not-exist.yaml") == {}
+
+    def test_parses_flat_yaml_with_comments_and_inline_comments(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text(
+            "# header comment, ignored\n"
+            "aligote-avtorskoe: 4285_eq_F1_Fau_6d7da0f321.webp  # Массандра — Алиготе Авторское\n"
+            "kokur-avtorskoe: 4287_Y_Ch_P_Nz3_5f55816077.webp\n",
+            encoding="utf-8",
+        )
+        assert cc.load_manual_matches(p) == {
+            "aligote-avtorskoe": "4285_eq_F1_Fau_6d7da0f321.webp",
+            "kokur-avtorskoe": "4287_Y_Ch_P_Nz3_5f55816077.webp",
+        }
+
+    def test_empty_file_returns_empty_dict(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text("# только комментарии, ни одной записи\n", encoding="utf-8")
+        assert cc.load_manual_matches(p) == {}
+
+    def test_parses_list_values_for_d1_reviewed_collisions(self, tmp_path: Path):
+        """D1 (agents/D1-ref-collisions.md): значение может быть YAML-списком —
+        остаётся списком строк (не превращается в str списка), в отличие от обычной
+        строковой записи. Пустой список — валидное значение (явный reject)."""
+        p = tmp_path / "manual.yaml"
+        p.write_text(
+            "roze-2:\n"
+            "  - Screenshot_17_6d600742f0.webp  # Табия Розе — верная бутылка\n"
+            "vibes-vermentino-viognier-barrel-fermented-2022: []  # нет своего фото\n"
+            "legacy-str-slug: some_file_aaaaaaaaaa.webp\n",
+            encoding="utf-8",
+        )
+        assert cc.load_manual_matches(p) == {
+            "roze-2": ["Screenshot_17_6d600742f0.webp"],
+            "vibes-vermentino-viognier-barrel-fermented-2022": [],
+            "legacy-str-slug": "some_file_aaaaaaaaaa.webp",
+        }
+
+    def test_non_mapping_yaml_raises(self, tmp_path: Path):
+        p = tmp_path / "manual.yaml"
+        p.write_text("- just\n- a\n- list\n", encoding="utf-8")
+        import pytest
+
+        with pytest.raises(ValueError):
+            cc.load_manual_matches(p)
+
+    def test_real_repo_file_parses_and_every_file_exists_on_disk(self):
+        """Живой файл qa/manual_photo_matches.yaml — если vines/case-data доступен в этом
+        окружении (не в git, может отсутствовать на CI), каждая запись должна указывать
+        на реально существующий файл uploads/ — тот же контроль качества, что делался
+        вручную при курировании словаря (см. reports/f4-data-hygiene.md)."""
+        import pytest
+
+        repo_file = Path(__file__).resolve().parent.parent / "manual_photo_matches.yaml"
+        if not repo_file.is_file():
+            pytest.skip("qa/manual_photo_matches.yaml отсутствует в этом окружении")
+        uploads_dir = cc.DEFAULT_CASE_DATA_DIR / cc.UPLOADS_SUBPATH
+        if not uploads_dir.is_dir():
+            pytest.skip("case-data/ (вне git) недоступна в этом окружении")
+        matches = cc.load_manual_matches(repo_file)
+        assert len(matches) > 0
+        # D1 (agents/D1-ref-collisions.md): значение может быть списком (0 файлов -> явный
+        # reject, нечего проверять) — плоский список (slug, filename) по обеим формам.
+        pairs = [
+            (slug, fn)
+            for slug, value in matches.items()
+            for fn in ([value] if isinstance(value, str) else value)
+        ]
+        missing = [(slug, fn) for slug, fn in pairs if not (uploads_dir / fn).is_file()]
+        assert missing == []
+
 
 # --------------------------------------------------------------------------------------
 # Семьи near-dup

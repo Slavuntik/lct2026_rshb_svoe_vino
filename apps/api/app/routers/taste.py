@@ -26,13 +26,30 @@ from ..db import get_db
 from ..deps import get_retriever_dep
 from ..models import Swipe, TasteProfile
 from ..rag.interface import Retriever
-from ..schemas import SwipeRequest, TasteCandidateItem, TasteCandidatesResponse, TasteProfileResponse
+from ..schemas import (
+    AnalogsStyle,
+    SwipeRequest,
+    TasteCandidateItem,
+    TasteCandidatesResponse,
+    TasteProfileResponse,
+)
 from ..security import Principal, require_profiling_consent
 
 router = APIRouter(prefix="/taste", tags=["taste"])
 
 _AXES = ("sweetness", "acidity", "tannin", "body", "oak", "aromatic_intensity", "bubbles")
 _NEUTRAL_VECTOR = {a: 0.5 for a in _AXES}
+
+# contracts/openapi.yaml v0.3.6 (аудит architect, тот же класс дефекта, что
+# WineResponse.similar — reports/qa-manual-hack-v16.md): top_styles — голые
+# слаги pipeline/ref/reference_styles.yaml, TastePassportScreen.tsx рендерит
+# их буквально. list_reference_styles(top_n=...) в РЕАЛЬНОЙ реализации
+# (packages/rag/rag/styles.py::StyleMatcher.list_popular) — top-N ПО ЧАСТОТЕ
+# в каталоге, не весь справочник по алфавиту/структуре, поэтому top_n нужен
+# с запасом больше числа стилей вообще (146 в pipeline/ref/reference_styles.yaml
+# на 22.09), не len(top_styles) — иначе редкий (но настоящий) стиль
+# пользователя мог бы не попасть в top-N и потерять имя без всякой причины.
+_STYLE_CATALOG_TOP_N = 500
 
 
 def _compute_profile(db: Session, retriever: Retriever, user_id: str) -> tuple[dict[str, float], list[str], int]:
@@ -66,6 +83,27 @@ def _compute_profile(db: Session, retriever: Retriever, user_id: str) -> tuple[d
     return vector, top_styles, len(swipes)
 
 
+def _resolve_style_names(retriever: Retriever, style_slugs: list[str]) -> list[AnalogsStyle]:
+    """top_styles (слаги) -> top_styles_named ({slug,name,country}) — тот же
+    источник, что резолвит стиль в карточке/аналогах: retriever.
+    list_reference_styles(), в конечном счёте pipeline/ref/
+    reference_styles.yaml (packages/rag/rag/refdata.py, через StyleMatcher.
+    by_slug). Один вызов на весь список (обычно <=3 слага, _compute_profile
+    берёт топ-3) — не по одному резолву на слаг. Слаг вне справочника
+    пропускается: остаётся в top_styles, не попадает в top_styles_named;
+    порядок сохраняется 1:1 с порядком style_slugs."""
+    if not style_slugs:
+        return []
+    catalog = {s["slug"]: s for s in retriever.list_reference_styles(top_n=_STYLE_CATALOG_TOP_N)}
+    result: list[AnalogsStyle] = []
+    for slug in style_slugs:
+        style = catalog.get(slug)
+        if style is None:
+            continue
+        result.append(AnalogsStyle(slug=style["slug"], name=style["name"], country=style["country"]))
+    return result
+
+
 @router.post("/swipes", status_code=204)
 def post_swipe(
     body: SwipeRequest,
@@ -97,13 +135,18 @@ def post_swipe(
 @router.get("/profile", response_model=TasteProfileResponse)
 def get_taste_profile(
     principal: Principal = Depends(require_profiling_consent),
+    retriever: Retriever = Depends(get_retriever_dep),
     db: Session = Depends(get_db),
 ) -> TasteProfileResponse:
     profile = db.get(TasteProfile, principal.id)
     if profile is None:
-        return TasteProfileResponse(vector=dict(_NEUTRAL_VECTOR), top_styles=[], swipes_count=0)
+        return TasteProfileResponse(
+            vector=dict(_NEUTRAL_VECTOR), top_styles=[], top_styles_named=[], swipes_count=0
+        )
     return TasteProfileResponse(
-        vector=profile.vector, top_styles=profile.top_styles, swipes_count=profile.swipes_count
+        vector=profile.vector, top_styles=profile.top_styles,
+        top_styles_named=_resolve_style_names(retriever, profile.top_styles),
+        swipes_count=profile.swipes_count,
     )
 
 

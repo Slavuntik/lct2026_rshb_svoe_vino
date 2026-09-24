@@ -50,6 +50,30 @@ def grape_slug_to_synonyms() -> dict[str, list[str]]:
 
 
 @lru_cache(maxsize=1)
+def grape_name_to_slug() -> dict[str, str]:
+    """Обратная карта к grape_slug_to_synonyms(): написание сорта (name или
+    любой synonym, дословно как на портале) -> slug. Нужна rag/case_data.py —
+    case_catalog.json (strapi-дамп кейса) несёт "Сорт винограда" свободным
+    текстом, без slug'а. При коллизии написаний между разными сортами
+    побеждает первый по порядку файла (не наблюдалось на реальном
+    справочнике 22.09 — коллизия была бы дефектом grape_synonyms.yaml, не
+    точкой правки здесь)."""
+    data = load_grape_synonyms()
+    out: dict[str, str] = {}
+    for section in ("autochthonous", "hybrid_and_soviet", "international"):
+        for entry in data.get(section, []) or []:
+            slug = entry.get("slug")
+            if not slug:
+                continue
+            names = set(entry.get("synonyms", []) or [])
+            if entry.get("name"):
+                names.add(entry["name"])
+            for name in names:
+                out.setdefault(name, slug)
+    return out
+
+
+@lru_cache(maxsize=1)
 def load_taxonomy() -> dict[str, Any]:
     path = config.REF_DIR / "taxonomy.yaml"
     return yaml.safe_load(path.read_text(encoding="utf-8"))

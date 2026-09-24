@@ -6,12 +6,14 @@ Filters из реплики до вызова search() — ответствен�
 Источники словарей (никакой морфологии/ML — явные regex по стемам, ошибка
 видна и чинится руками, в отличие от недетерминированной LLM-экстракции):
   - цвет/сахар — те же значения, что таксономия портала-источника vines
-    (/Users/vyacheslavfokin/ClaudeWorkspace/vines/ref/taxonomy.yaml,
-    read-only, поля colors/sugar_categories);
+    (pipeline/ref/taxonomy.yaml в репозитории — побайтовая копия vines/ref;
+    read-only, поля colors/sugar_categories; путь переопределяется RAG_REF_DIR);
   - регион — slug+name из той же taxonomy.yaml (regions), read-only.
 """
 from __future__ import annotations
 
+import logging
+import os
 import re
 from functools import lru_cache
 from pathlib import Path
@@ -20,7 +22,13 @@ import yaml
 
 from ..rag.interface import Filters
 
-TAXONOMY_PATH = Path("/Users/vyacheslavfokin/ClaudeWorkspace/vines/ref/taxonomy.yaml")
+# <репозиторий>/pipeline/ref — та же копия справочников, что читает packages/rag (rag.config.REF_DIR).
+# Прежний абсолютный путь дев-машины молча отключал распознавание региона везде, кроме неё:
+# в CI падали 4 теста test_chat_filters, на стенде ams3 фильтр по региону не работал.
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+TAXONOMY_PATH = Path(os.environ.get("RAG_REF_DIR", str(_REPO_ROOT / "pipeline" / "ref"))) / "taxonomy.yaml"
+
+logger = logging.getLogger(__name__)
 
 # Порядок важен: более специфичные ПЕРЕД более общими — "полусухое"/
 # "полусладкое"/"экстра брют" иначе ошибочно матчились бы как "сухое"/
@@ -66,6 +74,7 @@ def _region_patterns() -> tuple[tuple[re.Pattern, str], ...]:
     try:
         data = yaml.safe_load(TAXONOMY_PATH.read_text(encoding="utf-8")) or {}
     except OSError:
+        logger.warning("taxonomy.yaml недоступен (%s) — фильтр по региону в /chat отключён", TAXONOMY_PATH)
         return ()
     patterns: list[tuple[re.Pattern, str]] = []
     seen_stems: set[str] = set()

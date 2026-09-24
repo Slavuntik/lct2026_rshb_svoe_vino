@@ -19,7 +19,9 @@ name: Deploy — Hack (Yandex Cloud)
 on:
   workflow_dispatch: {}
   push:
-    tags: ["hack-v*"]
+    # Префикс hack-yc-v*: тег hack-v* закреплён за основным хак-стендом ams3 (deploy-hack-ams3.yml),
+    # иначе один тег запускал оба выката.
+    tags: ["hack-yc-v*"]
 
 permissions:
   contents: read
@@ -29,7 +31,7 @@ jobs:
   tests:
     uses: ./.github/workflows/ci.yml
 
-  # --- Тег релиза: из push тега hack-v*, либо синтетический при ручном workflow_dispatch ---
+  # --- Тег релиза: из push тега hack-yc-v*, либо синтетический при ручном workflow_dispatch ---
   determine:
     runs-on: ubuntu-latest
     outputs:
@@ -37,7 +39,7 @@ jobs:
     steps:
       - id: pick
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/hack-v* ]]; then
+          if [[ "${GITHUB_REF}" == refs/tags/hack-yc-v* ]]; then
             echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           else
             echo "tag=hack-manual-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:12}" >> "$GITHUB_OUTPUT"

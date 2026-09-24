@@ -1,0 +1,254 @@
+# qa/manual_photo_matches.yaml
+#
+# Агент F4 (reports/f4-data-hygiene.md, задача 2) — ручной словарь slug -> файл
+# uploads/ для 76 слогов из case-data/slug_refs.json -> unmatched_by_name (все —
+# match_method=weak_lexical_overlap, автоматический матчер qa/case_census.py не
+# нашёл уверенного кандидата по ключу/подстроке). Метод разбора (полный отчёт —
+# reports/f4-data-hygiene.md):
+#
+# 1) Разделитель-нечувствительное точное сравнение: normalize_key(), но со ВСЕМИ
+#    '_' тоже вырезанными (не только схлопнутыми в normalize_key) — и из CSV-имени,
+#    и из имени файла в uploads/. Закрывает 72/76: Strapi при аплоаде вставляет
+#    доп. '_' на границах регистра ВНУТРИ непрозрачных ID (напр. 'CG6OxkC' в CSV ->
+#    файл 'CG_6_Oxk_C'), из-за чего обычный матчер по подстроке не совпадает, хотя
+#    это буквально тот же файл. Ложных срабатываний не ожидается (нужно совпадение
+#    ВСЕЙ строки идентификатора целиком, не общих слов) — выборочно перепроверено
+#    визуально (Read на сам файл), 3 случая ('Массандра Кокур Авторское',
+#    'Новый Свет Каберне Совиньон Полусладкое', 'Дербент Ди Каспико') — этикетка на
+#    фото совпадает с ожиданием 1:1.
+# 2) 1 слог (katharon-mezenka-risling-suhoe) — НЕ разделитель-нечувствительное
+#    совпадение, только визуальная проверка: токен-фаззи по общим словам предлагал
+#    2 кандидата с похожим счётом ('Risling_2024...' и 'Katharon_Risling_2025...'),
+#    но Read на оба файла показал, что 'Risling_2024*' — ЧУЖАЯ винодельня LETO
+#    (этикетка 'LETO ВИНОДЕЛЬНЯ'), не KATHARON — общие слова 'Risling'/'2024' её не
+#    различают. 'Katharon_Risling_2025' — этикетка 'KATHARON ... РИСЛИНГ СУХОЕ
+#    БЕЛОЕ 2025' — подтверждено визуально, точное совпадение винодельни и категории.
+# 3) 6 слогов из п.1 имели ПО ДВА физических кандидата (файл переаплоужен с новым
+#    хэш-суффиксом, тот же паттерн, что reports/f3-case-census.md §1.1.6) —
+#    разрешено тем же правилом, что основной матчер (resolve_best_candidate):
+#    большее разрешение (PIL), при равном разрешении — по алфавиту (детерминированно).
+#
+# 3 слога из 76 сюда НЕ попали — файл в поставке физически отсутствует (проверено
+# точечно для каждого, не гипотеза):
+#  - katharon-mezenka-risling-polusuhoe: в uploads есть KATHARON-рислинг (Risling_
+#    2025 = сухое, см. п.2 выше) и LETO-рислинги обеих категорий (чужая винодельня) —
+#    ни одного KATHARON-рислинга полусухое нет.
+#  - fanagoriya-fanagoriya-hey-bey-shardone-beloe-suhoe-13: "Название фото" в CSV —
+#    буквально сам slug (заглушка, не реальное имя файла); лучший фаззи-кандидат —
+#    ДРУГАЯ линейка той же винодельни (Fanagoriya Декантер Шардоне, не Хей Бэй).
+#  - vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-tsimlyanskiy-chernyy-
+#    krasnoe-suhoe-14: у Ведерниковъ Цимлянский Чёрный в uploads есть только
+#    варианты С категорией (резерв/брют-розе/брют-беле/розовый) — ни одного БЕЗ
+#    категории (как в CSV/slug этой позиции) не нашлось.
+#
+# Формат: slug: filename.webp (имя файла в uploads/, без пути). Матчер в
+# case_census.py консультирует этот файл ТОЛЬКО для слогов, которых не нашёл
+# автоматический pipeline (no_ref_slugs/unmatched_by_name) — никогда не
+# перекрывает уже успешный автоматический матч.
+
+aligote-avtorskoe: 4285_eq_F1_Fau_no_bg_preview_carve_photos_6d7da0f321.webp  # Массандра — Алиготе Авторское
+aligote-avtorskoe-vino: 4285_eq_F1_Fau_no_bg_preview_carve_photos_75f98bca1a.webp  # Массандра — Алиготе. Авторское вино
+aristov-kyuve-aleksandr-blan-de-blan: Aristov_Kyuve_ekstra_bryut_Blan_de_Blan_18_MESI_2022_GU_Normal_fcdb509a54.webp  # Кубань-Вино — Аристов. Кюве Александр. Блан Де Блан
+aristov-kyuve-aleksandr-blan-de-nuar: Aristov_Kyuve_ekstra_bryut_Blan_de_Nuar_18_MESI_2022_GU_Normal_4a2bea6a3e.webp  # Кубань-Вино — Аристов. Кюве Александр. Блан Де Нуар
+cantiani-aligote-riesling: Cantiani_Alig_Riesl_New_vid_042025_kopiya_fotor_bg_remover_20260821205234_286ee15115.webp  # Шато АЛВИСА — Cantiani Aligote Riesling
+cantiani-cabernet-sauvignon: Cantiani_Caber_Sauv_vid_042024_Photoroom_834a144a19.webp  # Шато АЛВИСА — Cantiani Cabernet Sauvignon
+cantiani-riesling-rkatsiteli: Cantiani_Riesl_Rkats_New_vid_042025_kopiya_9745bc157c.webp  # Шато АЛВИСА — Cantiani Riesling Rkatsiteli
+caperavi-avtorskoe-vino: 2917_Is_MEB_Ew_05f10fa301.webp  # Массандра — Cаперави. Авторское вино
+cary-pandas-avtorskoe-vino: 2920_t_IFZ_Zgl_88808d05fa.webp  # Массандра — Cары Пандас. Авторское вино
+chateau-tamagne-nature-orange: Sh_T_NATURE_0_75_2024gu_Normal_Orange_88fb104a59.webp  # Кубань-Вино — Chateau Tamagne Nature. Orange
+chateau-tamagne-nature-vert: Sh_T_Vert_295ed64be6.webp  # Кубань-Вино — Chateau Tamagne Nature. Vert
+chateau-tamagne-signature-kaberne: Sh_T_Signature_Cabernet_23_7c2ad72860.webp  # Кубань-Вино — Chateau Tamagne Signature. Каберне
+chateau-tamagne-signature-saperavi: Sh_T_Signature_Saperavi_23_417cbfd691.webp  # Кубань-Вино — Chateau Tamagne Signature. Саперави
+chateau-tamagne-signature-shardone: Sh_T_Signature_Chardonnay_23_6422e66a6f.webp  # Кубань-Вино — Chateau Tamagne Signature. Шардоне
+cira-avtorskoe-vino: 2919_Ktp_Yck_H_7dd7538fe4.webp  # Массандра — Cира. Авторское вино
+igristoe-vino-bryut-beloe-di-kaspiko-blan-de-blan-di-caspico-blanc-de-blancs: DI_CASPICO_Bd_B_b6d5b9772a.webp  # Дербент Вино — Ди Каспико Блан де Блан
+igristoe-vino-bryut-rozovoe-di-kaspiko-blan-de-nuar-di-caspico-blanc-de-noirs: DI_CASPICO_Bd_N_b64caa3e83.webp  # Дербент Вино — Ди Каспико Блан де Нуар
+kaberne-sovinon: 2202_v_UENI_49_2ae2376a1c.webp  # Массандра — Каберне Совиньон
+katharon-mezenka-risling-suhoe: Katharon_Risling_2025_983f02b959.webp  # KATHARON — Мезенка: Рислинг сухое
+kokur-2025: DSC_00839_Photoroom_418c4b31b3.webp  # Винодельня Братьев Мельниковых — Кокур, 2025
+kokur-avtorskoe: 4287_Y_Ch_P_Nz3_no_bg_preview_carve_photos_5f55816077.webp  # Массандра — Кокур Авторское
+kokur-premium: 4291_pif_Lu_Yu_no_bg_preview_carve_photos_d891f6036d.webp  # Массандра — Кокур Премиум
+kokur-suhoe-2025: DSC_00839_Photoroom_418c4b31b3.webp  # Винодельня Братьев Мельниковых — Кокур Сухое, 2025
+krasnostop-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Krasnostop_22827aa941.webp  # Кубань-Вино — Красностоп. Шато Тамань
+leto-kollekcziya-leta-2020-suhoe-beloe-1: VINO_suhoe_rozovoe_KOLLEK_Cz_I_Ya_LETA_05a35835db.webp  # LETO — LETO Коллекция Лета 2020 сухое розовое
+leto-kollekcziya-leta-kupazh-2021-suhoe-beloe: Vino_suhoe_beloe_KOLLEK_Cz_I_Ya_LETA_KUPA_Zh_0ee86a0a33.webp  # LETO — LETO Коллекция Лета Купаж 2021 сухое белое
+leto-kollekcziya-leta-kupazh-2023-suhoe-krasnoe: Vino_suhoe_krasnoe_KOLLEK_Cz_I_Ya_LETA_KUPA_Zh_46f3db9eb1.webp  # LETO — LETO Коллекция Лета Купаж 2023 сухое красное
+leto-shardone-2023-suhoe-beloe: Vino_beloe_suhoe_Sh_ARDONE_ae4ca974c5.webp  # LETO — LETO Шардоне 2023 сухое белое
+mantra-estate-sira-roze-rozovoe-suhoe-12: 4826_N_Ndc2f_W_Photoroom_276188e83c.webp  # Mantra Estate — Сира розе
+muskat-avtorskoe-vino: 2923_GVA_Ps_CA_no_bg_preview_carve_photos_4a01fd1119.webp  # Массандра — Мускат. Авторское вино
+muskat-pozdnego-sbora-rozovyj: 4290_z_D_Kb_OVA_no_bg_preview_carve_photos_6bdfe80e27.webp  # Массандра — Мускат позднего сбора розовый
+muskatnoe-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Muskat_24e7ba1069.webp  # Кубань-Вино — Мускатное. Шато Тамань
+novyj-svet-aligote: 2938_CG_6_Oxk_C_8ebbf0da39.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Алиготе
+novyj-svet-blan-de-nuar: 2939_WV_4_G4x_P_1d07c0e491.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Блан Де Нуар
+novyj-svet-kaberne: 2927_F6_GFXH_9_09971a59db.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне
+novyj-svet-kaberne-sovinon: 4308_TC_5bs_GE_232f37619b.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне Совиньон
+novyj-svet-kaberne-sovinon-polusladkoe: 4309_Xp_Hvu_QW_c001f686c0.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Каберне Совиньон полусладкое
+novyj-svet-kollekczionnoe-bryut: 4293_5v_Oij6_H_e1d1daa1cf.webp  # Новый Свет. Дом шампанских вин — Новый Свет коллекционное брют
+novyj-svet-paradizio: 2934_gdn4e_Jx_261a22f964.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Парадизио
+novyj-svet-pino-gri-millezim: 4303_v_E_Ae_Fb_H_c2ae43e296.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Пино Гри Миллезим
+novyj-svet-polusladkoe: 4300_tl_K_Hp_Eg_0fa0eef9b4.webp  # Новый Свет. Дом шампанских вин — Новый Свет полусладкое
+novyj-svet-polusuhoe-kollekczionnoe: 4299_5o_I_Vt_UU_9348a5c313.webp  # Новый Свет. Дом шампанских вин — Новый Свет полусухое коллекционное
+novyj-svet-risling-kyuve-de-prestizh: 4298_n_Wd2gfl_fc9d46eed2.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Рислинг Кюве де Престиж
+novyj-svet-shardone: 4301_xc_Hycz_V_5f1c804393.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне
+novyj-svet-shardone-kyuve-de-prestizh: 4302_K89cs_Mx_a2f8098739.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне Кюве де Престиж
+novyj-svet-shardone-kyuve-de-prestizh-1: 2936_z_C6_X56_X_bbd70ec699.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Шардоне Кюве Де Престиж
+novyj-svet-vyderzhannoe-bryut: 4300_tl_K_Hp_Eg_58f660d670.webp  # Новый Свет. Дом шампанских вин — Новый Свет выдержанное брют
+novyj-svet-zolotoj-risling: 4310_5n67_NVV_9e7031b185.webp  # Новый Свет. Дом шампанских вин — Новый Свет. Золотой Рислинг
+ona-skazala-da: Generated_Image_June_22_2026_10_44_PM_1_6fd1a74a1b.webp  # Фанагория — Она сказала Да!
+pino-glyu-2025: DSC_00837_Photoroom_494c8f4098.webp  # Коммуналка — Пино Глю, 2025
+pino-gri-avtorskoe: 4286_Ixm_F_Mpd_no_bg_preview_carve_photos_e9bc638816.webp  # Массандра — Пино Гри Авторское
+pinot-noir-2024-one-barrel-by-dmitry-maslov-pino-nuar-2024-uan-barrel-dmitrij-maslov: IMG_20250829_WA_0033_1_aa1d35a672.webp  # One Barrel (Уан Баррел) — Pinot Noir 2024 One Barrel by Dmitry Maslov
+risling-2024: DSC_00840_Photoroom_13a0701346.webp  # Винодельня Братьев Мельниковых — Рислинг, 2024
+risling-shato-taman: Sh_T_Molodoe_2025_igristoe_Normal_Risling_42217577a3.webp  # Кубань-Вино — Рислинг. Шато Тамань
+roze-avtorskoe-vino: 2922_l_Cf6_Bdm_213c0a3fbb.webp  # Массандра — Розе. Авторское вино
+rozovoe-polusladkoe-2: Generated_Image_June_22_2026_10_44_PM_8cfe21d41e.webp  # Абрау-Дюрсо — Розовое полусладкое
+shato-taman-bryut: Sh_T_Igristoe_0_75_l_2024gu_Normal_Bryut_Beloe_1312c070e0.webp  # Кубань-Вино — Шато Тамань Брют
+shato-taman-bryut-1: Sh_T_Igristoe_0_75_l_2024gu_Normal_Bryut_Rozvoe_aa44c75092.webp  # Кубань-Вино — Шато Тамань Брют
+shato-taman-grape-dance: Sh_T_Grape_Dance_blanc_2021_fadfb6ea87.webp  # Кубань-Вино — Шато Тамань. GRAPE DANCE
+shato-taman-grape-dance-1: Sh_T_Grape_Dance_rose_2021_284abe2f5b.webp  # Кубань-Вино — Шато Тамань. GRAPE DANCE
+shato-taman-kaberne: 2024gu_Normal_Sh_T_Kaberne_suhoe_krasnoe_0_75_4e3842e06a.webp  # Кубань-Вино — Шато Тамань. Каберне
+shato-taman-kaberne-sovinon: 2024gu_Normal_Sh_T_Kaberene_Sovinon_suh_roz_burgundiya_0_75_44046e83c9.webp  # Кубань-Вино — Шато Тамань. Каберне Совиньон
+shato-taman-krasnostop: 2024gu_Normal_Sh_T_Krasnostop_suhoe_krasnoe_0_75_99318c8e15.webp  # Кубань-Вино — Шато Тамань. Красностоп
+shato-taman-par-la-mer-czvajgelt: Sh_T_Par_La_Mer_kras_suh_2024_GU_Normal_5e97b7a0a0.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Цвайгельт
+shato-taman-par-la-mer-korall: Sh_T_Par_La_Mer_Roze_suh_2024_GU_Normal_83f76a1685.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Коралл
+shato-taman-par-la-mer-pino-blan: Sh_T_Par_La_Mer_igristoe_brut_5ff54a7dda.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Пино Блан
+shato-taman-par-la-mer-pino-nuar: Sh_T_Par_La_Mer_igristoe_brut_rose_9659a53999.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Пино Нуар
+shato-taman-par-la-mer-sovinon: Sh_T_Par_La_Mer_Beloe_suh_2024_GU_Normal_717117b640.webp  # Кубань-Вино — Шато Тамань. Пар Ла Мер. Совиньон
+shato-taman-polusladkoe: Sh_T_Igristoe_0_75_l_2024gu_Normal_Beloe_Polusl_59c8d1f2c5.webp  # Кубань-Вино — Шато Тамань Полусладкое
+shato-taman-saperavi: 2024gu_Normal_Sh_T_Saperavi_suhoe_krasnoe_0_75_4b0f666d71.webp  # Кубань-Вино — Шато Тамань. Саперави
+shato-taman-shardone: 2024gu_Normal_Sh_T_Shardone_suhoe_beloe_0_75_a190db1db4.webp  # Кубань-Вино — Шато Тамань. Шардоне
+vinodelnya-byurne-kaberne-fran-krasnoe-suhoe-135: Kab_Fran_2020_no_bg_preview_carve_photos_467c50d49a.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ ФРАН сухое красное
+vinodelnya-byurne-kaberne-sovinon-krasnoe-suhoe-135: Kab_Sov_2019_no_bg_preview_carve_photos_6680889d32.webp  # Винодельня Бюрнье — БЮРНЬЕ.КАБЕРНЕ СОВИНЬОН сухое красное
+
+# --------------------------------------------------------------------------------------
+# D1 (agents/D1-ref-collisions.md, 21.09.2026): разбор коллизий ИМЕНИ ФАЙЛА — не
+# путать с F4 выше (F4 = имя фото в CSV настолько отличалось от файла, что матчер вообще
+# промахнулся). Здесь матчер НАШЁЛ >1 физический файл с одинаковым нормализованным
+# стемом (`Screenshot_7.webp`, `Shardone.webp`, `мерло.webp`... — общие/родовые имена,
+# под которыми РАЗНЫЕ винодельни грузили СВОИ фото в Strapi) и `resolve_best_candidate()`
+# (площадь фото) мог выбрать афишу/чужую бутылку/виноградник вместо своей бутылки —
+# см. находку оркестратора в agents/D1-ref-collisions.md. Разобрано ГЛАЗАМИ (Read):
+# все 66 слогов slug_refs.json["multi_candidate_slugs"] + 10 слогов с usable=false и
+# заданным ref_quality_class (пересечение — 9 из 10; вне пересечения — ona-skazala-da,
+# единственный кандидат) = 67 разных слогов. Контакт-листы (PIL, кандидат = файл+хэш+
+# разрешение, шапка = slug/винодельня/название/цвет/сорт из case_catalog.json) —
+# case-data/ref-review/sheets/ (вне git, не входит в поставку).
+#
+# Формат ЗДЕСЬ — YAML-СПИСОК `[chosen, *extra]`, не строка (расширение схемы, см.
+# load_manual_matches/run_matcher в qa/case_census.py). В отличие от строковой формы
+# F4 выше, список ПРИМЕНЯЕТСЯ, ДАЖЕ ЕСЛИ автоматика уже что-то выбрала — это и есть
+# починка коллизии, не "второе мнение поверх уже успешного матча". Второй и следующие
+# элементы (если есть) — другой РЕАЛЬНЫЙ ракурс ТОЙ ЖЕ бутылки, подтверждённый вручную;
+# уходят в новое поле `extra_refs` и ТОЛЬКО они индексируются доп. ракурсами —
+# cv/cli.py::discover_refs_from_slug_refs_json (обновлён вместе с census, см. тесты
+# там же) больше не доверяет сырому `candidates` как источнику доп. ракурсов, именно
+# потому что для коллизий это чужие бутылки/афиши под чужим слогом. Пустой список `[]`
+# — явное решение "ни один из candidates не подходит, слог честно без эталона"
+# (п.3 брифа) — сомнение разрешается ИСКЛЮЧЕНИЕМ, не угадыванием.
+#
+# Ни один слог не тронут "на всякий случай": 15 ниже — реальная починка (auto-chosen
+# был чужим файлом), 3 — явный отказ (единственное доступное фото — чужое вино,
+# доказано текстом на этикетке/буквальным совпадением photo_csv с соседним слогом).
+# Остальные 49 из 67 (+ ona-skazala-da) — auto-chosen проверен глазами и подтверждён
+# верным, правка не нужна, запись в словарь НЕ заводилась (список — в конце блока).
+# Полные метрики ДО/ПОСЛЕ и вывод по всем 67 — reports/d1-ref-collisions.md.
+
+# -- 15 починок: auto-chosen был чужим файлом (доказательство — что на этикетке) -------
+
+aratti-shardone-beloe-suhoe:
+  - Shardone_dc6ec8d1cb.webp  # этикетка "АРАТТИ ШАРДОНЕ 2023"; auto-chosen + 4 др. кандидата — чужие "БАЛАКЛАВА CHARDONNAY Brut" (та же фотопара, что у shardone-balaklava), 1 — виноградник без бренда
+
+bukovinka:
+  - Screenshot_10_a566dcdabb.webp  # этикетка "ТАБИЯ / БУКОВИНКА" (пешка); auto-chosen — афиша "Российский винодельческий форум"
+
+glera-manno:
+  - Screenshot_2_66036870aa.webp  # этикетка "MANNO"; auto-chosen — афиша "ЭНОТУРИЗМ РОССИИ", кандидат 2 — пейзаж без бренда, 3 — афиша винной ярмарки в Казани
+
+krasnostop-zolotovskij:
+  - krasnostop_cca9e0b43e.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / КРАСНОСТОП ЗОЛОТОВСКИЙ"; auto-chosen — фото винограда на лозе (ref_quality_class=vineyard_scenery, было usable=false)
+
+lesnaya-proseka:
+  - Screenshot_4_7c7945f9a9.webp  # этикетка "...ПРОСЕКА" (лесной мотив); auto-chosen — фото здания ресторана винодельни (ref_quality_class=other_noise, было usable=false), кандидат 3 — иллюстрация пикника (клипарт)
+
+magnatum-blanc-de-blancs:
+  - 2_8fdb34dcf3.webp  # этикетка "MAGNATUM ... Blanc de Blancs"; auto-chosen — лайфстайл-стол с тортом и разными бутылками; кандидат 1 — чужой коньяк "FANAGORIA GRAND", 2/4 — бочки/аэрофото завода без бренда
+
+merlo-1:
+  - merlo_89592556f7.webp  # этикетка "MANTRA ESTATE / MERLOT"; auto-chosen — чужая "ГАЛИЦКИЙ • ГАЛИЦКИЙ / МЕРЛО" (та же фотопара, что у слога merlo — там она и оставлена верной, см. список ниже)
+
+oleg:
+  - Screenshot_9_78adaf4455.webp  # этикетка "ТАБИЯ / ОЛЕГ" (ладья); auto-chosen — афиша фестиваля "ИН ВАЙН" Владивосток, кандидаты 2/4 — афиша "Винная ярмарка" Казань
+
+pino-nuar:
+  - pino_nuar_4915dc36a6.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / ПИНО НУАР / Красная горка"; auto-chosen — чужая "БАЛАКЛАВА PINOT NOIR" (та же фотопара, что у balaklava-pino-nuar — там она и оставлена верной)
+
+pobeda:
+  - Screenshot_7_53531eb2bc.webp  # этикетка "Победа / ТАБИЯ"; auto-chosen — человек разливает вино в бокалы (ref_quality_class=person_with_wine, было usable=false; пример из находки оркестратора), кандидат 2 — чужие бутылки "MANCOPIA", 4 — сервировка стола
+
+risling:
+  - risling_86f49d6fb2.webp  # этикетка "ГАЛИЦКИЙ • ГАЛИЦКИЙ / РИСЛИНГ"; auto-chosen — фото винограда на лозе (ref_quality_class=vineyard_scenery, было usable=false)
+
+risling-1:
+  - Screenshot_11_a9d7c8f8df.webp  # этикетка "ТАБИЯ / РИСЛИНГ" (конь); auto-chosen — афиша "НАРМА, фестиваль современного искусства" Дербент (ref_quality_class=logo_graphic, было usable=false), кандидат 3 — афиша "Городской ФЕСТ"
+
+roze-2:
+  - Screenshot_17_6d600742f0.webp  # этикетка бледно-розовая "ТАБИЯ" (пешка); auto-chosen — афиша "Chateau Pinot, Четверг 27 августа" (ref_quality_class=person_with_wine, было usable=false) — исходный пример из находки оркестратора (agents/D1-ref-collisions.md)
+
+rozovoe-zoloto:
+  - Screenshot_16_a237793391.webp  # этикетка "ТАБИЯ / РОЗОВОЕ ЗОЛОТО" (пешка); auto-chosen — фото винной полки магазина "INKERMAN" (ref_quality_class=interior_marketing, было usable=false)
+
+rustok-glera-ru-140:
+  - Screenshot_3_dce2afc6e1.webp  # этикетка "ROOTSTOCK COLLECTION / GLERA RU 140"; auto-chosen — лайфстайл: пара целуется на винограднике (ref_quality_class=person_with_wine, было usable=false), кандидат 1 — чужой логотип "LITAVSHCHUK VINEYARDS & WINERY"
+
+# -- 3 отказа: единственное доступное фото доказуемо чужое, своего фото в поставке нет -
+
+agora-yachting-cabernet-sauvignon: []  # единственное фото (Agora_Rezerv_Yahting_Sovinon_kopiya...) поровну делится с agora-yachting-sauvignon (одна и та же "Название фото" в CSV у обеих позиций) — этикетка прямо гласит "WHITE DRY WINE", противоречит красному "Каберне Совиньон" в каталоге; оставлено верным слогу agora-yachting-sauvignon (Совиньон Блан, белое — совпадает)
+
+vibes-vermentino-viognier-barrel-fermented-2022: []  # все 3 кандидата — одна и та же этикетка "VIBES Silvaner 2022 Barrel Fermented" (photo_csv тоже буквально "03-Silvaner-2022-Barrel-Fermented.webp") — чужой сорт (Сильванер, не Верментино-Вионье); своего фото в поставке нет
+
+zhemchuzhnaya-9-czitron-shardone: []  # оба кандидата — этикетка "АЛИГОТЕ, ЦИТРОН" (photo_csv буквально "Алиготе, Цитрон бел.сух.webp" — совпадает с именем фото соседнего слога zhemchuzhnaya-9-aligote-czitron, откуда и скопирован в CSV); для "Цитрон, Шардоне" (без Алиготе) своего фото в поставке нет
+
+# -- 2 доп. слога, вне 67 (len(candidates)==1, usable было True — не попадали в
+# исходную выборку по len(candidates)>1/usable=false): перепутанное превью по наводке
+# разметчика L1 (reports/l-real-labels-part1.md, "Предложения к контрактам") + поиск
+# top1 на реальном фото (см. reports/l-real-labels-part1.md, пример 005) — проверено
+# тем же методом (Read на файл, этикетка против названия/сорта в case_catalog.json).
+# Оба — winery Фанагория, линейка "Velvet Season" (несколько сортов, одинаковый дизайн
+# этикетки, отличается только цветная плашка сорта) — фото для ЭТИХ ДВУХ слогов на
+# самом деле чужие сорта той же линейки, не Мускат Оттонель/Рислинг:
+
+fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13: []  # единственный кандидат — этикетка "VELVET SEASON / SAPERAVI / Десертное / Поздний сбор" — чужой сорт (Саперави, не Мускат Оттонель, и не белое); своего фото в поставке нет
+
+fanagoriya-velvet-season-risling-beloe-sladkoe-12: []  # единственный кандидат — этикетка "VELVET SEASON / CABERNET / Десертное / Поздний сбор" — чужой сорт (Каберне, не Рислинг, и не белое); своего фото в поставке нет
+
+# -- 49 слогов, где auto-chosen проверен глазами и ПОДТВЕРЖДЁН верным — правка не
+# нужна, оверрайд не заводился (этикетка/бренд на фото совпадает с winery_name/name/
+# color/grapes из case_catalog.json; посторонние кандидаты — либо тот же кадр,
+# переаплоуженный под новым хэшем, либо виноградник/афиша/групповое фото без
+# конкретного бренда, либо чужая позиция, ЗАКОННО делящая одну фотографию по CSV —
+# cv/cli.py всё равно не индексирует такие кандидаты доп-ракурсом без extra_refs):
+# agora-muskat, agora-yachting-sauvignon, arie-vyderzhka-bochka-francziya-2020,
+# aristov-kyuve-aleksandr-roze-de-pino, b-yu-rne-krasnostop-suhoe-krasnoe-classic,
+# b-yu-rne-pino-gri-beloe-suhoe, balaklava-muskat, balaklava-pino-nuar,
+# bryut-rozovoe-zolotaya-balka, chateau-tamagne-eno-traminer-i-shardone,
+# czitronnyj-magaracha, di-kaspiko-di-caspico-fiori-di-mare-verde,
+# grand-jete-blanc-de-blancs, grand-jete-cuvee, igristoe-vino-ekstra-bryut-beloe-di-caspico,
+# igristoe-vino-endemy-bianka-bryut-beloe, igristoe-vino-endemy-pino-blan-bryut-beloe,
+# kaberne-sovinon-2, leto-vecrfn-2024-suhoe-vino, loco-cimbali-shardone-beloe-suhoe-127,
+# mancopia-kaberne-sovinon, mancopia-saperavi, merlo, polusladkoe-beloe-zolotaya-balka,
+# polusladkoe-krasnoe-zb-vajn-frizzante, polusladkoe-krasnoe-zolotaya-balka,
+# polusladkoe-rozovoe-zolotaya-balka, polusuhoe-beloe-zolotaya-balka,
+# polusuhoe-rozovoe-zb-vajn-frizzante, pozdnij-sbor-beloe, pozdnij-sbor-krasnoe,
+# rubin-golodrigi, shardone-balaklava, sovinon-blan-krasnaya-gorka,
+# soyuz-vino-mosavali-saperavi-polusladkoe-krasnoe-11, suhoe-beloe-zb-vajn-frizzante,
+# twopeters_kaberne_sovinion, twopeters_saperavi, twopeters_shardone,
+# vermentino-viognier-2022, vibes-montepulchano-kaberne-fran-pti-verdo,
+# vibes-silvaner-barrel-fermented-2022, vysokij-bereg-risling-zelenaya-seriya-1,
+# zb-vajn-risling-polusuhoe-beloe, zb-vajn-roze-suhoe-rozovoe,
+# zb-vajn-spumante-polusuhoe-beloe, zhemchuzhnaya-9-aligote-czitron,
+# zhemchuzhnaya-9-kaberne-sovinon-pino-nuar
+#
+# ona-skazala-da — честно БЕЗ эталона, usable=false ПОДТВЕРЖДЕНО (не ложная отбраковка):
+# единственный кандидат (Generated_Image_June_22_2026_10_44_PM_1..., AI-сгенерированный
+# лайфстайл-кадр — стол с бокалами на закате, люди на заднем плане) не показывает ни
+# бутылку крупным планом, ни этикетку; альтернативного фото в поставке нет.

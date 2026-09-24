@@ -36,13 +36,16 @@ agents/B3-eval-route.md — `flat_scan_response()` ниже несёт ровн�
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from ..config import Settings, get_settings_dep
 from ..cv.eval_report import read_eval_report
 from ..cv.interface import ImageIndex, LabelVerifier
+from ..cv.archive import archive_scan_safe
 from ..cv.service import PhotoScanResult, run_photo_scan
 from ..cv.user_box import apply_user_box
 from ..db import get_db
@@ -54,6 +57,7 @@ from ..rag.interface import Retriever
 from ..schemas import (
     AnalogsWineItem,
     PhotoMatchItem,
+    ScanCandidateItem,
     ScanConfidence,
     ScanMatch,
     ScanPhotoFlatResponse,
@@ -64,6 +68,19 @@ from ..schemas import (
 from ..security import Principal, get_current_principal, get_current_principal_optional
 
 router = APIRouter(prefix="/scan", tags=["scan"])
+
+logger = logging.getLogger(__name__)
+# Задача тимлида 22.09 (reports/devops-stand-vlm.md: "источник текста этикетки vlm/ocr
+# нигде не виден снаружи процесса"): logger.info() ниже несёт источник чтения этикетки.
+# ДО 22.09 (reports/backend-text-source.md) здесь стоял точечный handler+setLevel —
+# единственный способ долететь до вывода под голым `uvicorn app.main:app`
+# (infra/ams3/somelye-api.service, infra/Dockerfile.api — без --log-level), т.к. root
+# по Python-дефолту на WARNING без хендлеров. Решение тимлида 22.09 (п.4, тот же
+# отчёт): убрать точечные хендлеры по файлам, настроить ОДИН handler+INFO на логгер
+# пространства имён "app" целиком, в app/main.py — этот модуль (`app.routers.scan`,
+# дочерний логгер) получает и уровень, и вывод через propagate (Python-дефолт, не
+# трогаем), без своего handler'а. Два handler'а на одну запись дали бы дубли строк
+# в выводе процесса — ровно то, чего просил избежать тимлид.
 
 
 @router.post("/resolve", response_model=ScanResolveResponse)
@@ -227,6 +244,7 @@ async def flat_scan_response(
 @router.post("/photo")
 async def scan_photo(
     request: Request,
+    background_tasks: BackgroundTasks,
     image: UploadFile | None = File(default=None),
     box: str | None = Form(
         default=None,
@@ -277,6 +295,29 @@ async def scan_photo(
 
     _record_photo_scan(db, principal, len(data), result, best_effort=False)
 
+    # Задача тимлида 22.09 (reports/devops-stand-vlm.md, находка "источник нигде не
+    # виден") — result.text_source/label_text (CV_FUSION, app/cv/service.py) в HTTP-ответ
+    # НЕ идут (контракт не меняется), только в лог, только источник/длина/время — без
+    # содержимого текста и без ключей шлюза. text_source is None <=> CV_FUSION=0 (путь
+    # без чтения этикетки моделью/OCR) — логировать нечего. Только rich-ветка: flat и
+    # /v1/eval/predict (общий flat_scan_response выше) — приватная выборка кейсодержателя,
+    # тот же принцип, что архив ниже её не пишет (contracts/image-scan.md v0.4.10).
+    if result.text_source is not None:
+        logger.info(
+            "scan_photo: текст этикетки прочитан source=%s len=%d ms=%d",
+            result.text_source, len(result.label_text or ""), result.timing_ms,
+        )
+
+    # v0.4.10: архив сканов для контрольной выборки — только rich (интерфейс); flat и
+    # /v1/eval/predict не архивируются: через них идёт приватная выборка кейсодержателя.
+    # Фоновая задача выполняется после отправки ответа и не влияет на время скана.
+    if settings.scan_archive_dir:
+        background_tasks.add_task(
+            archive_scan_safe, settings.scan_archive_dir, data, result,
+            abs_floor=settings.cv_abs_floor,
+            index_version=getattr(image_index, "index_version", None),
+        )
+
     return ScanPhotoRichResponse(
         slug=result.slug,
         card=result.card,
@@ -291,4 +332,7 @@ async def scan_photo(
         # v0.4.3 (пробел нашёл F): top-5 сырых ANN-позиций для eval F1-top5,
         # UI не рендерит (см. докстринг PhotoMatchItem/ScanPhotoRichResponse).
         matches=[PhotoMatchItem(**item) for item in result.matches],
+        # v0.4.11: top-5 кандидатов, обогащённых карточкой ("Возможно, это
+        # одно из:" при not_in_catalog) — см. докстринг ScanCandidateItem.
+        candidates=[ScanCandidateItem(**item) for item in result.candidates],
     )

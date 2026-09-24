@@ -14,6 +14,14 @@ dependencies = [
     "sentencepiece>=0.2",
     "paddleocr>=3.0",
     "paddlepaddle>=3.0",
+    "rapidfuzz>=3.0",
+    # agents/H2-rapidocr-multiscale.md: RapidOCR (ONNX Runtime) — быстрый CPU-путь OCR
+    # (cv/ocr_rapid.py), CV_OCR_ENGINE=rapid в cv/verify.py. Тот же основной набор
+    # зависимостей, что и paddleocr/paddlepaddle выше (не extra) — оба движка
+    # ленивые (не тянут веса/сеть на импорт), но пакеты уже сейчас должны быть
+    # доступны для CV_OCR_ENGINE=rapid без отдельной установки.
+    "rapidocr>=3.9",
+    "onnxruntime>=1.18",
 ]
 
 [project.optional-dependencies]

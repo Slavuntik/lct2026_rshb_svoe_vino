@@ -26,6 +26,20 @@ MockRetriever для packages/rag).
                                              умеренный score — мок не умеет
                                              "видеть" реальные фото осмысленно,
                                              но и не роняет пайплайн
+  b"MOCKPHOTO:ocr:<текст>"                -> MockLabelVerifier.read_query_text()
+                                             "прочтёт" ровно <текст> (v0.4.12,
+                                             agents/B9-text-rerank-integration.md:
+                                             сценарный хук для теста text_rerank
+                                             без реального PaddleOCR); MockImageIndex
+                                             не знает этот префикс — для сценария
+                                             переранжирования image_index обычно
+                                             подменяют отдельным стабом (тот же
+                                             паттерн, что и остальные тесты
+                                             tests/test_scan_photo.py). Любой другой
+                                             MOCKPHOTO-текст (и настоящие байты фото)
+                                             -> read_query_text() отдаёт "" — честно
+                                             "OCR ничего не читал", text_rerank тогда
+                                             не меняет порядок CV (safe-gate).
 """
 from __future__ import annotations
 
@@ -66,6 +80,7 @@ _FALLBACK_GAP = 0.15
 _NEAR_DUP_PREFIX = "MOCKPHOTO:near-dup"
 _WEAK_PREFIX = "MOCKPHOTO:weak:"
 _VERIFY_PREFIX = "MOCKPHOTO:near-dup:"
+_OCR_TEXT_PREFIX = "MOCKPHOTO:ocr:"  # v0.4.12: сценарный текст для read_query_text()
 
 
 class MockImageIndex:
@@ -133,9 +148,16 @@ class MockLabelVerifier:
     голые строки. Мок не читает name/vintage по-настоящему (нет OCR) — решает
     ровно как раньше, по slug'ам кандидатов и MOCKPHOTO-байтам; name/vintage
     принимаются и игнорируются осознанно (реальный верификатор их
-    использует, контракт это не требует от мока)."""
+    использует, контракт это не требует от мока).
 
-    def verify(self, image: bytes, candidates: list[VerifyCandidate]) -> str | None:
+    v0.4.12: `ocr_text` принимается и игнорируется тем же принципом — решение
+    по-прежнему по MOCKPHOTO-байтам самого `image` (не по переданному тексту),
+    так что существующие near-dup сценарии не меняются ни на бит. `read_query_
+    text()` ниже — отдельный, независимый хук именно для сценариев text_rerank."""
+
+    def verify(
+        self, image: bytes, candidates: list[VerifyCandidate], ocr_text: str | None = None
+    ) -> str | None:
         slugs = [c["slug"] for c in candidates]
         text = image.decode("utf-8", errors="ignore")
         if text.startswith(_VERIFY_PREFIX):
@@ -146,3 +168,14 @@ class MockLabelVerifier:
         if NEAR_DUP_OCR_ANSWER in slugs:
             return NEAR_DUP_OCR_ANSWER
         return None
+
+    def read_query_text(self, image: bytes) -> str:
+        """v0.4.12: `MOCKPHOTO:ocr:<текст>` -> ровно `<текст>` (сценарный хук
+        для тестов `cv_text_rerank`, см. докстринг модуля). Любые другие байты
+        (остальные MOCKPHOTO-формы, настоящее фото) -> `""` — честно "OCR
+        ничего не читал", ровно как `cv.verify.LabelVerifier.read_text()`
+        деградирует на нечитаемом/пустом кадре."""
+        text = image.decode("utf-8", errors="ignore")
+        if text.startswith(_OCR_TEXT_PREFIX):
+            return text[len(_OCR_TEXT_PREFIX):]
+        return ""

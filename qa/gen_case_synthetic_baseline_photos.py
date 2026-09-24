@@ -8,6 +8,24 @@ AUGMENT_SEED_DEFAULT, испечён В индекс) и от seed дельта-
 =9973, packages/cv/cv/selfcheck.py) — свежий ракурс, ещё не виденный ни индексом, ни
 селфчеком.
 
+ПРАВКА F4 (агент F4, reports/f4-data-hygiene.md, задача 1): раньше `render_synthetic_
+views(image, n=1, seed=SEED)` вызывался с ОДНИМ И ТЕМ ЖЕ буквальным SEED на каждый слог
+цикла. render_synthetic_views создаёт СВЕЖИЙ np.random.default_rng(seed) на каждый
+вызов и тянет ровно n=1 набор параметров ракурса/фона/блика/блюра/шума/экспозиции —
+ни один из них не зависит от изображения (см. cv/augment.py::_sample_view_params).
+Значит ВСЕ 1982 фото одного прогона получали побайтово ОДИН И ТОТ ЖЕ синтетический
+ракурс — отличалась только текстура бутылки. Смена SEED между прогонами поэтому не
+сэмплирует типичный разброс сложности по фото, а целиком переносит ВЕСЬ прогон в
+другую случайную точку пространства параметров ракурса — это и есть системная причина
+аномалии "44,0% (seed 314159, B4) vs 69,4% (seed 20260917, этот прогон)" из ревью 06
+п.3 (не шум выборки, воспроизведено статически и эмпирически — direct-embed+cosine,
+qa/tests/test_gen_case_synthetic_baseline_photos.py). Починено: каждый слог теперь
+получает НЕЗАВИСИМЫЙ, но детерминированный seed = `_stable_seed_for(slug)` (тот же
+sha256-приём, что уже был в qa/gen_synthetic_scan_photos.py::_stable_seed_for — эта
+правка просто переиспользует существовавший в кодовой базе паттерн). Официальные
+baseline-прогоны (reports/f3-synthetic-baseline.md, 69,4%) НЕ перегенерировались —
+задокументированы как измерение на одном общем ракурсе, не как ошибка.
+
 Источник эталонов — `case-data/slug_refs.json` через `cv.cli.discover_refs_from_slug_refs_
 json` (ТА ЖЕ функция, что использовал G3 при сборке индекса и в scripts/
 near_dup_gap_report.py) — уважает `usable:false` автоматически (F3 SigLIP2-триаж), берёт
@@ -27,6 +45,7 @@ near-dup семей (`case-data/families.json`) — ОБЯЗАТЕЛЬНО, до
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import random
 import sys
@@ -39,6 +58,16 @@ SLUG_REFS_PATH = CASE_DATA_DIR / "slug_refs.json"
 FAMILIES_PATH = CASE_DATA_DIR / "families.json"
 
 SEED = 20260917
+
+
+def _stable_seed_for(slug: str, base_seed: int = SEED) -> int:
+    """Детерминированный per-slug seed, производный от `base_seed` — тот же приём, что
+    `qa/gen_synthetic_scan_photos.py::_stable_seed_for` (sha256, НЕ встроенный `hash()`,
+    рандомизированный между процессами без PYTHONHASHSEED). Чинит системную аномалию
+    (см. докстринг модуля, "ПРАВКА F4"): каждый слог теперь рендерится на СВОЁМ ракурсе,
+    а не на одном общем для всего прогона."""
+    digest = hashlib.sha256(f"{base_seed}:{slug}".encode("utf-8")).hexdigest()
+    return base_seed + (int(digest[:8], 16) % 1_000_000)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -86,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
         path = refs_map[slug][0]  # первый файл = эталон
         try:
             image = imageio.load_image_file(str(path))
-            views = render_synthetic_views(image, n=1, seed=SEED)
+            views = render_synthetic_views(image, n=1, seed=_stable_seed_for(slug))
             out_path = args.out_dir / f"{slug}__synth.jpg"
             out_path.write_bytes(imageio.encode_jpeg(views[0]))
             n_ok += 1
@@ -100,6 +129,7 @@ def main(argv: list[str] | None = None) -> int:
     elapsed = time.perf_counter() - t0
     summary = {
         "seed": SEED,
+        "seed_scheme": "stable_per_slug (sha256(seed:slug), см. _stable_seed_for — F4-фикс)",
         "requested_slugs": len(slugs),
         "generated": n_ok,
         "errors": len(errors),

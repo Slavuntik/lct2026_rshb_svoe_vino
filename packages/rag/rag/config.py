@@ -13,10 +13,30 @@ DEFAULT_GOLDSET_PATH = Path(
 )
 
 # --- Источник данных (vines, read-only) ---------------------------------
-VINES_ROOT = Path(os.environ.get("RAG_VINES_ROOT", "/Users/vyacheslavfokin/ClaudeWorkspace/vines"))
+# Дефолт — копия справочников и каталога ВНУТРИ репозитория (pipeline/), чтобы сервис
+# поднимался на любой машине. Прежний дефолт был абсолютным путём дев-машины и ронял
+# старт на сервере (FileNotFoundError на reference_styles.yaml при деплое на ams3);
+# файлы pipeline/ref и vines/ref побайтово совпадают. Внешний рабочий каталог vines
+# (со свежими выгрузками краулера) по-прежнему подключается через RAG_VINES_ROOT.
+_REPO_PIPELINE = PACKAGE_ROOT.parent.parent / "pipeline"   # <репозиторий>/pipeline
+_DEFAULT_VINES_ROOT = _REPO_PIPELINE if (_REPO_PIPELINE / "ref").is_dir() else Path(
+    "/Users/vyacheslavfokin/ClaudeWorkspace/vines"
+)
+VINES_ROOT = Path(os.environ.get("RAG_VINES_ROOT", str(_DEFAULT_VINES_ROOT)))
 BUILD_DIR = Path(os.environ.get("RAG_BUILD_DIR", str(VINES_ROOT / "build")))
 CATALOG_DIR = Path(os.environ.get("RAG_CATALOG_DIR", str(VINES_ROOT / "catalog")))
 REF_DIR = Path(os.environ.get("RAG_REF_DIR", str(VINES_ROOT / "ref")))
+
+# Каталог кейса-сканера (case_catalog.json/strapi_output0709.csv) — ВНЕ vines,
+# read-only, никогда не коммитится (см. apps/api/app/rag/case_catalog.py —
+# тот же env/дефолт, дословно, для единообразия между двумя местами, что
+# читают один и тот же файл по разным заботам). reports/backend-rag-rebuild.md
+# (22.09): 125 из 2103 вин каталога сканера отсутствуют в VINES_ROOT/build
+# (снят пайплайном vines 25.08) — rag.case_data дополняет ими коллекцию
+# "wines" при ingest, см. rag/ingest.py::run_ingest(case_data_dir=...).
+CASE_DATA_DIR = Path(
+    os.environ.get("CASE_DATA_DIR", "/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data")
+)
 
 # --- Собственное хранилище индекса (пишем только сюда) ------------------
 DATA_DIR = Path(os.environ.get("RAG_DATA_DIR", str(PACKAGE_ROOT / "data")))

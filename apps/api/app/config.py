@@ -191,6 +191,247 @@ class Settings:
     low_confidence_threshold: float = field(
         default_factory=lambda: float(os.environ.get("SCAN_LOW_CONFIDENCE_THRESHOLD", "0.6"))
     )
+    # v0.4.12 (G5 cv/text_rerank.py, встраивание — agents/B9-text-rerank-
+    # integration.md): переранжирование top-K схлопнутых ANN-кандидатов
+    # OCR-текстом этикетки запроса поверх cv_score. Дефолт ВЫКЛЮЧЕН
+    # (контракт: "Дефолт в коде — выключено; на машинах демо включается env
+    # после замера задержки") — в отличие от verify() (который читает OCR
+    # только на near-dup routing), text_rerank читает OCR НА КАЖДЫЙ запрос,
+    # так что несёт собственный бюджет (Mac +0.3-0.55 с, ams3 CPU до ~5-6 с
+    # p95 при лимите скрипта 10 с — reports/g5-accuracy.md) независимо от
+    # near-dup. Тот же OCR-текст переиспользуется verify() (см.
+    # app/cv/service.py) — второго прохода OCR при включённом флаге нет.
+    cv_text_rerank: bool = field(
+        default_factory=lambda: _bool_env("CV_TEXT_RERANK", False)
+    )
+    cv_text_rerank_k: int = field(
+        # v0.4.12: top-K кандидатов, которых касается переранжирование (хвост
+        # списка после k — как есть, старым cv_score/порядком, см. cv/
+        # text_rerank.py::rerank_top_k). Рекомендация G5 (holdout n=374,
+        # reports/g5-accuracy.md): K=5.
+        default_factory=lambda: int(os.environ.get("CV_TEXT_RERANK_K", "5"))
+    )
+    cv_text_rerank_w: float = field(
+        # v0.4.12: вес текстового сигнала в итоговом скоре (final = cv_score +
+        # w*text_score). Рекомендация G5: w=0.01 — заметно только когда OCR
+        # прочитал различающий токен каталога (safe-gate min_token_idf,
+        # cv.text_rerank.has_distinctive_token), иначе text_score=0 и порядок
+        # CV не меняется вовсе (защита от ~30% "непустого, но бессодержательного"
+        # OCR-мусора синтетики — см. reports/g5-accuracy.md).
+        default_factory=lambda: float(os.environ.get("CV_TEXT_RERANK_W", "0.01"))
+    )
+    # agents/G7-text-fusion.md: боевое слияние CV (кроп этикетки + весь кадр) +
+    # текстовый поиск по ВСЕМУ каталогу кейса (не только top-K ANN, в отличие от
+    # cv_text_rerank выше — см. cv/text_fusion.py, докстринг модуля, "Основание").
+    # Дефолт ВЫКЛЮЧЕН до приёмки через живой API на размеченных реальных фото
+    # (reports/g7-text-fusion.md) — та же дисциплина, что cv_text_rerank (v0.4.12).
+    # Если включены ОБА флага — действует слияние (cv_text_rerank целиком
+    # обходится, near-dup routing тоже — см. app/cv/service.py::run_photo_scan),
+    # не складываются друг на друга: две независимые формулы поверх одного и
+    # того же top1 не имеют согласованного смысла вместе.
+    cv_fusion: bool = field(
+        default_factory=lambda: _bool_env("CV_FUSION", False)
+    )
+    cv_fusion_w: float = field(
+        # brief G7: final = cv + W*rel, W=0.2 — плато на разметке 100 живых фото
+        # (обе половины выборки согласны), см. cv/text_fusion.py::DEFAULT_W.
+        default_factory=lambda: float(os.environ.get("CV_FUSION_W", "0.2"))
+    )
+    cv_fusion_gap_floor: float = field(
+        # brief G7: уверенно, если отрыв ИТОГОВОГО (fused) скора top-1 от первого
+        # кандидата ДРУГОЙ near-dup семьи >= это значение (или такого кандидата
+        # нет вовсе — доминирование, та же трактовка null-gap, что v0.4.7 §2 для
+        # обычного гейта). Независимый гейт от CV_MARGIN_FLOOR (та шкала — на
+        # СЫРОМ CV score, эта — на final=cv+w*rel).
+        default_factory=lambda: float(os.environ.get("CV_FUSION_GAP_FLOOR", "0.03"))
+    )
+    cv_fusion_cv_floor: float = field(
+        # brief G7: И CV-скор (НЕ blended-final) top-1 >= это значение. Независимый
+        # пол от CV_ABS_FLOOR (та же роль, разное число — калибровано на слиянии,
+        # не на голом ANN) — см. cv/text_fusion.py::fuse().
+        default_factory=lambda: float(os.environ.get("CV_FUSION_CV_FLOOR", "0.80"))
+    )
+    cv_fusion_verify: bool = field(
+        # brief G7: near-dup OCR-верификатор (cv_verify_proximity, тот же порог,
+        # что путь без слияния) поверх итогового топ-5 слияния — ВЫКЛЮЧЕН по
+        # умолчанию даже когда cv_fusion=True (см. reports/g7-text-fusion.md:
+        # замерены оба варианта, свой бюджет на дополнительный verify()).
+        default_factory=lambda: _bool_env("CV_FUSION_VERIFY", False)
+    )
+    # agents/H1-cpu-path.md (живые фото, 21.09): вес текстового сигнала (`rel` в
+    # cv.text_fusion.fuse()) для кандидата, у которого ВИНОДЕЛЬНЯ не подтверждена
+    # запросом (recall индекса только по полю winery < 0.5) — гейт третьей накопительной
+    # поправки CPU-пути (87.1% -> 88.7% offline top-1). Общий/дефолтный вес — 1.0 (как
+    # сейчас, без эффекта); `app/cv/service.py::_run_photo_scan_fusion` использует его
+    # ТОЛЬКО для источников текста, отличных от "ocr" (vlm/vlm_local/vlm_both) — на
+    # офлайн-прогоне гейт там ВРЕДЕН (95.2% -> 93.5%), см. cv_fusion_ocr_unconfirmed_w
+    # ниже для источника "ocr".
+    cv_fusion_unconfirmed_winery_w: float = field(
+        default_factory=lambda: float(os.environ.get("CV_FUSION_UNCONFIRMED_WINERY_W", "1.0"))
+    )
+    cv_fusion_color_penalty: float = field(
+        # 22.09: штраф кандидату, чей цвет (колонка «Категория» каталога) противоречит слову цвета
+        # на этикетке, когда в тексте найден РОВНО один цвет (cv/text_fusion.py::text_color).
+        # Замер на 62 живых фото: OCR-путь 56 → 57, пути с VLM-текстом без изменений при 0.03–0.08.
+        default_factory=lambda: float(os.environ.get("CV_FUSION_COLOR_PENALTY", "0.05"))
+    )
+    cv_fusion_ocr_unconfirmed_w: float = field(
+        # agents/H1-cpu-path.md: вес text-сигнала для неподтверждённой винодельни,
+        # СПЕЦИАЛЬНО когда text_source этого запроса — "ocr" (PaddleOCR, самый шумный
+        # источник текста трёх): 0.5 — "текст в полсилы" (offline 87.1% -> 88.7% top-1,
+        # изолированный вклад третьей накопительной поправки).
+        default_factory=lambda: float(os.environ.get("CV_FUSION_OCR_UNCONFIRMED_W", "0.5"))
+    )
+    # Источник текста этикетки для слияния (21.09, оркестратор):
+    #   "ocr"       — PaddleOCR (read_query_text);
+    #   "vlm"       — мультимодальная модель на GPU-сервере через шлюз (VISION_LLM_URL);
+    #   "vlm_local" — локальная модель (Qwen3-VL-4B на MLX, VISION_LLM_LOCAL_URL);
+    #   "vlm_both"  — обе параллельно, тексты склеиваются в один запрос слияния.
+    # Замер на 62 живых фото из каталога (индекс base-384 после чистки эталонов, W=0.3):
+    # OCR ~71–75%, 4B 95.2%, 27B 95.2%, обе 96.8% top-1 (app/cv/vision_llm.py). PaddleOCR
+    # читается всегда параллельно и остаётся фолбэком: ни одна модель не ответила за
+    # таймаут, ошибка или пустые поля — слияние идёт на тексте OCR.
+    cv_fusion_text_source: str = field(
+        default_factory=lambda: os.environ.get("CV_FUSION_TEXT_SOURCE", "ocr").strip().lower()
+    )
+    # agents/ML-1-*.md (задача 1, 22.09): в режимах vlm/vlm_local/vlm_both текст OCR
+    # (PaddleOCR/RapidOCR, читается всегда параллельно, см. cv_fusion_text_source выше)
+    # ДОБАВЛЯЕТСЯ к тексту модели(ей), а не служит фолбэком только когда НИ ОДНА модель
+    # не ответила (см. app/cv/service.py::_fusion_text_and_vectors). Дефолт ВЫКЛЮЧЕН до
+    # приёмки живым API — та же дисциплина, что cv_fusion/cv_text_rerank. Офлайн-замер
+    # на 62 живых фото (reports/ml-lead-plan.md): "vlm"+OCR 96.8% top-1 против 95.2% у
+    # одной "vlm" (тот же потолок, что "vlm"+"gwf1024" вдвоём, без OCR).
+    cv_fusion_merge_model_text: bool = field(
+        default_factory=lambda: _bool_env("CV_FUSION_MERGE_MODEL_TEXT", False)
+    )
+    # Тимлид 22.09 (расширение брифа scan-budget, п.9, решение Вячеслава "модель и
+    # локальный путь стартуют одновременно ... ответила — выбираем лучший"): на ТЕХ ЖЕ
+    # CV-векторах `app/cv/service.py::_run_photo_scan_fusion` теперь всегда считает ДВА
+    # полных ответа слияния — "локальный" (CV + текст OCR, без модели) и "модельный"
+    # (текущая склейка, см. cv_fusion_merge_model_text выше) — и выбирает между ними по
+    # этой настройке. Оба слага/согласие/выбор пишутся во внутренние поля
+    # PhotoScanResult (не в контракт), архив и INFO-лог — для офлайн-сравнения ml-lead
+    # даже пока дефолт не меняет видимый ответ.
+    #   "merge"          — дефолт, ответ = модельный, БИТ В БИТ старое поведение
+    #                        (переключаем на другое значение только после офлайн-проверки
+    #                        ml-lead).
+    #   "max_score"       — больший итоговый (final_score) скор top-1 побеждает.
+    #   "agree_else_llm"  — слаги совпали -> тот же ответ; разошлись -> модельный.
+    #   "agree_else_cv"   — слаги совпали -> тот же ответ; разошлись -> та сторона, чей
+    #                        top-1 CV-скор (не final) выше.
+    #   "confident_else_cv" — ml-lead, офлайн-разбор 22.09 (reports/ml-lead-choose-
+    #                        rule.md, qa/real_photos_choose_rule.py, 62 живых фото +
+    #                        38 честных NONE): модельный ответ ТОЛЬКО если сам проходит
+    #                        гейт уверенности (CV_FUSION_GAP_FLOOR/CV_FUSION_CV_FLOOR),
+    #                        иначе локальный — независимо от согласия слагов. На их
+    #                        выборке не хуже merge на чистых, устойчивее к галлюцинации
+    #                        чтения модели. Рекомендация ml-lead тимлиду для "в бой" —
+    #                        дефолт здесь НЕ переключён (решение тимлида/pm).
+    # Неизвестное значение — честно как "merge" (см. _choose_fusion_result).
+    cv_fusion_choose: str = field(
+        default_factory=lambda: os.environ.get("CV_FUSION_CHOOSE", "merge").strip().lower()
+    )
+    # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
+    # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
+    # попадают. TLS проверяется штатно.
+    # agents/ML-2-shelf-crop.md (22.09): сегментация кадра ЦЕЛОЙ ПОЛКИ на бутылки —
+    # шаг 0 конвейера, ДО ImageIndex.search()/OCR (см. app/cv/service.py::run_photo_scan,
+    # packages/cv/cv/shelf_crop.py). Основание — reports/ml-lead-shelf-crop.md: боевой
+    # центральный кроп кадра на фото ЦЕЛОЙ ПОЛКИ (Field/) содержит 3-4+ бутылки вместо
+    # одной, top-1 падает до 1/8 (qa-auto, reports/qa-auto-field-photos.md). Дефолт
+    # ВЫКЛЮЧЕН до приёмки живым API — та же дисциплина, что cv_fusion/cv_text_rerank
+    # (reports/ml-eng-ml2.md — цифры приёмки на 62/8/22 живых фото). ML-3 (22.09,
+    # reports/ml-eng-ml3.md) добавила гейт v2 (`cv_shelf_min_text_aspect` ниже) —
+    # закрыла именно регрессию ML-2 на каталоге, но живая приёмка нашла НОВУЮ
+    # регрессию того же класса на честном NONE (Field/F09) и поле 8 не сдвинулось
+    # (1/8) — дефолт остаётся ВЫКЛЮЧЕН.
+    cv_shelf_crop: bool = field(
+        default_factory=lambda: _bool_env("CV_SHELF_CROP", False)
+    )
+    cv_shelf_min_boxes: int = field(
+        # Гейт «это вообще полка» (packages/cv/cv/shelf_crop.py::DEFAULT_MIN_BOXES):
+        # колонок >= 2 И боксов текста в полосе ряда >= это значение. Порог 30 подобран
+        # ml-lead на ВСЕХ 100 фото каталога (максимум боксов у НЕ-полочных фото — 51,
+        # целевые полевые ряды — 41-118, пересечения при 30 нет; без гейта — катастрофа,
+        # 95.2%→51.6% на 62 фото каталога).
+        default_factory=lambda: int(os.environ.get("CV_SHELF_MIN_BOXES", "30"))
+    )
+    # agents/ML-3-shelf-gate.md (22.09, reports/ml-lead-shelf-gate-v2.md): гейт v2 —
+    # доп. сигнал против ложного срабатывания v1 на ОДНОЙ бутылке со сложной вёрсткой
+    # этикетки (packages/cv/cv/shelf_crop.py::DEFAULT_MIN_TEXT_ASPECT). `text_aspect`
+    # (охват текстовых боксов ряда по X / высота ряда) >= это значение — порог 1.2
+    # подобран ml-lead на ВСЕХ 100 фото организаторов (запас 0.09 над максимумом
+    # ложных срабатываний v1, 1.106; регрессия ML-2 — 1.06, гейтом v2 исключается).
+    cv_shelf_min_text_aspect: float = field(
+        default_factory=lambda: float(os.environ.get("CV_SHELF_MIN_TEXT_ASPECT", "1.2"))
+    )
+    # agents/ML-2-shelf-crop.md, доп. пункт (риски reports/ml-lead-shelf-crop.md, п.2):
+    # раздел Вороного между колонками — без нахлёста, что даёт off-by-one на кадрах, где
+    # X-центр кадра приходится почти РОВНО на границу двух колонок (F04/F30 отчёта).
+    # Включает попытку соседнего кропа (см. `ShelfSegmentation.candidate_indices`) и
+    # выбор по CV-скору поиска — НЕЗАВИСИМЫЙ флаг от cv_shelf_crop (нет смысла без
+    # него), дефолт ВЫКЛЮЧЕН, включается только при подтверждённых 0 регрессиях на
+    # 62 фото каталога (см. reports/ml-eng-ml2.md).
+    cv_shelf_check_neighbors: bool = field(
+        default_factory=lambda: _bool_env("CV_SHELF_CHECK_NEIGHBORS", False)
+    )
+    vision_llm_url: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_URL") or None)
+    vision_llm_key: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_KEY") or None, repr=False)
+    vision_llm_model: str = field(default_factory=lambda: os.environ.get("VISION_LLM_MODEL", "qwen3.8-27b"))
+    vision_llm_local_url: str | None = field(default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_URL") or None)
+    vision_llm_local_model: str = field(
+        default_factory=lambda: os.environ.get("VISION_LLM_LOCAL_MODEL", "mlx-community/Qwen3-VL-4B-Instruct-4bit")
+    )
+    vision_llm_timeout_s: float = field(
+        # Тимлид 22.09 (расширение брифа scan-budget, решение Вячеслава: "модель и
+        # локальный путь стартуют одновременно; модель не ответила за 6 с — отдаём
+        # локальный ответ"): 6.5 -> 6.0, и дедлайн — ОТ НАЧАЛА ЗАПРОСА (`t0`
+        # run_photo_scan(), тот же якорь, что CV_SCAN_BUDGET_S ниже), а не от входа
+        # в _fusion_text_and_vectors() — см. её докстринг. Раньше здесь стоял тот же
+        # комментарий "от начала запроса", но КОД считал иначе (входа в функцию) —
+        # это и была часть корня хвоста задержек (reports/devops-hack-v13.md,
+        # p50/p95/max 4.4/6.6/9.1с) — теперь комментарий и код совпадают.
+        default_factory=lambda: float(os.environ.get("VISION_LLM_TIMEOUT_S", "6.0"))
+    )
+    vision_llm_image_size: int = field(
+        # 1024 — замер на живых фото: 768 заметно хуже по точности при выигрыше ~0.5 с
+        default_factory=lambda: int(os.environ.get("VISION_LLM_IMAGE_SIZE", "1024"))
+    )
+    vision_llm_breaker_fails: int = field(
+        # Тимлид 22.09, расширение брифа scan-budget (п.8): предохранитель НА КАЖДУЮ
+        # модель отдельно (шлюз "vlm" и локальная "vlm_local" — свой счётчик у каждой,
+        # см. app/cv/service.py::_ModelBreaker/_MODEL_BREAKERS) — столько таймаутов/
+        # сбоев ПОДРЯД открывают его: следующие сканы пропускают ЭТУ модель без
+        # ожидания дедлайна, пока не истечёт VISION_LLM_BREAKER_COOLDOWN_S.
+        default_factory=lambda: int(os.environ.get("VISION_LLM_BREAKER_FAILS", "3"))
+    )
+    vision_llm_breaker_cooldown_s: float = field(
+        # Тимлид 22.09 (п.8): пауза перед ОДНИМ пробным сканом после открытия
+        # предохранителя — успех закрывает его, неудача открывает заново на
+        # столько же секунд.
+        default_factory=lambda: float(os.environ.get("VISION_LLM_BREAKER_COOLDOWN_S", "60"))
+    )
+    cv_scan_budget_s: float = field(
+        # Задача тимлида 22.09 (страховка лимита 10с приватной проверки, reports/
+        # devops-hack-v13.md: на стенде 4 vCPU хвост p50/p95/max 4.4/6.6/9.1с — разбор
+        # тимлида: фото №1-2 сразу после рестарта (холодный путь) и фото, совпавшие с
+        # параллельными запросами чата (холодная загрузка RAG-эмбеддера на тех же
+        # ядрах; префилл длинного RAG-промпта на том же GPU-шлюзе)). Общий бюджет ОТ
+        # НАЧАЛА ОБРАБОТКИ ЗАПРОСА (`t0` в `run_photo_scan()`), НЕ от входа в
+        # отдельный шаг — для ДВУХ мест: (1) ожидание OCR в CV_FUSION-ветке
+        # (`_fusion_text_and_vectors`) — раньше `f_ocr.result()` ждала БЕЗ таймаута
+        # вовсе; (2) ожидание near-dup verify() (`_verify_with_budget`,
+        # собственный OCR-проход) — раньше НЕ ИМЕЛО таймаута вообще, ни в
+        # CV_FUSION-ветке, ни в обычном пути `run_photo_scan()` (находка тимлида
+        # 22.09 — rich-фото 41.8_22-08-2026_20-56-40.webp 14.6с на сервере против
+        # 3.4с у flat того же фото: verify() — общий шаг для flat/rich, ничем не
+        # ограниченный раньше). 7.5с — запас до внешнего лимита 10с на слияние/
+        # карточку/сериализацию ответа. `_verify_with_budget()` применяется в ОБОИХ
+        # путях (`CV_FUSION=1` и обычном) — там она заменяет прежний прямой вызов
+        # `verifier.verify()`; ожидание OCR в текстовой ветке — только при
+        # `CV_FUSION=1` (вне слияния текст читается иначе, см. `cv_text_rerank`).
+        default_factory=lambda: float(os.environ.get("CV_SCAN_BUDGET_S", "7.5"))
+    )
     # agents/B7-foreign-analogs.md: справочники сорта/стиля для фолбэка
     # /scan/resolve при пустых matches — pipeline/ref/{grape_synonyms,
     # reference_styles}.yaml, зона пайплайна, ТОЛЬКО ЧТЕНИЕ отсюда. Путь —
@@ -199,6 +440,32 @@ class Settings:
     # дефолт "../../pipeline/ref" резолвится в корень репо.
     scan_foreign_ref_dir: str = field(
         default_factory=lambda: os.environ.get("SCAN_FOREIGN_REF_DIR", "../../pipeline/ref")
+    )
+    # 22.09 (задача backend, reports/architect-post-scan.md — "Задача backend"):
+    # GET /wines/{wine_id}/pairings, уровень sensory/heuristic — правила
+    # гастропар. pipeline/ref/ — ТОЛЬКО ЧТЕНИЕ отсюда (см. app/food_pairing.py).
+    # Тот же принцип пути, что у scan_foreign_ref_dir выше (относительно cwd
+    # процесса, apps/api) — файл, не каталог, потому что тут ровно один файл,
+    # не два. Решение backend по пробелу владения pipeline/ref/ в TEAM.md
+    # (contracts/post-scan.md §1, "Ограничения v1") — см. reports/
+    # backend-pairings.md, "Предложения к контрактам".
+    pairing_rules_path: str = field(
+        default_factory=lambda: os.environ.get(
+            "PAIRING_RULES_PATH", "../../pipeline/ref/food_pairing_rules.yaml"
+        )
+    )
+    # 22.09 (задача тимлида, "Что подать" по фото блюда — contracts/post-scan.md
+    # v1.1 по брифу, POST /v1/pairing/dish-photo): порог отрыва (топ1-топ2
+    # косинусной близости L2-нормированных эмбеддингов) запасного zero-shot пути
+    # по CV-модели SigLIP2, когда ни шлюз, ни локальная VLM не ответили (см.
+    # app/dish_recognition.py::zero_shot_classify). Синтетическая стартовая
+    # точка — тот же порядок величины, что CV_FUSION_GAP_FLOOR (0.03) и
+    # CV_VERIFY_PROXIMITY (0.04), калибровки на голд-сете НЕТ (нет фото блюд для
+    # позитивного замера на момент этой правки, см. отчёт backend-dish-photo.md,
+    # "нужны фото блюд у Вячеслава") — тот же честный статус, что у
+    # cv_abs_floor/cv_margin_floor до калибровки F2.
+    dish_zero_shot_margin: float = field(
+        default_factory=lambda: float(os.environ.get("DISH_ZERO_SHOT_MARGIN", "0.03"))
     )
     max_upload_bytes: int = field(
         # v0.4.4 (ревью 04, блокер 1): 8 МБ -> 25 МБ. Телефонные фото (особенно
@@ -216,11 +483,27 @@ class Settings:
         # случай, не отмена самого параметра.
         default_factory=lambda: _bool_env("SCAN_FLAT_DEFAULT", False)
     )
+    scan_archive_dir: str | None = field(
+        # v0.4.10: каталог архива сканов из интерфейса (стенд собирает фото для
+        # контрольной выборки). Не задан — ничего не сохраняется (дефолт dev/тестов).
+        default_factory=lambda: os.environ.get("SCAN_ARCHIVE_DIR") or None
+    )
     rate_limit_window_seconds: int = field(
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
     )
     rate_limit_max_requests: int = field(
         default_factory=lambda: int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "5"))
+    )
+    # reports/backend-chat-retrieval.md (22.09, тимлид, п.3): на демо-стенде
+    # первый вопрос «Какое красное вино подать к стейку?» без лимита ушёл на
+    # 497 токенов / ~84 с до конца (первый токен — за приемлемые 4.5 с, но
+    # долгое молчание ПОСЛЕ него плохо смотрится на сцене демо). 450 — запас
+    # под системный промпт "3 вина, по 1-2 предложения, с [n]" (app/chat/
+    # prompt.py::SYSTEM_PROMPT) с небольшим хвостом на длинные названия вин;
+    # driver default (llm/base.py Protocol) остаётся 1024 для всех, кто вызывает
+    # llm.chat_stream()/chat() напрямую, не через этот эндпоинт (тесты и т.п.).
+    chat_max_tokens: int = field(
+        default_factory=lambda: int(os.environ.get("CHAT_MAX_TOKENS", "450"))
     )
     cors_origins: str = field(
         # v0.3 (ревью 02, п.6): дефолт — localhost dev-порты Vite (apps/web,

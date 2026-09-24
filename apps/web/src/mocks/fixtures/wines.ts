@@ -1,4 +1,4 @@
-import type { WineCardResponse } from "../../lib/apiTypes";
+import type { SimilarWineItem, WineCardResponse } from "../../lib/apiTypes";
 import { bottlePlaceholderDataUri } from "./image";
 
 // 6 ВЫМЫШЛЕННЫХ вин для мок-режима (нет бэкенда — contracts/openapi.yaml, /wines/{wine_id}).
@@ -246,6 +246,77 @@ export const wines: WineFixture[] = [
   },
 ];
 
+// v0.4.11 (contracts/image-scan.md): демо-позиция каталога КЕЙСА — слага нет в нашем RAG,
+// поэтому в бою GET /wines/{id} строит card фолбэком из case_catalog.json (agents/B8), а не
+// из основного каталога выше. Здесь — мок того же лукапа (findWineBySlug ниже смотрит сюда
+// вторым списком), полной WineCardResponse-формы (мок всегда отдаёт полную форму; УРЕЗАННУЮ
+// форму настоящего фолбэка — {name, winery_name, region_name, grapes, color, category,
+// description, image_url} в source, {} в derived — отдельно проверяет защитный рендер
+// WineCardContent на синтетическом объекте в components/WineCardContent.test.tsx, ровно как
+// он реально прилетит непроверенным payload'ом в apiClient.ts: `return payload as T`).
+// Единственное, что здесь по-настоящему отличается от основных 6 вин — source_url на
+// vino-svoe.ru: именно он включает ссылку «Открыть на «Своё Вино»» в WineCardContent.
+export const caseFallbackWines: WineFixture[] = [
+  {
+    wine_id: "case-shato-yuzhny-sklon-saperavi-2019",
+    searchTerms: [],
+    source: {
+      name: "Саперави Резерв",
+      winery: "shato-yuzhny-sklon",
+      winery_name: "Шато Южный Склон",
+      region: "yuzhny-sklon",
+      region_name: "Южный склон",
+      grapes: ["Саперави"],
+      color: "красное",
+      category: "красное сухое",
+      sugar_category: "сухое",
+      color_in_glass: "тёмно-гранатовый",
+      vintage: 2019,
+      abv_percent: 13.5,
+      serving_temp_c: [16, 18],
+      food_pairings: ["Мясо и стейки", "Твёрдые сыры"],
+      description: "Ежевика и чёрный перец, плотная структура — демо-позиция каталога кейса, не нашего RAG.",
+      public_rating: null,
+      image_url: bottlePlaceholderDataUri(RED),
+    },
+    derived: {
+      style_tags: ["каталог кейса"],
+      sensory: {
+        sweetness: 0.03,
+        acidity: 0.5,
+        tannin: 0.7,
+        body: 0.75,
+        oak: 0.3,
+        aromatic_intensity: 0.5,
+        bubbles: 0,
+        confidence: 0.6,
+      },
+      reference_style_matches: [],
+    },
+    source_url: "https://vino-svoe.ru/wines/case-shato-yuzhny-sklon-saperavi-2019",
+    similar: [],
+  },
+];
+
 export function findWineBySlug(slug: string): WineFixture | undefined {
-  return wines.find((wine) => wine.wine_id === slug);
+  return wines.find((wine) => wine.wine_id === slug) ?? caseFallbackWines.find((wine) => wine.wine_id === slug);
+}
+
+/**
+ * v0.3.6 (openapi.yaml, задача тимлида 23.09, reports/backend-similar-wines.md): similar_wines —
+ * то же самое обогащение, что боевой build_wine_card() делает из meta уже полученного
+ * Candidate — здесь вычисляем на лету из фикстур по слагам similar, тот же порядок. Слаг без
+ * карточки в каталоге (findWineBySlug вернул undefined) в similar_wines не попадает — как и в
+ * бою, длины similar/similar_wines могут разойтись.
+ */
+export function similarWinesFor(slugs: string[]): SimilarWineItem[] {
+  return slugs
+    .map((slug) => findWineBySlug(slug))
+    .filter((wine): wine is WineFixture => Boolean(wine))
+    .map((wine) => ({
+      wine_id: wine.wine_id,
+      name: wine.source.name,
+      winery: wine.source.winery_name,
+      image_url: wine.source.image_url,
+    }));
 }

@@ -19,9 +19,12 @@ name: Deploy
 # чтобы на один прод-хост не смотрели два конкурирующих пайплайна. Этот workflow
 # отвечает ТОЛЬКО за staging (merge в main). Удалить прод-джобу после первого
 # успешного biz-деплоя.
+# 21.09: staging-хост этого workflow — Contabo, а он списан (инвентарь
+# ~/projects/TempProjects/CLAUDE.md: «Contabo — больше нет»). Секретов DEPLOY_* нет,
+# гарда на их отсутствие у job ship нет — каждый пуш в main давал красный прогон.
+# Автозапуск отключён; хак-стенд катит deploy-hack-ams3.yml, бизнес-линия — deploy-biz.yml.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -82,7 +85,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
