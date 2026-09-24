@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-24",
+  "sourceFiles": ["eval.zip", "prod-svoe-vino-strapi.part1.rar", "prod-svoe-vino-strapi.part2.rar", "prod-svoe-vino-strapi.part3.rar", "strapi_output0709.csv"],
+  "csvRows": 4147,
+  "uniqueSkus": 2103,
+  "preparedSkus": 2103,
+  "missingSkus": 0,
+  "extraSkus": 0,
+  "skusWithReferences": 2103,
+  "distinctReferenceImages": 2092,
+  "zipCrcCheck": "passed",
+  "rarMultiVolumeIntegrityCheck": "passed"
+}

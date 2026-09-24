@@ -1,0 +1,22 @@
+{
+  "name": "vinchik-shelf-finder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5180",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4180",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "postinstall": "node scripts/copy-runtime.mjs"
+  },
+  "dependencies": { "onnxruntime-web": "1.22.0" },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.20.2",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
+  }
+}

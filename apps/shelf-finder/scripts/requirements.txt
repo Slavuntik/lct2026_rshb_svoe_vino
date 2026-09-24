@@ -1,0 +1,8 @@
+# Use a separate Python 3.12 environment; this does not change apps/api dependencies.
+torch>=2.4
+torchvision>=0.19
+ultralytics==8.4.161
+onnx>=1.17
+onnxruntime>=1.20
+numpy>=1.26
+pillow>=10.4

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+public/runtime/
+public/models/*
+!public/models/.gitkeep
+playwright-report/
+test-results/
+artifacts/
+# Export intermediate checkpoints; the browser bundle lives in public/models.
+*.pt
+*.onnx
+*.onnx.data
