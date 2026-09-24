@@ -11,7 +11,10 @@
     "test:browser": "playwright test",
     "postinstall": "node scripts/copy-runtime.mjs"
   },
-  "dependencies": { "onnxruntime-web": "1.22.0" },
+  "dependencies": {
+    "@techstark/opencv-js": "4.12.0-release.1",
+    "onnxruntime-web": "1.22.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/node": "^22.20.2",

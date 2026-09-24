@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 const photo = process.env.SHELF_TEST_PHOTO;
 test('missing models show an actionable error and leave the camera off', async ({ page }) => {
   await page.route('**/models/manifest.json', route => route.fulfill({ status: 404, body: 'not prepared' }));
-  await page.goto('/');
+  await page.goto('/?engine=baseline');
   await expect(page.locator('#error')).toContainText('Комплект моделей');
   await expect(page.getByRole('button', { name: 'Включить камеру' })).toBeDisabled();
 });
@@ -16,7 +16,7 @@ test('real models process a shelf locally and allow enrolling an unknown bottle'
     if (!request.url().startsWith('http://127.0.0.1:5180/') && !request.url().startsWith('blob:') && !request.url().startsWith('data:')) outbound.push(request.url());
     expect(request.method()).toBe('GET');
   });
-  await page.goto('/');
+  await page.goto('/?engine=baseline');
   await expect(page.locator('#status')).toContainText('Готово', { timeout: 90_000 });
   await page.locator('#photo').setInputFiles(photo!);
   await expect(page.locator('#status')).toContainText('Снимок обработан локально', { timeout: 90_000 });
@@ -49,7 +49,7 @@ test('camera permission failure releases the UI for retry', async ({ page }) => 
   await page.addInitScript(() => {
     Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: async () => { throw new DOMException('Камера запрещена пользователем', 'NotAllowedError'); } });
   });
-  await page.goto('/');
+  await page.goto('/?engine=baseline');
   await expect(page.locator('#status')).toContainText('Готово', { timeout: 90_000 });
   await page.getByRole('button', { name: 'Включить камеру' }).click();
   await expect(page.locator('#error')).toContainText('Камера запрещена');

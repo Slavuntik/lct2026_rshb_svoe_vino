@@ -15,12 +15,12 @@ export function normalize(values: ArrayLike<number>): number[] {
   const v = Array.from(values); const norm = Math.sqrt(v.reduce((s, x) => s + x * x, 0));
   return norm > 0 ? v.map(x => x / norm) : v;
 }
-export function rank(embedding: number[], catalog: Catalog, threshold = .9, minMargin = .05): Match {
+export function rank(embedding: number[], catalog: Catalog, threshold = .9, minMargin = .05, candidateCount = 3): Match {
   const scores = catalog.wines.map(wine => ({ id: wine.id, score: Math.max(-1, ...wine.references.map(reference => reference.reduce((s, x, i) => s + x * embedding[i], 0))) })).sort((a, b) => b.score - a.score);
   const first = scores[0];
   if (!first) return { ...UNKNOWN };
   const margin = first.score - (scores[1]?.score ?? 0);
-  return { id: first.score >= threshold && margin >= minMargin ? first.id : null, score: first.score, margin, candidates: scores.slice(0, 3) };
+  return { id: first.score >= threshold && margin >= minMargin ? first.id : null, score: first.score, margin, candidates: scores.slice(0, candidateCount) };
 }
 export function parseCatalog(value: unknown, model?: string, dimension?: number): Catalog {
   const c = value as Catalog;
