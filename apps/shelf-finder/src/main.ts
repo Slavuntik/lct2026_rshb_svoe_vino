@@ -1,32 +1,35 @@
 import './style.css';
+import { ServerClient } from './server-client';
+const engine = new URLSearchParams(location.search).get('engine') ?? 'server';
+const serverMode = engine === 'server';
 import { parseCatalog, Tracker } from './core';
 import { loadCatalog, saveCatalog } from './storage';
 import type { Catalog, ModelManifest, ScanResult, Track } from './types';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 $('app').innerHTML = `
-<header><a class="logo" href="./">V<span>•</span> Витрина</a><span class="private">На вашем устройстве</span></header>
+<header><a class="logo" href="./">V<span>•</span> Витрина</a><span class="private">${serverMode ? 'Распознавание на сервере' : 'На вашем устройстве'}</span></header>
 <main>
   <section class="intro"><p class="eyebrow">VINCHIK / ПОИСК НА ПОЛКЕ</p><h1>Ваше вино.<br>Среди десятков бутылок.</h1><p>Выберите вина или группу, наведите камеру на витрину. Найденные позиции появятся в зелёных рамках.</p></section>
   <div class="workspace">
     <section class="viewer">
-      <div class="toolbar"><select id="recognition-mode" aria-label="Способ распознавания"><option value="hybrid">По деталям этикетки</option><option value="baseline">Базовое сравнение</option></select><button id="camera" disabled>Включить камеру</button><label class="button secondary">Открыть фото<input id="photo" type="file" accept="image/*" disabled></label><button id="stop" class="quiet" hidden>Остановить</button></div>
-      <div class="stage" id="stage"><canvas id="frame" width="960" height="720"></canvas><canvas id="overlay" width="960" height="720"></canvas><div class="empty" id="empty"><span class="reticle">⌗</span><h2>Посмотрим на полку</h2><p>Загрузите фото или включите заднюю камеру.<br>Снимки не отправляются на сервер.</p></div></div>
+      <div class="toolbar"><select id="recognition-mode" aria-label="Способ распознавания"><option value="server">На GPU-сервере</option><option value="hybrid">На устройстве: детали этикетки</option><option value="baseline">Базовое сравнение</option></select><button id="camera" disabled>Включить камеру</button><label class="button secondary">Открыть фото<input id="photo" type="file" accept="image/*" disabled></label><button id="capture" hidden>Снять витрину</button><button id="connect" class="quiet" hidden>Повторить подключение</button><button id="stop" class="quiet" hidden>Остановить</button></div>
+      <div class="stage" id="stage"><canvas id="frame" width="960" height="720"></canvas><canvas id="overlay" width="960" height="720"></canvas><div class="empty" id="empty"><span class="reticle">⌗</span><h2>Посмотрим на полку</h2><p>Загрузите фото или включите заднюю камеру.<br>${serverMode ? 'Фото отправляется на сервер для распознавания и не сохраняется.' : 'Снимки не отправляются на сервер.'}</p></div></div>
       <video id="video" playsinline muted hidden></video>
-      <div class="status" role="status" aria-live="polite"><span class="dot"></span><span id="status">Подготавливаем локальное распознавание…</span></div>
+      <div class="status" role="status" aria-live="polite"><span class="dot"></span><span id="status">${serverMode ? 'Подключаемся к серверу…' : 'Подготавливаем локальное распознавание…'}</span></div>
       <div id="error" class="error" role="alert" hidden></div>
-      <div class="controls"><label><input id="dense" type="checkbox"> Плотная полка</label><button id="cancel-scan" class="quiet" hidden>Отменить обработку</button><button id="rescan" class="quiet" disabled>Проверить ещё раз</button><button id="export-result" class="quiet" disabled>Скачать результат</button></div>
-      <p class="hint">В режиме камеры изображение обновляется по мере обработки. Держите телефон неподвижно до подтверждения. Если этикетки мелкие — подойдите ближе.</p>
+      <div class="controls"><label><input id="dense" type="checkbox"> Плотная полка</label><button id="cancel-scan" class="quiet" hidden>${serverMode ? 'Отменить ожидание' : 'Отменить обработку'}</button><button id="rescan" class="quiet" disabled>Проверить ещё раз</button><button id="export-result" class="quiet" disabled>Скачать результат</button></div>
+      <p class="hint">${serverMode ? 'Включите камеру и нажмите «Снять витрину». Отправляется один снимок, а не видео.' : 'В режиме камеры изображение обновляется по мере обработки. Держите телефон неподвижно до подтверждения.'} Если этикетки мелкие — подойдите ближе.</p>
       <div class="result-header"><h2>На снимке</h2><span id="count">Пока нет результатов</span></div>
       <div id="results" class="results"><p class="muted">Здесь появятся найденные бутылки. Неуверенные совпадения останутся без названия.</p></div>
       <details><summary>Диагностика и пороги</summary><p id="timing">Замер ещё не выполнен.</p><p>Автоматические совпадения могут ошибаться, особенно у похожих этикеток. Сходство не является вероятностью. Пороги требуют проверки на независимой разметке.</p><label>Минимальное сходство <input id="threshold" type="number" min="0.5" max="1" step="0.01" value="0.90"></label><label>Отрыв от второго кандидата <input id="margin" type="number" min="0" max="1" step="0.01" value="0.05"></label></details>
     </section>
     <aside><div class="section-label">ЧТО ИЩЕМ</div><h2>Соберите свой выбор</h2><div class="modes"><label><input type="radio" name="mode" value="selected" checked> Мой выбор</label><label><input type="radio" name="mode" value="all"> Вся полка</label></div><input id="search" class="search" type="search" placeholder="Название, производитель, регион" aria-label="Поиск по каталогу"><select id="group" aria-label="Группа вин"><option value="">Все группы</option></select><div class="selection"><span id="selected-count">Выбрано: 0</span><button id="select-visible" class="quiet">Выбрать найденные</button><button id="clear" class="quiet">Снять выбор</button></div><div id="catalog" class="catalog"></div><p class="hint">Выбор фильтрует подсветку, а распознавание сравнивает со всем каталогом — это уменьшает ложные совпадения.</p><details id="custom-catalog"><summary>Мой каталог и эталоны</summary><p>Можно импортировать подготовленный каталог или добавить эталон: нажмите на найденную бутылку под снимком и задайте название. Эталоны хранятся только в этом браузере.</p><label class="button secondary">Импорт JSON<input id="import" type="file" accept="application/json,.json"></label><button id="export" class="quiet" disabled>Экспорт каталога</button><button id="reset-catalog" class="quiet" disabled>Вернуть исходный каталог</button></details></aside>
   </div>
-</main><footer>Отдельный экспериментальный модуль Vinchik · 18+<span>Камера и фотографии остаются на устройстве</span></footer>
+</main><footer>Отдельный экспериментальный модуль Vinchik · 18+<span>${serverMode ? 'Снимок отправляется на сервер только для распознавания' : 'Камера и фотографии остаются на устройстве'}</span></footer>
 <dialog id="enroll"><form id="enroll-form"><h2>Добавить эталон</h2><p>Название задайте по читаемой этикетке. Не угадывайте неизвестные позиции.</p><input id="wine-name" required maxlength="160" placeholder="Название вина" aria-label="Название вина"><input id="wine-brand" maxlength="100" placeholder="Производитель" aria-label="Производитель"><select id="existing-wine" aria-label="Добавить фото существующей позиции"><option value="">Новая позиция</option></select><p id="candidates" class="hint"></p><div class="toolbar"><button type="submit">Сохранить на устройстве</button><button type="button" id="cancel-enroll" class="quiet">Отмена</button></div></form></dialog>`;
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+const worker = serverMode ? new ServerClient(import.meta.env.VITE_SHELF_API_URL || '/v1/shelf') : new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 const frame = $<HTMLCanvasElement>('frame'), overlay = $<HTMLCanvasElement>('overlay');
 const context = frame.getContext('2d')!, drawing = overlay.getContext('2d')!;
 const video = $<HTMLVideoElement>('video');
@@ -47,6 +50,8 @@ function controls() {
   $<HTMLButtonElement>('stop').hidden = !live && !startingCamera;
   $<HTMLInputElement>('import').disabled = !ready || busy || !!manifest?.localFeatures;
   $('cancel-scan').hidden = !busy;
+  $('capture').hidden = !serverMode || !live;
+  $<HTMLInputElement>('dense').closest('label')!.hidden = serverMode;
 }
 function filteredWines() {
   const query = $<HTMLInputElement>('search').value.toLocaleLowerCase('ru');
@@ -90,7 +95,7 @@ function renderResults() {
   drawing.clearRect(0, 0, overlay.width, overlay.height);
   const list = $('results'); list.replaceChildren();
   const identified = tracks.filter(t => t.confirmed && (mode() === 'all' || selected.has(t.match.id!)));
-  $('count').textContent = `${tracks.length} рамок · ${identified.length} совпадений с выбором`;
+  $('count').textContent = `${serverMode ? lastResult?.detectedCount ?? tracks.length : tracks.length} рамок · ${identified.length} совпадений с выбором`;
   for (const track of tracks) {
     const wine = catalog?.wines.find(w => w.id === track.match.id);
     const highlight = track.confirmed && !!wine && (mode() === 'all' || selected.has(wine.id));
@@ -114,10 +119,10 @@ function renderResults() {
     button.append(name, detail); button.disabled = busy || !track.embedding.length;
     button.addEventListener('click', () => openEnrollment(track)); list.append(button);
   }
-  if (!tracks.length) list.textContent = lastResult ? 'Бутылки не найдены. Попробуйте плотную полку или более близкий снимок.' : 'Загрузите фото для поиска.';
+  if (!tracks.length) list.textContent = lastResult ? (serverMode ? 'Уверенных совпадений нет. Попробуйте более близкий снимок.' : 'Бутылки не найдены. Попробуйте плотную полку или более близкий снимок.') : 'Загрузите фото для поиска.';
 }
 function stopCamera() {
-  cameraGeneration++; startingCamera = false; live = false; window.clearTimeout(timer); stream?.getTracks().forEach(t => t.stop()); stream = null; video.srcObject = null;
+  cameraGeneration++; startingCamera = false; live = false; window.clearTimeout(timer); stream?.getTracks().forEach(t => t.stop()); stream = null; video.srcObject = null; video.hidden = true; $('stage').hidden = false;
   tracker.reset(); controls();
 }
 async function startCamera() {
@@ -131,7 +136,8 @@ async function startCamera() {
     video.srcObject = stream; await video.play();
     if (generation !== cameraGeneration) return;
     live = true; tracker.reset();
-    await scanVideo();
+    if (serverMode) { video.hidden = false; video.style.width = '100%'; $('stage').hidden = true; status('Наведите камеру и нажмите «Снять витрину»'); }
+    else await scanVideo();
   } catch (e) { if (generation === cameraGeneration) { stopCamera(); error(e instanceof Error ? e.message : String(e)); } }
   finally { if (generation === cameraGeneration) { startingCamera = false; controls(); } }
 }
@@ -149,7 +155,7 @@ async function scan() {
   if (!ready || busy) return;
   const threshold = Number($<HTMLInputElement>('threshold').value), margin = Number($<HTMLInputElement>('margin').value);
   if (!Number.isFinite(threshold) || threshold < .5 || threshold > 1 || !Number.isFinite(margin) || margin < 0 || margin > 1) { error('Проверьте пороги: сходство 0,5–1, отрыв 0–1.'); return; }
-  busy = true; lastResult = null; tracks = []; renderResults(); $<HTMLButtonElement>('export-result').disabled = true; error(''); currentRequest = ++requestId; controls(); status('Ищем бутылки на устройстве…');
+  busy = true; lastResult = null; tracks = []; renderResults(); $<HTMLButtonElement>('export-result').disabled = true; error(''); currentRequest = ++requestId; controls(); status(serverMode ? 'Отправляем фото и распознаём витрину…' : 'Ищем бутылки на устройстве…');
   drawing.clearRect(0, 0, overlay.width, overlay.height);
   try {
     const bitmap = await createImageBitmap(frame);
@@ -159,7 +165,7 @@ async function scan() {
 worker.onmessage = async (event: MessageEvent) => {
   const data = event.data;
   if (data.type === 'ready') {
-    manifest = data.manifest;
+    manifest = data.manifest; $('connect').hidden = true;
     $('custom-catalog').hidden = !!manifest.localFeatures;
     $<HTMLInputElement>('threshold').closest('label')!.hidden = !!manifest.localFeatures;
     $<HTMLInputElement>('margin').closest('label')!.hidden = !!manifest.localFeatures;
@@ -169,24 +175,24 @@ worker.onmessage = async (event: MessageEvent) => {
     let stored: Catalog | null = null;
     try { const value = manifest.localFeatures ? null : await loadCatalog(); if (value) stored = parseCatalog(value, manifest.embeddingModel, manifest.dimension); }
     catch { error('Сохранённый каталог несовместим с моделью. Загружен исходный каталог.'); }
-    await updateCatalog(stored ?? data.catalog); controls(); status(`Готово · ${catalog!.wines.length} позиций · фото остаются на устройстве`);
+    await updateCatalog(stored ?? data.catalog); controls(); status(`Готово · ${catalog!.wines.length} позиций · ${serverMode ? 'распознавание на сервере' : 'фото остаются на устройстве'}`);
   } else if (data.type === 'partial' && data.requestId === currentRequest && !live) {
     tracks = tracker.update(data.observations, performance.now(), 1, 60_000); renderResults();
   } else if (data.type === 'loading') {
     status(data.message);
   } else if (data.type === 'cancelled' && data.requestId === currentRequest) {
-    busy = false; stopCamera(); controls(); status('Обработка отменена');
+    busy = false; stopCamera(); controls(); status(serverMode ? 'Ожидание отменено' : 'Обработка отменена');
   } else if (data.type === 'progress' && data.requestId === currentRequest) {
     status(`${data.stage ?? 'Распознаём бутылки'}: ${data.done} из ${data.total}`);
   } else if (data.type === 'result' && data.requestId === currentRequest) {
     lastResult = data; busy = false;
     tracks = tracker.update(data.observations, performance.now(), live ? 3 : 1, Math.max(1800, data.elapsed + 1500));
     renderResults(); controls(); $<HTMLButtonElement>('export-result').disabled = false;
-    status(live ? 'Удерживайте камеру: подтверждаем по нескольким кадрам' : 'Снимок обработан локально');
-    $('timing').textContent = `${frame.width}×${frame.height} · всего ${(data.elapsed / 1000).toFixed(2)} с · детекция ${Math.round(data.detectionMs)} мс · распознавание ${Math.round(data.recognitionMs)} мс · ${data.observations.length} бутылок. ${data.recognitionBackend === "webgpu" ? "WebGPU" : "WebAssembly"} · CPU-потоков: ${data.threads ?? 1}.`;
+    status(live ? 'Удерживайте камеру: подтверждаем по нескольким кадрам' : serverMode ? 'Снимок обработан на сервере' : 'Снимок обработан локально');
+    $('timing').textContent = `${frame.width}×${frame.height} · всего ${(data.elapsed / 1000).toFixed(2)} с · детекция ${Math.round(data.detectionMs)} мс · распознавание ${Math.round(data.recognitionMs)} мс · ${data.observations.length} бутылок. ${serverMode ? "GPU-сервер · время включает передачу фото" : data.recognitionBackend === "webgpu" ? "WebGPU" : "WebAssembly"}${serverMode ? "" : ` · CPU-потоков: ${data.threads ?? 1}`}.`;
     if (live) timer = window.setTimeout(() => void scanVideo(), 350);
   } else if (data.type === 'error') {
-    busy = false; stopCamera(); controls(); error(data.message); status('Не удалось завершить обработку');
+    busy = false; stopCamera(); controls(); error(data.message); status('Не удалось завершить обработку'); if (serverMode && !ready) $('connect').hidden = false;
   }
 };
 worker.onerror = () => { busy = false; stopCamera(); error('Не удалось запустить обработку в браузере. Попробуйте обновить Safari и перезагрузить страницу.'); };
@@ -229,7 +235,7 @@ $('existing-wine').addEventListener('change', () => { const id = $<HTMLSelectEle
 $('cancel-enroll').addEventListener('click', () => $<HTMLDialogElement>('enroll').close());
 $('camera').addEventListener('click', () => void startCamera());
 $('stop').addEventListener('click', stopCamera);
-$('cancel-scan').addEventListener('click', () => { stopCamera(); worker.postMessage({type: 'cancel'}); status('Завершаем текущую проверку…'); });
+$('cancel-scan').addEventListener('click', () => { stopCamera(); status('Завершаем текущую проверку…'); worker.postMessage({type: 'cancel'}); });
 $('rescan').addEventListener('click', () => { tracker.reset(); void scan(); });
 $('photo').addEventListener('change', async () => {
   const file = $<HTMLInputElement>('photo').files?.[0]; if (!file || !ready || busy) return;
@@ -255,8 +261,10 @@ $('export-result').addEventListener('click', () => download('shelf-result.json',
 $('reset-catalog').addEventListener('click', async () => { if (busy || !originalCatalog) return; stopCamera(); await updateCatalog(structuredClone(originalCatalog), true); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); });
 window.addEventListener('pagehide', () => { stopCamera(); worker.terminate(); });
-const engine = new URLSearchParams(location.search).get('engine') ?? 'hybrid';
-if (['hybrid', 'local', 'xfeat'].includes(engine)) document.querySelector<HTMLInputElement>('input[name=mode][value=all]')!.checked = true;
+if (['server', 'hybrid', 'local', 'xfeat'].includes(engine)) document.querySelector<HTMLInputElement>('input[name=mode][value=all]')!.checked = true;
 $<HTMLSelectElement>('recognition-mode').value = engine;
 $('recognition-mode').addEventListener('change', () => { const url = new URL(location.href); url.searchParams.set('engine', $<HTMLSelectElement>('recognition-mode').value); location.assign(url); });
-worker.postMessage({ type: 'init', engine, base: new URL(import.meta.env.BASE_URL, location.href).href });
+function initialize() { error(''); status(serverMode ? 'Подключаемся к серверу…' : 'Загружаем модели…'); worker.postMessage({ type: 'init', engine, base: new URL(import.meta.env.BASE_URL, location.href).href }); }
+$('connect').addEventListener('click', initialize);
+$('capture').addEventListener('click', () => { if (!live || busy || video.readyState < 2) return; resize(video.videoWidth, video.videoHeight); context.drawImage(video, 0, 0, frame.width, frame.height); stopCamera(); void scan(); });
+initialize();
