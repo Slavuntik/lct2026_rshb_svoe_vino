@@ -42,6 +42,7 @@ def main():
         )
     sys.path.insert(0, str(args.onnx_source.resolve()))
     from learned_model import Portable
+    from webgpu_export import replace_selu
     from lightglue_dynamo.models.lightglue import LightGlue
 
     args.output.mkdir(parents=True, exist_ok=True)
@@ -67,6 +68,7 @@ def main():
             dynamic_axes={"image": {3: "width"}},
             dynamo=False,
         )
+        selu_rewrites = replace_selu(args.output / "aliked.onnx")
         torch.onnx.export(
             matcher,
             (points, descriptors),
@@ -124,6 +126,7 @@ def main():
         "runtime": ort.__version__,
         "matcherPoints": args.points,
         "matcherLayers": args.layers,
+        "webgpuSeluRewrites": selu_rewrites,
     }
     (args.output / "export-validation.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
