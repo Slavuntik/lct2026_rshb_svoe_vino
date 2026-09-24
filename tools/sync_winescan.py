@@ -1,13 +1,14 @@
 """Синхронизация пакета `packages/winescan` с исходным репозиторием winescan.
 
 Зачем. Пакет приехал в монорепо из отдельного репозитория (LCT 2026), где продолжается
-работа: измерения, пресеты синтетики, правки поиска. Разовое копирование разошлось бы за
+работа: измерения, пресеты синтетики, правки поиска. Его полная копия с историей
+теперь лежит в standalone/winescan; это источник по умолчанию. Разовое копирование разошлось бы за
 день, поэтому перенос выполняется этим скриптом, а не руками, и каждый перенос записывает,
 из какого коммита источника собран пакет (`packages/winescan/SYNC.md`).
 
 Правила:
 
-* источник истины для кода пакета — репозиторий winescan; правки, сделанные прямо в монорепо,
+* источник истины для кода пакета — standalone/winescan (или явный --source); правки, сделанные прямо в монорепо,
   скрипт покажет как расхождение и не затрёт молча (для переноса нужен явный ``--apply``);
 * всё, что относится к интеграции (адаптер под контракт `ImageIndex`, эта папка `tools/`),
   живёт только в монорепо и в сверке не участвует — список в `INTEGRATION_ONLY`;
@@ -31,7 +32,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = REPO_ROOT / "packages" / "winescan"
-DEFAULT_SOURCE = Path("/home/user/work/LCT 2026")
+DEFAULT_SOURCE = REPO_ROOT / "standalone" / "winescan"
 
 # (путь в репозитории-источнике, путь в монорепо)
 TRACKED = (
@@ -110,7 +111,7 @@ def compare(source: Path) -> Diff:
 
 def source_commit(source: Path) -> str:
     try:
-        result = subprocess.run(["git", "-C", str(source), "log", "-1", "--format=%H %ad %s", "--date=short"],
+        result = subprocess.run(["git", "-C", str(source), "log", "-1", "--format=%H %ad %s", "--date=short", "--", "."],
                                 capture_output=True, text=True, check=True)  # fmt: skip
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):

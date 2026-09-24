@@ -209,7 +209,7 @@ def warm_up_image_index(image_index: ImageIndex, settings: Settings) -> bool:
     ~1.8-1.9 с — ровно холодный Qdrant, не OCR (см. reports/b4-gate-v047.md
     §"Прогрев" за цифрами обоих экспериментов). embed() как ТАКОВОЙ прогрев
     энкодера теперь избыточен — search() делает то же самое внутри себя."""
-    if settings.image_provider != "real":
+    if settings.image_provider not in {"real", "winescan"}:
         return True
     try:
         image_index.search(_PLACEHOLDER_IMAGE, top_k=1)

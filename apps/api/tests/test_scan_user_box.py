@@ -131,3 +131,34 @@ def test_flat_mode_applies_a_valid_box(app, client: TestClient):
     with Image.open(io.BytesIO(index.seen[0])) as cropped:
         assert abs(cropped.width - 200) <= 1
         assert abs(cropped.height - 400) <= 1
+
+
+def test_winescan_uses_own_search_when_native_fusion_is_enabled(app, client):
+    """A native-engine deployment can switch providers without calling unsupported methods."""
+    from dataclasses import replace
+
+    app.state.settings = replace(app.state.settings, image_provider="winescan", cv_fusion=True)
+    index = _with_recording_index(app)
+    response = client.post(
+        "/v1/scan/photo", files={"image": ("label.jpg", _photo_bytes(), "image/jpeg")},
+        data={"box": "0.25,0.10,0.75,0.60"},
+    )
+    assert response.status_code == 200, response.text
+    assert len(index.seen) == 1
+    assert response.json()["slug"] == "shato-vymysel-cabernet"
+
+
+def test_winescan_warmup_runs_search_and_reports_failure():
+    from app.config import Settings
+    from app.cv.factory import warm_up_image_index
+
+    settings = Settings(image_provider="winescan")
+    index = _RecordingIndex()
+    assert warm_up_image_index(index, settings)
+    assert len(index.seen) == 1
+
+    class BrokenIndex:
+        def search(self, image, top_k=5):
+            raise RuntimeError("missing gallery")
+
+    assert not warm_up_image_index(BrokenIndex(), settings)

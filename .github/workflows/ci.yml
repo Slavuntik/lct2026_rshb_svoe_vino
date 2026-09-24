@@ -34,6 +34,8 @@ jobs:
       web: ${{ steps.d.outputs.web }}
     steps:
       - uses: actions/checkout@v4
+      - name: Check WineScan source synchronization
+        run: python3 tools/sync_winescan.py --check
       - id: d
         run: |
           test -f apps/api/pyproject.toml && echo "api=true" >> "$GITHUB_OUTPUT" || echo "api=false" >> "$GITHUB_OUTPUT"

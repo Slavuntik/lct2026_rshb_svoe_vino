@@ -1018,7 +1018,9 @@ def run_photo_scan(
     if settings.cv_shelf_crop:
         image_bytes = _apply_shelf_crop(image_bytes, settings, image_index)
 
-    if settings.cv_fusion:
+    # WineScan performs its own multi-index/text fusion inside search(); the native
+    # CV fusion API requires embed_fusion_query/search_fusion, which it does not expose.
+    if settings.cv_fusion and settings.image_provider != "winescan":
         return _run_photo_scan_fusion(
             image_bytes=image_bytes, image_index=image_index, verifier=verifier,
             retriever=retriever, settings=settings, top_k=top_k, t0=t0,
