@@ -1,0 +1,70 @@
+# WineScan: сервис распознавания. Перед первым запуском соберите артефакты (README.md, «Docker»):
+#   docker compose run --rm api make PY=python catalog index features GPU=0
+# Запуск: docker compose up api web    (GPU, нужен NVIDIA Container Toolkit; интерфейс на :3000)
+#         docker compose --profile cpu up api-cpu web   (для CPU: NUXT_API_BASE=http://api-cpu:8080)
+#         NUXT_PUBLIC_MOCK=1 docker compose up web       (интерфейс на демо-данных без сервиса)
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    image: winescan-api:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./artifacts:/artifacts
+      - hf-cache:/models/hf
+    environment:
+      WINESCAN_DEVICE: ${WINESCAN_DEVICE:-}
+      WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-1}
+      WINESCAN_LOCAL_WEIGHT: ${WINESCAN_LOCAL_WEIGHT:-0.15}
+      WINESCAN_TEXT_WEIGHT: ${WINESCAN_TEXT_WEIGHT:-0.02}
+      WINESCAN_MIN_VISUAL_SCORE: ${WINESCAN_MIN_VISUAL_SCORE:-0.74}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  api-cpu:
+    profiles: ["cpu"]
+    image: winescan-api:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./artifacts:/artifacts
+      - hf-cache:/models/hf
+    environment:
+      # Профиль для дымовой проверки и демонстрации, а не для оценки: на Xeon E5-2670 v2 полная
+      # конфигурация отвечает 86–88 с при таймауте скрипта 10 с. Здесь облегчённая: лёгкая модель,
+      # один индекс, без детектора и OCR — 0,7–1,1 с на скан, но заметно менее точно.
+      WINESCAN_DEVICE: cpu
+      WINESCAN_USE_OCR: ${WINESCAN_USE_OCR:-0}
+      WINESCAN_INDEXES: ${WINESCAN_INDEXES:-siglip2-base-patch16-224}
+      WINESCAN_INDEX_WEIGHTS: ${WINESCAN_INDEX_WEIGHTS:-1.0}
+      WINESCAN_USE_DETECTOR: ${WINESCAN_USE_DETECTOR:-0}
+      WINESCAN_BOX_CANDIDATES: ${WINESCAN_BOX_CANDIDATES:-1}
+      WINESCAN_FUSION: ${WINESCAN_FUSION:-0}
+
+  # мобильный интерфейс; проксирует /api/** на сервис распознавания
+  web:
+    build:
+      context: ./web
+    image: winescan-web:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data:ro   # эталонные фото для режима демо-данных
+    environment:
+      NUXT_API_BASE: ${NUXT_API_BASE:-http://api:8080}
+      NUXT_PUBLIC_MOCK: ${NUXT_PUBLIC_MOCK:-}
+      NUXT_MOCK_UPLOADS_DIR: /data/raw/prod-svoe-vino-strapi/prod-svoe-vino/strapi/uploads
+    restart: unless-stopped
+
+volumes:
+  hf-cache:

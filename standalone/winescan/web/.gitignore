@@ -1,0 +1,13 @@
+# Зависимости и артефакты сборки Nuxt
+node_modules/
+.nuxt/
+.output/
+.data/
+.cache/
+dist/
+
+# Локальные переменные окружения и логи
+.env
+.env.*
+!.env.example
+*.log

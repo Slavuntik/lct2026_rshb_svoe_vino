@@ -1,0 +1,91 @@
+{
+ "status": "found",
+ "slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+ "card": {
+  "slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+  "name": "Мускатель белый",
+  "winery": "Массандра",
+  "region": "Крым",
+  "category": "Белое",
+  "color": "Янтарно-золотистый, прозрачный",
+  "grapes": [
+   "Белые сорта винограда"
+  ],
+  "description": "Аромат мускатный, цветочный с нотами акации, мёда и персика; вкус сладкий, гармоничный, с богатой мускатной ароматикой и долгим медово-цветочным послевкусием. К фруктовым десертам, выпечке, мягким сырам.",
+  "attributes": {
+   "year": null,
+   "sweetness": "sweet",
+   "sparkling": false,
+   "volume_l": null
+  },
+  "image": {
+   "file": "massandra_muskatel_belyy_belye_sorta_vinograda_beloe_sladkoe_16_f7e0314033.webp",
+   "status": "unique",
+   "width": 140,
+   "height": 600,
+   "source_photo_name": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16.webp"
+  }
+ },
+ "confidence": {
+  "score_top1": 0.9299,
+  "visual_score_top1": 0.7842,
+  "margin_top1_top2": 0.024,
+  "decision_reason": "",
+  "ocr_text": "0€# 0 В a # # я 184 ВИНО РОССИИ МУСКАТЕАЬ МАССАНАРА БЕАЫЙ УРОЖАЯ 2023 1 0 Д ТОД Ceccmkuни6 Финоpюкшки"
+ },
+ "top5": [
+  {
+   "slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+   "name": "Мускатель белый",
+   "score": 0.9299,
+   "visual_score": 0.7842,
+   "local_inliers": 47,
+   "text_score": 1.5
+  },
+  {
+   "slug": "massandra-muskatel-rozovyy-belye-sorta-vinograda-rozovoe-sladkoe-16",
+   "name": "Мускатель розовый",
+   "score": 0.9059,
+   "visual_score": 0.7645,
+   "local_inliers": 57,
+   "text_score": 1.0
+  },
+  {
+   "slug": "massandra-muskat-belyy-yuzhnoberezhnyy-beloe-sladkoe-16",
+   "name": "Мускат Белый Южнобережный",
+   "score": 0.8982,
+   "visual_score": 0.7668,
+   "local_inliers": 33,
+   "text_score": 1.3
+  },
+  {
+   "slug": "muskat-avtorskoe-vino",
+   "name": "Мускат. Авторское вино",
+   "score": 0.8649,
+   "visual_score": 0.7672,
+   "local_inliers": 10,
+   "text_score": 1.3
+  },
+  {
+   "slug": "massandra-muskat-belyy-krasnogo-kamnya-beloe-sladkoe-13",
+   "name": "Мускат белый красного камня",
+   "score": 0.8459,
+   "visual_score": 0.7466,
+   "local_inliers": 12,
+   "text_score": 1.133
+  }
+ ],
+ "box": [
+  372.4,
+  641.5,
+  793.3,
+  1489.2
+ ],
+ "timings_ms": {
+  "detect": 198.3,
+  "embed_search": 208.3,
+  "local_match": 198.4,
+  "ocr": 301.2,
+  "total": 1189.0
+ }
+}

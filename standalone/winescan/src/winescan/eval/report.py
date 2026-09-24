@@ -1,0 +1,191 @@
+"""Сводная таблица экспериментов из artifacts/eval/*/metrics.json и *sweep*.json.
+
+Запуск: ``python -m winescan.eval.report --out docs/RESULTS.md``
+
+Таблица генерируется, а не пишется руками, чтобы цифры в документации совпадали с прогонами.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import datetime
+from pathlib import Path
+
+from winescan.config import PROJECT_ROOT, get_paths
+
+
+def _fmt(value: float | None) -> str:
+    return "—" if value is None else f"{value:.3f}"
+
+
+def _best_sweep(path: Path) -> tuple[str, dict] | None:
+    if not path.exists():
+        return None
+    sweep = json.loads(path.read_text(encoding="utf-8"))
+    weight = max(sweep, key=lambda w: sweep[w]["all"]["top1_accuracy"])
+    return weight, sweep[weight]
+
+
+def render(eval_dir: Path) -> str:
+    runs = sorted(p.parent for p in eval_dir.glob("*/metrics.json"))
+    lines = [
+        "# Результаты экспериментов",
+        "",
+        f"Сгенерировано `python -m winescan.eval.report` {datetime.now():%Y-%m-%d %H:%M}. Не редактировать руками.",
+        "Определения метрик — `src/winescan/eval/metrics.py`; подвыборки — docs/DATA.md, раздел 6.",
+        "",
+        "## Прогоны",
+        "",
+        "Дата — время прогона: код детектора и слияния менялся в течение дня, сверяйте с docs/WORKLOG.md.",
+        "",
+        "| прогон | дата | кроп | OCR | top-1 | top-5 | top-1 похожие (pHash) | top-1 общий эталон | F1@1 | детекция, мс | OCR, мс |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    sweeps = []
+    for run in runs:
+        metrics = json.loads((run / "metrics.json").read_text(encoding="utf-8"))
+        if "all" not in metrics:
+            continue
+        latency = metrics.get("latency_ms", {})
+        run_time = datetime.fromtimestamp((run / "metrics.json").stat().st_mtime)
+        lines.append(
+            f"| `{run.name}` | {run_time:%m-%d %H:%M} | {metrics['crop']} | {'да' if metrics.get('ocr') else 'нет'} | "
+            f"{_fmt(metrics['all']['top1_accuracy'])} | {_fmt(metrics['all']['top5_accuracy'])} | "
+            f"{_fmt(metrics['in_phash_group']['top1_accuracy'])} | {_fmt(metrics['shares_image']['top1_accuracy'])} | "
+            f"{_fmt(metrics['all']['f1_at_1_best']['f1'])} | {latency.get('detect_mean', 0):.0f} | {latency.get('ocr_mean', 0):.0f} |"
+        )
+        for sweep_file, label in (("local_rerank_sweep_top5.json", "SIFT top-5"), ("rerank_sweep.json", "текст OCR")):
+            best = _best_sweep(run / sweep_file)
+            if best:
+                sweeps.append((run.name, label, *best))
+    lines += [
+        "",
+        "## Переранжирование (лучший вес по top-1 на том же прогоне)",
+        "",
+        "| прогон | сигнал | вес | top-1 | top-5 | top-1 похожие | top-1 общий эталон |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for run_name, label, weight, metrics in sweeps:
+        lines.append(
+            f"| `{run_name}` | {label} | {weight} | {_fmt(metrics['all']['top1_accuracy'])} | "
+            f"{_fmt(metrics['all']['top5_accuracy'])} | {_fmt(metrics['in_phash_group']['top1_accuracy'])} | "
+            f"{_fmt(metrics['shares_image']['top1_accuracy'])} |"
+        )
+    lines += _scanner_section(runs)
+    lines += ["", "Синтетика оптимистична (в кадре пиксели эталона), см. ARCHITECTURE.md, раздел 4.", ""]
+    lines += _participant_section(eval_dir / "participant_public")
+    return "\n".join(lines)
+
+
+def _scanner_section(runs: list[Path]) -> list[str]:
+    """Сквозные прогоны сервисного Scanner (eval.scanner_eval): с решением «не найдено» и задержками."""
+    rows = []
+    for run in runs:
+        metrics = json.loads((run / "metrics.json").read_text(encoding="utf-8"))
+        if "decision" not in metrics:
+            continue
+        decision, latency = metrics["decision"], metrics["latency_ms"]
+        rows.append(
+            f"| `{run.name}` | {metrics['queries']} | {_fmt(metrics.get('all', {}).get('top1_accuracy'))} | "
+            f"{_fmt(decision['answered_correct'])} | {_fmt(decision['answered_wrong'])} | {_fmt(decision['rejected'])} | "
+            f"{_fmt(decision['out_of_catalog_rejected'])} | {latency['total_p50']:.0f} | {latency['total_p95']:.0f} |"
+        )
+    if not rows:
+        return []
+    return [
+        "",
+        "## Сквозные прогоны сервиса (`eval.scanner_eval`)",
+        "",
+        "Учитывается решение «не найдено». `__holdout` — только запросы, не использованные при обучении выбора",
+        "рамки и слияния; варианты с разными моделями сравнивайте на общих запросах (docs/WORKLOG.md).",
+        "Задержки зависят от загрузки машины.",
+        "",
+        "| прогон | запросов | top-1 | верный ответ | неверный ответ | отказ | отклонено вне каталога | p50, мс | p95, мс |",
+        "|---|---|---|---|---|---|---|---|---|",
+        *rows,
+    ]
+
+
+def _participant_section(directory: Path) -> list[str]:
+    """Публичные фото через работающий сервис: participant_test.sh + /v1/scan."""
+    predictions_path = directory / "predictions.jsonl"
+    if not predictions_path.exists():
+        return []
+    labels_path = PROJECT_ROOT / "configs" / "eval_public_labels.csv"
+    expected = {}
+    if labels_path.exists():
+        import csv
+
+        with labels_path.open(encoding="utf-8") as fh:
+            expected = {row["image_path"]: row["expected_slug"] for row in csv.DictReader(fh)}
+    lines = [
+        "## Публичные фото через сервис",
+        "",
+        f"`participant_test.sh` кейсодержателя и `/v1/scan` с настройками по умолчанию "
+        f"({datetime.fromtimestamp(predictions_path.stat().st_mtime):%Y-%m-%d %H:%M}). "
+        "Разметка неофициальная (`configs/eval_public_labels.csv`).",
+        "",
+        "| фото | ожидается | /v1/eval/predict | верно | задержка скрипта, мс | /v1/scan | визуальный скор | в сервисе, мс |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for line in predictions_path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        image = row["image_path"]
+        truth = expected.get(image, "")
+        scan_path = directory / f"scan_{Path(image).stem}.json"
+        scan = json.loads(scan_path.read_text(encoding="utf-8")) if scan_path.exists() else {}
+        if truth:
+            verdict = "да" if row["predicted_slug"] == truth else "нет"
+        else:
+            verdict = "вне каталога: " + ("да" if scan.get("status") == "not_found" else "нет")
+        lines.append(
+            f"| {image} | {truth or '(нет в каталоге)'} | {row['predicted_slug']} | {verdict} | {row['latency_ms']} | "
+            f"{scan.get('status', '—')} | {scan.get('confidence', {}).get('visual_score_top1', '—')} | "
+            f"{scan.get('timings_ms', {}).get('total', '—')} |"
+        )
+    lines.append("")
+    return lines
+
+
+def summary(eval_dir: Path) -> dict:
+    """Ключевые числа прогонов в машиночитаемом виде — для страницы метрик интерфейса."""
+    runs = []
+    for run in sorted(p.parent for p in eval_dir.glob("*/metrics.json")):
+        metrics = json.loads((run / "metrics.json").read_text(encoding="utf-8"))
+        if "all" not in metrics and "decision" not in metrics:
+            continue
+        latency = metrics.get("latency_ms", {})
+        runs.append({
+            "run": run.name,
+            "split": metrics.get("split"),
+            "kind": "сервис" if "decision" in metrics else "поиск",
+            "queries": metrics.get("queries"),
+            "top1": (metrics.get("all") or {}).get("top1_accuracy"),
+            "top5": (metrics.get("all") or {}).get("top5_accuracy"),
+            "top1_in_phash_group": (metrics.get("in_phash_group") or {}).get("top1_accuracy"),
+            "decision": metrics.get("decision"),
+            "latency_p50_ms": latency.get("total_p50"),
+            "latency_p95_ms": latency.get("total_p95"),
+            "finished_at": datetime.fromtimestamp((run / "metrics.json").stat().st_mtime).isoformat(timespec="seconds"),
+        })  # fmt: skip
+    return {"generated_at": datetime.now().isoformat(timespec="seconds"), "runs": runs}
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Сводная таблица экспериментов")
+    parser.add_argument("--out", type=Path, default=PROJECT_ROOT / "docs" / "RESULTS.md")
+    parser.add_argument("--json", type=Path, default=None,
+                        help="дополнительно сохранить ключевые числа в JSON (страница метрик интерфейса)")  # fmt: skip
+    args = parser.parse_args(argv)
+    eval_dir = get_paths().artifacts_dir / "eval"
+    text = render(eval_dir)
+    args.out.write_text(text, encoding="utf-8")
+    if args.json:
+        args.json.write_text(json.dumps(summary(eval_dir), ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"ключевые числа -> {args.json}")
+    print(text)
+
+
+if __name__ == "__main__":
+    main()

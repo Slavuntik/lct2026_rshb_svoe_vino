@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-09-16T08:33:48",
+  "runs": [
+    {
+      "run": "scanner__synth_v2__default__holdout",
+      "split": "synth_v2",
+      "kind": "сервис",
+      "queries": 1052,
+      "top1": 0.6987,
+      "top5": 0.7823,
+      "top1_in_phash_group": 0.6849,
+      "decision": {
+        "in_catalog": 1052,
+        "answered_correct": 0.6863,
+        "answered_wrong": 0.2472,
+        "rejected": 0.0665,
+        "precision_of_answers": 0.7352,
+        "out_of_catalog": 0,
+        "out_of_catalog_rejected": null,
+        "open_set_accuracy": 0.6863
+      },
+      "latency_p50_ms": 1819,
+      "latency_p95_ms": 5637,
+      "finished_at": "2026-09-16T00:42:11"
+    },
+    {
+      "run": "scanner__synth_v1__fusion_v2_hybrid__holdout",
+      "split": "synth_v1",
+      "kind": "сервис",
+      "queries": 650,
+      "top1": 0.8692,
+      "top5": 0.9338,
+      "top1_in_phash_group": 0.7946,
+      "decision": {
+        "in_catalog": 650,
+        "answered_correct": 0.8662,
+        "answered_wrong": 0.12,
+        "rejected": 0.0138,
+        "precision_of_answers": 0.8783,
+        "out_of_catalog": 0,
+        "out_of_catalog_rejected": null,
+        "open_set_accuracy": 0.8662
+      },
+      "latency_p50_ms": 2305,
+      "latency_p95_ms": 6889,
+      "finished_at": "2026-09-16T01:05:44"
+    },
+    {
+      "run": "scanner__public__default",
+      "split": "public",
+      "kind": "сервис",
+      "queries": 3,
+      "top1": 1.0,
+      "top5": 1.0,
+      "top1_in_phash_group": null,
+      "decision": {
+        "in_catalog": 1,
+        "answered_correct": 1.0,
+        "answered_wrong": 0.0,
+        "rejected": 0.0,
+        "precision_of_answers": 1.0,
+        "out_of_catalog": 2,
+        "out_of_catalog_rejected": 1.0,
+        "open_set_accuracy": 1.0
+      },
+      "latency_p50_ms": 1628,
+      "latency_p95_ms": 2238,
+      "finished_at": "2026-09-15T22:10:03"
+    },
+    {
+      "run": "synth_v2__siglip2-so400m-patch14-384+label@0.5,0.5__gt",
+      "split": "synth_v2",
+      "kind": "поиск",
+      "queries": 2103,
+      "top1": 0.768,
+      "top5": 0.92,
+      "top1_in_phash_group": 0.72,
+      "decision": null,
+      "latency_p50_ms": null,
+      "latency_p95_ms": null,
+      "finished_at": "2026-09-15T20:41:00"
+    }
+  ]
+}

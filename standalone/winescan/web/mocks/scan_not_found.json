@@ -1,0 +1,67 @@
+{
+ "status": "not_found",
+ "slug": null,
+ "card": null,
+ "confidence": {
+  "score_top1": 0.7265,
+  "visual_score_top1": 0.6599,
+  "margin_top1_top2": 0.0134,
+  "decision_reason": "визуальный скор 0.660 < 0.74",
+  "ocr_text": "Т А Б И Я 8 И H 0 A Е ^ Б К Я Лшно ! Нуар лоТСухое 2025"
+ },
+ "top5": [
+  {
+   "slug": "vaynkraft-pino-nuar-krasnoe-suhoe-13",
+   "name": "Пино Нуар",
+   "score": 0.7265,
+   "visual_score": 0.6599,
+   "local_inliers": 5,
+   "text_score": 0.65
+  },
+  {
+   "slug": "usadba-mezyb-shishka-pino-nuar-rozovoe-suhoe-115",
+   "name": "Шишка. Пино Нуар",
+   "score": 0.7131,
+   "visual_score": 0.6498,
+   "local_inliers": 5,
+   "text_score": 0.483
+  },
+  {
+   "slug": "usadba-perovskih-pino-nuar-rezerv-krasnoe-suhoe-122",
+   "name": "Пино Нуар Резерв",
+   "score": 0.7094,
+   "visual_score": 0.6375,
+   "local_inliers": 7,
+   "text_score": 0.483
+  },
+  {
+   "slug": "usadba-mezyb-shishka-merlo-vione-rozovoe-suhoe-125",
+   "name": "Шишка. Мерло, Вионье",
+   "score": 0.6952,
+   "visual_score": 0.637,
+   "local_inliers": 6,
+   "text_score": 0.0
+  },
+  {
+   "slug": "le-k2-vassal-risling-reynskiy-beloe-suhoe-14",
+   "name": "Вассал",
+   "score": 0.6858,
+   "visual_score": 0.6377,
+   "local_inliers": 4,
+   "text_score": 0.0
+  }
+ ],
+ "box": [
+  284.0,
+  421.5,
+  898.4,
+  1600.0
+ ],
+ "timings_ms": {
+  "detect": 194.9,
+  "embed_search": 207.2,
+  "local_match": 156.2,
+  "ocr": 184.3,
+  "total": 1054.9
+ }
+}
