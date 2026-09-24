@@ -100,3 +100,28 @@ OCR для похожих кандидатов, обучение детекто�
 Размеченные картинки для всех фото аудита:
 `node scripts/render-audit.mjs /path/to/vitrini` (нужен Playwright/Chromium).
 См. [отчёт проверки](docs/photo-audit-2026-09-24.md).
+
+### Сравнение с мощной моделью вне браузера
+
+`scripts/audit_strong.py` обрабатывает плотные рамки из `audit.py`, извлекает
+вырезки исходного разрешения и ищет по двум индексам SigLIP2 so400m
+(бутылка/этикетка, несколько ракурсов). Для top-10 добавляет SIFT/MAGSAC.
+Требуются окружение WineScan, GPU и подготовленные индексы полного каталога.
+
+```bash
+CUDA_VISIBLE_DEVICES=2 WINESCAN_ARTIFACTS_DIR=/path/to/artifacts \
+  python scripts/audit_strong.py \
+  --photos /path/to/vitrini --detections artifacts/audit-full/results.json \
+  --catalog /path/to/catalog.jsonl --images /path/to/strapi/uploads \
+  --output artifacts/strong-audit
+```
+
+Результаты: `index.html` и 17 страниц с рамками, вырезками и эталонами;
+`results.json` хранит top-10, геометрические свидетельства и ответы компактной
+модели на тех же рамках. `reviewedId` остаётся пустым: предсказания сильной
+модели не заменяют ручную разметку. Число совпавших top-1 измеряет согласие
+моделей, а не точность. Сравнение компактной модели здесь использует её
+Python/ONNX-прогон, а не выполнение Safari. Детектор остаётся прежним;
+пропущенные им бутылки этот эксперимент не оценивает.
+
+После завершения запустите `python scripts/summarize_strong.py artifacts/strong-audit`: он создаёт `report.md` и `review-template.csv`. Для ручной разметки копируйте шаблон в `review.csv`; шаблон перезаписывается при повторном запуске, отдельный файл разметки не затрагивается.
