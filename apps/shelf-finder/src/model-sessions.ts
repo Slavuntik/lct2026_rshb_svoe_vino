@@ -1,5 +1,13 @@
 import type * as ORT from 'onnxruntime-web';
 
+export async function hasGpuAdapter(gpu?: { requestAdapter(): Promise<unknown> }): Promise<boolean> {
+  try {
+    return !!(await gpu?.requestAdapter());
+  } catch {
+    return false;
+  }
+}
+
 export async function createLearnedSessions(
   ort: typeof ORT,
   bytes: { extractor: ArrayBuffer; matcher: ArrayBuffer; retriever?: ArrayBuffer },

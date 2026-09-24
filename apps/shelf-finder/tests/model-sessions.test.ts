@@ -1,6 +1,12 @@
 import { expect, it } from 'vitest';
 import type * as ORT from 'onnxruntime-web';
-import { createLearnedSessions } from '../src/model-sessions';
+import { createLearnedSessions, hasGpuAdapter } from '../src/model-sessions';
+it('requires an available adapter, not merely the WebGPU API', async () => {
+  expect(await hasGpuAdapter()).toBe(false);
+  expect(await hasGpuAdapter({ requestAdapter: async () => null })).toBe(false);
+  expect(await hasGpuAdapter({ requestAdapter: async () => { throw new Error('disabled'); } })).toBe(false);
+  expect(await hasGpuAdapter({ requestAdapter: async () => ({}) })).toBe(true);
+});
 it('releases a GPU graph that fails during execution and retries the entire group on WASM', async () => {
   const providers: string[] = [];
   let released = 0;

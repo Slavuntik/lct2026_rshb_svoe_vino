@@ -4,7 +4,7 @@ import { nms, normalize, parseCatalog, rank, tiles, UNKNOWN } from './core';
 import type { Box, Catalog, Detection, ModelManifest, Observation } from './types';
 import { recognitionViews } from './preprocess';
 import type { GeometryVerifier } from './geometry';
-import { createLearnedSessions } from './model-sessions';
+import { createLearnedSessions, hasGpuAdapter } from './model-sessions';
 import type { LearnedRecognizer } from './learned';
 
 let ort: typeof ORT;
@@ -112,7 +112,8 @@ self.onmessage = async (event: MessageEvent) => {
         if (!manifest.matcher || manifest.matcherPoints !== 256 || manifest.matcherLayers !== (manifest.localExtractor === 'xfeat' ? 6 : 5)) throw new Error('Нужен совместимый комплект проверки этикетки на 256 точек.');
         self.postMessage({ type: 'loading', message: 'Загружаем проверку деталей этикетки…' });
         const matcherBytes = await checkedAsset(base, manifest.matcher);
-        const local = await createLearnedSessions(ort, {extractor: embeddingBytes, matcher: matcherBytes, retriever: manifest.retriever ? await checkedAsset(base, manifest.retriever) : undefined}, manifest.localExtractor === 'xfeat' ? 64 : 128, 'gpu' in navigator);
+        const gpu = (navigator as unknown as {gpu?: {requestAdapter(): Promise<unknown>}}).gpu;
+        const local = await createLearnedSessions(ort, {extractor: embeddingBytes, matcher: matcherBytes, retriever: manifest.retriever ? await checkedAsset(base, manifest.retriever) : undefined}, manifest.localExtractor === 'xfeat' ? 64 : 128, await hasGpuAdapter(gpu));
         embedder = local.extractor; recognitionBackend = local.backend;
         const {matcher,retriever} = local;
         const descriptorDot = manifest.descriptorDot ? await ort.InferenceSession.create(await checkedAsset(base, manifest.descriptorDot), {executionProviders: ['wasm']}) : undefined;
