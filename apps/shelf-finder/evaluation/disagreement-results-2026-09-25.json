@@ -1,0 +1,1213 @@
+{
+  "dataset": "evaluation/shelves-v1.json",
+  "datasetSha256": "977e3597364f99d3a4b9bd26f4da001cb649cda2b40db04af238a559df02faa1",
+  "independentGroundTruth": false,
+  "runs": {
+    "legacy": {
+      "config": {
+        "rescuePolicy": "legacy",
+        "rescueLimit": 8,
+        "budgetSeconds": 60.0,
+        "semanticScope": "all",
+        "semanticVeto": true
+      },
+      "rawSha256": "ec1e6ee7405e5735125a0a3368dd04df3d9d88923583ce9ecc2cc70ee49598ba",
+      "pipelineVersions": [
+        "accuracy-v2-28c79796a0af-policy-legacy"
+      ],
+      "evaluation": {
+        "independentGroundTruth": false,
+        "completeNegatives": false,
+        "summary": {
+          "all": {
+            "positives": 32,
+            "correct": 16,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 5,
+            "accepted": 21,
+            "photos": 17,
+            "medianSeconds": 16.531313645187765,
+            "maxSeconds": 24.91269669868052
+          },
+          "development": {
+            "positives": 15,
+            "correct": 15,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 17,
+            "photos": 3,
+            "medianSeconds": 16.531313645187765,
+            "maxSeconds": 19.496397242881358
+          },
+          "regression": {
+            "positives": 17,
+            "correct": 1,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 3,
+            "accepted": 4,
+            "photos": 14,
+            "medianSeconds": 17.241904323920608,
+            "maxSeconds": 24.91269669868052
+          }
+        },
+        "rows": [
+          {
+            "file": "photo_2026-09-24_17-33-36.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 18.245852342806756
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "split": "development",
+            "positives": 4,
+            "correct": 4,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 6,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 19.496397242881358
+          },
+          {
+            "file": "photo_2026-09-24_17-33-48.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 24.91269669868052
+          },
+          {
+            "file": "photo_2026-09-24_17-33-51.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 19.525456624105573
+          },
+          {
+            "file": "photo_2026-09-24_17-33-55.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 23.30844971491024
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "split": "development",
+            "positives": 8,
+            "correct": 8,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 8,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 16.531313645187765
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "split": "regression",
+            "positives": 7,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 1,
+            "accepted": 1,
+            "missedRegions": [
+              1,
+              4,
+              13,
+              26,
+              31,
+              38,
+              49
+            ],
+            "wrongRegions": [],
+            "seconds": 23.929116312414408
+          },
+          {
+            "file": "photo_2026-09-24_17-34-06.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 15.73790659988299
+          },
+          {
+            "file": "photo_2026-09-24_17-34-09.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 14.288175141438842
+          },
+          {
+            "file": "photo_2026-09-24_17-34-13.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 18.01277743699029
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "split": "regression",
+            "positives": 3,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 2,
+            "missedRegions": [
+              17,
+              47,
+              50
+            ],
+            "wrongRegions": [],
+            "seconds": 15.90935576800257
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "split": "regression",
+            "positives": 2,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [
+              12,
+              13
+            ],
+            "wrongRegions": [],
+            "seconds": 16.471031210850924
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "split": "regression",
+            "positives": 2,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [
+              23,
+              46
+            ],
+            "wrongRegions": [],
+            "seconds": 15.914191232062876
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "split": "regression",
+            "positives": 3,
+            "correct": 1,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 1,
+            "missedRegions": [
+              49,
+              54
+            ],
+            "wrongRegions": [],
+            "seconds": 20.527705588843673
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "split": "development",
+            "positives": 3,
+            "correct": 3,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 3,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 13.861906647216529
+          },
+          {
+            "file": "photo_2026-09-24_17-34-34.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 13.51933088293299
+          },
+          {
+            "file": "photo_2026-09-24_17-34-37.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 10.044391886331141
+          }
+        ]
+      },
+      "rescueAnalysis": {
+        "independentGroundTruth": false,
+        "config": {
+          "rescuePolicy": "legacy",
+          "rescueLimit": 8,
+          "budgetSeconds": 60.0,
+          "semanticScope": "all",
+          "semanticVeto": true
+        },
+        "photos": 17,
+        "missingPhotos": [],
+        "counts": {
+          "accepted": 16,
+          "outside_work_limit": 9,
+          "checked_but_rejected": 6,
+          "not_queued": 1
+        },
+        "regions": [
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 3,
+            "expected": "shato-taman-grape-dance-1",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 4,
+            "expected": "shato-taman-grape-dance-1",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 9,
+            "expected": "shato-taman-kaberne-sovinon",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 11,
+            "expected": "shato-taman-kaberne-sovinon",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 10,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 11,
+            "expected": "agora-pino-nuar",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 13,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 16,
+            "expected": "agora-pino-nuar",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 19,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 24,
+            "expected": "agora-muskat-chernyj",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 27,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 34,
+            "expected": "agora-muskat-chernyj",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 1,
+            "expected": "balaklava-bryut-rezerv",
+            "reason": "outside_work_limit",
+            "queueRank": 20,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 4,
+            "expected": "balaklava-pino-nuar",
+            "reason": "outside_work_limit",
+            "queueRank": 22,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 13,
+            "expected": "aristov-anima-millesimato-beloe-bryut",
+            "reason": "checked_but_rejected",
+            "queueRank": 1,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 26,
+            "expected": "balaklava-muskat-beloe-polusladkoe",
+            "reason": "outside_work_limit",
+            "queueRank": 34,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 31,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "checked_but_rejected",
+            "queueRank": 5,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 38,
+            "expected": "aristov-anima-millesimato",
+            "reason": "checked_but_rejected",
+            "queueRank": 7,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 49,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "outside_work_limit",
+            "queueRank": 47,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 17,
+            "expected": "derbent-vino-desono-shardone-beloe-suhoe-125",
+            "reason": "outside_work_limit",
+            "queueRank": 22,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 47,
+            "expected": "skalistyy-bereg-dyhanie-voln-shardone-beloe-suhoe-121",
+            "reason": "outside_work_limit",
+            "queueRank": 43,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 50,
+            "expected": "solnechnaya-dolina-meganom-beloe-aligote-suhoe-13",
+            "reason": "outside_work_limit",
+            "queueRank": 46,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "region": 12,
+            "expected": "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+            "reason": "checked_but_rejected",
+            "queueRank": 1,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "region": 13,
+            "expected": "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+            "reason": "checked_but_rejected",
+            "queueRank": 4,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "region": 23,
+            "expected": "rustok-glera-ru-140",
+            "reason": "outside_work_limit",
+            "queueRank": 32,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "region": 46,
+            "expected": "rustok-glera-ru-140",
+            "reason": "outside_work_limit",
+            "queueRank": 13,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 35,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 49,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "checked_but_rejected",
+            "queueRank": 1,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 54,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "not_queued",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 4,
+            "expected": "chateau-tamagne-nature-vert",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 16,
+            "expected": "chateau-tamagne-nature-vert",
+            "reason": "accepted",
+            "queueRank": 3,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 22,
+            "expected": "kuban-vino-vysokiy-bereg-myuller-turgau-beloe-suhoe-13",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          }
+        ]
+      }
+    },
+    "disagreement": {
+      "config": {
+        "rescuePolicy": "disagreement",
+        "rescueLimit": 8,
+        "budgetSeconds": 60.0,
+        "semanticScope": "all",
+        "semanticVeto": true
+      },
+      "rawSha256": "f2908e9378c0c0f13894b671b6daf2b6662f08f78ef26c97f231ea60491a2838",
+      "pipelineVersions": [
+        "accuracy-v2-28c79796a0af-policy-disagreement"
+      ],
+      "evaluation": {
+        "independentGroundTruth": false,
+        "completeNegatives": false,
+        "summary": {
+          "all": {
+            "positives": 32,
+            "correct": 18,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 5,
+            "accepted": 23,
+            "photos": 17,
+            "medianSeconds": 18.24367002910003,
+            "maxSeconds": 24.217630306258798
+          },
+          "development": {
+            "positives": 15,
+            "correct": 15,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 17,
+            "photos": 3,
+            "medianSeconds": 18.83905086107552,
+            "maxSeconds": 19.716825805138797
+          },
+          "regression": {
+            "positives": 17,
+            "correct": 3,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 3,
+            "accepted": 6,
+            "photos": 14,
+            "medianSeconds": 17.53656018106267,
+            "maxSeconds": 24.217630306258798
+          }
+        },
+        "rows": [
+          {
+            "file": "photo_2026-09-24_17-33-36.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 16.527121260296553
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "split": "development",
+            "positives": 4,
+            "correct": 4,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 6,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 19.716825805138797
+          },
+          {
+            "file": "photo_2026-09-24_17-33-48.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 24.217630306258798
+          },
+          {
+            "file": "photo_2026-09-24_17-33-51.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 18.24367002910003
+          },
+          {
+            "file": "photo_2026-09-24_17-33-55.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 22.556534653063864
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "split": "development",
+            "positives": 8,
+            "correct": 8,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 8,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 18.83905086107552
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "split": "regression",
+            "positives": 7,
+            "correct": 2,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 1,
+            "accepted": 3,
+            "missedRegions": [
+              1,
+              13,
+              31,
+              38,
+              49
+            ],
+            "wrongRegions": [],
+            "seconds": 24.110050501767546
+          },
+          {
+            "file": "photo_2026-09-24_17-34-06.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 16.603780136909336
+          },
+          {
+            "file": "photo_2026-09-24_17-34-09.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 11.838196676690131
+          },
+          {
+            "file": "photo_2026-09-24_17-34-13.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 14.296636269893497
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "split": "regression",
+            "positives": 3,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 2,
+            "accepted": 2,
+            "missedRegions": [
+              17,
+              47,
+              50
+            ],
+            "wrongRegions": [],
+            "seconds": 16.829450333025306
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "split": "regression",
+            "positives": 2,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [
+              12,
+              13
+            ],
+            "wrongRegions": [],
+            "seconds": 18.63507972797379
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "split": "regression",
+            "positives": 2,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [
+              23,
+              46
+            ],
+            "wrongRegions": [],
+            "seconds": 18.987423670943826
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "split": "regression",
+            "positives": 3,
+            "correct": 1,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 1,
+            "missedRegions": [
+              49,
+              54
+            ],
+            "wrongRegions": [],
+            "seconds": 24.110638660844415
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "split": "development",
+            "positives": 3,
+            "correct": 3,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 3,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 15.207612038124353
+          },
+          {
+            "file": "photo_2026-09-24_17-34-34.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 12.537758626043797
+          },
+          {
+            "file": "photo_2026-09-24_17-34-37.jpg",
+            "split": "regression",
+            "positives": 0,
+            "correct": 0,
+            "ambiguousKnown": 0,
+            "wrong": 0,
+            "unreviewedAccepted": 0,
+            "accepted": 0,
+            "missedRegions": [],
+            "wrongRegions": [],
+            "seconds": 12.041792983654886
+          }
+        ]
+      },
+      "rescueAnalysis": {
+        "independentGroundTruth": false,
+        "config": {
+          "rescuePolicy": "disagreement",
+          "rescueLimit": 8,
+          "budgetSeconds": 60.0,
+          "semanticScope": "all",
+          "semanticVeto": true
+        },
+        "photos": 17,
+        "missingPhotos": [],
+        "counts": {
+          "accepted": 18,
+          "checked_but_rejected": 7,
+          "outside_work_limit": 6,
+          "not_queued": 1
+        },
+        "regions": [
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 3,
+            "expected": "shato-taman-grape-dance-1",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 4,
+            "expected": "shato-taman-grape-dance-1",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 9,
+            "expected": "shato-taman-kaberne-sovinon",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "region": 11,
+            "expected": "shato-taman-kaberne-sovinon",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 10,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 11,
+            "expected": "agora-pino-nuar",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 13,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 16,
+            "expected": "agora-pino-nuar",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 19,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 24,
+            "expected": "agora-muskat-chernyj",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 27,
+            "expected": "agora-bastardo",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "region": 34,
+            "expected": "agora-muskat-chernyj",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 1,
+            "expected": "balaklava-bryut-rezerv",
+            "reason": "checked_but_rejected",
+            "queueRank": 6,
+            "priority": [
+              23,
+              23,
+              0.323943661971831
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 4,
+            "expected": "balaklava-pino-nuar",
+            "reason": "accepted",
+            "queueRank": 1,
+            "priority": [
+              36,
+              36,
+              0.37894736842105264
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 13,
+            "expected": "aristov-anima-millesimato-beloe-bryut",
+            "reason": "outside_work_limit",
+            "queueRank": 12,
+            "priority": [
+              12,
+              15,
+              0.3125
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 26,
+            "expected": "balaklava-muskat-beloe-polusladkoe",
+            "reason": "accepted",
+            "queueRank": 2,
+            "priority": [
+              30,
+              30,
+              0.2702702702702703
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 31,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "outside_work_limit",
+            "queueRank": 10,
+            "priority": [
+              16,
+              16,
+              0.2077922077922078
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 38,
+            "expected": "aristov-anima-millesimato",
+            "reason": "checked_but_rejected",
+            "queueRank": 8,
+            "priority": [
+              16,
+              17,
+              0.34
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "region": 49,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "outside_work_limit",
+            "queueRank": 47,
+            "priority": [
+              0,
+              0,
+              0.0
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 17,
+            "expected": "derbent-vino-desono-shardone-beloe-suhoe-125",
+            "reason": "checked_but_rejected",
+            "queueRank": 2,
+            "priority": [
+              10,
+              10,
+              0.15625
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 47,
+            "expected": "skalistyy-bereg-dyhanie-voln-shardone-beloe-suhoe-121",
+            "reason": "outside_work_limit",
+            "queueRank": 43,
+            "priority": [
+              0,
+              0,
+              0.0
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "region": 50,
+            "expected": "solnechnaya-dolina-meganom-beloe-aligote-suhoe-13",
+            "reason": "outside_work_limit",
+            "queueRank": 46,
+            "priority": [
+              0,
+              0,
+              0.0
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "region": 12,
+            "expected": "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+            "reason": "checked_but_rejected",
+            "queueRank": 2,
+            "priority": [
+              27,
+              32,
+              0.38095238095238093
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-19.jpg",
+            "region": 13,
+            "expected": "pomeste-golubitskoe-tte-de-cheval-bryut-risling-reynskiy-beloe-12",
+            "reason": "checked_but_rejected",
+            "queueRank": 1,
+            "priority": [
+              28,
+              33,
+              0.4177215189873418
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "region": 23,
+            "expected": "rustok-glera-ru-140",
+            "reason": "outside_work_limit",
+            "queueRank": 33,
+            "priority": [
+              0,
+              0,
+              0.0
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-23.jpg",
+            "region": 46,
+            "expected": "rustok-glera-ru-140",
+            "reason": "checked_but_rejected",
+            "queueRank": 1,
+            "priority": [
+              11,
+              12,
+              0.17647058823529413
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 35,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 49,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "checked_but_rejected",
+            "queueRank": 4,
+            "priority": [
+              14,
+              14,
+              0.1917808219178082
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "region": 54,
+            "expected": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+            "reason": "not_queued",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 4,
+            "expected": "chateau-tamagne-nature-vert",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 16,
+            "expected": "chateau-tamagne-nature-vert",
+            "reason": "accepted",
+            "queueRank": 1,
+            "priority": [
+              26,
+              26,
+              0.3939393939393939
+            ]
+          },
+          {
+            "file": "photo_2026-09-24_17-34-31.jpg",
+            "region": 22,
+            "expected": "kuban-vino-vysokiy-bereg-myuller-turgau-beloe-suhoe-13",
+            "reason": "accepted",
+            "queueRank": null,
+            "priority": null
+          }
+        ]
+      }
+    }
+  }
+}

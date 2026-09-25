@@ -99,3 +99,21 @@ def select_strong(evidence):
         )
         else None
     )
+
+
+def disagreement_priority(semantic_ids, evidence):
+    """Prioritize independent support for the visual leader, not an arbitrary rival."""
+    if not semantic_ids:
+        return (0, 0, 0)
+    leader = next((e for e in evidence if e["id"] == semantic_ids[0]), {})
+    inliers = leader.get("inliers", 0)
+    return (
+        leader.get("labelInliers", 0),
+        inliers,
+        inliers / max(leader.get("matches", 0), 1),
+    )
+
+
+def rescue_candidates(visual_ids, local_ids):
+    """Keep visual leaders and local competitors so the margin is meaningful."""
+    return list(dict.fromkeys(visual_ids[:3] + local_ids[:3]))

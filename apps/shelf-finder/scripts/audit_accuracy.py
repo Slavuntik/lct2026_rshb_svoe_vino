@@ -15,12 +15,20 @@ p.add_argument(
 p.add_argument("--semantic", type=Path)
 p.add_argument("--semantic-scope", choices=["all", "selected"], default="selected")
 p.add_argument("--files", nargs="*")
+p.add_argument("--rescue-policy", choices=["legacy", "disagreement"], default="legacy")
+p.add_argument(
+    "--compare-rescue",
+    action="store_true",
+    help="Alternate both policies on each image, reusing loaded models",
+)
 p.add_argument("--limit", type=int, default=12)
 p.add_argument("--budget", type=float, default=60)
 p.add_argument("--no-labels", action="store_true")
 p.add_argument("--ocr", action="store_true")
 p.add_argument("--no-semantic-veto", action="store_true")
 a = p.parse_args()
+if a.compare_rescue and (not a.semantic or a.semantic_scope != "all"):
+    p.error("--compare-rescue requires --semantic and --semantic-scope all")
 engine = AccuracyEngine(
     a.models,
     a.accuracy_models,
@@ -31,20 +39,51 @@ engine = AccuracyEngine(
     semantic_dir=a.semantic,
     semantic_scope=a.semantic_scope,
     semantic_veto=not a.no_semantic_veto,
+    rescue_policy=a.rescue_policy,
 )
-result = {"manualReview": False, "mode": "offline native accuracy", "rows": []}
+
+policies = ["legacy", "disagreement"] if a.compare_rescue else [a.rescue_policy]
+results = {
+    policy: {
+        "manualReview": False,
+        "mode": "offline native accuracy",
+        "config": {
+            "rescuePolicy": policy,
+            "rescueLimit": a.limit,
+            "budgetSeconds": a.budget,
+            "semanticScope": a.semantic_scope,
+            "semanticVeto": not a.no_semantic_veto,
+        },
+        "rows": [],
+    }
+    for policy in policies
+}
 a.output.parent.mkdir(parents=True, exist_ok=True)
-for file in a.files or sorted(p.name for p in a.photos.glob("*.jpg")):
+base_version = engine.pipeline_version
+for index, file in enumerate(a.files or sorted(p.name for p in a.photos.glob("*.jpg"))):
     with Image.open(a.photos / file) as raw:
         image = ImageOps.exif_transpose(raw).convert("RGB")
-    r = engine.scan(image, diagnostics=True)
-    r["file"] = file
-    r["image"] = {"width": image.width, "height": image.height}
-    result["rows"].append(r)
-    a.output.write_text(json.dumps(result, ensure_ascii=False, indent=2))
-    print(
-        file,
-        len(r["matches"]),
-        round(r["timingsMs"]["processing"] / 1000, 2),
-        flush=True,
-    )
+    order = policies if index % 2 == 0 else list(reversed(policies))
+    for policy in order:
+        engine.rescue_policy = policy
+        engine.pipeline_version = base_version + "-policy-" + policy
+        r = engine.scan(image, diagnostics=True)
+        r["file"] = file
+        r["image"] = {"width": image.width, "height": image.height}
+        results[policy]["rows"].append(r)
+        output = (
+            a.output.with_stem(a.output.stem + "-" + policy)
+            if a.compare_rescue
+            else a.output
+        )
+        temporary = output.with_suffix(".tmp")
+        temporary.write_text(json.dumps(results[policy], ensure_ascii=False, indent=2))
+        temporary.replace(output)
+        print(
+            policy,
+            file,
+            len(r["matches"]),
+            round(r["timingsMs"]["processing"] / 1000, 2),
+            flush=True,
+        )
+    image.close()

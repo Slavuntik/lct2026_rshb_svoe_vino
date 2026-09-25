@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 
 from .engine import ShelfEngine, Features
-from .policy import select_strong
+from .policy import select_strong, disagreement_priority, rescue_candidates
 
 
 class AccuracyEngine(ShelfEngine):
@@ -28,15 +28,22 @@ class AccuracyEngine(ShelfEngine):
         semantic_dir=None,
         semantic_scope="selected",
         semantic_veto=True,
+        rescue_policy="legacy",
     ):
         if (
-            semantic_scope not in ("all", "selected")
+            rescue_policy not in ("legacy", "disagreement")
+            or (
+                rescue_policy == "disagreement"
+                and (semantic_scope != "all" or not semantic_dir)
+            )
+            or semantic_scope not in ("all", "selected")
             or not 0 <= rescue_limit <= 80
             or not math.isfinite(budget_seconds)
             or budget_seconds <= 0
         ):
             raise ValueError("Invalid refinement limits")
         super().__init__(directory, device, threads)
+        self.rescue_policy = rescue_policy
         self.semantic_veto = semantic_veto
         self.semantic_scope = semantic_scope
         self.semantic = None
@@ -112,7 +119,7 @@ class AccuracyEngine(ShelfEngine):
                     if semantic_dir
                     else b""
                 )
-                + f"{rescue_limit},{budget_seconds},{use_labels},{use_ocr},{bool(semantic_dir)},{semantic_scope},{semantic_veto}".encode()
+                + f"{rescue_limit},{budget_seconds},{use_labels},{use_ocr},{bool(semantic_dir)},{semantic_scope},{semantic_veto},{rescue_policy}".encode()
             ).hexdigest()[:12]
         )
         with torch.inference_mode():
@@ -219,6 +226,15 @@ class AccuracyEngine(ShelfEngine):
                 if item["id"] and item["id"] not in item.get("semanticCandidates", []):
                     item["id"] = None
                     item["rejection"] = "semantic-disagreement"
+        if self.rescue_policy == "disagreement":
+            for item in uncertain:
+                semantic_ids = item.get("semanticCandidates", [])[:3]
+                support = self.ranked_coarse(item["retrieval_q"], semantic_ids)
+                item["priorityEvidence"] = support
+                item["rescuePriority"] = disagreement_priority(semantic_ids, support)
+            uncertain.sort(key=lambda item: item["rescuePriority"], reverse=True)
+        for rank, item in enumerate(uncertain, 1):
+            item["rescueQueueRank"] = rank
         ocr_count = 0
         if len(uncertain) > self.rescue_limit:
             self.scan_warnings.append(
@@ -239,7 +255,9 @@ class AccuracyEngine(ShelfEngine):
                 )
             )
             coarse = sorted(self.ranked_coarse(q, ids), key=lambda e: -e["inliers"])
-            if not coarse or coarse[0]["inliers"] < 8:
+            if (
+                not coarse or coarse[0]["inliers"] < 8
+            ) and self.rescue_policy == "legacy":
                 continue
             ids = list(
                 dict.fromkeys(
@@ -247,6 +265,10 @@ class AccuracyEngine(ShelfEngine):
                     + [e["id"] for e in item["evidence"][:2]]
                 )
             )[:6]
+            if self.rescue_policy == "disagreement":
+                # Preserve visual candidates through the geometric shortlist.
+                ids = rescue_candidates(item.get("semanticCandidates", []), ids)
+            item["rescueCandidates"] = ids
             evidence = self.strong_many(q, ids, self.verification)
             choice = self.strong_choice(evidence)
             stage = "strong-full"
@@ -266,6 +288,10 @@ class AccuracyEngine(ShelfEngine):
                     self.ids[i] for i in scores.topk(12).indices.cpu().tolist()
                 ]
                 ids = list(dict.fromkeys(ids[:3] + label_ids[:3]))
+                if self.rescue_policy == "disagreement":
+                    ids = rescue_candidates(
+                        item.get("semanticCandidates", []), label_ids
+                    )
                 label_evidence = self.strong_many(label_q, ids, self.labels)
                 label_choice = self.strong_choice(label_evidence)
                 if label_choice:

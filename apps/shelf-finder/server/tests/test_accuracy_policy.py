@@ -54,3 +54,32 @@ def test_category_and_grape_are_not_mutually_exclusive():
         {"port": {"name": "Портвейн", "grapes": ["Мускат"]}}, load_model=False
     )
     assert not checker.conflicts("МУСКАТ", "port")
+
+
+def test_disagreement_priority_uses_visual_leader_not_strong_unrelated_rival():
+    from shelf_api.policy import disagreement_priority
+
+    weak_leader = [
+        {"id": "expected", "inliers": 8, "labelInliers": 5, "matches": 30},
+        {"id": "rival", "inliers": 80, "labelInliers": 70, "matches": 90},
+    ]
+    useful_leader = [
+        {"id": "expected", "inliers": 24, "labelInliers": 20, "matches": 40}
+    ]
+    assert disagreement_priority(["expected"], useful_leader) > disagreement_priority(
+        ["expected"], weak_leader
+    )
+    assert disagreement_priority([], useful_leader) == (0, 0, 0)
+    assert disagreement_priority(["missing"], useful_leader) == (0, 0, 0)
+
+
+def test_rescue_preserves_local_competitors_outside_visual_top_three():
+    from shelf_api.policy import rescue_candidates
+
+    visual = ["leader", "variant-a", "variant-b", "fourth"]
+    labels = ["different-brand", "variant-a", "similar-label", "fourth-local"]
+    candidates = rescue_candidates(visual, labels)
+    assert candidates[0] == "leader"
+    assert "different-brand" in candidates and "similar-label" in candidates
+    assert len(candidates) == len(set(candidates)) <= 6
+    assert visual[3] == "fourth" and labels[3] == "fourth-local"
