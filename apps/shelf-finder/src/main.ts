@@ -2,6 +2,7 @@ import './style.css';
 import { ServerClient } from './server-client';
 const engine = new URLSearchParams(location.search).get('engine') ?? 'server';
 const serverMode = engine === 'server';
+if (new URLSearchParams(location.search).get('embedded') === '1') document.documentElement.classList.add('embedded');
 import { parseCatalog, Tracker } from './core';
 import { loadCatalog, saveCatalog } from './storage';
 import type { Catalog, ModelManifest, ScanResult, Track } from './types';

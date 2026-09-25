@@ -13,3 +13,6 @@ pipeline/raw/
 
 # данные кейса — только локально
 case-data/
+
+# Local full-stack launcher: process logs and development database.
+.local/

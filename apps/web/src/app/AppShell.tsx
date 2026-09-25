@@ -7,6 +7,7 @@ import { MetricsScreen } from "./metrics/MetricsScreen";
 import { OnboardingScreen } from "./onboarding/OnboardingScreen";
 import { ProfileScreen } from "./profile/ProfileScreen";
 import { ScanScreen } from "./scan/ScanScreen";
+import { ShelfScreen } from "./shelf/ShelfScreen";
 import { TastePassportScreen } from "./taste/TastePassportScreen";
 import { WineCardScreen } from "./wine/WineCardScreen";
 
@@ -21,6 +22,7 @@ function BottomNav() {
   const { t } = useI18n();
   const items: Array<{ to: string; label: string }> = [
     { to: "/app/scan", label: t("nav.scan") },
+    { to: "/app/shelf", label: t("nav.shelf") },
     { to: "/app/chat", label: t("nav.chat") },
     { to: "/app/taste", label: t("nav.taste") },
     { to: "/app/profile", label: t("nav.profile") },
@@ -41,8 +43,8 @@ function BottomNav() {
 }
 
 /**
- * Оболочка шести экранов /app. Маршруты — ровно шесть: onboarding, scan, wine/:id, chat,
- * taste, profile. Онбординг вне навигации и вне гейта (это и есть сам гейт).
+ * Оболочка приложения, включая отдельный экран витрин.
+ * Онбординг вне навигации и вне гейта (это и есть сам гейт).
  */
 export default function AppShell() {
   const location = useLocation();
@@ -59,6 +61,14 @@ export default function AppShell() {
             element={
               <RequireOnboarding>
                 <ScanScreen />
+              </RequireOnboarding>
+            }
+          />
+          <Route
+            path="shelf"
+            element={
+              <RequireOnboarding>
+                <ShelfScreen />
               </RequireOnboarding>
             }
           />

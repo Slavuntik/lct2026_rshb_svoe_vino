@@ -19,12 +19,27 @@ export default defineConfig({
   resolve: { dedupe: ["@capacitor/core"] },
   server: {
     port: 5173,
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
     // VITE_API_MODE=real: транспорт до локального agents/B (uvicorn на :8000 по его брифу).
     // В mock-режиме прокси попросту не используется — MSW перехватывает fetch раньше,
     // до сетевого уровня, так что этот блок безвреден и в mock, и когда бэкенда ещё нет.
     proxy: {
+      "/v1/shelf": {
+        target: process.env.VINCHIK_SHELF_URL || "http://127.0.0.1:8086",
+        changeOrigin: true,
+        timeout: 60_000,
+        proxyTimeout: 60_000,
+      },
+      "/shelf-ui": {
+        target: process.env.VINCHIK_SHELF_URL || "http://127.0.0.1:8086",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/shelf-ui(?=\/|\?|$)/, "/").replace(/^\/\//, "/"),
+      },
       [API_BASE_PATH]: {
-        target: "http://localhost:8000",
+        target: process.env.VINCHIK_API_URL || "http://localhost:8000",
         changeOrigin: true,
       },
     },
