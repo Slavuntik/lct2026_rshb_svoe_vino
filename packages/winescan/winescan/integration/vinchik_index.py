@@ -57,6 +57,14 @@ class Match:
     view: str
 
 
+@dataclass
+class SearchDetails:
+    matches: list[Match]
+    status: str | None
+    ocr_text: str | None
+    decision_reason: str | None
+
+
 class WinescanImageIndex:
     """Провайдер `IMAGE_PROVIDER=winescan`.
 
@@ -113,13 +121,21 @@ class WinescanImageIndex:
         запускать»: рамка задаётся долями всего кадра — тем же путём, которым приходит рамка
         пользователя.
         """
+        return self.search_with_details(image, top_k, normalize=normalize).matches
+
+    def search_with_details(self, image: bytes, top_k: int = 5, *, normalize: bool = True) -> SearchDetails:
+        """Request-local evidence; never store another user's OCR on the shared index."""
         result = self.scanner.scan(_decode(image), relative_box=None if normalize else WHOLE_FRAME)
         candidates = list(result.top5[:top_k])
-        return [
+        matches = [
             Match(slug=str(candidate["slug"]), score=float(candidate["score"]),
                   gap=self._gap(candidates, position), view="real")  # fmt: skip
             for position, candidate in enumerate(candidates)
         ]
+
+        confidence = getattr(result, "confidence", {})
+        return SearchDetails(matches, getattr(result, "status", None),
+                             confidence.get("ocr_text"), confidence.get("decision_reason"))
 
     def _gap(self, candidates: list[dict], position: int) -> float | None:
         """Отрыв кандидата от ближайшего «чужого»: по переписи семей, если она есть, иначе от

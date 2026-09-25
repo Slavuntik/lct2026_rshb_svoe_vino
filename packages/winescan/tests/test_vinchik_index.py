@@ -113,3 +113,22 @@ def test_write_side_of_the_contract_is_refused_explicitly(method, args):
 
     with pytest.raises(NotImplementedError):
         getattr(index, method)(*args)
+
+
+def test_details_preserve_rejection_and_request_local_ocr():
+    from types import SimpleNamespace
+
+    scanner = _FakeScanner(_candidates())
+    responses = iter([
+        SimpleNamespace(top5=_candidates(), status="not_found",
+                        confidence={"ocr_text": "first label", "decision_reason": "visual"}),
+        SimpleNamespace(top5=_candidates(), status="found", confidence={"ocr_text": ""}),
+    ])
+    scanner.scan = lambda *a, **kw: next(responses)
+    index = WinescanImageIndex(scanner=scanner)
+    first = index.search_with_details(_png())
+    second = index.search_with_details(_png())
+    assert first.status == "not_found"
+    assert first.matches[0].slug == _candidates()[0]["slug"]
+    assert first.ocr_text == "first label"
+    assert second.ocr_text == ""

@@ -1012,10 +1012,11 @@ def run_photo_scan(
     retriever: Retriever,
     settings: Settings,
     top_k: int = 5,
+    user_box_applied: bool = False,
 ) -> PhotoScanResult:
     t0 = time.monotonic()
 
-    if settings.cv_shelf_crop:
+    if settings.cv_shelf_crop and not user_box_applied:
         image_bytes = _apply_shelf_crop(image_bytes, settings, image_index)
 
     # WineScan performs its own multi-index/text fusion inside search(); the native
@@ -1026,7 +1027,12 @@ def run_photo_scan(
             retriever=retriever, settings=settings, top_k=top_k, t0=t0,
         )
 
-    matches = image_index.search(image_bytes, top_k=top_k)  # ValueError на битом файле — не ловим, пусть роутер решает код ответа
+    evidence = None
+    if settings.image_provider == "winescan" and callable(getattr(image_index, "search_with_details", None)):
+        evidence = image_index.search_with_details(image_bytes, top_k=top_k, normalize=not user_box_applied)
+        matches = evidence.matches
+    else:
+        matches = image_index.search(image_bytes, top_k=top_k)
 
     if not matches:
         return PhotoScanResult(
@@ -1043,9 +1049,10 @@ def run_photo_scan(
     # ниже) — второго прохода OCR на этот же запрос нет. Выключенный флаг
     # (дефолт) оставляет `ocr_text=None` -> `verify()` читает OCR сам, бит-
     # в-бит старое поведение (contracts/image-scan.md v0.4.12 п.1-2).
-    ocr_text: str | None = None
+    ocr_text: str | None = evidence.ocr_text if evidence is not None else None
     if settings.cv_text_rerank:
-        ocr_text = verifier.read_query_text(image_bytes)
+        if ocr_text is None:
+            ocr_text = verifier.read_query_text(image_bytes)
         matches = _apply_text_rerank(matches, ocr_text, retriever, settings)
 
     top = matches[0]
@@ -1137,7 +1144,7 @@ def run_photo_scan(
     # -> confident" при этом не было (test_scan_photo.py ни разу не
     # констролировал gap=None у top1) — закрыто этой волной:
     # test_null_gap_with_high_score_is_confident_not_margin_failure.
-    confident = top.score >= settings.cv_abs_floor and (
+    confident = (evidence is None or evidence.status != "not_found") and top.score >= settings.cv_abs_floor and (
         ocr_verified or top.gap is None or top.gap >= settings.cv_margin_floor
     )
 

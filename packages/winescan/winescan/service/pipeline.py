@@ -229,6 +229,8 @@ class Scanner:
         timings: dict[str, float] = {}
         began = time.perf_counter()
         image = ImageOps.exif_transpose(image).convert("RGB")
+        original = image
+        image = original.copy()
         image.thumbnail((MAX_QUERY_SIDE, MAX_QUERY_SIDE))
         user_box = None
         if relative_box is not None:
@@ -239,7 +241,13 @@ class Scanner:
         with self._lock:
             boxes = self._boxes(image, timings, user_box)
             step = time.perf_counter()
-            vectors = self.searcher.embed_views([image] * len(boxes), [box for box, _ in boxes])
+            # Detect on the small frame, but retain source pixels for label details.
+            sx, sy = original.width / image.width, original.height / image.height
+            source_boxes = [
+                tuple(v * (sx if i % 2 == 0 else sy) for i, v in enumerate(box)) if box else None
+                for box, _ in boxes
+            ]
+            vectors = self.searcher.embed_views([original] * len(boxes), source_boxes)
             scores = self.searcher.wine_scores(vectors)
             if len(boxes) > 1:
                 sorted_scores = -np.sort(-scores, axis=1)[:, :2]
@@ -259,7 +267,8 @@ class Scanner:
             slugs = [self.searcher.wine_slugs[i] for i in order]
             visual = [float(scores[chosen, i]) for i in order]
             timings["embed_search"] = (time.perf_counter() - step) * 1000
-            package = crop_box(image, box) if box else image
+            source_box = source_boxes[chosen]
+            package = crop_box(original, source_box) if source_box else original
 
             if self.fusion is not None:
                 ranked, details, ocr_text = self._fused(package, slugs, visual, timings)

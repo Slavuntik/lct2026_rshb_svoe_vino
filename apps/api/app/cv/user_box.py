@@ -49,14 +49,14 @@ def crop_to_box(image_bytes: bytes, box: tuple[float, float, float, float]) -> b
     # Pillow импортируется здесь, а не наверху: без рамки сервис работает и без него, и
     # отсутствие необязательной зависимости не должно ронять весь роутер скана.
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
     except ImportError as error:  # pragma: no cover - зависит от окружения
         raise ValueError(f"рамка требует Pillow, а он не установлен: {error}") from error
 
     try:
         with Image.open(io.BytesIO(image_bytes)) as image:
             image.load()
-            frame = image.convert("RGB")
+            frame = ImageOps.exif_transpose(image).convert("RGB")
     except Exception as error:  # PIL кидает разные типы на разный мусор
         raise ValueError(f"не удалось прочитать изображение: {error}") from error
 

@@ -227,13 +227,16 @@ async def flat_scan_response(
         # v0.4.10: рамка пользователя. Во flat негодная рамка НЕ ломает ответ — она просто
         # игнорируется: у скрипта оценки поля box нет вовсе, и появиться оно может только
         # по ошибке, а несгораемость важнее аккуратности ввода.
+        user_box_applied = False
         try:
             data = apply_user_box(data, raw_box)
+            user_box_applied = bool(raw_box and raw_box.strip())
         except ValueError:
             pass
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,
             retriever=retriever, settings=settings,
+            user_box_applied=user_box_applied,
         )
         _record_photo_scan(db, principal, len(data), result, best_effort=True)
         return ScanPhotoFlatResponse(slug=result.best_guess_slug or "")
@@ -289,6 +292,7 @@ async def scan_photo(
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,
             retriever=retriever, settings=settings,
+            user_box_applied=bool(box and box.strip()),
         )
     except ValueError as exc:
         raise ApiError(400, "validation_error", f"Не удалось обработать изображение: {exc}") from exc

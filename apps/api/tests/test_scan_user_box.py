@@ -162,3 +162,41 @@ def test_winescan_warmup_runs_search_and_reports_failure():
             raise RuntimeError("missing gallery")
 
     assert not warm_up_image_index(BrokenIndex(), settings)
+
+
+def test_manual_box_uses_exif_oriented_coordinates():
+    from PIL import ImageOps
+    from app.cv.user_box import crop_to_box
+
+    image = Image.new("RGB", (80, 40), "red")
+    image.paste("blue", (40, 0, 80, 40))
+    exif = image.getexif()
+    exif[274] = 6
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", exif=exif)
+    result = Image.open(io.BytesIO(crop_to_box(buffer.getvalue(), (0, 0.5, 1, 1))))
+    assert result.size == (40, 40)
+    assert result.getpixel((20, 20))[2] > 200
+    assert result.getexif().get(274) is None
+
+
+def test_winescan_manual_box_skips_detector_through_http(app, client):
+    import dataclasses
+    from types import SimpleNamespace
+
+    calls = []
+    class Index(_RecordingIndex):
+        def search_with_details(self, image, top_k, normalize):
+            calls.append(normalize)
+            return SimpleNamespace(matches=self.search(image, top_k), status="found", ocr_text="")
+    index = Index()
+    app.dependency_overrides[get_image_index_dep] = lambda: index
+    app.state.settings = dataclasses.replace(app.state.settings, image_provider="winescan")
+    for flat in (False, True):
+        response = client.post(
+            "/v1/scan/photo" + ("?flat=1" if flat else ""),
+            files={"image": ("label.jpg", _photo_bytes(), "image/jpeg")},
+            data={"box": "0.25,0.1,0.75,0.6"},
+        )
+        assert response.status_code == 200
+    assert calls == [False, False]

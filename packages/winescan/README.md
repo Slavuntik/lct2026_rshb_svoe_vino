@@ -79,3 +79,8 @@ PYTHONPATH=packages/winescan pytest packages/winescan/tests -q
 ```
 
 Тесты не требуют ни GPU, ни моделей, ни данных кейса.
+
+## Исправления обработки фото
+
+[EXIF, ручная рамка, исходное разрешение, отказ и повторный OCR](../../docs/label-pipeline-fixes-2026-09-25.md).
+API использует опциональный `search_with_details`; обычный `search` сохраняет список кандидатов.
