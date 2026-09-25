@@ -73,6 +73,11 @@ class ShelfEngine:
         self.wines = {w["id"]: w for w in self.catalog["wines"]}
         self.index = json.loads(self.asset("local-index.json").read_text())
         self.ids = self.index["ids"]
+        from .policy import reference_ambiguities
+
+        self.shared_references = reference_ambiguities(
+            self.index, self.manifest["hashes"]
+        )
         if (
             self.ids != list(self.wines)
             or len(self.ids) != self.manifest["catalogSize"]
@@ -239,7 +244,12 @@ class ShelfEngine:
             float(np.prod(np.ptp(f.points[good[:, i]], axis=0)) / np.prod(f.size))
             for i, f in enumerate([q, r])
         )
-        return {"inliers": len(good), "matches": len(pairs), "coverage": coverage}
+        return {
+            "inliers": len(good),
+            "matches": len(pairs),
+            "coverage": coverage,
+            "labelInliers": int(np.sum(r.points[good[:, 1], 1] > r.size[1] * 0.35)),
+        }
 
     def coarse(self, q, r, robust=False):
         if min(len(q.points), len(r.points)) < 8:
@@ -344,15 +354,27 @@ class ShelfEngine:
                 return corroborated
         return None
 
+    def prepare_queries(self, image, detections):
+        pass
+
+    def candidates(self, box, features):
+        return self.retrieve(features)
+
+    def refine(self, image, observations, found, started):
+        pass
+
     @torch.inference_mode()
     def scan(self, image, diagnostics=False):
         self.sync()
         started = time.perf_counter()
         cv2.setRNGSeed(2026)
-        image = image.copy()
-        image.thumbnail((1920, 1920), Image.Resampling.LANCZOS)
-        detections = detect(image, self.detector)
+        # Detect at bounded resolution, but extract label details from the upload.
+        detector_image = image.copy()
+        detector_image.thumbnail((1920, 1920), Image.Resampling.LANCZOS)
+        detections = detect(detector_image, self.detector)
         detection_ms = (time.perf_counter() - started) * 1000
+        self.scan_warnings = []
+        self.prepare_queries(image, detections)
         found = []
         observations = []
         for proposal in detections:
@@ -368,8 +390,13 @@ class ShelfEngine:
             if len(q.points) < 16:
                 continue
             retrieval_q = self.extract(image, box, self.retriever, 0.2)
-            ranking = self.retrieve(retrieval_q)
-            item.update(q=q, retrieval_q=retrieval_q, shortlist=set(ranking[:100]))
+            ranking = self.candidates(box, retrieval_q)
+            item.update(
+                q=q,
+                retrieval_q=retrieval_q,
+                shortlist=set(ranking[:100]),
+                ranking=ranking[:128],
+            )
             ids = list(dict.fromkeys(ranking[:24] + found))
             coarse = self.coarse_many(q, ids)
             coarse.sort(key=lambda e: -e["inliers"])
@@ -404,10 +431,21 @@ class ShelfEngine:
             if accepted in found:
                 item["id"] = accepted
                 item["evidence"] = evidence
+        self.refine(image, observations, found, started)
         self.sync()
         elapsed = (time.perf_counter() - started) * 1000
         matches = [
-            {"box": o["box"], "wineId": o["id"], "name": self.wines[o["id"]]["name"]}
+            {
+                "box": o["box"],
+                "wineId": o["id"],
+                "name": self.wines[o["id"]]["name"],
+                "alternativeWineIds": self.shared_references.get(o["id"], []),
+                "identificationLevel": (
+                    "shared-reference"
+                    if o["id"] in self.shared_references
+                    else "product"
+                ),
+            }
             for o in observations
             if o["id"]
         ]
@@ -422,14 +460,14 @@ class ShelfEngine:
                 "detection": detection_ms,
                 "recognition": elapsed - detection_ms,
             },
-            "warnings": [],
+            "warnings": self.scan_warnings,
         }
         if diagnostics:
             result["observations"] = [
                 {
                     k: v
                     for k, v in o.items()
-                    if k not in ("q", "retrieval_q", "shortlist")
+                    if k not in ("q", "retrieval_q", "shortlist", "ranking")
                 }
                 for o in observations
             ]

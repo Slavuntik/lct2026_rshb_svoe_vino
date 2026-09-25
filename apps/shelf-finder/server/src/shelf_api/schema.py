@@ -13,6 +13,8 @@ class ShelfMatch(BaseModel):
     box: tuple[FiniteFloat, FiniteFloat, FiniteFloat, FiniteFloat]
     wineId: str
     name: str
+    alternativeWineIds: list[str] = Field(default_factory=list)
+    identificationLevel: Literal["product", "shared-reference"] = "product"
 
 
 class ScanResponse(BaseModel):

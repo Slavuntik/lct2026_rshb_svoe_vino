@@ -37,6 +37,7 @@ const video = $<HTMLVideoElement>('video');
 const tracker = new Tracker();
 let catalog: Catalog | null = null, originalCatalog: Catalog | null = null, manifest: ModelManifest;
 let selected = new Set<string>();
+let sourcePhoto: { blob: Blob; width: number; height: number } | undefined;
 let ready = false, busy = false, stream: MediaStream | null = null, timer = 0, live = false;
 let startingCamera = false, cameraGeneration = 0;
 let requestId = 0, currentRequest = 0, tracks: Track[] = [], lastResult: ScanResult | null = null, enrollment: Track | null = null;
@@ -95,18 +96,20 @@ async function updateCatalog(next: Catalog, save = false) {
 function renderResults() {
   drawing.clearRect(0, 0, overlay.width, overlay.height);
   const list = $('results'); list.replaceChildren();
-  const identified = tracks.filter(t => t.confirmed && (mode() === 'all' || selected.has(t.match.id!)));
+  const identified = tracks.filter(t => t.confirmed && (mode() === 'all' || ([t.match.id!, ...(t.match.alternativeIds ?? [])].some(id => selected.has(id)))));
   $('count').textContent = `${serverMode ? lastResult?.detectedCount ?? tracks.length : tracks.length} рамок · ${identified.length} совпадений с выбором`;
   for (const track of tracks) {
     const wine = catalog?.wines.find(w => w.id === track.match.id);
-    const highlight = track.confirmed && !!wine && (mode() === 'all' || selected.has(wine.id));
+    const alternatives = track.match.alternativeIds ?? [];
+    const displayName = alternatives.length ? [wine?.name, ...alternatives.map(id => catalog?.wines.find(w => w.id === id)?.name)].filter(Boolean).join(' / ') : wine?.name;
+    const highlight = track.confirmed && !!wine && (mode() === 'all' || [wine.id, ...alternatives].some(id => selected.has(id)));
     const [x1, y1, x2, y2] = track.box;
     if (highlight) {
       drawing.fillStyle = '#25cf6933';
       drawing.fillRect(x1 * overlay.width, y1 * overlay.height, (x2 - x1) * overlay.width, (y2 - y1) * overlay.height);
       drawing.strokeStyle = '#9df5ad'; drawing.lineWidth = 3;
       drawing.strokeRect(x1 * overlay.width, y1 * overlay.height, (x2 - x1) * overlay.width, (y2 - y1) * overlay.height);
-      const label = wine!.name;
+      const label = `${alternatives.length ? 'Варианты: ' : ''}${displayName}`;
       const fontSize = Math.max(14, overlay.width / 55); drawing.font = `600 ${fontSize}px sans-serif`;
       const width = Math.min(drawing.measureText(label).width + 14, overlay.width * .55);
       const tx = Math.min(x1 * overlay.width, overlay.width - width), ty = Math.max(fontSize + 8, y1 * overlay.height);
@@ -115,8 +118,8 @@ function renderResults() {
     }
     const button = document.createElement('button'); button.className = `result ${highlight ? 'found' : ''}`;
     const name = document.createElement('strong'), detail = document.createElement('small');
-    name.textContent = `#${track.trackId} · ${track.tooSmall ? 'Подойдите ближе' : track.confirmed && wine ? wine.name : track.match.id ? 'Проверяем совпадение…' : 'Неизвестное вино'}`;
-    detail.textContent = track.tooSmall ? 'Этикетка слишком мелкая' : manifest.localFeatures ? (track.match.id ? 'Совпадение деталей этикетки с эталоном' : 'Недостаточно признаков для уверенного названия') : 'Нажмите, чтобы добавить свой эталон';
+    name.textContent = `#${track.trackId} · ${track.tooSmall ? 'Подойдите ближе' : track.confirmed && wine ? displayName : track.match.id ? 'Проверяем совпадение…' : 'Неизвестное вино'}`;
+    detail.textContent = alternatives.length ? 'У этих позиций одинаковый эталон; точный вариант не определён' : track.tooSmall ? 'Этикетка слишком мелкая' : manifest.localFeatures ? (track.match.id ? 'Совпадение деталей этикетки с эталоном' : 'Недостаточно признаков для уверенного названия') : 'Нажмите, чтобы добавить свой эталон';
     button.append(name, detail); button.disabled = busy || !track.embedding.length;
     button.addEventListener('click', () => openEnrollment(track)); list.append(button);
   }
@@ -127,6 +130,7 @@ function stopCamera() {
   tracker.reset(); controls();
 }
 async function startCamera() {
+  sourcePhoto = undefined;
   const generation = ++cameraGeneration; startingCamera = true; controls();
   try {
     error('');
@@ -160,7 +164,7 @@ async function scan() {
   drawing.clearRect(0, 0, overlay.width, overlay.height);
   try {
     const bitmap = await createImageBitmap(frame);
-    worker.postMessage({ type: 'scan', requestId: currentRequest, bitmap, dense: $<HTMLInputElement>('dense').checked, threshold, margin }, [bitmap]);
+    worker.postMessage({ type: 'scan', requestId: currentRequest, bitmap, sourcePhoto: serverMode ? sourcePhoto : undefined, dense: $<HTMLInputElement>('dense').checked, threshold, margin }, [bitmap]);
   } catch (e) { busy = false; controls(); error(String(e)); }
 }
 worker.onmessage = async (event: MessageEvent) => {
@@ -189,7 +193,7 @@ worker.onmessage = async (event: MessageEvent) => {
     lastResult = data; busy = false;
     tracks = tracker.update(data.observations, performance.now(), live ? 3 : 1, Math.max(1800, data.elapsed + 1500));
     renderResults(); controls(); $<HTMLButtonElement>('export-result').disabled = false;
-    status(live ? 'Удерживайте камеру: подтверждаем по нескольким кадрам' : serverMode ? 'Снимок обработан на сервере' : 'Снимок обработан локально');
+    status(live ? 'Удерживайте камеру: подтверждаем по нескольким кадрам' : serverMode ? ['Снимок обработан на сервере', ...(data.warnings ?? [])].join('. ') : 'Снимок обработан локально');
     $('timing').textContent = `${frame.width}×${frame.height} · всего ${(data.elapsed / 1000).toFixed(2)} с · детекция ${Math.round(data.detectionMs)} мс · распознавание ${Math.round(data.recognitionMs)} мс · ${data.observations.length} бутылок. ${serverMode ? "GPU-сервер · время включает передачу фото" : data.recognitionBackend === "webgpu" ? "WebGPU" : "WebAssembly"}${serverMode ? "" : ` · CPU-потоков: ${data.threads ?? 1}`}.`;
     if (live) timer = window.setTimeout(() => void scanVideo(), 350);
   } else if (data.type === 'error') {
@@ -243,7 +247,10 @@ $('photo').addEventListener('change', async () => {
   stopCamera(); tracker.reset();
   try {
     if (file.size > 30 * 1024 * 1024) throw new Error('Выберите фото размером до 30 МБ.');
-    const bitmap = await createImageBitmap(file); resize(bitmap.width, bitmap.height); context.drawImage(bitmap, 0, 0, frame.width, frame.height); bitmap.close(); await scan();
+    sourcePhoto = undefined;
+    const bitmap = await createImageBitmap(file);
+    if (serverMode && ['image/jpeg', 'image/png'].includes(file.type) && file.size <= 6 * 1024 * 1024 && bitmap.width * bitmap.height <= 24_000_000) sourcePhoto = { blob: file, width: bitmap.width, height: bitmap.height };
+    resize(bitmap.width, bitmap.height); context.drawImage(bitmap, 0, 0, frame.width, frame.height); bitmap.close(); await scan();
   } catch (e) { error(`Не удалось открыть фото: ${String(e)}`); }
 });
 $('search').addEventListener('input', renderCatalog); $('group').addEventListener('change', renderCatalog);

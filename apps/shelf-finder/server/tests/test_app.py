@@ -158,3 +158,23 @@ async def test_chunked_upload_is_bounded_without_content_length():
         )
         assert r.status_code == 413
         assert not app.state.runtime["busy"]
+
+
+@pytest.mark.anyio
+async def test_shared_reference_variants_survive_api_serialization():
+    class AmbiguousEngine(FakeEngine):
+        def scan(self, image):
+            result = super().scan(image)
+            result["matches"][0].update(
+                alternativeWineIds=["other"], identificationLevel="shared-reference"
+            )
+            return result
+
+    async with client_for(AmbiguousEngine) as (client, _):
+        result = await client.post(
+            "/v1/shelf/scan", files={"image": ("x.jpg", photo(), "image/jpeg")}
+        )
+        assert result.status_code == 200
+        match = result.json()["matches"][0]
+        assert match["alternativeWineIds"] == ["other"]
+        assert match["identificationLevel"] == "shared-reference"

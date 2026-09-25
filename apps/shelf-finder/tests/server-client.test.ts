@@ -9,3 +9,9 @@ it('rejects untrusted IDs and invalid frame coordinates', () => {
   expect(() => parseServerMatches(result, new Set())).toThrow();
   for (const box of [[-1,0,1,1],[.8,.2,.1,.9],[0,0,NaN,1]]) expect(() => parseServerMatches({...result,matches:[{...result.matches[0],box}]},new Set(['wine']))).toThrow();
 });
+it('preserves catalog ambiguity and rejects invented alternatives', () => {
+  const match = {...result.matches[0], alternativeWineIds: ['other'], identificationLevel: 'shared-reference' as const};
+  expect(parseServerMatches({...result, matches: [match]}, new Set(['wine','other']))[0].match.alternativeIds).toEqual(['other']);
+  expect(() => parseServerMatches({...result, matches: [match]}, new Set(['wine']))).toThrow();
+  expect(() => parseServerMatches({...result, matches: [{...match, identificationLevel: 'product'}]}, new Set(['wine','other']))).toThrow();
+});

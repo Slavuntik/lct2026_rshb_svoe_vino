@@ -66,3 +66,36 @@ def plausible(h, reference, query):
             return False
     area = np.sum(c[:, 0] * np.roll(c[:, 1], -1) - c[:, 1] * np.roll(c[:, 0], -1)) / 2
     return bool(qw * qh * 0.496 * 0.25 < area < qw * qh * 0.496 * 4)
+
+
+def reference_ambiguities(index, hashes):
+    """Exact equality in both feature galleries cannot identify one SKU."""
+    groups = {}
+    for slug in index["ids"]:
+        key = tuple(
+            hashes[index[field][slug]]
+            for field in ("references", "verificationReferences")
+        )
+        groups.setdefault(key, []).append(slug)
+    return {
+        slug: [other for other in group if other != slug]
+        for group in groups.values()
+        if len(group) > 1
+        for slug in group
+    }
+
+
+def select_strong(evidence):
+    """A rescue needs label support as well as the normal geometric margin."""
+    choice = select(evidence)
+    return (
+        choice
+        if any(
+            e["id"] == choice
+            and e.get("labelInliers", 0) >= 16
+            and e["inliers"] >= 24
+            and e["inliers"] / max(e["matches"], 1) >= 0.4
+            for e in evidence
+        )
+        else None
+    )

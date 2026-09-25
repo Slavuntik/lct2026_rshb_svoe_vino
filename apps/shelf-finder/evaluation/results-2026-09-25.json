@@ -1,0 +1,2539 @@
+{
+  "date": "2026-09-25",
+  "independentGroundTruth": false,
+  "device": "RTX 3090, shared server",
+  "physicalPhone": false,
+  "runs": {
+    "baseline-original": {
+      "config": {
+        "profile": "baseline",
+        "encoding": "original"
+      },
+      "rawSha256": "2069aa4df4e20128bff60391b6aefe828c80b82e0c29eb159c308b2799faf2a7",
+      "pipelineVersions": [
+        "native-hybrid-v1-295197c2e351"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 5,
+          "accepted": 20,
+          "photos": 17,
+          "medianSeconds": 7.746085356920958,
+          "maxSeconds": 12.200446236878633
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 7.145095135085285,
+          "maxSeconds": 10.033059706911445
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 3,
+          "accepted": 4,
+          "photos": 14,
+          "medianSeconds": 7.864596450002864,
+          "maxSeconds": 12.200446236878633
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.390305888373405
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 5,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 6.472167112864554
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.98310754308477
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.0080187930725515
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.652942894026637
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 9,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.033059706911445
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            1,
+            4,
+            13,
+            26,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [],
+          "seconds": 12.200446236878633
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.078888820949942
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.746085356920958
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.525255567859858
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 8.506891985889524
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 8.76185987982899
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 8.240449090022594
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 0,
+          "accepted": 1,
+          "missedRegions": [
+            35,
+            49
+          ],
+          "wrongRegions": [
+            54
+          ],
+          "seconds": 11.292192249093205
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 7.145095135085285
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 6.8798066386953
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 3.6339253317564726
+        }
+      ]
+    },
+    "strong-labels-all": {
+      "config": {
+        "rescueLimit": 80,
+        "budgetSeconds": 120,
+        "semantic": false
+      },
+      "rawSha256": "c08475af5958eee1ab0c45bb554cbe3c00c3934704f6c3ce2194d34b68d0deca",
+      "pipelineVersions": [
+        "accuracy-v2-c61b30548d7a"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 17,
+          "ambiguousKnown": 0,
+          "wrong": 3,
+          "unreviewedAccepted": 11,
+          "accepted": 31,
+          "photos": 17,
+          "medianSeconds": 16.64628002466634,
+          "maxSeconds": 22.62617843504995
+        },
+        "development": {
+          "positives": 15,
+          "correct": 15,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 4,
+          "accepted": 19,
+          "photos": 3,
+          "medianSeconds": 15.69531405903399,
+          "maxSeconds": 16.64628002466634
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 3,
+          "unreviewedAccepted": 7,
+          "accepted": 12,
+          "photos": 14,
+          "medianSeconds": 18.02723246999085,
+          "maxSeconds": 22.62617843504995
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 2,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 21.069110656157136
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 15.69531405903399
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 17.277574794832617
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 18.776890145149082
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 22.434844153001904
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 10,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 16.64628002466634
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 2,
+          "accepted": 5,
+          "missedRegions": [
+            13,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [
+            1
+          ],
+          "seconds": 22.62617843504995
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 15.765573050361127
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 13.699176650959998
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 15.695249132346362
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 14.17344582779333
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 21.424205983057618
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 19.026079521048814
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 2,
+          "unreviewedAccepted": 2,
+          "accepted": 4,
+          "missedRegions": [
+            49
+          ],
+          "wrongRegions": [
+            35,
+            54
+          ],
+          "seconds": 20.983712610788643
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 3,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 13.421150946058333
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.631821742746979
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.110678829718381
+        }
+      ]
+    },
+    "semantic-all": {
+      "config": {
+        "rescueLimit": 80,
+        "budgetSeconds": 60,
+        "semanticScope": "all",
+        "semanticVeto": false
+      },
+      "rawSha256": "93fc659611d811ca7af52cda16a78b351388f52f48c7979adbfe66cab5628a27",
+      "pipelineVersions": [
+        "accuracy-v2-6e2f97242594"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 18,
+          "ambiguousKnown": 0,
+          "wrong": 2,
+          "unreviewedAccepted": 12,
+          "accepted": 32,
+          "photos": 17,
+          "medianSeconds": 22.445711627136916,
+          "maxSeconds": 29.645928888116032
+        },
+        "development": {
+          "positives": 15,
+          "correct": 15,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 4,
+          "accepted": 19,
+          "photos": 3,
+          "medianSeconds": 16.304171391762793,
+          "maxSeconds": 19.877890998031944
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 2,
+          "unreviewedAccepted": 8,
+          "accepted": 13,
+          "photos": 14,
+          "medianSeconds": 23.583603712031618,
+          "maxSeconds": 29.645928888116032
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 24.312830904033035
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 16.13390400679782
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 23.477933222893625
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 22.445711627136916
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 28.06666735606268
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 10,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 16.304171391762793
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 2,
+          "accepted": 5,
+          "missedRegions": [
+            13,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [
+            1
+          ],
+          "seconds": 29.645928888116032
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 21.8447486278601
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 17.97940268041566
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 24.691209682729095
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 3,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 28.12119606230408
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 23.68927420116961
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 21.48689306806773
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 1,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 2,
+          "accepted": 4,
+          "missedRegions": [
+            49
+          ],
+          "wrongRegions": [
+            54
+          ],
+          "seconds": 28.912442951928824
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 3,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 19.877890998031944
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 19.052000297699124
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 14.89515734789893
+        }
+      ]
+    },
+    "semantic-fast": {
+      "config": {
+        "rescueLimit": 8,
+        "budgetSeconds": 10,
+        "semanticScope": "all",
+        "semanticVeto": false
+      },
+      "rawSha256": "ea569c541a7664d4a199130ae56d73d66459018e755156f3adefd486e2d8369e",
+      "pipelineVersions": [
+        "accuracy-v2-b9a13ed17e57"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 15,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 7,
+          "accepted": 23,
+          "photos": 17,
+          "medianSeconds": 12.295735019724816,
+          "maxSeconds": 17.98006095411256
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 17,
+          "photos": 3,
+          "medianSeconds": 11.692815030924976,
+          "maxSeconds": 12.488956813700497
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 1,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 4,
+          "accepted": 6,
+          "photos": 14,
+          "medianSeconds": 12.450946030439809,
+          "maxSeconds": 17.98006095411256
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.295735019724816
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.488956813700497
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 16.28131246706471
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.921296379063278
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 14.653374101035297
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 9,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.692815030924976
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            1,
+            4,
+            13,
+            26,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [],
+          "seconds": 17.041125003714114
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.4722885126248
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.090219186153263
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 13.548838768154383
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 3,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 12.052107024006546
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 12.606157041154802
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 13.933784299064428
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 1,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            49
+          ],
+          "wrongRegions": [
+            54
+          ],
+          "seconds": 17.98006095411256
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 10.73298634821549
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.408753824420273
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.509133180137724
+        }
+      ]
+    },
+    "semantic-selected": {
+      "config": {
+        "rescueLimit": 8,
+        "budgetSeconds": 10,
+        "semanticScope": "selected",
+        "semanticVeto": false
+      },
+      "rawSha256": "c86a3a08c00e20f12d6aad02373259e6b5c5e1a28ddde64060a712c8d3895232",
+      "pipelineVersions": [
+        "accuracy-v2-5a64dfa46395"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 7,
+          "accepted": 22,
+          "photos": 17,
+          "medianSeconds": 10.010469131171703,
+          "maxSeconds": 10.387600747868419
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 17,
+          "photos": 3,
+          "medianSeconds": 9.490767582785338,
+          "maxSeconds": 10.030005440115929
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 4,
+          "accepted": 5,
+          "photos": 14,
+          "medianSeconds": 10.026764489710331,
+          "maxSeconds": 10.387600747868419
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 2,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.067349113058299
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.490767582785338
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.387600747868419
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.079085586126894
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.043059848248959
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 9,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.030005440115929
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            1,
+            4,
+            13,
+            26,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [],
+          "seconds": 10.090796040836722
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.297518343199044
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.152153372764587
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.154957342892885
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 10.109077733941376
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 9.399320121854544
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 9.040281711146235
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 0,
+          "accepted": 1,
+          "missedRegions": [
+            35,
+            49
+          ],
+          "wrongRegions": [
+            54
+          ],
+          "seconds": 10.010469131171703
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 6.920743383001536
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.716750402934849
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.208102171774954
+        }
+      ]
+    },
+    "semantic-verified": {
+      "config": {
+        "rescueLimit": 8,
+        "budgetSeconds": 12,
+        "semanticScope": "selected",
+        "semanticVeto": "top24 for primary and rescue"
+      },
+      "rawSha256": "6d45564ebd4ec84d1062a7615a5ef498a612b18edd12ec57ad3ad82e0c6e4059",
+      "pipelineVersions": [
+        "accuracy-v2-57f9c7fdb35e"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 5,
+          "accepted": 20,
+          "photos": 17,
+          "medianSeconds": 10.32084201509133,
+          "maxSeconds": 12.119042117148638
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 9.741972834337503,
+          "maxSeconds": 11.046946791931987
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 3,
+          "accepted": 4,
+          "photos": 14,
+          "medianSeconds": 10.357978189596906,
+          "maxSeconds": 12.119042117148638
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 2,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.033024743199348
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.741972834337503
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.370164200197905
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.119042117148638
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.852919782977551
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 8,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.046946791931987
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            1,
+            4,
+            13,
+            26,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [],
+          "seconds": 12.08435325883329
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.837020931765437
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.798348229844123
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.32084201509133
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 10.395114364102483
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 8.457040606997907
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 7.819007831159979
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 1,
+          "unreviewedAccepted": 0,
+          "accepted": 1,
+          "missedRegions": [
+            49,
+            54
+          ],
+          "wrongRegions": [
+            35
+          ],
+          "seconds": 10.781777304131538
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 8.452986157964915
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.416352461092174
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 6.2391753741540015
+        }
+      ]
+    },
+    "final-http": {
+      "config": {
+        "rescueLimit": 8,
+        "budgetSeconds": 12,
+        "semanticScope": "selected",
+        "semanticVeto": "top24 primary, top1 rescue",
+        "ocr": false
+      },
+      "rawSha256": "1192602da7388af7c072ff0a24daa91b042d8e9f629e47c83b05a11f333c6c3c",
+      "pipelineVersions": [
+        "accuracy-v2-0fe6ddb56365"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 32,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 4,
+          "accepted": 18,
+          "photos": 17,
+          "medianSeconds": 8.892343691084534,
+          "maxSeconds": 11.819188314024359
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 8.892343691084534,
+          "maxSeconds": 11.086440628860146
+        },
+        "regression": {
+          "positives": 17,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 2,
+          "photos": 14,
+          "medianSeconds": 8.987766017904505,
+          "maxSeconds": 11.819188314024359
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-36.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.717756466008723
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.892343691084534
+        },
+        {
+          "file": "photo_2026-09-24_17-33-48.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.53150042006746
+        },
+        {
+          "file": "photo_2026-09-24_17-33-51.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.992758255917579
+        },
+        {
+          "file": "photo_2026-09-24_17-33-55.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 10.032423528842628
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 8,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.086440628860146
+        },
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "split": "regression",
+          "positives": 7,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 1,
+          "missedRegions": [
+            1,
+            4,
+            13,
+            26,
+            31,
+            38,
+            49
+          ],
+          "wrongRegions": [],
+          "seconds": 11.819188314024359
+        },
+        {
+          "file": "photo_2026-09-24_17-34-06.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.041730772703886
+        },
+        {
+          "file": "photo_2026-09-24_17-34-09.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 6.836602156050503
+        },
+        {
+          "file": "photo_2026-09-24_17-34-13.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.157799465116113
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            17,
+            47,
+            50
+          ],
+          "wrongRegions": [],
+          "seconds": 8.817732570692897
+        },
+        {
+          "file": "photo_2026-09-24_17-34-19.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            12,
+            13
+          ],
+          "wrongRegions": [],
+          "seconds": 7.632448905613273
+        },
+        {
+          "file": "photo_2026-09-24_17-34-23.jpg",
+          "split": "regression",
+          "positives": 2,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            23,
+            46
+          ],
+          "wrongRegions": [],
+          "seconds": 8.22347447508946
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            35,
+            49,
+            54
+          ],
+          "wrongRegions": [],
+          "seconds": 11.036137287970632
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 8.185433841776103
+        },
+        {
+          "file": "photo_2026-09-24_17-34-34.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.259239655919373
+        },
+        {
+          "file": "photo_2026-09-24_17-34-37.jpg",
+          "split": "regression",
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 5.992846109904349
+        }
+      ]
+    },
+    "transport-jpeg95": {
+      "config": {
+        "profile": "baseline",
+        "encoding": "jpeg95"
+      },
+      "rawSha256": "52992b2d43511343bb202d46794dee824d762dd4948366a0ad2ef9b83a34b251",
+      "pipelineVersions": [
+        "native-hybrid-v1-295197c2e351"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 14,
+          "photos": 3,
+          "medianSeconds": 7.5475949347019196,
+          "maxSeconds": 8.93522069370374
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 14,
+          "photos": 3,
+          "medianSeconds": 7.5475949347019196,
+          "maxSeconds": 8.93522069370374
+        },
+        "regression": {
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 3,
+          "missedRegions": [
+            3
+          ],
+          "wrongRegions": [],
+          "seconds": 8.93522069370374
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 8,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.5475949347019196
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 3,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 6.037518099881709
+        }
+      ]
+    },
+    "transport-jpeg100": {
+      "config": {
+        "profile": "baseline",
+        "encoding": "jpeg100"
+      },
+      "rawSha256": "76883f80f01c67d9927a434dd8bdfc30388e09df576c99a8f10fa3e85cbede65",
+      "pipelineVersions": [
+        "native-hybrid-v1-295197c2e351"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 17,
+          "photos": 3,
+          "medianSeconds": 7.5753671219572425,
+          "maxSeconds": 8.372936262283474
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 3,
+          "accepted": 17,
+          "photos": 3,
+          "medianSeconds": 7.5753671219572425,
+          "maxSeconds": 8.372936262283474
+        },
+        "regression": {
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.188014640007168
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 9,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 7.5753671219572425
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 8.372936262283474
+        }
+      ]
+    },
+    "transport-png": {
+      "config": {
+        "profile": "baseline",
+        "encoding": "png"
+      },
+      "rawSha256": "be661b1546be5efbb58c5aa09d8631820a73e3edfdeae464807b83befb4db81a",
+      "pipelineVersions": [
+        "native-hybrid-v1-295197c2e351"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 9.937350403051823,
+          "maxSeconds": 12.688141124788672
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 9.937350403051823,
+          "maxSeconds": 12.688141124788672
+        },
+        "regression": {
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 5,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 9.391562593635172
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 1,
+          "accepted": 9,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 12.688141124788672
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 9.937350403051823
+        }
+      ]
+    },
+    "transport-jpeg95-768": {
+      "config": {
+        "profile": "baseline",
+        "encoding": "jpeg95-768"
+      },
+      "rawSha256": "b962d8950b3d4004d073eda794096429abff1125277ad807846ec5d83e9ccc18",
+      "pipelineVersions": [
+        "native-hybrid-v1-295197c2e351"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 15,
+          "correct": 11,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 11,
+          "photos": 3,
+          "medianSeconds": 7.093636434990913,
+          "maxSeconds": 7.430075714830309
+        },
+        "development": {
+          "positives": 15,
+          "correct": 11,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 11,
+          "photos": 3,
+          "medianSeconds": 7.093636434990913,
+          "maxSeconds": 7.430075714830309
+        },
+        "regression": {
+          "positives": 0,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 3,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 3,
+          "missedRegions": [
+            3
+          ],
+          "wrongRegions": [],
+          "seconds": 6.715431993827224
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 6,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 6,
+          "missedRegions": [
+            13,
+            19
+          ],
+          "wrongRegions": [],
+          "seconds": 7.093636434990913
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 7.430075714830309
+        }
+      ]
+    },
+    "final-embedded-webkit": {
+      "config": {
+        "profile": "accuracy",
+        "semanticScope": "selected",
+        "rescueLimit": 8,
+        "budgetSeconds": 12,
+        "physicalPhone": false
+      },
+      "rawSha256": "b07af8f511d8c467a34271d0937a3db721864338d4648f28eaca360eebb4d996",
+      "pipelineVersions": [
+        "accuracy-v2-0fe6ddb56365"
+      ],
+      "independentGroundTruth": false,
+      "completeNegatives": false,
+      "summary": {
+        "all": {
+          "positives": 18,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 4,
+          "medianSeconds": 10.168993489,
+          "maxSeconds": 11.490614654000002
+        },
+        "development": {
+          "positives": 15,
+          "correct": 14,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 16,
+          "photos": 3,
+          "medianSeconds": 8.93984201,
+          "maxSeconds": 11.490614654000002
+        },
+        "regression": {
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "photos": 1,
+          "medianSeconds": 11.398144968,
+          "maxSeconds": 11.398144968
+        }
+      },
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "split": "development",
+          "positives": 4,
+          "correct": 4,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 2,
+          "accepted": 6,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 8.93984201
+        },
+        {
+          "file": "photo_2026-09-24_17-33-59.jpg",
+          "split": "development",
+          "positives": 8,
+          "correct": 8,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 8,
+          "missedRegions": [],
+          "wrongRegions": [],
+          "seconds": 11.490614654000002
+        },
+        {
+          "file": "photo_2026-09-24_17-34-26.jpg",
+          "split": "regression",
+          "positives": 3,
+          "correct": 0,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 0,
+          "missedRegions": [
+            35,
+            49,
+            54
+          ],
+          "wrongRegions": [],
+          "seconds": 11.398144968
+        },
+        {
+          "file": "photo_2026-09-24_17-34-31.jpg",
+          "split": "development",
+          "positives": 3,
+          "correct": 2,
+          "ambiguousKnown": 0,
+          "wrong": 0,
+          "unreviewedAccepted": 0,
+          "accepted": 2,
+          "missedRegions": [
+            16
+          ],
+          "wrongRegions": [],
+          "seconds": 7.811758439000001
+        }
+      ]
+    }
+  }
+}

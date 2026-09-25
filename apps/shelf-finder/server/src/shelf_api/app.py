@@ -43,6 +43,23 @@ class Settings:
             if x.strip()
         ]
     )
+    profile: str = field(default_factory=lambda: os.getenv("SHELF_PROFILE", "baseline"))
+    accuracy_models: str = field(
+        default_factory=lambda: os.getenv("SHELF_ACCURACY_MODELS", "")
+    )
+    semantic_models: str = field(
+        default_factory=lambda: os.getenv("SHELF_SEMANTIC_MODELS", "")
+    )
+    semantic_scope: str = field(
+        default_factory=lambda: os.getenv("SHELF_SEMANTIC_SCOPE", "selected")
+    )
+    rescue_limit: int = field(
+        default_factory=lambda: int(os.getenv("SHELF_RESCUE_LIMIT", "8"))
+    )
+    budget_seconds: float = field(
+        default_factory=lambda: float(os.getenv("SHELF_BUDGET_SECONDS", "10"))
+    )
+    ocr: bool = field(default_factory=lambda: os.getenv("SHELF_OCR", "0") == "1")
     max_bytes: int = 20 * 1024 * 1024
     max_pixels: int = 24_000_000
     upload_seconds: float = 30
@@ -76,6 +93,30 @@ def create_app(factory=None, settings=None):
         def factory():
             from .engine import ShelfEngine
 
+            if settings.profile == "accuracy":
+                if not settings.accuracy_models:
+                    raise ValueError(
+                        "SHELF_ACCURACY_MODELS is required for accuracy profile"
+                    )
+                from .accuracy import AccuracyEngine
+
+                return AccuracyEngine(
+                    settings.models,
+                    Path(settings.accuracy_models),
+                    settings.device,
+                    settings.threads,
+                    rescue_limit=settings.rescue_limit,
+                    budget_seconds=settings.budget_seconds,
+                    semantic_scope=settings.semantic_scope,
+                    use_ocr=settings.ocr,
+                    semantic_dir=(
+                        Path(settings.semantic_models)
+                        if settings.semantic_models
+                        else None
+                    ),
+                )
+            if settings.profile != "baseline":
+                raise ValueError("Unknown shelf profile")
             return ShelfEngine(settings.models, settings.device, settings.threads)
 
     async def initialize():

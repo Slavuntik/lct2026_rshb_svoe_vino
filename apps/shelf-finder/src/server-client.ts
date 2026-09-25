@@ -1,10 +1,10 @@
 import type { Catalog, ModelManifest, Observation, ScanResult } from './types';
 
-type Message = { type: string; requestId?: number; bitmap?: ImageBitmap };
+type Message = { type: string; requestId?: number; bitmap?: ImageBitmap; sourcePhoto?: { blob: Blob; width: number; height: number } };
 interface ServerResponse {
   requestId: string; pipelineVersion: string; catalogVersion: string;
   detectedCount: number; image: { width: number; height: number };
-  matches: { box: number[]; wineId: string; name: string }[];
+  matches: { box: number[]; wineId: string; name: string; alternativeWineIds?: string[]; identificationLevel?: 'product' | 'shared-reference' }[];
   timingsMs: { processing: number; detection?: number; recognition?: number };
   warnings: string[];
 }
@@ -55,17 +55,17 @@ export class ServerClient {
         const started = performance.now(), bitmap = message.bitmap;
         const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
         canvas.getContext('2d')!.drawImage(bitmap, 0, 0); bitmap.close();
-        const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Не удалось подготовить фото')), 'image/jpeg', .95));
+        const blob = message.sourcePhoto?.blob ?? await new Promise<Blob>((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Не удалось подготовить фото')), 'image/jpeg', .95));
         const form = new FormData(); form.append('image', blob, 'shelf.jpg');
         const response: ServerResponse = await this.json('/scan', { method: 'POST', body: form }, controller.signal);
-        if (response.image?.width !== canvas.width || response.image?.height !== canvas.height) throw new Error('Сервер вернул другой размер изображения');
+        if (response.image?.width !== (message.sourcePhoto?.width ?? canvas.width) || response.image?.height !== (message.sourcePhoto?.height ?? canvas.height)) throw new Error('Сервер вернул другой размер изображения');
         if (response.catalogVersion !== this.catalogVersion) throw new Error('Каталог сервера обновился. Перезагрузите страницу.');
         const observations = parseServerMatches(response, this.wineIds);
         const result: ScanResult & Record<string, unknown> = {
           type: 'result', requestId: message.requestId!, observations, elapsed: performance.now() - started,
           detectionMs: response.timingsMs.detection ?? 0, recognitionMs: response.timingsMs.recognition ?? response.timingsMs.processing,
           recognitionBackend: 'server', serverRequestId: response.requestId, pipelineVersion: response.pipelineVersion,
-          serverProcessingMs: response.timingsMs.processing, detectedCount: response.detectedCount
+          serverProcessingMs: response.timingsMs.processing, detectedCount: response.detectedCount, warnings: response.warnings
         };
         if (generation === this.generation) this.emit(result);
       }
@@ -82,6 +82,8 @@ export function parseServerMatches(response: ServerResponse, ids: Set<string>): 
   return response.matches.map(match => {
     const box = match.box;
     if (!ids.has(match.wineId) || !Array.isArray(box) || box.length !== 4 || !box.every(v => Number.isFinite(v) && v >= 0 && v <= 1) || box[0] >= box[2] || box[1] >= box[3]) throw new Error('Неверные координаты или название в ответе сервера');
-    return { box: box as Observation['box'], score: 0, embedding: [], tooSmall: false, match: { id: match.wineId, score: 0, margin: 0, candidates: [] } };
+    const alternatives = match.alternativeWineIds ?? [];
+    if (!Array.isArray(alternatives) || alternatives.length > 20 || alternatives.some(id => !ids.has(id) || id === match.wineId) || new Set(alternatives).size !== alternatives.length || (alternatives.length > 0) !== (match.identificationLevel === 'shared-reference')) throw new Error('Неверные варианты совпадения');
+    return { box: box as Observation['box'], score: 0, embedding: [], tooSmall: false, match: { id: match.wineId, alternativeIds: alternatives, score: 0, margin: 0, candidates: [] } };
   });
 }
