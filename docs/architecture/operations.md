@@ -1,16 +1,21 @@
 # Эксплуатация стенда «Свой Сомелье»
 
-Раздел эксплуатации по задаче тимлида (22.09, решение Вячеслава). Пишет и держит в актуальном
-состоянии — devops (зона `infra/`, стенд ams3, `qa/scan-eval-runs/real-photos-stand/`). Ссылаются:
-`docs/architecture/HLD.md`, `docs/architecture/LLD.md` (architect). Источники (все прочитаны
-целиком перед написанием): `infra/ams3/{README.md,bootstrap.sh,push-release.sh,deploy.sh,
-sync-data.sh,somelye-api.service,nginx-somelye.conf,somelye.env.example,pull-scans.sh}`,
+Раздел эксплуатации по задаче тимлида (22.09, решение Вячеслава; §10 добавлен 26.09 по задаче
+проброса витрины). Пишет и держит в актуальном состоянии — devops (зона `infra/`, стенд ams3,
+`qa/scan-eval-runs/real-photos-stand/`). Ссылаются: `docs/architecture/HLD.md`,
+`docs/architecture/LLD.md` (architect). Источники (все прочитаны целиком перед написанием):
+`infra/ams3/{README.md,bootstrap.sh,push-release.sh,deploy.sh,
+sync-data.sh,somelye-api.service,nginx-somelye.conf,shelf-upstream.conf,somelye.env.example,pull-scans.sh}`,
 `.github/workflows/{deploy-hack-ams3.yml,ci.yml}`, `apps/api/app/{config.py,routers/health.py,
 routers/metrics.py}`, `packages/{cv,rag,llm}/**/config.py`, `ORCHESTRATION.md`, `TEAM.md`,
 `agents/BOARD.md`, `reports/devops-hack-v9.md`…`v15.md`, `reports/devops-stand-vlm.md`,
 `reports/qa-auto-rehearsal-{mac,stand-v10}.md`, `docs/strategy/tco.md`,
-`case-data/eval/participant_test.sh` (вне git). Секреты и адрес GPU-шлюза в этом файле не
-приводятся ни в каком виде — только имена переменных и транспорт (правило `.claude/agents/devops.md`).
+`case-data/eval/participant_test.sh` (вне git); для §10 — `apps/shelf-finder/docs/server-api.md`,
+`apps/shelf-finder/server/README.md`, `apps/web/src/lib/shelfAvailability.ts`,
+`apps/web/src/app/shelf/{ShelfScreen,ShelfUnavailableScreen}.tsx`,
+`reports/frontend-shelf-gate.md`, живая проверка `sudo -n -l`/`ls -la /etc/nginx/...` на ams3
+(26.09). Секреты и адрес GPU-шлюза в этом файле не приводятся ни в каком виде — только имена
+переменных и транспорт (правило `.claude/agents/devops.md`).
 
 ## 1. Топология
 
@@ -22,7 +27,7 @@ routers/metrics.py}`, `packages/{cv,rag,llm}/**/config.py`, `ORCHESTRATION.md`, 
 
 | Компонент | Где | Детали |
 |---|---|---|
-| nginx | `:80` → `/etc/nginx/sites-enabled/somelye` | статика SPA из `/opt/somelye/web` + прокси `/v1/*` на `127.0.0.1:8000`; `/v1/chat` отдельно — `proxy_buffering off` (SSE) и `proxy_read_timeout 300s`, остальные `/v1/` — `60s`; `client_max_body_size 26m` (фото этикеток) |
+| nginx | `:80` → `/etc/nginx/sites-enabled/somelye` | статика SPA из `/opt/somelye/web` + прокси `/v1/*` на `127.0.0.1:8000`; `/v1/chat` отдельно — `proxy_buffering off` (SSE) и `proxy_read_timeout 300s`, остальные `/v1/` — `60s`; `client_max_body_size 26m` (фото этикеток); `/v1/shelf/*` и `/shelf-ui/*` — проброс на сервис витрин по `$shelf_upstream` (`/etc/nginx/conf.d/shelf-upstream.conf`), выключен пустым значением по умолчанию — раздел 10 |
 | systemd `somelye-api` | `apps.main:app` | uvicorn, **1 воркер**, пользователь `somelye`, `WorkingDirectory=/opt/somelye/app/apps/api`, `EnvironmentFile=/opt/somelye/somelye.env`, `Restart=on-failure`/`RestartSec=5`, `TimeoutStartSec=900` |
 | Ограничения unit'а | делят бокс с VPN | `MemoryHigh=4500M`/`MemoryMax=5500M` (замер: 3.2 ГБ в работе, пик 3.9 ГБ), `CPUWeight=40` (VPN — 100 по умолчанию), `Nice=5`; `OMP_NUM_THREADS=3`/`MKL_NUM_THREADS=3` из 4 vCPU — одно ядро гарантированно свободно под VPN |
 | Пути | `/opt/somelye/` | `app/` (код, из `git archive`), `web/` (собранный SPA), `venv/` (uv, вне git), `data/{cv,rag,case,db,fastembed,models/{hf,paddlex},scans}`, `somelye.env` (600, только `somelye`), `.ssh/authorized_keys` (ключ CI) |
@@ -506,3 +511,118 @@ GPU-шлюза сейчас — трафик/время ответа, не по�
 Точка перегиба аренда→покупка выделенного GPU-узла — 14-24 месяца в зависимости от условий
 предоплаты (`docs/strategy/tco.md` §4). Решение по объёму/конфигурации для продакшена вне
 хакатона — вне мандата этого документа.
+
+## 10. Проброс сервиса витрин (shelf-finder, апстрим Потапа, задача тимлида 26.09)
+
+Второй разработчик (Михаил/Potap) держит отдельный сервис распознавания витрин
+(`apps/shelf-finder/server`, свой Python-пакет `shelf_api`, порт 8086, GPU 24 ГБ — НЕ этот
+CPU-стенд) с собственным контрактом (`apps/shelf-finder/docs/server-api.md`,
+`apps/shelf-finder/server/README.md`): `POST /v1/shelf/scan`, `GET /v1/shelf/health`,
+`GET /v1/shelf/catalog`, плюс свой веб-интерфейс. Сервис сам просит проксировать `/v1/shelf/*` и
+`/shelf-ui/*` с того же домена (иначе нужен CORS), пропускать фото до 20 МБ/24 Мпикс, ждать ответ
+не меньше 60 с (клиентский таймаут сервиса — 45 с) и понимает ровно один запрос одновременно —
+второй получает `503` с `Retry-After` сам сервис, без участия nginx.
+
+Раздел «Витрина» во фронте (`apps/web/src/app/shelf/{ShelfScreen,ShelfUnavailableScreen}.tsx`)
+уже написан Михаилом и не менялся; пункт навигации и сам роут показываются только когда живой
+запрос `GET /v1/shelf/health` отвечает `200` с `Content-Type: application/json`
+(`apps/web/src/lib/shelfAvailability.ts`, коммит 5af5e6d, `reports/frontend-shelf-gate.md`) — не
+просто код ответа, потому что нынешний прод-фолбэк nginx (нет `location` — запрос уходит в общий
+`/v1/` на `apps/api`, который честно отвечает `404 application/json`; `/shelf-ui/*` вообще без
+префикса `/v1` падает в `location /` и получает `200 text/html` — наш же `index.html` через
+`try_files`) неотличим от живого сервиса по одному лишь коду ответа. **Значит правок фронта для
+включения раздела не нужно** — только проброс.
+
+### 10.1 Устройство (уже в git, выключено по умолчанию)
+
+`infra/ams3/nginx-somelye.conf` — locations `/v1/shelf/` и `/shelf-ui/` читают переменную
+`$shelf_upstream`; она объявлена ОТДЕЛЬНЫМ файлом `infra/ams3/shelf-upstream.conf`
+(`/etc/nginx/conf.d/shelf-upstream.conf` на сервере). Файл использует `map`, а не `set`: `conf.d`
+у этой коробки подключается ВНУТРИ `http{}` (`nginx.conf`: `include /etc/nginx/conf.d/*.conf;`,
+проверено `grep` на сервере 26.09), а `set` в http-контексте не проходит `nginx -t` («"set"
+directive is not allowed here») — `map` там штатна. Пустое значение (репозиторная версия) — обе
+locations отвечают `return 404;` ДО `proxy_pass`, т.е. ведут себя как честный вызов `apps/api`
+сегодня, а не как SPA-фолбэк. `/v1/shelf/` длиннее общего `/v1/` — nginx всегда матчит самый
+длинный префикс НЕЗАВИСИМО от порядка блоков в файле, так что основной путь (`/v1/` → `apps/api`)
+гарантированно не задет, даже если порядок locations в файле когда-нибудь поменяют.
+
+`infra/ams3/bootstrap.sh` ставит `shelf-upstream.conf`, только если его ещё нет на сервере (как
+`somelye.env`) — повторный bootstrap (пересборка стенда с нуля) не откатит уже включённый адрес
+обратно в выключенное состояние, а на чистом сервере воспроизведёт безопасный дефолт.
+
+**Обычный выкат (`push-release.sh`→`deploy.sh`) nginx вообще не трогает** — `git archive` везёт
+код `apps/api`/`packages`/`contracts`/`infra`/`pipeline/*` в `/opt/somelye/app`, веб-сборку в
+`/opt/somelye/web`, `deploy.sh` делает `uv sync` и рестарт `somelye-api`; ни один из них не пишет
+в `/etc/nginx/*` и не дёргает `nginx reload`. Значит locations из раздела 10.1 переживут ЛЮБОЙ
+последующий тег `hack-vN` без переустановки — единственный путь их потерять — заново прогнать
+`bootstrap.sh`, и именно для этого случая существует защита абзацем выше.
+
+### 10.2 Данные, нужные от владельца сервиса до включения
+
+- хост:порт или готовый URL (сервис по умолчанию слушает `:8086`);
+- схема — `http` (если сервис в той же приватной сети/VPN, что и ams3) или `https` (если уже
+  выставлен через TLS);
+- нужна ли авторизация — контракт сервиса на 26.09 ничего не требует; если Михаил добавит токен,
+  он подставляется строкой `proxy_set_header Authorization ...` в те же `location`, значение —
+  секрет, транспорт как у `VISION_LLM_KEY` (раздел 5);
+- подтверждение, что `GET /v1/shelf/health` отвечает именно `200`+`application/json` в готовом
+  состоянии — это ЕДИНСТВЕННЫЙ признак, по которому фронт отличает живой сервис (раздел преамбулы
+  выше).
+
+### 10.3 Включение — нужен root (пробел прав, важно)
+
+Проверено 26.09 (`ssh somelye@ams3 'id; sudo -n -l'`): пользователь `somelye` (ключ CI
+`ci_do_ams3`, единственный доступ у devops-роли) состоит только в группе `somelye`, `/etc/nginx/*`
+целиком `root:root 644/755`, а `sudoers.d/somelye` разрешает РОВНО 3 команды `systemctl
+{restart,is-active,status} somelye-api` (раздел 1.1/8) — ни записи в `/etc/nginx`, ни `nginx -t`,
+ни `systemctl reload nginx` в этот список не входят, и devops-агент их себе не выписывает (правка
+`sudoers`/системных настроек — вне его мандата). Значит собственно включение — то есть подстановку
+реального адреса и `reload` — делает Вячеслав (или любой, у кого есть root на ams3), тремя
+командами:
+
+```bash
+cp /etc/nginx/conf.d/shelf-upstream.conf /etc/nginx/conf.d/shelf-upstream.conf.bak-$(date +%F)
+printf 'map $host $shelf_upstream {\n    default "http://<host>:<port>";\n}\n' \
+  > /etc/nginx/conf.d/shelf-upstream.conf   # https:// вместо http://, если у сервиса TLS
+nginx -t && systemctl reload nginx
+```
+
+Если включать чаще одного раза захочется без участия root — вариант для Вячеслава: добавить в
+`/etc/sudoers.d/somelye` ещё 2 команды (`/usr/bin/nginx -t`, `/usr/bin/systemctl reload nginx`) —
+тогда весь цикл включи/выключи становится самообслуживанием devops. Это расширение прав на боевом
+VPN-боксе, поэтому решение и применение — за Вячеславом, не самовольно.
+
+### 10.4 Проверка
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' http://89.110.72.101/v1/shelf/health
+# ожидание: 200 application/json (200 text/html = включение не удалось, это SPA-фолбэк)
+curl -s http://89.110.72.101/v1/healthz   # основной путь не задет: status ok, warm:true
+```
+
+и в браузере — `/app/shelf`: пункт «Витрина» в нижней навигации и её интерфейс должны появиться
+сами, без единого выката веба (гейт — живой запрос из браузера, раздел преамбулы выше).
+
+### 10.5 Выключение / откат
+
+Тем же файлом: `default "";` (репозиторная версия `shelf-upstream.conf` — готовый выключенный
+плейсхолдер) → `nginx -t && systemctl reload nginx`. `/v1/shelf/health` снова честно `404`, раздел
+«Витрина» снова скрыт без единой правки веба.
+
+### 10.6 Риск и минимальная защита — решение за Вячеславом
+
+После включения ЛЮБОЙ, кто знает домен стенда (он публичный на время хака), сможет слать фото на
+чужой GPU-сервис через НАШ прокси — не только жюри и не только фото вина. Уже заложено в locations
+раздела 10.1 (это гигиенический минимум, не полная защита): `client_max_body_size 20m` именно на
+`/v1/shelf/` (сервис и сам режет 413 после этого предела, но обрубать на границе нашего nginx
+дешевле для обеих сторон), `proxy_connect_timeout 5s`/`proxy_read_timeout 60s` (не держим
+соединения дольше контракта сервиса), и то, что сервис в любом случае не обслуживает больше одного
+запроса параллельно (503 остальным — это его собственная защита от перегрузки, не наша). Что этого
+НЕ решает: ничего не мешает третьей стороне слать чужие/не-винные фото или просто заваливать
+`/v1/shelf/scan` запросами и держать GPU Михаила занятым, не пуская нашего собственного
+пользователя. Варианты усиления, оставленные на решение Вячеслава (не применены — усиление уже
+после появления адреса, зависит и от того, что готов делать сам сервис на своей стороне):
+отдельный токен (`proxy_set_header Authorization` + проверка на стороне shelf-сервиса, если Михаил
+её добавит), `allow`/`deny` по IP (плохо сочетается с публичным доступом жюри), `limit_req`/
+`limit_conn` в nginx по IP-адресу клиента (смягчает, не устраняет), либо сознательно принять риск
+на время хака и снять проброс сразу после защиты (раздел 10.5 — одна правка).

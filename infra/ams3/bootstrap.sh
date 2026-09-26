@@ -68,6 +68,15 @@ install -m 644 "$SRC_DIR/somelye-api.service" /etc/systemd/system/somelye-api.se
 systemctl daemon-reload
 systemctl enable somelye-api >/dev/null 2>&1
 
+# Апстрим сервиса витрин (Михаил/Potap) — переменная $shelf_upstream, которую читают
+# locations /v1/shelf/ и /shelf-ui/ в nginx-somelye.conf. Ставим, ТОЛЬКО если файла ещё
+# нет — как somelye.env выше: если проброс уже включён (реальный адрес прописан вручную,
+# см. infra/ams3/README.md), повторный bootstrap не должен тихо вернуть его в выключенное
+# состояние. На чистом сервере кладёт выключенный плейсхолдер (пустой $shelf_upstream —
+# /v1/shelf/health честно отвечает 404, раздел «Витрина» во фронте скрыт).
+[ -f /etc/nginx/conf.d/shelf-upstream.conf ] || \
+  install -m 644 "$SRC_DIR/shelf-upstream.conf" /etc/nginx/conf.d/shelf-upstream.conf
+
 install -m 644 "$SRC_DIR/nginx-somelye.conf" /etc/nginx/sites-available/somelye
 ln -sf /etc/nginx/sites-available/somelye /etc/nginx/sites-enabled/somelye
 rm -f /etc/nginx/sites-enabled/default

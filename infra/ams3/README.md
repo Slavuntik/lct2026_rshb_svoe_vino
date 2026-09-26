@@ -37,7 +37,8 @@
 |---|---|
 | `bootstrap.sh` | Разово от root: пользователь `somelye` (без sudo, кроме рестарта своего сервиса), каталоги, swap, uv + Python 3.12, nginx-сайт, systemd-юнит, `somelye.env` со свежим `JWT_SECRET` |
 | `somelye-api.service` | uvicorn под systemd с лимитами памяти и CPU |
-| `nginx-somelye.conf` | `:80` → статика SPA + прокси `/v1` на uvicorn (SSE для `/v1/chat` без буферизации, тело до 26 МБ) |
+| `nginx-somelye.conf` | `:80` → статика SPA + прокси `/v1` на uvicorn (SSE для `/v1/chat` без буферизации, тело до 26 МБ); `/v1/shelf/` и `/shelf-ui/` — проброс на сервис витрин по `$shelf_upstream`, см. ниже |
+| `shelf-upstream.conf` | Плейсхолдер `map $host $shelf_upstream { default ""; }` для `/etc/nginx/conf.d/` — пустой = проброс витрины выключен, см. «Проброс витрины Потапа» ниже |
 | `somelye.env.example` | Шаблон окружения (реальный файл — только на сервере, 600) |
 | `push-release.sh` | Код через `git archive` (выкатывается только закоммиченное) + сборка веба, затем `deploy.sh` |
 | `deploy.sh` | На сервере: `uv sync --frozen --extra integration`, рестарт, ожидание `healthz warm:true` |
@@ -148,6 +149,69 @@ pbpaste | ssh -i ~/.ssh/ci_do_ams3 somelye@89.110.72.101 'read -r k; sed -i "/^L
 
 Вернуть заглушку — `LLM_PROVIDER=mock` в `/opt/somelye/somelye.env` (строки `LLM_BASE_URL`/
 `LLM_API_KEY` можно оставить или удалить тем же `sed -i`) и рестарт.
+
+## Проброс витрины Потапа (apps/shelf-finder, задача тимлида 26.09)
+
+Второй сервис команды (`apps/shelf-finder/server`, порт 8086, отдельный GPU) получает свой домен
+через наш nginx: `/v1/shelf/*` и `/shelf-ui/*` (требования сервиса —
+`apps/shelf-finder/docs/server-api.md`, `apps/shelf-finder/server/README.md` — рекомендуют именно
+это: проксировать с того же домена, тело до 20 МБ, ответ ждать ≥60 с при клиентском таймауте
+сервиса 45 с, второй одновременный запрос сервис сам отдаёт 503). Полная процедура и разбор риска —
+`docs/architecture/operations.md` §10; здесь — короткая шпаргалка.
+
+**Адреса пока нет** (уточняет Вячеслав) — до этого проброс ВЫКЛЮЧЕН, и `/v1/shelf/health` честно
+отвечает 404 (не try_files-фолбэк на наш же SPA, 200 `text/html`) — именно это проверяет живой
+гейт раздела «Витрина» во фронте (`apps/web/src/lib/shelfAvailability.ts`, коммит 5af5e6d):
+появится адрес → раздел появится сам, без единой правки веба.
+
+**Устройство (уже в git):** locations `/v1/shelf/` и `/shelf-ui/` в `nginx-somelye.conf` читают
+переменную `$shelf_upstream`, объявленную ОТДЕЛЬНЫМ файлом `shelf-upstream.conf`
+(`/etc/nginx/conf.d/` на сервере — `map`, не `set`: этот каталог у коробки подключается внутри
+`http{}`, `set` там не соберётся). Пустое значение = обе locations отвечают `return 404;` до
+`proxy_pass`. Порядок locations в файле не влияет на корректность — nginx всегда выбирает самый
+длинный префикс (`/v1/shelf/` длиннее `/v1/`), поэтому общий проксинг `/v1/` на `apps/api` не
+задет независимо от того, где в файле стоит новый блок.
+
+**Данные, нужные от владельца сервиса до включения:**
+- хост:порт или готовый URL (по умолчанию сервис слушает `:8086`);
+- схема — `http` внутри бокса или `https`, если сервис уже за TLS;
+- нужна ли авторизация — контракт сервиса сейчас ничего не требует; если появится токен, он
+  добавляется отдельной строкой `proxy_set_header Authorization ...` в тех же locations, значение —
+  секрет, транспорт как у `VISION_LLM_KEY` (раздел «Секреты GitHub» выше);
+- подтверждение, что `/v1/shelf/health` отвечает именно `200` с `Content-Type: application/json`
+  (фронт отличает живой сервис от чужого 200 по этому признаку, не только по коду).
+
+**Включение — нужен root** (вне sudo пользователя `somelye`/ключа `ci_do_ams3`, см. `docs/
+architecture/operations.md` §10.5 про этот пробел прав):
+
+```bash
+# на сервере, от root:
+cp /etc/nginx/conf.d/shelf-upstream.conf /etc/nginx/conf.d/shelf-upstream.conf.bak-$(date +%F)
+printf 'map $host $shelf_upstream {\n    default "http://<host>:<port>";\n}\n' \
+  > /etc/nginx/conf.d/shelf-upstream.conf   # схема https:// — если у сервиса TLS
+nginx -t && systemctl reload nginx
+```
+
+**Проверка:**
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' http://89.110.72.101/v1/shelf/health
+# ожидание: 200 application/json (200 text/html — это фолбэк на наш SPA, включение не удалось)
+curl -s -o /dev/null -w '%{http_code}\n' http://89.110.72.101/v1/healthz   # 200, warm:true — основной путь не задет
+```
+и в браузере: `/app/shelf` — пункт «Витрина» и её интерфейс появляются сами, без выката веба.
+
+**Выключение/откат — тот же файл:** вернуть `default "";` (репозиторная версия `shelf-upstream.conf`
+— всегда выключенный плейсхолдер, можно скопировать как есть) и `nginx -t && systemctl reload
+nginx`.
+
+**Риск и минимальная защита — решение за Вячеславом, подробности `docs/architecture/operations.md`
+§10.6:** после включения ЛЮБОЙ, кто знает домен стенда, сможет слать фото на чужой GPU через наш
+прокси. Уже сделанное (лимит тела 20 МБ на этих locations, таймауты 60 с) — гигиенический минимум,
+не полноценная защита: от чужого трафика как такового не спасает, только от совсем грубых
+злоупотреблений. Опции на выбор Вячеслава: отдельный токен (`proxy_set_header Authorization`/
+проверка в самом shelf-сервисе), ограничение по `allow`/`deny` на IP (не подходит для публичного
+жюри), либо сознательно принять риск на время хака.
 
 ## Диагностика
 
