@@ -59,6 +59,19 @@
 #   рода): +top_styles_named: [{slug,name,country}] (форма `list_reference_styles()`,
 #   contracts/rag-interface.md), top_styles — DEPRECATED. Это НЕ отчёт backend, а находка
 #   этого аудита — не реализовано, статус см. `reports/architect-docs-and-dish-contract.md`.
+# 26.09 (architect, находка qa-auto reports/qa-auto-post-merge.md п.4): +поле `box` в
+#   multipart POST /scan/photo — рамка пользователя «прицел» (image-scan.md v0.4.10), в бою
+#   с 24.09 (apps/api/app/cv/user_box.py, routers/scan.py, tests/test_scan_user_box.py), в
+#   openapi не описано ни разу. Описано ПО ФАКТУ КОДА, поведение не менялось: необязательное,
+#   "x1,y1,x2,y2" в долях 0…1; нет поля => прежний путь байт-в-байт; негодная рамка => 400
+#   validation_error в rich и МОЛЧАЛИВОЕ игнорирование во flat. Заодно у /scan/photo появился
+#   отсутствовавший ответ "400", а у /eval/predict — `additionalProperties: false` и явная
+#   оговорка «полей кроме image нет»: путь скрипта жюри сверен по коду (routers/eval.py зовёт
+#   flat_scan_response БЕЗ raw_box) и этой правкой не затронут.
+#   info.version НЕ бампаю (осталась 0.3.6) — по прецеденту записи от 22.09 «+/scan/photo…»:
+#   это довнесение существующего поведения, а бамп требует синхронной правки API_VERSION в
+#   apps/api/app/main.py (зона backend). Два расхождения код/описание, НЕ чинил — см.
+#   reports/architect-post-merge-review.md «Дополнение 3».
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -266,6 +279,27 @@ paths:
                   type: string
                   format: binary
                   description: flat-режим принимает первое файловое поле multipart независимо от имени
+                box:
+                  type: string
+                  pattern: '^\s*[0-9.]+\s*,\s*[0-9.]+\s*,\s*[0-9.]+\s*,\s*[0-9.]+\s*$'
+                  example: "0.25,0.10,0.75,0.60"
+                  description: >
+                    НЕОБЯЗАТЕЛЬНО. Рамка пользователя «прицел» (v0.4.10, описано в openapi задним
+                    числом 26.09 по факту кода — находка qa-auto, reports/qa-auto-post-merge.md п.4):
+                    четыре числа "x1,y1,x2,y2" в ДОЛЯХ кадра 0…1, начало — левый верхний угол
+                    (доли, а не пиксели: клиент показывает фото вписанным и не знает итогового
+                    разрешения после сжатия камерой). Кадр вырезается ДО движка
+                    (app/cv/user_box.py), поэтому контракт ImageIndex не меняется и рамка работает
+                    у обоих провайдеров (real и winescan); вырезанное перекодируется в JPEG q=95, а
+                    ориентация EXIF при этом нормализуется. Негодная рамка = не четыре числа, не
+                    числа, значение вне 0…1 или сторона меньше 2% кадра (в т.ч. перевёрнутая, где
+                    x2<x1). Поведение при отсутствии поля/пустой строке — прежнее, байт-в-байт: кадр
+                    уходит в движок нетронутым. Негодная рамка: в rich-режиме — 400 validation_error
+                    («Негодная рамка: …»), во flat-режиме она МОЛЧА игнорируется и скан идёт по всему
+                    кадру (несгораемость важнее аккуратности ввода). Побочные эффекты применённой
+                    рамки, внутренние: автокроп полки CV_SHELF_CROP пропускается, а движок winescan
+                    зовётся с normalize=false — в ОТВЕТ это не выходит, отдельного поля
+                    user_box_applied ни в одной схеме ответа нет. Поля НЕТ у /eval/predict.
       responses:
         "200":
           content:
@@ -275,6 +309,7 @@ paths:
                   - $ref: "#/components/schemas/ScanPhotoFlatResponse"
                   - $ref: "#/components/schemas/ScanPhotoRichResponse"
                 description: выбор формы ответа — по параметру flat, не по content negotiation
+        "400": { description: "validation_error — только rich-режим: пустой/битый файл, файл больше 25 МБ, негодная рамка box. Во flat-режиме этих кодов не бывает по построению" }
 
   /eval/predict:
     post:
@@ -285,7 +320,9 @@ paths:
         http://127.0.0.1:8080/v1/eval/predict, curl --max-time 10 c). Тот же обработчик, что
         /scan/photo?flat=1: без auth, несгораемый, HTTP 200 + {"slug": "..."} даже при низкой
         уверенности или сбое пайплайна. SLA кейса — мягкая цель ≤3 c (case.md), жёсткий лимит
-        скрипта — 10 c.
+        скрипта — 10 c. Полей, кроме image, у этого пути НЕТ и быть не должно (сверено по коду
+        26.09: routers/eval.py::eval_predict зовёт flat_scan_response без raw_box) — рамка box из
+        /scan/photo сюда не переносится, чтобы путь скрипта жюри оставался неизменным.
       requestBody:
         required: true
         content:
@@ -295,6 +332,7 @@ paths:
               required: [image]
               properties:
                 image: { type: string, format: binary }
+              additionalProperties: false
       responses:
         "200":
           content:
