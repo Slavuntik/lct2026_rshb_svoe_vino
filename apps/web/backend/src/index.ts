@@ -77,5 +77,5 @@ function wait(ms: number) {
 
 const port = Number(process.env.PORT ?? 3001);
 app.listen(port, () => {
-  console.log(`vinlab api http://localhost:${port}`);
+  console.log(`api http://localhost:${port}`);
 });
