@@ -1,44 +1,23 @@
 {
-  "name": "svoy-somelye-web",
+  "name": "vinlab",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "workspaces": [
+    "web",
+    "backend",
+    "e2e"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc -b --noEmit"
-  },
-  "dependencies": {
-    "@capacitor/core": "^8.5.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2",
-    "svoy-somelye-ocr-plugin": "file:../shell/plugins/ocr-plugin"
+    "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:backend": "npm run dev -w backend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test:e2e": "npm run test -w e2e"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.0",
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.6",
-    "@types/node": "^26.3.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "@vitejs/plugin-react": "^6.1.0",
-    "jsdom": "^30.0.1",
-    "msw": "^2.15.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "concurrently": "^9.1.2"
   },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
-  },
-  "engines": {
-    "node": ">=22"
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true
   }
 }
