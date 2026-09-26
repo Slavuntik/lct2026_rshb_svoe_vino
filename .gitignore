@@ -16,3 +16,6 @@ case-data/
 
 # Local full-stack launcher: process logs and development database.
 .local/
+
+# ТЗ кейсодержателя не распространяем (приехало с subtree-импортом, удалено 26.09)
+standalone/winescan/*.pdf
