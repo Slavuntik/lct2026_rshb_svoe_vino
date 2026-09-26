@@ -1,6 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import { API_BASE_PATH } from "../lib/env";
 import { isAdult } from "../lib/age";
+import { SHELF_HEALTH_PATH } from "../lib/shelfAvailability";
 import type {
   AnalogsPayload,
   AnalogWine,
@@ -171,6 +172,19 @@ function toCandidateWine(wine: WineFixture, score: number): ScanCandidateWine {
 
 export const handlers: HttpHandler[] = [
   http.get(`${API}/healthz`, () => HttpResponse.json({ status: "ok", index_version: "mock-0.2.0" })),
+
+  // Сервис витрин (apps/shelf-finder) вне contracts/openapi.yaml (architect,
+  // reports/architect-post-merge-review.md §1) и в этих тестах не поднят. По умолчанию
+  // мок отвечает так же, как боевой nginx без локейшна для /v1/shelf: try_files-фолбэк,
+  // 200 и наш же index.html — та самая ловушка, которую src/lib/shelfAvailability.ts
+  // обязан распознать по Content-Type, а не по коду ответа. Тесты, которым нужен живой
+  // сервис витрин, переопределяют этот хендлер через server.use(...).
+  http.get(SHELF_HEALTH_PATH, () =>
+    new HttpResponse("<!doctype html><html><body><div id=\"root\"></div></body></html>", {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    }),
+  ),
 
   // --- auth ---
   http.post(`${API}/auth/register`, async ({ request }) => {

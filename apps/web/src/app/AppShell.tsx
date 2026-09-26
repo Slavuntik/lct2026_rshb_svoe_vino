@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { useI18n } from "../i18n";
+import { useShelfAvailability } from "../lib/shelfAvailability";
 import { storage } from "../lib/storage";
 import { ChatScreen } from "./chat/ChatScreen";
 import { MetricsScreen } from "./metrics/MetricsScreen";
@@ -8,6 +9,7 @@ import { OnboardingScreen } from "./onboarding/OnboardingScreen";
 import { ProfileScreen } from "./profile/ProfileScreen";
 import { ScanScreen } from "./scan/ScanScreen";
 import { ShelfScreen } from "./shelf/ShelfScreen";
+import { ShelfUnavailableScreen } from "./shelf/ShelfUnavailableScreen";
 import { TastePassportScreen } from "./taste/TastePassportScreen";
 import { WineCardScreen } from "./wine/WineCardScreen";
 
@@ -18,11 +20,11 @@ function RequireOnboarding({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function BottomNav() {
+function BottomNav({ shelfAvailable }: { shelfAvailable: boolean }) {
   const { t } = useI18n();
   const items: Array<{ to: string; label: string }> = [
     { to: "/app/scan", label: t("nav.scan") },
-    { to: "/app/shelf", label: t("nav.shelf") },
+    ...(shelfAvailable ? [{ to: "/app/shelf", label: t("nav.shelf") }] : []),
     { to: "/app/chat", label: t("nav.chat") },
     { to: "/app/taste", label: t("nav.taste") },
     { to: "/app/profile", label: t("nav.profile") },
@@ -50,6 +52,11 @@ export default function AppShell() {
   const location = useLocation();
   const onOnboarding = location.pathname.startsWith("/app/onboarding");
   const showNav = storage.isOnboardingComplete() && !onOnboarding;
+  // Один живой чек на всё приложение (src/lib/shelfAvailability.ts) — не блокирует этот
+  // рендер: "pending" ведёт себя как "unavailable" и в навигации, и в самом роуте, пока
+  // проверка не подтвердит сервис витрин живым.
+  const shelfAvailability = useShelfAvailability();
+  const shelfAvailable = shelfAvailability === "available";
 
   return (
     <div className="app-shell">
@@ -68,7 +75,7 @@ export default function AppShell() {
             path="shelf"
             element={
               <RequireOnboarding>
-                <ShelfScreen />
+                {shelfAvailable ? <ShelfScreen /> : <ShelfUnavailableScreen />}
               </RequireOnboarding>
             }
           />
@@ -112,7 +119,7 @@ export default function AppShell() {
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
       </div>
-      {showNav && <BottomNav />}
+      {showNav && <BottomNav shelfAvailable={shelfAvailable} />}
     </div>
   );
 }
