@@ -41,3 +41,6 @@ include = ["cv*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "benchmark: замер wall-clock задержки — ненадёжен на разделяемой машине (соседние агенты/процессы), скип по умолчанию, RUN_CV_BENCHMARKS=1 включает (см. tests/test_verify.py::test_verify_p95_latency_budget, reports/ml-eng-verify-latency-test.md)",
+]

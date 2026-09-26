@@ -660,13 +660,34 @@ class LabelVerifier:
         return decision
 
 
-def benchmark(verifier: LabelVerifier, images: list[bytes], candidates: list[VerifyCandidate], n: int | None = None) -> dict:
+def benchmark(
+    verifier: LabelVerifier,
+    images: list[bytes],
+    candidates: list[VerifyCandidate],
+    n: int | None = None,
+    *,
+    warmup: bool = True,
+) -> dict:
     """Тайминги `verify()` end-to-end (нормализация + OCR + сопоставление) — для
-    отчёта (бюджет контракта: p95 <= 700 мс)."""
+    отчёта (бюджет контракта, `contracts/image-scan.md`: p95 <= 700 мс).
+
+    `warmup=True` (дефолт, reports/ml-eng-verify-latency-test.md): один прогревочный
+    вызов `verify()` ПЕРЕД замером, не попадающий в статистику. Первый вызов
+    `LabelVerifier.verify()` в процессе включает ленивую загрузку модели OCR
+    (`_load()`) — это секунды (замерено 4.6-9.0 с на разных прогонах), не миллисекунды,
+    и не часть бюджета на запрос (в бою загрузка покрыта отдельным прогревом при
+    старте — `apps/api/app/cv/factory.py::warm_up_label_verifier()`). Без явного
+    прогрева здесь замер зависел от порядка тестов (первым к `verify()` в модуле
+    обращался соседний тест, УЖЕ грея модель) — работало случайно, ломалось при
+    фильтрованном/одиночном запуске этого теста. `warmup=False` — старое поведение,
+    первый вызов внутри `timings`."""
     if not images:
         return {"n": 0}
     n = n or len(images)
     imgs = [images[i % len(images)] for i in range(n)]
+
+    if warmup:
+        verifier.verify(imgs[0], candidates)
 
     timings = []
     for data in imgs:
