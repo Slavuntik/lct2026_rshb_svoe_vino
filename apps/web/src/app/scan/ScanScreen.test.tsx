@@ -711,6 +711,24 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
     expect(screen.queryByText(/этикетка крупно/i)).not.toBeInTheDocument();
   });
 
+  it("заголовок и подзаголовок экрана — свои для «Блюдо», переключаются туда и обратно (регресс тимлида 27.09)", () => {
+    renderScan();
+    expect(screen.getByRole("heading", { name: "Скан этикетки" })).toBeInTheDocument();
+    expect(screen.getByText(/наведите камеру на этикетку/i)).toBeInTheDocument();
+
+    switchToDish();
+    expect(screen.getByRole("heading", { name: "Что подать к блюду" })).toBeInTheDocument();
+    expect(screen.getByText(/сфотографируйте блюдо/i)).toBeInTheDocument();
+    // Бутылочные заголовок/подзаголовок не должны просачиваться в режим «Блюдо».
+    expect(screen.queryByText(/^скан этикетки$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/наведите камеру на этикетку/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Бутылка" }));
+    expect(screen.getByRole("heading", { name: "Скан этикетки" })).toBeInTheDocument();
+    expect(screen.getByText(/наведите камеру на этикетку/i)).toBeInTheDocument();
+    expect(screen.queryByText(/что подать к блюду/i)).not.toBeInTheDocument();
+  });
+
   it("ручной выбор категории — лоадер свой, не «Распознаём блюдо» (без фото лоадер этот текст видеть не должен, qa-manual-hack-v16.md §2, регресс)", async () => {
     vi.spyOn(apiClient, "pairingDish").mockResolvedValue(pairingFoodResponse());
     renderScan();

@@ -480,8 +480,11 @@ export function ScanScreen() {
   return (
     <div className="screen container stack">
       <header className="screen__header">
-        <h1 className="screen__title">{t("scan.title")}</h1>
-        <p className="screen__subtitle">{t("scan.subtitle")}</p>
+        {/* Решение тимлида 27.09: заголовок/подзаголовок — та же недоделка, что была в
+            иллюстрации дропзоны (bottle-текст «Скан этикетки»/«...этикетку...» просачивался
+            в режим «Блюдо»), только выше на экране. */}
+        <h1 className="screen__title">{scanMode === "dish" ? t("scan.dishTitle") : t("scan.title")}</h1>
+        <p className="screen__subtitle">{scanMode === "dish" ? t("scan.dishSubtitle") : t("scan.subtitle")}</p>
       </header>
 
       <div className="row" data-testid="scan-mode-toggle">
