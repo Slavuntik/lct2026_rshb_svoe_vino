@@ -147,10 +147,52 @@ img {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-4);
+  /* Мягкая приподнятость поверх плоской заливки (design/ui-prototype: карточки читаются
+     отдельным слоем над страницей) — нейтральная тень на чёрном, не завязана на токены
+     палитры, тот же приём, что уже есть у .modal/.aim__grip ниже. */
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 16px rgb(0 0 0 / 5%);
 }
 
 .wine-card-image {
   border-radius: var(--radius);
+}
+
+/* --- вспомогательная графика перенесена из design/ui-prototype (см. reports/frontend-design-transfer.md):
+   мелкие цветные иконки-бейджи у характеристик вина (крепость/температура подачи) и
+   декоративные миниатюры (сорт/регион), полноразмерная photo-заглушка виноградника. Только
+   компоновка и мелкая отделка — палитра берётся из тех же токенов, что и остальной интерфейс. --- */
+
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.fact-thumb {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.wine-fact-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wine-vineyard {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  object-fit: cover;
 }
 
 /* --- прицел: пользователь сам обводит нужную бутылку (contracts/image-scan.md v0.4.10) --- */
@@ -248,6 +290,7 @@ img {
 .btn--primary {
   background: var(--accent);
   color: var(--bg);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 14%);
 }
 
 .btn--secondary {
@@ -372,12 +415,14 @@ button.badge {
 .chip {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-1);
   border-radius: var(--radius-pill);
   border: 1px solid var(--line);
   background: var(--card);
   padding: var(--space-1) var(--space-3);
   font-size: var(--fs-small);
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .chip[aria-pressed="true"],
@@ -385,6 +430,11 @@ button.badge {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--bg);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
+}
+
+.chip__icon {
+  flex-shrink: 0;
 }
 
 .divider {
@@ -449,6 +499,13 @@ button.badge {
   border-radius: var(--radius);
 }
 
+/* Иллюстрация сканера (design/ui-prototype/assets/brand/scanner.svg) — только пока фото
+   не выбрано, см. ScanScreen.tsx; чисто декоративная подсказка "сюда наводим камеру". */
+.dropzone__illustration {
+  margin: 0 auto var(--space-3);
+  opacity: 0.85;
+}
+
 .match-list {
   display: flex;
   flex-direction: column;
@@ -466,10 +523,13 @@ button.badge {
   background: var(--card);
   padding: var(--space-3);
   cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .match-item:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 8%);
 }
 
 /* v0.4.11: фото у карточек-кандидатов (candidates), similar/analogs — по-прежнему без фото. */
@@ -511,6 +571,7 @@ button.badge {
   align-self: flex-start;
   background: var(--card);
   border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 4%);
 }
 
 .chat-bubble--refusal {

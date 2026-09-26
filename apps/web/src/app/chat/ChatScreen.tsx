@@ -27,6 +27,22 @@ function nextId(): string {
 }
 
 /**
+ * Иконка кнопки отправки — перенос дизайна (design/ui-prototype/assets/brand/icon-arrow-up.svg,
+ * см. reports/frontend-design-transfer.md). fill="currentColor": .btn--primary уже красит текст
+ * в var(--bg), иконка наследует тот же цвет без отдельного токена.
+ */
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width={14} height={14} aria-hidden="true">
+      <path
+        d="M2.86193 6.86193C2.60158 7.12228 2.60158 7.54439 2.86193 7.80474C3.12228 8.06509 3.54439 8.06509 3.80474 7.80474L7.33333 4.27614L7.33333 13.3333C7.33333 13.7015 7.63181 14 8 14C8.36819 14 8.66667 13.7015 8.66667 13.3333L8.66667 4.27614L12.1953 7.80474C12.4556 8.06509 12.8777 8.06509 13.1381 7.80474C13.3984 7.54439 13.3984 7.12228 13.1381 6.86193L8.4714 2.19526C8.21106 1.93491 7.78894 1.93491 7.5286 2.19526L2.86193 6.86193Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+/**
  * Один бейдж-цитата: [n] + короткая выдержка. Правило ссылок (задача тимлида 22.09, п.2):
  * цитата-вино (есть event.wine_id) ведёт ВНУТРЬ, на /app/wine/:wineId, через навигацию
  * приложения — WineCardScreen сам отправит wine_card_viewed{from:"chat"} на загрузке карточки
@@ -385,6 +401,7 @@ export function ChatScreen() {
           placeholder={mode === "ask" ? t("chat.placeholder") : t("chat.analogPlaceholder")}
         />
         <button type="submit" className="btn btn--primary" disabled={busy || !message.trim()}>
+          {mode === "ask" && <SendIcon />}
           {mode === "ask" ? t("chat.send") : t("chat.analogSubmit")}
         </button>
       </form>
