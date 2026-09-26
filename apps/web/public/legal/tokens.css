@@ -1,0 +1,74 @@
+/* Дизайн-токены «Свой Сомелье» v0.1 — ЗАМОРОЖЕНЫ (contracts/tokens.css).
+   Это РУЧНАЯ копия для статических страниц public/legal/ (privacy.html, consent.html,
+   terms.html): они не проходят через сборку Vite и не могут импортировать
+   src/styles/tokens.css как модуль, поэтому агент D держит здесь синхронизированный
+   байт-в-байт дубликат вместо хардкода цветов. Если contracts/tokens.css изменится —
+   обновить и этот файл (см. reports/d-report.md, раздел «Предложения к контрактам»). */
+
+:root {
+  /* палитра: винная тёплая бумага / бордо */
+  --bg: #FBF9F7;
+  --ink: #2B2226;
+  --muted: #6F6167;
+  --accent: #7D2A3C;
+  --accent-soft: #F3E6E9;
+  --line: #E6DDDA;
+  --card: #FFFFFF;
+  --ok: #3E6B4F;
+  --ok-bg: #E9F0EB;
+  --warn: #96661C;
+  --warn-bg: #F5ECDC;
+  --mono-bg: #F2EDEB;
+
+  /* типографика: display — Cormorant, текст — IBM Plex Sans, данные — IBM Plex Mono */
+  --font-display: "Cormorant", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --fs-h1: clamp(34px, 6vw, 48px);
+  --fs-h2: 28px;
+  --fs-body: 16px;
+  --fs-small: 13px;
+  --fs-caption: 11.5px;
+
+  /* сетка */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 14px;
+  --space-4: 22px;
+  --space-5: 36px;
+  --radius: 10px;
+  --radius-pill: 100px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C1518;
+    --ink: #EDE5E2;
+    --muted: #9C8E93;
+    --accent: #CE7A88;
+    --accent-soft: #33222A;
+    --line: #3A3034;
+    --card: #241C20;
+    --ok: #7FB08F;
+    --ok-bg: #222A26;
+    --warn: #D2A65A;
+    --warn-bg: #2E2820;
+    --mono-bg: #2A2226;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #1C1518;
+  --ink: #EDE5E2;
+  --muted: #9C8E93;
+  --accent: #CE7A88;
+  --accent-soft: #33222A;
+  --line: #3A3034;
+  --card: #241C20;
+  --ok: #7FB08F;
+  --ok-bg: #222A26;
+  --warn: #D2A65A;
+  --warn-bg: #2E2820;
+  --mono-bg: #2A2226;
+}
