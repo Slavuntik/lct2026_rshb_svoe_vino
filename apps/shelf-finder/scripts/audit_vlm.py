@@ -95,7 +95,9 @@ def main():
     p.add_argument("--photos", type=Path, required=True)
     p.add_argument("--files", nargs="+", required=True)
     p.add_argument("--model", default="qwen3.8-27b")
-    p.add_argument("--mode", choices=["full", "crops", "guided"], default="full")
+    p.add_argument(
+        "--mode", choices=["full", "crops", "guided", "guided-fields"], default="full"
+    )
     p.add_argument("--native-results", type=Path)
     p.add_argument("--catalog", type=Path)
     p.add_argument("--limit", type=int, default=12)
@@ -106,7 +108,7 @@ def main():
         p.error("--limit must be between 1 and 24")
     if a.mode != "full" and not a.native_results:
         p.error("crop modes require --native-results")
-    if a.mode == "guided" and not a.catalog:
+    if a.mode.startswith("guided") and not a.catalog:
         p.error("guided mode requires --catalog")
     config = {}
     if a.env_file:
@@ -148,7 +150,7 @@ def main():
                 observations = select_crops(native[filename], a.limit)
                 image = contact_sheet(image, observations)
                 prompt = CROP_PROMPT
-                if a.mode == "guided":
+                if a.mode.startswith("guided"):
                     candidates = []
                     for i, o in enumerate(observations):
                         candidates.append(
@@ -159,6 +161,18 @@ def main():
                                         "id": s,
                                         "name": catalog[s]["name"],
                                         "winery": catalog[s].get("winery"),
+                                        **(
+                                            {
+                                                k: catalog[s].get(k)
+                                                for k in (
+                                                    "color",
+                                                    "grapes",
+                                                    "attributes",
+                                                )
+                                            }
+                                            if a.mode == "guided-fields"
+                                            else {}
+                                        ),
                                     }
                                     for s in o.get("semanticCandidates", [])[:5]
                                     if s in catalog
@@ -166,6 +180,8 @@ def main():
                             }
                         )
                     prompt = GUIDED_PROMPT + json.dumps(candidates, ensure_ascii=False)
+                    if a.mode == "guided-fields":
+                        prompt += "\nСравни различия всех кандидатов. Одноимённые вина разных цветов — разные SKU. Название сорта (например Cabernet Franc) не подтверждает производителя. Не выбирай винодельню без читаемого бренда/серии. Цвет вина через стекло и освещение ненадёжен: ищи слова rose/blanc/розовое/белое. Если различие не видно, selected_id=null."
             image.save(
                 a.output.parent
                 / (a.output.stem + "-" + Path(filename).stem + "-input.jpg"),

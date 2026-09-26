@@ -1,0 +1,2720 @@
+{
+  "independentGroundTruth": false,
+  "thresholdsChanged": false,
+  "datasetSha256": "977e3597364f99d3a4b9bd26f4da001cb649cda2b40db04af238a559df02faa1",
+  "nativeResultsSha256": "f2908e9378c0c0f13894b671b6daf2b6662f08f78ef26c97f231ea60491a2838",
+  "runs": {
+    "qwen-guided": {
+      "rawSha256": "dd09a4d8ef394c0092a57505589099b362ebe1cfb6250d0dfc89578686e4fae3",
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 19.813,
+              "maxSeconds": 21.539
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 19.536,
+              "maxSeconds": 19.536
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 20.676000000000002,
+              "maxSeconds": 21.539
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 19.536
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                26,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 19.813
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 21.539
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 19.813,
+              "maxSeconds": 21.539
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 19.536,
+              "maxSeconds": 19.536
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 20.676000000000002,
+              "maxSeconds": 21.539
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 19.536
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                13,
+                26,
+                31,
+                38,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 19.813
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [
+                47,
+                50
+              ],
+              "wrongRegions": [],
+              "seconds": 21.539
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 19813.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.7131430506706238,
+                  0.34791654348373413,
+                  0.8008133172988892,
+                  0.5919557213783264
+                ]
+              },
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.6384572386741638,
+                  0.3489915430545807,
+                  0.7187016606330872,
+                  0.5856979489326477
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.3554759919643402,
+                  0.40040549635887146,
+                  0.4389707148075104,
+                  0.5837365388870239
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.7243938446044922,
+                  0.653774619102478,
+                  0.8033893704414368,
+                  0.9194635152816772
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.4558243751525879,
+                  0.09840606153011322,
+                  0.5355547666549683,
+                  0.3082650303840637
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.6435349583625793,
+                  0.6454793214797974,
+                  0.7240058779716492,
+                  0.9165346026420593
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.5346786379814148,
+                  0.09871013462543488,
+                  0.61534184217453,
+                  0.30818992853164673
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 19536.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [
+              {
+                "wineId": "derbent-vino-desono-shardone-beloe-suhoe-125",
+                "box": [
+                  0.6515730619430542,
+                  0.7513681650161743,
+                  0.7175595760345459,
+                  0.8988057971000671
+                ]
+              },
+              {
+                "wineId": "sober-bash-dve-doliny-tsimlyanskiy-2023-tsimlyanskiy-chernyy-krasnoe-suhoe-13",
+                "box": [
+                  0.3808741867542267,
+                  0.2018357217311859,
+                  0.45020875334739685,
+                  0.4046432375907898
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 21539.0
+            }
+          }
+        ]
+      },
+      "usage": {
+        "requests": 3,
+        "tokens": 16531
+      }
+    },
+    "qwen-fields": {
+      "rawSha256": "7ecb648046f2b895a3837020553dcaf5f5d11a71ae699e31fb83e4632775af03",
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided-fields",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 0,
+              "accepted": 8,
+              "photos": 3,
+              "medianSeconds": 25.94,
+              "maxSeconds": 44.655
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 1,
+              "medianSeconds": 25.94,
+              "maxSeconds": 25.94
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 33.2545,
+              "maxSeconds": 44.655
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "missedRegions": [
+                3,
+                4
+              ],
+              "wrongRegions": [
+                14,
+                17,
+                5
+              ],
+              "seconds": 25.94
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [
+                26
+              ],
+              "seconds": 44.655
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 21.854
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 0,
+              "accepted": 8,
+              "photos": 3,
+              "medianSeconds": 25.94,
+              "maxSeconds": 44.655
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 1,
+              "medianSeconds": 25.94,
+              "maxSeconds": 25.94
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 33.2545,
+              "maxSeconds": 44.655
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "missedRegions": [
+                3,
+                4
+              ],
+              "wrongRegions": [
+                14,
+                17,
+                5
+              ],
+              "seconds": 25.94
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "missedRegions": [
+                1,
+                13,
+                31,
+                38,
+                49
+              ],
+              "wrongRegions": [
+                26
+              ],
+              "seconds": 44.655
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                47,
+                50
+              ],
+              "wrongRegions": [],
+              "seconds": 21.854
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              },
+              {
+                "wineId": "balaklava-muskat",
+                "box": [
+                  0.33151352405548096,
+                  0.0002087116299662739,
+                  0.4259398281574249,
+                  0.13709372282028198
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 44655.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.3554759919643402,
+                  0.40040549635887146,
+                  0.4389707148075104,
+                  0.5837365388870239
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              },
+              {
+                "wineId": "olymp-winery-adagum-cabernet-sauvignon-kaberne-sovinon-krasnoe-suhoe-11",
+                "box": [
+                  0.45878297090530396,
+                  0.635175883769989,
+                  0.5257956385612488,
+                  0.8393665552139282
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.4558243751525879,
+                  0.09840606153011322,
+                  0.5355547666549683,
+                  0.3082650303840637
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.5346786379814148,
+                  0.09871013462543488,
+                  0.61534184217453,
+                  0.30818992853164673
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 25940.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [
+              {
+                "wineId": "derbent-vino-desono-shardone-beloe-suhoe-125",
+                "box": [
+                  0.6515730619430542,
+                  0.7513681650161743,
+                  0.7175595760345459,
+                  0.8988057971000671
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 21854.0
+            }
+          }
+        ]
+      },
+      "usage": {
+        "requests": 3,
+        "tokens": 27029
+      }
+    },
+    "qwen-references": {
+      "rawSha256": "8d9903c0eb0ac6b3147505371a1cc8607d7cb99a9eaf640b6e807d08aad73204",
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided-references",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 7,
+              "ambiguousKnown": 0,
+              "wrong": 5,
+              "unreviewedAccepted": 12,
+              "accepted": 24,
+              "photos": 3,
+              "medianSeconds": 33.095,
+              "maxSeconds": 35.199
+            },
+            "development": {
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 1,
+              "medianSeconds": 32.546,
+              "maxSeconds": 32.546
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 12,
+              "accepted": 19,
+              "photos": 2,
+              "medianSeconds": 34.147,
+              "maxSeconds": 35.199
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "missedRegions": [
+                9
+              ],
+              "wrongRegions": [
+                17,
+                5
+              ],
+              "seconds": 32.546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 7,
+              "accepted": 12,
+              "missedRegions": [],
+              "wrongRegions": [
+                26,
+                31
+              ],
+              "seconds": 35.199
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 5,
+              "accepted": 7,
+              "missedRegions": [],
+              "wrongRegions": [
+                13
+              ],
+              "seconds": 33.095
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 7,
+              "ambiguousKnown": 0,
+              "wrong": 5,
+              "unreviewedAccepted": 12,
+              "accepted": 24,
+              "photos": 3,
+              "medianSeconds": 33.095,
+              "maxSeconds": 35.199
+            },
+            "development": {
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 1,
+              "medianSeconds": 32.546,
+              "maxSeconds": 32.546
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 3,
+              "unreviewedAccepted": 12,
+              "accepted": 19,
+              "photos": 2,
+              "medianSeconds": 34.147,
+              "maxSeconds": 35.199
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "missedRegions": [
+                9
+              ],
+              "wrongRegions": [
+                17,
+                5
+              ],
+              "seconds": 32.546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 7,
+              "accepted": 12,
+              "missedRegions": [
+                13,
+                49
+              ],
+              "wrongRegions": [
+                26,
+                31
+              ],
+              "seconds": 35.199
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 5,
+              "accepted": 7,
+              "missedRegions": [
+                47,
+                50
+              ],
+              "wrongRegions": [
+                13
+              ],
+              "seconds": 33.095
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              },
+              {
+                "wineId": "balaklava-muskat",
+                "box": [
+                  0.33151352405548096,
+                  0.0002087116299662739,
+                  0.4259398281574249,
+                  0.13709372282028198
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-imperatorskoe-polusuhoe-shardone-beloe-12",
+                "box": [
+                  0.23737983405590057,
+                  0.24091938138008118,
+                  0.31950056552886963,
+                  0.45916929841041565
+                ]
+              },
+              {
+                "wineId": "rozovoe-polusladkoe-1",
+                "box": [
+                  0.07356992363929749,
+                  0.24058330059051514,
+                  0.15160486102104187,
+                  0.4540015757083893
+                ]
+              },
+              {
+                "wineId": "bryut-rozovoe-zolotaya-balka",
+                "box": [
+                  0.1926737278699875,
+                  0.5183513760566711,
+                  0.2683824896812439,
+                  0.71080482006073
+                ]
+              },
+              {
+                "wineId": "vino-suhoe-rozovoe-endemy-kaberne-sovinon",
+                "box": [
+                  0.7766956090927124,
+                  0.2469216287136078,
+                  0.8593100309371948,
+                  0.46660852432250977
+                ]
+              },
+              {
+                "wineId": "balaklava-bryut-rezerv",
+                "box": [
+                  0.4388575255870819,
+                  0.0008260774193331599,
+                  0.5262560248374939,
+                  0.1366734653711319
+                ]
+              },
+              {
+                "wineId": "polusladkoe-krasnoe-zolotaya-balka",
+                "box": [
+                  0.2716268301010132,
+                  0.524281919002533,
+                  0.3480854034423828,
+                  0.7123165130615234
+                ]
+              },
+              {
+                "wineId": "aristov-anima-millesimato",
+                "box": [
+                  0.660159707069397,
+                  0.2740557789802551,
+                  0.7344361543655396,
+                  0.4580721855163574
+                ]
+              },
+              {
+                "wineId": "shato-taman-bryut",
+                "box": [
+                  0.8486703038215637,
+                  0.2409241646528244,
+                  0.9230916500091553,
+                  0.47019901871681213
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-abrau-durso-brut-rose-reserve-pino-nuar-beloe-bryut-12",
+                "box": [
+                  0.16016292572021484,
+                  0.25825661420822144,
+                  0.24693545699119568,
+                  0.4601952135562897
+                ]
+              },
+              {
+                "wineId": "polusuhoe-beloe-zolotaya-balka",
+                "box": [
+                  0.1184854507446289,
+                  0.5173621773719788,
+                  0.19757480919361115,
+                  0.708898663520813
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 35199.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-grape-dance-1",
+                "box": [
+                  0.7131430506706238,
+                  0.34791654348373413,
+                  0.8008133172988892,
+                  0.5919557213783264
+                ]
+              },
+              {
+                "wineId": "shato-taman-grape-dance-1",
+                "box": [
+                  0.6384572386741638,
+                  0.3489915430545807,
+                  0.7187016606330872,
+                  0.5856979489326477
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              },
+              {
+                "wineId": "olymp-winery-adagum-cabernet-sauvignon-kaberne-sovinon-krasnoe-suhoe-11",
+                "box": [
+                  0.45878297090530396,
+                  0.635175883769989,
+                  0.5257956385612488,
+                  0.8393665552139282
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.5346786379814148,
+                  0.09871013462543488,
+                  0.61534184217453,
+                  0.30818992853164673
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 32546.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [
+              {
+                "wineId": "chteau-le-grand-vostock-grand-karsov-shardone-beloe-suhoe-14",
+                "box": [
+                  0.5805346965789795,
+                  0.7467311024665833,
+                  0.6539852023124695,
+                  0.9031006097793579
+                ]
+              },
+              {
+                "wineId": "golubitskoe-estate-risling-oranzh-risling-reynskiy-oranzhevoe-suhoe-13",
+                "box": [
+                  0.6636664271354675,
+                  0.21921055018901825,
+                  0.7264630794525146,
+                  0.4047211706638336
+                ]
+              },
+              {
+                "wineId": "derbent-vino-desono-shardone-beloe-suhoe-125",
+                "box": [
+                  0.6515730619430542,
+                  0.7513681650161743,
+                  0.7175595760345459,
+                  0.8988057971000671
+                ]
+              },
+              {
+                "wineId": "vinodelnya-zhakov-rkatsiteli-eskeyp-krasnoe-suhoe-119",
+                "box": [
+                  0.8397989869117737,
+                  0.7320412397384644,
+                  0.9127992987632751,
+                  0.8882434964179993
+                ]
+              },
+              {
+                "wineId": "ivan-ksenia-kruz-argonne-sauvignon-blanc-sovinon-blan-beloe-suhoe-115",
+                "box": [
+                  0.5137949585914612,
+                  0.753273069858551,
+                  0.5806657671928406,
+                  0.9058182835578918
+                ]
+              },
+              {
+                "wineId": "golubitskoe-estate-risling-beloe-suhoe-125",
+                "box": [
+                  0.7340871095657349,
+                  0.19639801979064941,
+                  0.8023906946182251,
+                  0.40333113074302673
+                ]
+              },
+              {
+                "wineId": "vinodelnya-marchenko-kaberne-sovinon-krasnoe-suhoe-14",
+                "box": [
+                  0.5843383073806763,
+                  0.4779664874076843,
+                  0.6504445672035217,
+                  0.6203742027282715
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 33095.0
+            }
+          }
+        ]
+      },
+      "verifiedEvaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided-references-geometry-checked",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 3,
+              "medianSeconds": 33.095,
+              "maxSeconds": 35.199
+            },
+            "development": {
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "photos": 1,
+              "medianSeconds": 32.546,
+              "maxSeconds": 32.546
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "photos": 2,
+              "medianSeconds": 34.147,
+              "maxSeconds": 35.199
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "missedRegions": [
+                9
+              ],
+              "wrongRegions": [],
+              "seconds": 32.546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                26,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 35.199
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 33.095
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 3,
+              "medianSeconds": 33.095,
+              "maxSeconds": 35.199
+            },
+            "development": {
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "photos": 1,
+              "medianSeconds": 32.546,
+              "maxSeconds": 32.546
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "photos": 2,
+              "medianSeconds": 34.147,
+              "maxSeconds": 35.199
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 3,
+              "missedRegions": [
+                9
+              ],
+              "wrongRegions": [],
+              "seconds": 32.546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                13,
+                26,
+                31,
+                38,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 35.199
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                17,
+                47,
+                50
+              ],
+              "wrongRegions": [],
+              "seconds": 33.095
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 35199.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-grape-dance-1",
+                "box": [
+                  0.7131430506706238,
+                  0.34791654348373413,
+                  0.8008133172988892,
+                  0.5919557213783264
+                ]
+              },
+              {
+                "wineId": "shato-taman-grape-dance-1",
+                "box": [
+                  0.6384572386741638,
+                  0.3489915430545807,
+                  0.7187016606330872,
+                  0.5856979489326477
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 32546.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [],
+            "timingsMs": {
+              "processing": 33095.0
+            }
+          }
+        ]
+      },
+      "verificationCounts": {
+        "native_accepted": 4,
+        "unverified": 20
+      },
+      "usage": {
+        "requests": 12,
+        "tokens": 45263
+      }
+    },
+    "qwen-check-baseline": {
+      "rawSha256": "c199d61b2a1481545ce9cc960380091becfd502770378ecec94eb651020da45b",
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided",
+        "independentGroundTruth": false,
+        "cropCount": 24,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 2,
+              "medianSeconds": 31.003500000000003,
+              "maxSeconds": 32.32
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 29.687,
+              "maxSeconds": 29.687
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "photos": 1,
+              "medianSeconds": 32.32,
+              "maxSeconds": 32.32
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [
+                10,
+                13
+              ],
+              "seconds": 29.687
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                35,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 32.32
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 5,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 21.474844760959968,
+              "maxSeconds": 24.110638660844415
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 18.83905086107552,
+              "maxSeconds": 18.83905086107552
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "photos": 1,
+              "medianSeconds": 24.110638660844415,
+              "maxSeconds": 24.110638660844415
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 18.83905086107552
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110638660844415
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 11,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 2,
+              "medianSeconds": 31.003500000000003,
+              "maxSeconds": 32.32
+            },
+            "development": {
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 29.687,
+              "maxSeconds": 29.687
+            },
+            "regression": {
+              "positives": 3,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "photos": 1,
+              "medianSeconds": 32.32,
+              "maxSeconds": 32.32
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 2,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [
+                19,
+                24,
+                27,
+                34
+              ],
+              "wrongRegions": [
+                10,
+                13
+              ],
+              "seconds": 29.687
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                35,
+                49,
+                54
+              ],
+              "wrongRegions": [],
+              "seconds": 32.32
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "matches": [
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.33354806900024414,
+                  0.3309086859226227,
+                  0.4083089530467987,
+                  0.5476831197738647
+                ]
+              },
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.5031046867370605,
+                  0.0028569032438099384,
+                  0.5823924541473389,
+                  0.25427719950675964
+                ]
+              },
+              {
+                "wineId": "agora-saperavi",
+                "box": [
+                  0.4095597267150879,
+                  0.3216730058193207,
+                  0.4754317104816437,
+                  0.5440686941146851
+                ]
+              },
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.42470216751098633,
+                  0.0037063981872051954,
+                  0.4997934103012085,
+                  0.2558879554271698
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 29687.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "matches": [],
+            "timingsMs": {
+              "processing": 32320.0
+            }
+          }
+        ]
+      },
+      "usage": {
+        "requests": 2,
+        "tokens": 11014
+      }
+    },
+    "qwen-check-references": {
+      "rawSha256": "1d5c91acdf84e00886f73eb1671300451233060826921dec6cf72023a7bdc438",
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided-references",
+        "independentGroundTruth": false,
+        "cropCount": 24,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 5,
+              "unreviewedAccepted": 15,
+              "accepted": 23,
+              "photos": 2,
+              "medianSeconds": 43.018,
+              "maxSeconds": 44.345
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 6,
+              "accepted": 12,
+              "photos": 1,
+              "medianSeconds": 44.345,
+              "maxSeconds": 44.345
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 9,
+              "accepted": 11,
+              "photos": 1,
+              "medianSeconds": 41.691,
+              "maxSeconds": 41.691
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 6,
+              "accepted": 12,
+              "missedRegions": [],
+              "wrongRegions": [
+                10,
+                13,
+                18,
+                5
+              ],
+              "seconds": 44.345
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 9,
+              "accepted": 11,
+              "missedRegions": [],
+              "wrongRegions": [
+                35
+              ],
+              "seconds": 41.691
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 5,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 21.474844760959968,
+              "maxSeconds": 24.110638660844415
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 18.83905086107552,
+              "maxSeconds": 18.83905086107552
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "photos": 1,
+              "medianSeconds": 24.110638660844415,
+              "maxSeconds": 24.110638660844415
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 18.83905086107552
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110638660844415
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 11,
+              "correct": 3,
+              "ambiguousKnown": 0,
+              "wrong": 5,
+              "unreviewedAccepted": 15,
+              "accepted": 23,
+              "photos": 2,
+              "medianSeconds": 43.018,
+              "maxSeconds": 44.345
+            },
+            "development": {
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 6,
+              "accepted": 12,
+              "photos": 1,
+              "medianSeconds": 44.345,
+              "maxSeconds": 44.345
+            },
+            "regression": {
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 9,
+              "accepted": 11,
+              "photos": 1,
+              "medianSeconds": 41.691,
+              "maxSeconds": 41.691
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 6,
+              "accepted": 12,
+              "missedRegions": [
+                19,
+                24,
+                27,
+                34
+              ],
+              "wrongRegions": [
+                10,
+                13,
+                18,
+                5
+              ],
+              "seconds": 44.345
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 1,
+              "unreviewedAccepted": 9,
+              "accepted": 11,
+              "missedRegions": [
+                54
+              ],
+              "wrongRegions": [
+                35
+              ],
+              "seconds": 41.691
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "matches": [
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.33354806900024414,
+                  0.3309086859226227,
+                  0.4083089530467987,
+                  0.5476831197738647
+                ]
+              },
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.5031046867370605,
+                  0.0028569032438099384,
+                  0.5823924541473389,
+                  0.25427719950675964
+                ]
+              },
+              {
+                "wineId": "agora-kaberne-sovinon",
+                "box": [
+                  0.4095597267150879,
+                  0.3216730058193207,
+                  0.4754317104816437,
+                  0.5440686941146851
+                ]
+              },
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.42470216751098633,
+                  0.0037063981872051954,
+                  0.4997934103012085,
+                  0.2558879554271698
+                ]
+              },
+              {
+                "wineId": "vinodelnya-begildeeva-merlo-krasnoe-suhoe-14",
+                "box": [
+                  0.011670665815472603,
+                  0.609594464302063,
+                  0.06753142178058624,
+                  0.7752965092658997
+                ]
+              },
+              {
+                "wineId": "vinodelnya-vedernikov-vedernikov-krasnostop-zolotovskiy-magnum-krasnoe-suhoe-145",
+                "box": [
+                  0.8383800387382507,
+                  0.5805503129959106,
+                  0.9067986607551575,
+                  0.7751690149307251
+                ]
+              },
+              {
+                "wineId": "vinodelnya-marko-assamblyazh-kaberne-sovinon-krasnoe-suhoe-14",
+                "box": [
+                  0.9011000394821167,
+                  0.31543534994125366,
+                  0.9815502166748047,
+                  0.537469744682312
+                ]
+              },
+              {
+                "wineId": "usadba-divnomorskoe-rose-vione-rozovoe-suhoe-125",
+                "box": [
+                  0.5394153594970703,
+                  0.3212454915046692,
+                  0.5973399877548218,
+                  0.5391893982887268
+                ]
+              },
+              {
+                "wineId": "vinodelnya-begildeeva-kaberne-sovinon-krasnoe-suhoe-14",
+                "box": [
+                  0.670944094657898,
+                  0.8271547555923462,
+                  0.7309819459915161,
+                  0.9656073451042175
+                ]
+              },
+              {
+                "wineId": "vinodelnya-begildeeva-kaberne-sovinon-krasnoe-suhoe-14",
+                "box": [
+                  0.5944857001304626,
+                  0.006822595838457346,
+                  0.66867995262146,
+                  0.25487977266311646
+                ]
+              },
+              {
+                "wineId": "vinodelnya-begildeeva-kaberne-sovinon-merlo-krasnoe-suhoe-14",
+                "box": [
+                  0.7465606331825256,
+                  0.8378074765205383,
+                  0.8108557462692261,
+                  0.9981282353401184
+                ]
+              },
+              {
+                "wineId": "vinodelnya-begildeeva-merlo-krasnoe-suhoe-14",
+                "box": [
+                  0.7640520930290222,
+                  0.3205862045288086,
+                  0.8368610143661499,
+                  0.5337537527084351
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 44345.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "matches": [
+              {
+                "wineId": "abrau-dyurso-imperatorskoe-bryut-shardone-beloe-12",
+                "box": [
+                  0.2857591509819031,
+                  0.0008222103351727128,
+                  0.3797399401664734,
+                  0.18107104301452637
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-russkoe-igristoe-koshernoe-polusladkoe-shardone-beloe-12",
+                "box": [
+                  0.08971931785345078,
+                  0.004438905976712704,
+                  0.19371582567691803,
+                  0.2063918560743332
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-russkoe-igristoe-koshernoe-polusladkoe-shardone-beloe-12",
+                "box": [
+                  0.1877083033323288,
+                  0.0,
+                  0.28666016459465027,
+                  0.20668216049671173
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-russkoe-igristoe-polusuhoe-shardone-beloe-12",
+                "box": [
+                  0.3480171263217926,
+                  0.5208757519721985,
+                  0.4134984016418457,
+                  0.6830858588218689
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+                "box": [
+                  0.5730293989181519,
+                  0.0005754375597462058,
+                  0.6773067712783813,
+                  0.1833224594593048
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-imperatorskoe-polusladkoe-shardone-beloe-12",
+                "box": [
+                  0.0001851272681960836,
+                  0.0009866381296887994,
+                  0.08418415486812592,
+                  0.20461158454418182
+                ]
+              },
+              {
+                "wineId": "aristov-anima-pinot-grigio-blush",
+                "box": [
+                  0.5996200442314148,
+                  0.5252865552902222,
+                  0.6642054319381714,
+                  0.6824548840522766
+                ]
+              },
+              {
+                "wineId": "esse-rose-cuvee-prestige-pino-nuar-rozovoe-bryut-13",
+                "box": [
+                  0.42215219140052795,
+                  0.25022947788238525,
+                  0.4902231991291046,
+                  0.4674021601676941
+                ]
+              },
+              {
+                "wineId": "aristov-anima-pinot-grigio-blush",
+                "box": [
+                  0.513994574546814,
+                  0.5309571027755737,
+                  0.5784993767738342,
+                  0.6850842833518982
+                ]
+              },
+              {
+                "wineId": "katharon-brut",
+                "box": [
+                  0.4561960995197296,
+                  0.7600864171981812,
+                  0.5253415107727051,
+                  0.9316566586494446
+                ]
+              },
+              {
+                "wineId": "abrau-dyurso-imperatorskoe-polusladkoe-shardone-beloe-12",
+                "box": [
+                  0.12707634270191193,
+                  0.5389904975891113,
+                  0.18973568081855774,
+                  0.6850817799568176
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 41691.0
+            }
+          }
+        ]
+      },
+      "verifiedEvaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided-references-geometry-checked",
+        "independentGroundTruth": false,
+        "cropCount": 24,
+        "invalidProposals": {},
+        "requestErrors": 0,
+        "missingCropResponses": 0,
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "photos": 2,
+              "medianSeconds": 43.018,
+              "maxSeconds": 44.345
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "photos": 1,
+              "medianSeconds": 44.345,
+              "maxSeconds": 44.345
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "photos": 1,
+              "medianSeconds": 41.691,
+              "maxSeconds": 41.691
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "missedRegions": [
+                10,
+                13
+              ],
+              "wrongRegions": [],
+              "seconds": 44.345
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                35,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 41.691
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 6,
+              "correct": 5,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 21.474844760959968,
+              "maxSeconds": 24.110638660844415
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 18.83905086107552,
+              "maxSeconds": 18.83905086107552
+            },
+            "regression": {
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "photos": 1,
+              "medianSeconds": 24.110638660844415,
+              "maxSeconds": 24.110638660844415
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 18.83905086107552
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 2,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110638660844415
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 11,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "photos": 2,
+              "medianSeconds": 43.018,
+              "maxSeconds": 44.345
+            },
+            "development": {
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "photos": 1,
+              "medianSeconds": 44.345,
+              "maxSeconds": 44.345
+            },
+            "regression": {
+              "positives": 3,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "photos": 1,
+              "medianSeconds": 41.691,
+              "maxSeconds": 41.691
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-59.jpg",
+              "split": "development",
+              "positives": 8,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 2,
+              "missedRegions": [
+                10,
+                13,
+                19,
+                24,
+                27,
+                34
+              ],
+              "wrongRegions": [],
+              "seconds": 44.345
+            },
+            {
+              "file": "photo_2026-09-24_17-34-26.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 0,
+              "missedRegions": [
+                35,
+                49,
+                54
+              ],
+              "wrongRegions": [],
+              "seconds": 41.691
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-33-59.jpg",
+            "matches": [
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.5031046867370605,
+                  0.0028569032438099384,
+                  0.5823924541473389,
+                  0.25427719950675964
+                ]
+              },
+              {
+                "wineId": "agora-pino-nuar",
+                "box": [
+                  0.42470216751098633,
+                  0.0037063981872051954,
+                  0.4997934103012085,
+                  0.2558879554271698
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 44345.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-26.jpg",
+            "matches": [],
+            "timingsMs": {
+              "processing": 41691.0
+            }
+          }
+        ]
+      },
+      "verificationCounts": {
+        "unverified": 21,
+        "native_accepted": 2
+      },
+      "usage": {
+        "requests": 8,
+        "tokens": 30572
+      }
+    }
+  },
+  "abortedPilot": {
+    "excludedFromEvaluation": true,
+    "rawSha256": "bc68e87292cb030624865f87daf21a109c2137f28507cabdfd3bcbcd4f7a0847",
+    "savedRequests": 5,
+    "recordedTokens": 23571,
+    "errors": [
+      "malformed_response",
+      null,
+      "malformed_response",
+      "malformed_response",
+      null
+    ],
+    "note": "Stopped after verbose responses without enforced JSON. An in-flight request may not be recorded."
+  }
+}

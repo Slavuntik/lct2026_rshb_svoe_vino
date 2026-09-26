@@ -43,6 +43,8 @@ def proposals(row):
 
 
 def report(dataset, raw, native):
+    if any(row.get("complete") is False for row in raw["rows"]):
+        raise ValueError("Cannot score an unfinished reference run")
     rows = []
     invalid = []
     selected = []
@@ -84,6 +86,22 @@ def report(dataset, raw, native):
         "independentGroundTruth": False,
         "cropCount": sum(len(r["crops"]) for r in raw["rows"]),
         "invalidProposals": dict(Counter(invalid)),
+        "requestErrors": sum(
+            bool(request.get("error"))
+            for row in raw["rows"]
+            for request in row.get("requests", [row])
+        ),
+        "missingCropResponses": sum(
+            len(
+                {c["crop_id"] for c in row["crops"]}
+                - {
+                    b.get("crop_id")
+                    for b in row.get("parsed", {}).get("bottles", [])
+                    if isinstance(b, dict) and type(b.get("crop_id")) is int
+                }
+            )
+            for row in raw["rows"]
+        ),
         "selectedCropEvaluation": evaluate(subset, {"rows": rows}),
         "nativeOnSameCrops": evaluate(subset, {"rows": selected}),
         "wholePhotoEvaluation": evaluate(dataset, {"rows": rows}),
