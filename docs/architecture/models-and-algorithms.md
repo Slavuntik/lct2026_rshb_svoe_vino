@@ -137,7 +137,7 @@ D1 — не только смена чекпойнта (G6 рекомендов�
 | Размер | mobile-детектор 4.8 МБ, распознаватель 7.7 МБ (измерено: `~/.paddlex/official_models/`) |
 | Где исполняется | CPU (paddlepaddle); засечка: oneDNN отключён на ams3 из-за бага paddlepaddle 3.3.1 (`cv/verify.py` докстринг) |
 | Задержка | 320px вход: ~420 мс; 448px: ~800 мс (`reports/g-report.md`, дев-машина); на ams3 CPU — 2.3-3.0 с p95 в изоляции (`reports/g5-accuracy.md`); ~4.0 с/кроп 640px на слабом CPU (`reports/cpu-path-study.md`) |
-| Бюджет | ≤700 мс p95 для `verify()` целиком (контракт v0.4.4) — не всегда держится под нагрузкой Mac (флейк `test_verify_p95_latency_budget`, `reports/h1-cpu-path.md`) |
+| Бюджет | ≤700 мс p95 для `verify()` целиком — **цель обычного окружения, не наблюдаемое на стенде** (контракт v0.4.4, переквалифицирован в v0.4.19). Мерялось на Mac: p50 456 мс (`reports/ml-eng-verify-latency-test.md`), и даже там не всегда держалось под нагрузкой. На ams3 (4 vCPU) разовый прогон при hack-v18 — **p50 1993 / p95 2118 / max 2240 мс** при n=30 (`reports/devops-hack-v18.md`); причина — обязательный обход бага oneDNN у paddlepaddle 3.3.1 (`ENABLE_MKLDNN_BYDEFAULT=0 FLAGS_use_mkldnn=0`, `infra/ams3/README.md`), не регрессия. Сквозной бюджет скана соблюдается: `flat_ms` 4650/6416/6537 мс против лимита 10 с. Бенчмарк `test_verify_p95_latency_budget` с hack-v18 скипается по умолчанию, включается `RUN_CV_BENCHMARKS=1` |
 | Лицензия | Apache License 2.0 (проект PaddleOCR/PaddlePaddle) |
 
 ### 1.4 VLM 27B через наш GPU-шлюз
