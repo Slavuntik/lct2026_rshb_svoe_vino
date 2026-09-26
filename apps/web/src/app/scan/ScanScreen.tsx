@@ -514,8 +514,14 @@ export function ScanScreen() {
           <img src={photoPreviewUrl} alt={t("scan.uploadChosen", { name: photoFile?.name ?? "" })} className="dropzone__preview" />
         )}
         {/* Иллюстрация переноса дизайна (design/ui-prototype/assets/brand/scanner.svg) — только
-            пока фото не выбрано, чисто декоративная подсказка «сюда наводим камеру». */}
-        {!photoPreviewUrl && (
+            для режима «Бутылка» и только пока фото не выбрано (декоративная подсказка «сюда
+            наводим камеру»). Решение тимлида 27.09: в «Блюдо» эта же иконка бутылки в прицеле
+            смотрелась недоделкой (не про то), а dish-meat/dish-fish/dish-snack.png из прототипа
+            не подошли — каждая изображает ровно одно конкретное блюдо (мясо/рыбу/овощной
+            перекус), фото-стиль вдобавок спорит с линейной иконографией остального экрана
+            (scanner.svg, значки режимов, %/термометр на карточке вина) — единой на все блюда
+            картинки нет, поэтому режим «Блюдо» остаётся текстовым, без картинки. */}
+        {!photoPreviewUrl && scanMode === "bottle" && (
           <img src="/brand/scanner.svg" alt="" width={64} height={65} className="dropzone__illustration" />
         )}
         <p>{dragActive ? t("scan.dropHintActive") : t("scan.dropHint")}</p>
