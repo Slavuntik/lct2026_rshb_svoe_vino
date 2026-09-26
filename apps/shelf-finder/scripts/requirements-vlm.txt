@@ -1,0 +1,4 @@
+# Offline VLM audit only; no GPU/model downloads required.
+httpx>=0.27,<1
+pillow>=10.4
+python-dotenv>=1,<2

@@ -1,0 +1,1234 @@
+{
+  "independentGroundTruth": false,
+  "datasetSha256": "977e3597364f99d3a4b9bd26f4da001cb649cda2b40db04af238a559df02faa1",
+  "runs": {
+    "qwen-full": {
+      "sha256": "d73cc37aa8d957ed0356c00ce60ec8714195d92436b53c3e540e0dd5a584c30c",
+      "model": "qwen3.8-27b",
+      "mode": "full",
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "seconds": 31.302,
+          "usage": {
+            "completion_tokens": 1917,
+            "prompt_tokens": 1426,
+            "total_tokens": 3343,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1200
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 47
+        }
+      ]
+    },
+    "qwen-crops": {
+      "sha256": "001605adcd7ca22bda59e8a2784aab26c8d63cb61f257021c6dc6cc55d985f3b",
+      "model": "qwen3.8-27b",
+      "mode": "crops",
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "seconds": 9.122,
+          "usage": {
+            "completion_tokens": 493,
+            "prompt_tokens": 1207,
+            "total_tokens": 1700,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "seconds": 9.472,
+          "usage": {
+            "completion_tokens": 519,
+            "prompt_tokens": 1207,
+            "total_tokens": 1726,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "seconds": 7.428,
+          "usage": {
+            "completion_tokens": 371,
+            "prompt_tokens": 1207,
+            "total_tokens": 1578,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        }
+      ]
+    },
+    "qwen-guided": {
+      "sha256": "dd09a4d8ef394c0092a57505589099b362ebe1cfb6250d0dfc89578686e4fae3",
+      "model": "qwen3.8-27b",
+      "mode": "guided",
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "seconds": 19.813,
+          "usage": {
+            "completion_tokens": 993,
+            "prompt_tokens": 4406,
+            "total_tokens": 5399,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 3136,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "seconds": 19.536,
+          "usage": {
+            "completion_tokens": 972,
+            "prompt_tokens": 4583,
+            "total_tokens": 5555,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 3136,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "seconds": 21.539,
+          "usage": {
+            "completion_tokens": 1102,
+            "prompt_tokens": 4475,
+            "total_tokens": 5577,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "created_cache_tokens": 3136,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-27b",
+          "bottles": 12
+        }
+      ],
+      "evaluation": {
+        "model": "qwen3.8-27b",
+        "mode": "guided",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 19.813,
+              "maxSeconds": 21.539
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 19.536,
+              "maxSeconds": 19.536
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 20.676000000000002,
+              "maxSeconds": 21.539
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 19.536
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                26,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 19.813
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 21.539
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 19.813,
+              "maxSeconds": 21.539
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 19.536,
+              "maxSeconds": 19.536
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 20.676000000000002,
+              "maxSeconds": 21.539
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 19.536
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                13,
+                26,
+                31,
+                38,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 19.813
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [
+                47,
+                50
+              ],
+              "wrongRegions": [],
+              "seconds": 21.539
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 19813.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.7131430506706238,
+                  0.34791654348373413,
+                  0.8008133172988892,
+                  0.5919557213783264
+                ]
+              },
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.6384572386741638,
+                  0.3489915430545807,
+                  0.7187016606330872,
+                  0.5856979489326477
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.3554759919643402,
+                  0.40040549635887146,
+                  0.4389707148075104,
+                  0.5837365388870239
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.7243938446044922,
+                  0.653774619102478,
+                  0.8033893704414368,
+                  0.9194635152816772
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.4558243751525879,
+                  0.09840606153011322,
+                  0.5355547666549683,
+                  0.3082650303840637
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.6435349583625793,
+                  0.6454793214797974,
+                  0.7240058779716492,
+                  0.9165346026420593
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.5346786379814148,
+                  0.09871013462543488,
+                  0.61534184217453,
+                  0.30818992853164673
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 19536.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [
+              {
+                "wineId": "derbent-vino-desono-shardone-beloe-suhoe-125",
+                "box": [
+                  0.6515730619430542,
+                  0.7513681650161743,
+                  0.7175595760345459,
+                  0.8988057971000671
+                ]
+              },
+              {
+                "wineId": "sober-bash-dve-doliny-tsimlyanskiy-2023-tsimlyanskiy-chernyy-krasnoe-suhoe-13",
+                "box": [
+                  0.3808741867542267,
+                  0.2018357217311859,
+                  0.45020875334739685,
+                  0.4046432375907898
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 21539.0
+            }
+          }
+        ]
+      }
+    },
+    "flash-guided": {
+      "sha256": "212357db282a95d60119db8a970f5d939259c00fdd7d80a1ba44e5aef3f25408",
+      "model": "qwen3.8-flash",
+      "mode": "guided",
+      "rows": [
+        {
+          "file": "photo_2026-09-24_17-34-02.jpg",
+          "seconds": 16.71,
+          "usage": {
+            "completion_tokens": 990,
+            "prompt_tokens": 4406,
+            "total_tokens": 5396,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 3136,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-flash",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-33-43.jpg",
+          "seconds": 16.326,
+          "usage": {
+            "completion_tokens": 972,
+            "prompt_tokens": 4583,
+            "total_tokens": 5555,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 3136,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-flash",
+          "bottles": 12
+        },
+        {
+          "file": "photo_2026-09-24_17-34-16.jpg",
+          "seconds": 18.658,
+          "usage": {
+            "completion_tokens": 1104,
+            "prompt_tokens": 4475,
+            "total_tokens": 5579,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 3136,
+              "created_cache_tokens": 0,
+              "multimodal_tokens": {
+                "image": 1020
+              }
+            }
+          },
+          "servedModel": "qwen3.8-flash",
+          "bottles": 12
+        }
+      ],
+      "evaluation": {
+        "model": "qwen3.8-flash",
+        "mode": "guided",
+        "independentGroundTruth": false,
+        "cropCount": 36,
+        "invalidProposals": {},
+        "selectedCropEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 16.71,
+              "maxSeconds": 18.658
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 16.326,
+              "maxSeconds": 16.326
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 17.684,
+              "maxSeconds": 18.658
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 16.326
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                26,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 16.71
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 18.658
+            }
+          ]
+        },
+        "nativeOnSameCrops": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 10,
+              "correct": 6,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 9,
+              "photos": 3,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 24.110050501767546
+            },
+            "development": {
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "photos": 1,
+              "medianSeconds": 19.716825805138797,
+              "maxSeconds": 19.716825805138797
+            },
+            "regression": {
+              "positives": 6,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 3,
+              "accepted": 5,
+              "photos": 2,
+              "medianSeconds": 20.469750417396426,
+              "maxSeconds": 24.110050501767546
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 4,
+              "missedRegions": [],
+              "wrongRegions": [],
+              "seconds": 19.716825805138797
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 5,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "missedRegions": [
+                1,
+                31,
+                38
+              ],
+              "wrongRegions": [],
+              "seconds": 24.110050501767546
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 1,
+              "correct": 0,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 2,
+              "accepted": 2,
+              "missedRegions": [
+                17
+              ],
+              "wrongRegions": [],
+              "seconds": 16.829450333025306
+            }
+          ]
+        },
+        "wholePhotoEvaluation": {
+          "independentGroundTruth": false,
+          "completeNegatives": false,
+          "summary": {
+            "all": {
+              "positives": 14,
+              "correct": 4,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 3,
+              "accepted": 11,
+              "photos": 3,
+              "medianSeconds": 16.71,
+              "maxSeconds": 18.658
+            },
+            "development": {
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "photos": 1,
+              "medianSeconds": 16.326,
+              "maxSeconds": 16.326
+            },
+            "regression": {
+              "positives": 10,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 3,
+              "photos": 2,
+              "medianSeconds": 17.684,
+              "maxSeconds": 18.658
+            }
+          },
+          "rows": [
+            {
+              "file": "photo_2026-09-24_17-33-43.jpg",
+              "split": "development",
+              "positives": 4,
+              "correct": 2,
+              "ambiguousKnown": 0,
+              "wrong": 4,
+              "unreviewedAccepted": 2,
+              "accepted": 8,
+              "missedRegions": [],
+              "wrongRegions": [
+                3,
+                4,
+                14,
+                17
+              ],
+              "seconds": 16.326
+            },
+            {
+              "file": "photo_2026-09-24_17-34-02.jpg",
+              "split": "regression",
+              "positives": 7,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 0,
+              "accepted": 1,
+              "missedRegions": [
+                1,
+                13,
+                26,
+                31,
+                38,
+                49
+              ],
+              "wrongRegions": [],
+              "seconds": 16.71
+            },
+            {
+              "file": "photo_2026-09-24_17-34-16.jpg",
+              "split": "regression",
+              "positives": 3,
+              "correct": 1,
+              "ambiguousKnown": 0,
+              "wrong": 0,
+              "unreviewedAccepted": 1,
+              "accepted": 2,
+              "missedRegions": [
+                47,
+                50
+              ],
+              "wrongRegions": [],
+              "seconds": 18.658
+            }
+          ]
+        },
+        "predictions": [
+          {
+            "file": "photo_2026-09-24_17-34-02.jpg",
+            "matches": [
+              {
+                "wineId": "balaklava-pino-nuar",
+                "box": [
+                  0.5587971806526184,
+                  0.0006463194149546325,
+                  0.6514169573783875,
+                  0.13793326914310455
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 16710.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-33-43.jpg",
+            "matches": [
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.7131430506706238,
+                  0.34791654348373413,
+                  0.8008133172988892,
+                  0.5919557213783264
+                ]
+              },
+              {
+                "wineId": "shato-taman-grape-dance",
+                "box": [
+                  0.6384572386741638,
+                  0.3489915430545807,
+                  0.7187016606330872,
+                  0.5856979489326477
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.3554759919643402,
+                  0.40040549635887146,
+                  0.4389707148075104,
+                  0.5837365388870239
+                ]
+              },
+              {
+                "wineId": "shato-taman-kaberne-sovinon",
+                "box": [
+                  0.4705044627189636,
+                  0.36302366852760315,
+                  0.5551310777664185,
+                  0.5857836008071899
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.7243938446044922,
+                  0.653774619102478,
+                  0.8033893704414368,
+                  0.9194635152816772
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.4558243751525879,
+                  0.09840606153011322,
+                  0.5355547666549683,
+                  0.3082650303840637
+                ]
+              },
+              {
+                "wineId": "agora-rosa-viva-rozovoe-polusladkoe",
+                "box": [
+                  0.6435349583625793,
+                  0.6454793214797974,
+                  0.7240058779716492,
+                  0.9165346026420593
+                ]
+              },
+              {
+                "wineId": "fanagoriya-rose-kaberne-fran-rozovoe-suhoe-13",
+                "box": [
+                  0.5346786379814148,
+                  0.09871013462543488,
+                  0.61534184217453,
+                  0.30818992853164673
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 16326.0
+            }
+          },
+          {
+            "file": "photo_2026-09-24_17-34-16.jpg",
+            "matches": [
+              {
+                "wineId": "derbent-vino-desono-shardone-beloe-suhoe-125",
+                "box": [
+                  0.6515730619430542,
+                  0.7513681650161743,
+                  0.7175595760345459,
+                  0.8988057971000671
+                ]
+              },
+              {
+                "wineId": "sober-bash-dve-doliny-tsimlyanskiy-2023-tsimlyanskiy-chernyy-krasnoe-suhoe-13",
+                "box": [
+                  0.3808741867542267,
+                  0.2018357217311859,
+                  0.45020875334739685,
+                  0.4046432375907898
+                ]
+              }
+            ],
+            "timingsMs": {
+              "processing": 18658.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "notes": [
+    "One full-frame pilot and three fixed photos with 12 automatically selected crops each.",
+    "VLM latency is extra network/model time; existing detector/retriever time is excluded.",
+    "The first Flash request may overlap the last 27B request; these are exploratory timings."
+  ],
+  "fullFrameProxy": {
+    "validBoxes": 47,
+    "frozenRegions": 66,
+    "oneToOneIoUMatches": 43,
+    "threshold": 0.5
+  },
+  "naiveUnionDiagnostic": {
+    "independentGroundTruth": false,
+    "completeNegatives": false,
+    "summary": {
+      "all": {
+        "positives": 14,
+        "correct": 7,
+        "ambiguousKnown": 0,
+        "wrong": 2,
+        "unreviewedAccepted": 8,
+        "accepted": 17,
+        "photos": 3
+      },
+      "development": {
+        "positives": 4,
+        "correct": 4,
+        "ambiguousKnown": 0,
+        "wrong": 2,
+        "unreviewedAccepted": 4,
+        "accepted": 10,
+        "photos": 1
+      },
+      "regression": {
+        "positives": 10,
+        "correct": 3,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 4,
+        "accepted": 7,
+        "photos": 2
+      }
+    },
+    "rows": [
+      {
+        "file": "photo_2026-09-24_17-33-43.jpg",
+        "split": "development",
+        "positives": 4,
+        "correct": 4,
+        "ambiguousKnown": 0,
+        "wrong": 2,
+        "unreviewedAccepted": 4,
+        "accepted": 10,
+        "missedRegions": [],
+        "wrongRegions": [
+          14,
+          17
+        ]
+      },
+      {
+        "file": "photo_2026-09-24_17-34-02.jpg",
+        "split": "regression",
+        "positives": 7,
+        "correct": 2,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 1,
+        "accepted": 3,
+        "missedRegions": [
+          1,
+          13,
+          31,
+          38,
+          49
+        ],
+        "wrongRegions": []
+      },
+      {
+        "file": "photo_2026-09-24_17-34-16.jpg",
+        "split": "regression",
+        "positives": 3,
+        "correct": 1,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 3,
+        "accepted": 4,
+        "missedRegions": [
+          47,
+          50
+        ],
+        "wrongRegions": []
+      }
+    ]
+  },
+  "nativeWholePhotos": {
+    "independentGroundTruth": false,
+    "completeNegatives": false,
+    "summary": {
+      "all": {
+        "positives": 14,
+        "correct": 6,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 5,
+        "accepted": 11,
+        "photos": 3,
+        "medianSeconds": 19.716825805138797,
+        "maxSeconds": 24.110050501767546
+      },
+      "development": {
+        "positives": 4,
+        "correct": 4,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 2,
+        "accepted": 6,
+        "photos": 1,
+        "medianSeconds": 19.716825805138797,
+        "maxSeconds": 19.716825805138797
+      },
+      "regression": {
+        "positives": 10,
+        "correct": 2,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 3,
+        "accepted": 5,
+        "photos": 2,
+        "medianSeconds": 20.469750417396426,
+        "maxSeconds": 24.110050501767546
+      }
+    },
+    "rows": [
+      {
+        "file": "photo_2026-09-24_17-33-43.jpg",
+        "split": "development",
+        "positives": 4,
+        "correct": 4,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 2,
+        "accepted": 6,
+        "missedRegions": [],
+        "wrongRegions": [],
+        "seconds": 19.716825805138797
+      },
+      {
+        "file": "photo_2026-09-24_17-34-02.jpg",
+        "split": "regression",
+        "positives": 7,
+        "correct": 2,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 1,
+        "accepted": 3,
+        "missedRegions": [
+          1,
+          13,
+          31,
+          38,
+          49
+        ],
+        "wrongRegions": [],
+        "seconds": 24.110050501767546
+      },
+      {
+        "file": "photo_2026-09-24_17-34-16.jpg",
+        "split": "regression",
+        "positives": 3,
+        "correct": 0,
+        "ambiguousKnown": 0,
+        "wrong": 0,
+        "unreviewedAccepted": 2,
+        "accepted": 2,
+        "missedRegions": [
+          17,
+          47,
+          50
+        ],
+        "wrongRegions": [],
+        "seconds": 16.829450333025306
+      }
+    ]
+  }
+}
