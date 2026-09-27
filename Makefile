@@ -131,3 +131,27 @@ winescan-sync-check:
 ## Перенести свежее состояние источника; коммит источника пишется в packages/winescan/SYNC.md.
 winescan-sync:
 	$(WINESCAN_PY) tools/sync_winescan.py --apply $(WINESCAN_SOURCE_ARG)
+
+## --- Quickstart для жюри: локальный запуск одной командой (scripts/quickstart.sh) ----
+## Задача тимлида 27.09 (см. reports/devops-quickstart.md) — отдельный блок, ничего не
+## меняет в целях выше (тот же принцип, что и у блока winescan). Подробности и формат
+## данных кейса — docs/QUICKSTART.md.
+.PHONY: quickstart quickstart-full quickstart-verify quickstart-status quickstart-stop
+
+## По умолчанию: реальный поиск сомелье + сканер/LLM-заглушки, минуты, без скачиваний.
+quickstart:
+	bash scripts/quickstart.sh fast
+
+## Настоящее распознавание: нужен CASE_DATA_DIR, качает модели, строит индекс — десятки минут.
+quickstart-full:
+	bash scripts/quickstart.sh full
+
+## Официальный eval/participant_test.sh против локального API (нужен уже поднятый quickstart).
+quickstart-verify:
+	bash scripts/quickstart.sh verify
+
+quickstart-status:
+	bash scripts/quickstart.sh status
+
+quickstart-stop:
+	bash scripts/quickstart.sh stop
