@@ -1,0 +1,28 @@
+[Unit]
+Description=Svoy Somelye API — второй хак-стенд (cpulab, 8 vCPU / 15 ГБ, без VPN-соседа)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=somelye
+Group=somelye
+WorkingDirectory=/opt/somelye/app/apps/api
+EnvironmentFile=/opt/somelye/somelye.env
+ExecStart=/opt/somelye/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=on-failure
+RestartSec=5
+# Прогрев энкодера, верификатора и первого search qdrant на CPU — до нескольких минут.
+TimeoutStartSec=900
+# В отличие от ams3 (infra/ams3/somelye-api.service) бокс НИ С КЕМ не делится: без VPN нет
+# нужды в CPUWeight=40/Nice=5 (полный вес CPU нашему процессу) и без риска для соседней
+# службы можно дать памяти с запасом — замеренный пик на ams3 3.2-3.9 ГБ, здесь потолок
+# поднят пропорционально бОльшему числу потоков (OMP_NUM_THREADS=6, somelye.env.example),
+# но всё ещё далеко от 15 ГБ RAM машины — запас на OS/nginx/буфер остаётся.
+MemoryHigh=8000M
+MemoryMax=10000M
+NoNewPrivileges=yes
+ProtectSystem=full
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
