@@ -25,6 +25,7 @@ from .routers import (
     analogs,
     auth,
     case_thumbs,
+    catalog,
     chat,
     consents,
     eval as eval_router,
@@ -142,6 +143,7 @@ tags_metadata = [
     {"name": "waitlist", "description": "Лендинг: запись email в лист ожидания, без авторизации."},
     {"name": "metrics", "description": "Публичная сводка последнего офлайн-прогона точности сканера — для питча и демо на стенде."},
     {"name": "case-thumbs", "description": "Статическая раздача превью эталонов каталога для фолбэк-карточки сканера."},
+    {"name": "catalog", "description": "Каталог вин кейса (2103 позиции) — постраничная плитка для главного экрана: поиск по названию/винодельне, фильтры цвет/сахар."},
 ]
 
 
@@ -289,6 +291,7 @@ def create_app() -> FastAPI:
         profile.router,
         metrics.router,
         case_thumbs.router,
+        catalog.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
 

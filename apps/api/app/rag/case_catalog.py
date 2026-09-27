@@ -125,3 +125,35 @@ def thumb_url(slug: str) -> str:
     `CASE_DATA_DIR/thumbs/`). Маршрут сам решает 404, если превью нет —
     здесь просто формируем ссылку."""
     return f"/v1/case-thumbs/{slug}.webp"
+
+
+@lru_cache(maxsize=None)
+def _load_thumb_slugs(thumbs_dir_str: str) -> frozenset[str]:
+    """Слаги, у которых РЕАЛЬНО есть файл `<thumbs_dir_str>/<slug>.webp` — та
+    же директория, что раздаёт `GET /v1/case-thumbs/{slug}.webp`
+    (`app/routers/case_thumbs.py`). Кэш по пути (тот же приём, что
+    `_load_catalog` выше) — тесты видят свой временный каталог, не боевой.
+    Отсутствующая директория -> пустое множество, та же честная деградация,
+    что и у `_load_catalog`."""
+    thumbs_dir = Path(thumbs_dir_str)
+    if not thumbs_dir.is_dir():
+        return frozenset()
+    return frozenset(p.stem for p in thumbs_dir.glob("*.webp"))
+
+
+def has_thumb(slug: str) -> bool:
+    """Есть ли у `slug` РЕАЛЬНЫЙ файл превью — в отличие от `thumb_url()`
+    выше (строит URL по шаблону вслепую, не проверяя файл на диске) нужна
+    экрану «Каталог вин» (`GET /v1/catalog`, `app/routers/catalog.py`, задача
+    тимлида 27.09): у части слагов каталога (49 из 2103 на снимке 27.09,
+    посчитано напрямую по файлам `CASE_DATA_DIR/thumbs` против
+    `case_catalog.json` — teамлид называл ориентир "44", разошлось на
+    несколько штук, см. reports/backend-catalog-list.md) `source.image_url`
+    — либо ЭТОТ ЖЕ шаблон `thumb_url()` без файла на диске
+    (`packages/rag/rag/case_data.py::build_supplemental_wine_records` пишет
+    его безусловно для ~125 слагов вне настоящего RAG-индекса), либо честный
+    внешний CDN организатора (`api.vino-svoe.ru`, для большинства слагов —
+    из `vines/catalog/wines/`, там file-check не нужен и не делается). Эта
+    функция — только про НАШ локальный файл, вызывающий код (`routers/
+    catalog.py`) сам решает, что показывать вместо шаблона, когда файла нет."""
+    return slug in _load_thumb_slugs(str(case_data_dir() / "thumbs"))

@@ -125,6 +125,21 @@ def _iter_catalog_cards(retriever: Retriever, settings: Settings) -> tuple[Catal
     return _build_catalog_cards(retriever)
 
 
+def get_catalog_cards(retriever: Retriever, settings: Settings) -> tuple[CatalogCard, ...]:
+    """Публичная точка входа в ТОТ ЖЕ кэш карточек каталога — для
+    переиспользования вне подбора к блюду: `GET /v1/catalog`
+    (`app/routers/catalog.py`, задача тимлида 27.09, "Кэш карточек у нас уже
+    есть, ты его делал для подбора к блюду, переиспользуй"). Тонкая,
+    СТАБИЛЬНАЯ (не приватная по соглашению, в отличие от
+    `_iter_catalog_cards`) обёртка над ней же — тот же прогретый в фоне при
+    старте (`warm_up_catalog_cache`, `app/main.py`) кэш, без второго
+    холодного построения (12 с на 2103 карточки, см. докстринг
+    `_build_catalog_cards`). Тесты подменяют `_iter_catalog_cards()` (см.
+    tests/test_dish_pairing.py) — эта функция вызывает её по имени модуля,
+    поэтому подмена действует и здесь."""
+    return _iter_catalog_cards(retriever, settings)
+
+
 def _reset_catalog_cache() -> None:
     """Только для тестов (tests/conftest.py, autouse) — тот же приём, что
     `app/cv/service.py::_reset_model_breakers()`: если тест всё же коснулся

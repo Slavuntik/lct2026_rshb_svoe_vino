@@ -225,3 +225,18 @@ def test_warm_up_catalog_cache_failure_returns_false_not_raises(monkeypatch):
 
     monkeypatch.setattr(dish_pairing.case_catalog, "all_slugs", boom)
     assert dish_pairing.warm_up_catalog_cache(object()) is False
+
+
+# --------------------------------------------------------------------------
+# get_catalog_cards() — обёртка для переиспользования вне подбора к блюду
+# (GET /v1/catalog, app/routers/catalog.py, задача тимлида 27.09).
+# --------------------------------------------------------------------------
+
+def test_get_catalog_cards_delegates_to_patched_iter_catalog_cards(monkeypatch):
+    """Тесты роутера каталога (tests/test_catalog.py) подменяют
+    `_iter_catalog_cards` тем же приёмом, что и этот модуль — этот тест
+    фиксирует, что подмена действует и через публичную обёртку."""
+    cards = (_card("w1", winery="w1"),)
+    _patch_catalog(monkeypatch, list(cards))
+
+    assert dish_pairing.get_catalog_cards(object(), _settings()) == cards

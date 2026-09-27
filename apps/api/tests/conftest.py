@@ -37,6 +37,22 @@ def _reset_dish_pairing_catalog_cache():
     _reset_catalog_cache()
 
 
+@pytest.fixture(autouse=True)
+def _reset_catalog_router_cache():
+    """Тот же риск, что у `_reset_dish_pairing_catalog_cache` выше, только
+    для второго кэша поверх первого: `app.routers.catalog._catalog_items()`
+    (`@lru_cache` по `(retriever, settings)`, задача тимлида 27.09, GET
+    /v1/catalog) — тесты этого роутера подменяют
+    `dish_pairing._iter_catalog_cards()` (см. tests/test_catalog.py), но без
+    сброса СВОЕГО кэша сюда всё равно мог бы просочиться результат другого
+    теста, случайно получившего тот же `(retriever, settings)`."""
+    from app.routers.catalog import _reset_catalog_items_cache
+
+    _reset_catalog_items_cache()
+    yield
+    _reset_catalog_items_cache()
+
+
 @pytest.fixture()
 def app(monkeypatch):
     """Свежее приложение на изолированной in-memory БД, mock-LLM и mock-RAG.

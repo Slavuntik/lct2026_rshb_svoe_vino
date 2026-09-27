@@ -138,3 +138,55 @@ def test_case_data_dir_reads_env_live_with_default(monkeypatch):
 
     monkeypatch.delenv("CASE_DATA_DIR", raising=False)
     assert str(case_catalog.case_data_dir()) == "/Users/vyacheslavfokin/ClaudeWorkspace/vines/case-data"
+
+
+# --- has_thumb(): РЕАЛЬНЫЙ файл на диске, не догадка по шаблону URL ---------
+# (GET /v1/catalog, app/routers/catalog.py, задача тимлида 27.09 — "44 из
+# 2103 без превью, отдавай image_url пустым".)
+
+def _write_thumb(tmp_path, slug: str) -> None:
+    (tmp_path / "thumbs").mkdir(exist_ok=True)
+    (tmp_path / "thumbs" / f"{slug}.webp").write_bytes(b"\x00")
+
+
+def test_has_thumb_true_when_file_exists(tmp_path, monkeypatch):
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    _write_thumb(tmp_path, "wine-with-photo")
+
+    assert case_catalog.has_thumb("wine-with-photo") is True
+
+
+def test_has_thumb_false_when_file_missing(tmp_path, monkeypatch):
+    """Ровно сценарий thumb_url() НЕ покрывает — та строит URL по шаблону
+    вслепую (см. её докстринг), даже когда файла нет вовсе."""
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))
+    _write_thumb(tmp_path, "some-other-wine")
+
+    assert case_catalog.has_thumb("wine-without-photo") is False
+    # thumb_url() при этом всё равно вернула бы валидный на вид путь —
+    # has_thumb() — единственный способ узнать, что за ним нет файла.
+    assert case_catalog.thumb_url("wine-without-photo") == "/v1/case-thumbs/wine-without-photo.webp"
+
+
+def test_has_thumb_false_when_thumbs_dir_does_not_exist_at_all(tmp_path, monkeypatch):
+    monkeypatch.setenv("CASE_DATA_DIR", str(tmp_path))  # tmp_path/thumbs никогда не создавался
+
+    assert case_catalog.has_thumb("anything") is False
+
+
+def test_has_thumb_does_not_leak_cache_between_different_case_data_dirs(tmp_path, monkeypatch):
+    """Тот же принцип, что test_lookup_does_not_leak_cache_between_different_
+    case_data_dirs выше — _load_thumb_slugs() кэширует по пути, не глобальным
+    флагом."""
+    dir_a = tmp_path / "a"
+    dir_b = tmp_path / "b"
+    dir_a.mkdir()
+    dir_b.mkdir()
+    _write_thumb(dir_a, "shared-slug")
+    # dir_b намеренно БЕЗ файла для "shared-slug".
+
+    monkeypatch.setenv("CASE_DATA_DIR", str(dir_a))
+    assert case_catalog.has_thumb("shared-slug") is True
+
+    monkeypatch.setenv("CASE_DATA_DIR", str(dir_b))
+    assert case_catalog.has_thumb("shared-slug") is False

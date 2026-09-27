@@ -16,6 +16,7 @@ from app.routers import (
     analogs,
     auth,
     case_thumbs,
+    catalog,
     chat,
     consents,
     eval as eval_router,
@@ -38,7 +39,7 @@ from app.routers import (
 # route.path, ровно как это делает сам FastAPI при инклюде.
 _ROUTER_MODULES = (
     health, auth, consents, scan, eval_router, wines, pairing, chat,
-    analogs, events, taste, waitlist, profile, metrics, case_thumbs,
+    analogs, events, taste, waitlist, profile, metrics, case_thumbs, catalog,
 )
 
 

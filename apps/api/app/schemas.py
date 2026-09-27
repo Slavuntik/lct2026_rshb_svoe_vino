@@ -279,6 +279,32 @@ class TasteProfileResponse(BaseModel):
     swipes_count: int
 
 
+# --- GET /v1/catalog (задача тимлида 27.09, "Каталог вин" по макету Figma) -
+
+class CatalogItem(BaseModel):
+    """Карточка плитки каталога — та же форма полей, что `PairingWineItem`
+    (winery/color/sugar/image_url), без reason/basis (тут не подбор, а
+    список): один источник имени полей на оба места."""
+    wine_id: str
+    name: str
+    winery: str | None = None
+    color: str | None = None
+    sugar: str | None = None
+    # null, когда у слага нет реального файла превью в CASE_DATA_DIR/thumbs
+    # (app/rag/case_catalog.py::has_thumb) — вино не выбрасывается из
+    # выдачи, фронт рисует заглушку (задание тимлида 27.09).
+    image_url: str | None = None
+
+
+class CatalogResponse(BaseModel):
+    wines: list[CatalogItem]
+    # Кол-во позиций ПОСЛЕ q/color/sugar, ДО limit/offset — фронту посчитать
+    # число страниц/показать "N вин найдено", не требуя отдельного запроса.
+    total: int
+    limit: int
+    offset: int
+
+
 class WaitlistRequest(BaseModel):
     email: EmailStr
     consent_version: str
