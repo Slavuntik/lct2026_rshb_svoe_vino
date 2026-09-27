@@ -62,8 +62,7 @@ SSH-подключение (не через уже открытую sessию) �
 scp -r infra/cpulab somelye@46.243.211.32:/home/somelye/cpulab-bootstrap
 ssh -i ~/.ssh/cpu_lab somelye@46.243.211.32 'bash /home/somelye/cpulab-bootstrap/bootstrap.sh'
 bash infra/cpulab/sync-data.sh                                    # ~3.9 ГБ, дефолт — cv-d1/rag-20260922
-cd apps/web && VITE_API_MODE=real VITE_THEME=portal npm run build && cd ../..
-bash infra/cpulab/push-release.sh                                 # код (hack-v28) + веб + deploy.sh
+bash infra/cpulab/push-release.sh                                 # код (hack-v28) + веб (собирается ВНУТРИ скрипта, из изолированной git-archive копии — не из рабочего дерева) + deploy.sh
 ```
 
 ## Секреты (перенос с ams3, задание 27.09: «значения не печатать нигде»)
