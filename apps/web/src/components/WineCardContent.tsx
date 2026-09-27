@@ -186,7 +186,7 @@ function WinePairingsBlock({ wineId }: { wineId: string }) {
         <span className="food-pairing__icon" aria-hidden="true">
           <PairingIcon />
         </span>
-        <h2>{t("wineCard.pairingsTitle")}</h2>
+        <h2 className="card-heading">{t("wineCard.pairingsTitle")}</h2>
       </div>
       {state.status === "loading" && <p className="text-small">{t("wineCard.pairingsLoading")}</p>}
       {state.status === "failed" && <p className="field__error">{t("common.errorGeneric")}</p>}
@@ -341,7 +341,11 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
 
       {derived.sensory && (
         <div className="card stack">
-          <h2>{t("wineCard.sensoryTitle")}</h2>
+          {/* .card-heading (global.css) — задача тимлида 27.09, блокировка снята после того как
+             второй агент закончил спец-плитки и ярлык скана: заголовок секции внутри карточки
+             мельче страничного h1, та же правка, что на профиле/паспорте вкуса/онбординге.
+             Композиция карточки (порядок блоков, паддинги) не менялась — только размер текста. */}
+          <h2 className="card-heading">{t("wineCard.sensoryTitle")}</h2>
           <SensoryVectorView vector={derived.sensory} />
         </div>
       )}

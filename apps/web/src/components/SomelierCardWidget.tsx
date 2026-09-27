@@ -198,7 +198,10 @@ export function SomelierCardWidget({ wineId }: SomelierCardWidgetProps) {
 
   return (
     <div className="card stack somelier-widget" data-testid="somelier-widget">
-      <h2>{t("wineCard.somelierTitle")}</h2>
+      {/* .card-heading (global.css) — задача тимлида 27.09, тот же заход, что и у соседних
+          заголовков WineCardContent.tsx (см. там же), блокировка снята после того как второй
+          агент закончил спец-плитки и ярлык скана. Композиция виджета не менялась. */}
+      <h2 className="card-heading">{t("wineCard.somelierTitle")}</h2>
 
       <div className="somelier-widget__log" aria-live="polite">
         {entries.length === 0 && <p className="text-small">{t("wineCard.somelierEmptyState")}</p>}
