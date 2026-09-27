@@ -6,6 +6,7 @@ import { useI18n } from "../../i18n";
 import { track, type EventPropsMap } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
 import type { WineCardResponse } from "../../lib/apiTypes";
+import { focusSomelierWidget } from "../../lib/somelierWidget";
 
 type FromSource = EventPropsMap["wine_card_viewed"]["from"];
 
@@ -53,17 +54,16 @@ export function WineCardScreen() {
     navigate(`/app/wine/${encodeURIComponent(id)}`, { state: { from: "similar" } });
   }
 
-  /** v0.3.5 (задача тимлида 22.09): wine_id вместе с префиллом — ChatScreen шлёт его ПЕРВЫМ
-   * запросом /v1/chat, гарантируя ответ про именно эту открытую карточку вина (текстовый
-   * поиск по префиллу путает вина-близнецы из одной серии в ~8% случаев). */
+  /**
+   * Задача тимлида 27.09 (макет Figma): виджет сомелье теперь встроен прямо в карточку
+   * (WineCardContent → SomelierCardWidget, рендерится выше на этой же странице) — кнопка
+   * больше не уводит на отдельный /app/chat, а доскролливает до поля вопроса и ставит туда
+   * фокус (lib/somelierWidget.ts). wine_id в первый вопрос виджет передаёт сам, из своего
+   * пропа (contracts/openapi.yaml v0.3.5) — навигационный префилл здесь больше не нужен.
+   * Раздел «Сомелье» (/app/chat, nav-меню) не тронут и остаётся полностью рабочим.
+   */
   function handleAskSomelier() {
-    if (!wine) return;
-    navigate("/app/chat", {
-      state: {
-        prefillMessage: t("chat.prefillAskAboutWine", { name: wine.source.name, winery: wine.source.winery_name }),
-        wineId: wine.wine_id,
-      },
-    });
+    focusSomelierWidget();
   }
 
   if (status === "loading") {

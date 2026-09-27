@@ -6,7 +6,6 @@ import type { DishPairingResponse, ScanPhotoRichResponse } from "../../lib/apiTy
 import { findWineBySlug } from "../../mocks/fixtures/wines";
 import { storage } from "../../lib/storage";
 import { renderApp } from "../../test/renderApp";
-import { ChatScreen } from "../chat/ChatScreen";
 import { ScanScreen } from "./ScanScreen";
 
 // apiClient.scanPhoto — реальный multipart-транспорт (File/FormData) проверен отдельно,
@@ -185,21 +184,6 @@ function renderScan() {
   );
 }
 
-/** Только для «Спросить сомелье об этом вине» → wine_id (задача тимлида 22.09): нужен
- * НАСТОЯЩИЙ ChatScreen на /app/chat (не CHAT_PROBE), чтобы проверить, что первый запрос
- * /v1/chat реально уносит wine_id. Отдельный хелпер — renderScan() выше остаётся для всех
- * остальных тестов файла нетронутым (CHAT_PROBE проще и их не касается). */
-function renderScanWithRealChat() {
-  return renderApp(
-    <Routes>
-      <Route path="/app/scan" element={<ScanScreen />} />
-      <Route path="/app/wine/:wineId" element={<WineProbe />} />
-      <Route path="/app/chat" element={<ChatScreen />} />
-    </Routes>,
-    "/app/scan",
-  );
-}
-
 function pngFile(name: string) {
   return new File(["fake-photo-bytes"], name, { type: "image/png" });
 }
@@ -256,29 +240,35 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     );
   });
 
-  it("«Спросить сомелье об этом вине» уводит в чат с префиллом (доп-функция после поиска)", async () => {
+  it("«Спросить сомелье об этом вине» — задача тимлида 27.09 (макет Figma): фокусирует виджет сомелье, встроенный в инлайн-результат, вместо перехода на /app/chat", async () => {
     mockScanPhoto(confidentResponse());
     renderScan();
     fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
 
-    await screen.findByTestId("scan-photo-result");
+    const resultCard = await screen.findByTestId("scan-photo-result");
+    const questionInput = within(resultCard).getByPlaceholderText(/например: с чем подать это вино/i);
+    expect(questionInput).not.toHaveFocus();
+
     fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
 
-    await waitFor(() => expect(screen.getByText("CHAT_PROBE")).toBeInTheDocument());
+    // Виджет уже встроен в инлайн-результат (WineCardContent → SomelierCardWidget) — CHAT_PROBE
+    // не появляется, перехода на /app/chat не происходит вовсе.
+    expect(questionInput).toHaveFocus();
+    expect(screen.queryByText("CHAT_PROBE")).not.toBeInTheDocument();
   });
 
-  it("«Спросить сомелье об этом вине» — первый запрос /v1/chat уносит wine_id отсканированного вина (задача тимлида 22.09)", async () => {
+  it("«Спросить сомелье об этом вине» — первый запрос /v1/chat уносит wine_id отсканированного вина через встроенный виджет (задача тимлида 22.09/27.09)", async () => {
     const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
     mockScanPhoto(confidentResponse());
-    renderScanWithRealChat();
+    renderScan();
     fireEvent.change(screen.getByLabelText(/фото этикетки/i), { target: { files: [pngFile("label.png")] } });
 
-    await screen.findByTestId("scan-photo-result");
+    const resultCard = await screen.findByTestId("scan-photo-result");
     fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
 
-    // Приземлились на реальном ChatScreen с префиллом — отправляем ровно его.
-    await screen.findByDisplayValue(/расскажи про шардоне резерв/i);
-    fireEvent.click(screen.getByRole("button", { name: /^спросить$/i }));
+    const questionInput = within(resultCard).getByPlaceholderText(/например: с чем подать это вино/i);
+    fireEvent.change(questionInput, { target: { value: "С чем подать это вино?" } });
+    fireEvent.click(within(resultCard).getByRole("button", { name: /^спросить$/i }));
 
     await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));
     expect(chatSpy.mock.calls[0][0].wine_id).toBe("tihaya-buhta-chardonnay-reserve-2023");

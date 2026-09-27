@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { FoodPairingCarousel } from "./FoodPairingCarousel";
 import { SensoryVectorView } from "./SensoryVectorView";
+import { SomelierCardWidget } from "./SomelierCardWidget";
 import { WineImage } from "./WineImage";
 import { useI18n, type DictionaryPath } from "../i18n";
 import { track } from "../lib/analytics";
@@ -72,6 +74,38 @@ function ServingTempIcon() {
   );
 }
 
+/**
+ * Иконка «миска с паром» у заголовка «К чему подать» — перенос макета Figma (карточка вина,
+ * секция «Сочетание с блюдами», задача тимлида 27.09, reports/frontend-card-widgets.md).
+ * Тот же контур, что DishModeIcon в ScanScreen.tsx (design/ui-prototype/assets/brand/
+ * icon-bowl.svg) — файлы не шарят локальные иконки друг с другом (см. AbvIcon/ServingTempIcon
+ * выше), поэтому здесь свой экземпляр, currentColor наследует var(--on-accent) из кружка.
+ */
+function PairingIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true">
+      <path
+        d="M16.8946 1.55305C16.6476 1.05906 16.0469 0.858805 15.5529 1.10577C15.0589 1.35274 14.8587 1.9534 15.1057 2.44739C15.4155 3.06715 15.2947 3.69869 15.0299 4.75769L15.0063 4.85195C14.7709 5.78878 14.4383 7.1126 15.1057 8.44743C15.3527 8.94141 15.9533 9.14164 16.4473 8.89465C16.9413 8.64766 17.1415 8.04698 16.8945 7.55301C16.5846 6.93325 16.7055 6.30172 16.9702 5.24274L16.9939 5.14841C17.2293 4.21161 17.5619 2.88784 16.8946 1.55305Z"
+        fill="currentColor"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1 12C1 15.2469 2.63797 17.6068 4.99902 19.4904V22C4.99902 22.5523 5.44673 23 5.99902 23H18C18.5522 23 18.9998 22.5525 19 22.0003L19.0008 19.4906C21.362 17.6069 23 15.2469 23 12C23 11.4477 22.5523 11 22 11H2C1.44772 11 1 11.4477 1 12ZM6.33842 18C4.51237 16.5679 3.35682 14.9888 3.0701 13H20.9299C20.6432 14.9888 19.4876 16.5679 17.6616 18H6.33842ZM6.99902 20H17.0007L17.0003 21H6.99902V20Z"
+        fill="currentColor"
+      />
+      <path
+        d="M11.5529 1.10577C12.0469 0.858805 12.6476 1.05906 12.8945 1.55305C13.5619 2.88785 13.2292 4.21163 12.9938 5.14843L12.9701 5.24277C12.7054 6.30175 12.5845 6.93327 12.8944 7.55301C13.1414 8.04698 12.9412 8.64766 12.4472 8.89465C11.9532 9.14164 11.3525 8.94141 11.1055 8.44743C10.4381 7.11258 10.7708 5.78875 11.0062 4.85193L11.0298 4.75767C11.2946 3.69866 11.4155 3.06714 11.1056 2.44739C10.8587 1.9534 11.0589 1.35274 11.5529 1.10577Z"
+        fill="currentColor"
+      />
+      <path
+        d="M8.89472 1.55305C8.64775 1.05906 8.04709 0.858805 7.5531 1.10577C7.05911 1.35274 6.85886 1.9534 7.10583 2.44739C7.4157 3.06721 7.29488 3.69879 7.03024 4.75778L7.00661 4.85202C6.7713 5.78886 6.43881 7.11264 7.1062 8.44743C7.35319 8.94141 7.95387 9.14164 8.44784 8.89465C8.94182 8.64766 9.14205 8.04698 8.89506 7.55301C8.58515 6.9332 8.70595 6.30162 8.97058 5.24266L8.99423 5.14834C9.22953 4.21152 9.56202 2.88779 8.89472 1.55305Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 type PairingsState =
   | { status: "loading" }
   | { status: "ready"; pairings: WinePairing[]; basis: WinePairingsBasis }
@@ -132,20 +166,22 @@ function WinePairingsBlock({ wineId }: { wineId: string }) {
 
   return (
     <div className="card stack" data-testid="wine-pairings-block">
-      <h2>{t("wineCard.pairingsTitle")}</h2>
+      <div className="food-pairing__header">
+        <span className="food-pairing__icon" aria-hidden="true">
+          <PairingIcon />
+        </span>
+        <h2>{t("wineCard.pairingsTitle")}</h2>
+      </div>
       {state.status === "loading" && <p className="text-small">{t("wineCard.pairingsLoading")}</p>}
       {state.status === "failed" && <p className="field__error">{t("common.errorGeneric")}</p>}
       {state.status === "empty" && <p className="text-small">{state.message}</p>}
       {state.status === "ready" && (
         <>
           {sourceCaption && <p className="text-caption">{t(sourceCaption)}</p>}
-          <div className="row">
-            {state.pairings.map((pairing) => (
-              <span key={pairing.tag} className="chip">
-                {pairing.tag}
-              </span>
-            ))}
-          </div>
+          {/* Карусель фото/типографских плиток — задача тимлида 27.09 (макет Figma), заменяет
+              прежний ряд текстовых .chip на FoodPairingCarousel.tsx (см. там же обоснование
+              выбора фото по тегу и границы "не выдумывать"). */}
+          <FoodPairingCarousel pairings={state.pairings} />
         </>
       )}
     </div>
@@ -270,6 +306,10 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
       )}
 
       <WinePairingsBlock wineId={wine.wine_id} />
+
+      {/* Виджет сомелье встроен прямо в карточку (задача тимлида 27.09, макет Figma «Цифровой
+          сомелье») — компактный аналог отдельного /app/chat, см. SomelierCardWidget.tsx. */}
+      <SomelierCardWidget wineId={wine.wine_id} />
     </>
   );
 }

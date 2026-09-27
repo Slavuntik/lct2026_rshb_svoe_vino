@@ -5,7 +5,6 @@ import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
 import { apiClient } from "../../lib/apiClient";
 import { findWineBySlug } from "../../mocks/fixtures/wines";
 import { renderApp } from "../../test/renderApp";
-import { ChatScreen } from "../chat/ChatScreen";
 import { WineCardScreen } from "./WineCardScreen";
 
 function renderCard(wineId: string, state?: { from: string }) {
@@ -128,21 +127,20 @@ describe("WineCardScreen", () => {
     expect(link).toHaveAttribute("href", "https://vino-svoe.ru/wines/case-shato-yuzhny-sklon-saperavi-2019");
   });
 
-  it("«Спросить сомелье об этом вине» — первый запрос /v1/chat уносит wine_id открытой карточки (задача тимлида 22.09)", async () => {
+  it("«Спросить сомелье об этом вине» — задача тимлида 27.09 (макет Figma): фокусирует встроенный виджет вместо перехода на /app/chat, первый вопрос уносит wine_id открытой карточки", async () => {
     const chatSpy = vi.spyOn(apiClient, "chat").mockResolvedValue(undefined);
-    renderApp(
-      <Routes>
-        <Route path="/app/wine/:wineId" element={<WineCardScreen />} />
-        <Route path="/app/chat" element={<ChatScreen />} />
-      </Routes>,
-      "/app/wine/tihaya-buhta-chardonnay-reserve-2023",
-    );
+    renderCard("tihaya-buhta-chardonnay-reserve-2023");
     await screen.findByText("Шардоне Резерв");
 
-    fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
+    // Виджет уже встроен в карточку (WineCardContent → SomelierCardWidget) — никакого
+    // /app/chat в этом тесте нет вовсе, переход не нужен и не происходит.
+    const questionInput = screen.getByPlaceholderText(/например: с чем подать это вино/i);
+    expect(questionInput).not.toHaveFocus();
 
-    // Приземлились на реальном ChatScreen с префиллом — отправляем ровно его.
-    await screen.findByDisplayValue(/расскажи про шардоне резерв/i);
+    fireEvent.click(screen.getByRole("button", { name: /спросить сомелье об этом вине/i }));
+    expect(questionInput).toHaveFocus();
+
+    fireEvent.change(questionInput, { target: { value: "С чем подать это вино?" } });
     fireEvent.click(screen.getByRole("button", { name: /^спросить$/i }));
 
     await waitFor(() => expect(chatSpy).toHaveBeenCalledTimes(1));

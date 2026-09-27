@@ -179,6 +179,21 @@ img {
   height: 22px;
 }
 
+/* .icon-badge как кнопка (SomelierCardWidget.tsx — отправка вопроса) — тот же приём сброса
+   UA-стилей, что уже есть у button.badge выше по правилу каскада: убираем рамку/паддинг
+   браузерной кнопки, заливка/цвет уже приходят от .icon-badge. */
+button.icon-badge {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--on-accent);
+}
+
+button.icon-badge:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* --- плитки характеристик (крепость / температура подачи) — Figma «карточка вина»:
    163×163, радиус 20, паддинг 28/20, значок-кружок 44px --accent, подпись 16/regular,
    значение 24/500, обе центрированы. Всегда 2 колонки (не auto-fit): показателей ровно
@@ -234,6 +249,113 @@ img {
   aspect-ratio: 16 / 9;
   border-radius: var(--radius);
   object-fit: cover;
+}
+
+/* --- «К чему подать»: карусель фото блюд (Figma «Сочетание с блюдами», задача тимлида
+   27.09, FoodPairingCarousel.tsx). Кружок-иконка 36px --accent (масштаб между .icon-badge
+   44px и чипами) + заголовок в ряд; плитки — тёплый --surface (ближайший из уже существующих
+   токенов к жёлто-кремовому фону тайла в макете, отдельного токена под него заводить не
+   стали — см. reports/frontend-card-widgets.md, предложение к архитектору при необходимости).
+   Трек — нативный overflow-x:auto: свайп/тачпад работают без единой строчки JS, стрелки
+   клавиатуры (FoodPairingCarousel.tsx) идут поверх того же скролла. */
+.food-pairing__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.food-pairing__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.food-pairing__track {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: var(--space-1);
+  margin: 0 calc(var(--space-4) * -1);
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+  scrollbar-width: none;
+}
+
+.food-pairing__track::-webkit-scrollbar {
+  display: none;
+}
+
+.food-pairing__track:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.food-pairing__tile {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+}
+
+.food-pairing__photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.food-pairing__monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.food-pairing__label {
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.food-pairing__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.food-pairing__dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.food-pairing__dot--active {
+  background: var(--accent-strong);
 }
 
 /* --- прицел: пользователь сам обводит нужную бутылку (contracts/image-scan.md v0.4.10) --- */
@@ -391,7 +513,8 @@ img {
 .field__textarea:focus-visible,
 .btn:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+button.icon-badge:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -657,6 +780,39 @@ button.badge {
   border-top: 1px solid var(--line);
 }
 
+/* --- виджет сомелье, встроенный в карточку вина (SomelierCardWidget.tsx, задача тимлида
+   27.09, макет Figma «Цифровой сомелье») — переиспользует .chat-bubble/.chat-citations
+   выше буквально (тот же дизайн, что полный /app/chat), только внутри .card, не во весь
+   экран. .chat-bubble--assistant красится в var(--card) — тот же фон, что у контейнера
+   .card здесь, поэтому ответ сомелье был бы не виден на своём же фоне; --surface (тёплый,
+   но другой оттенок) уже используется в приложении как «приподнятая» подложка (шапка/чипы
+   фильтров) — тот же приём применён и тут. */
+.somelier-widget .chat-bubble--assistant {
+  background: var(--surface);
+}
+
+.somelier-widget__log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.somelier-widget__form {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.somelier-widget__form .field__input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.somelier-widget__send {
+  flex-shrink: 0;
+}
+
 /* --- паспорт вкуса --- */
 
 .swipe-card {
@@ -906,6 +1062,13 @@ button.badge {
   .nav-menu__backdrop,
   .nav-menu__panel {
     animation: none;
+  }
+
+  /* Карусель гастропар (FoodPairingCarousel.tsx) уже передаёт behavior:"auto" в JS через
+     prefersReducedMotion() — здесь дублируем на уровне CSS (пояс и подтяжки), чтобы плавная
+     прокрутка не включилась от какого-нибудь будущего вызова track.scrollTo без опций. */
+  .food-pairing__track {
+    scroll-behavior: auto;
   }
 }
 

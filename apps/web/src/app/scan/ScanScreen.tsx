@@ -16,6 +16,7 @@ import type {
   ScanResolveResponse,
   WineSource,
 } from "../../lib/apiTypes";
+import { focusSomelierWidget } from "../../lib/somelierWidget";
 import { storage } from "../../lib/storage";
 import { AimBox, DEFAULT_FRAME, type Frame } from "./AimBox";
 
@@ -377,20 +378,16 @@ export function ScanScreen() {
     }
   }
 
-  /** v0.3.5 (задача тимлида 22.09): wine_id вместе с префиллом — ChatScreen шлёт его ПЕРВЫМ
-   * запросом /v1/chat, гарантируя ответ про именно это отсканированное вино (текстовый поиск
-   * по префиллу путает вина-близнецы из одной серии в ~8% случаев). */
+  /**
+   * Задача тимлида 27.09 (макет Figma): виджет сомелье встроен прямо в инлайн-результат
+   * скана (WineCardContent → SomelierCardWidget, рендерится строкой выше) — вместо перехода
+   * на отдельный /app/chat кнопка доскролливает до поля вопроса и ставит туда фокус
+   * (lib/somelierWidget.ts). wine_id первого вопроса виджет берёт из своего пропа
+   * (contracts/openapi.yaml v0.3.5) — навигационный префилл больше не нужен здесь.
+   */
   function handleAskSomelierAboutResult() {
     if (!result?.card) return;
-    navigate("/app/chat", {
-      state: {
-        prefillMessage: t("chat.prefillAskAboutWine", {
-          name: result.card.source.name,
-          winery: result.card.source.winery_name,
-        }),
-        wineId: result.card.wine_id,
-      },
-    });
+    focusSomelierWidget();
   }
 
   function handleResolveResult(resolved: ScanResolveResponse) {
