@@ -75,6 +75,22 @@ function ServingTempIcon() {
 }
 
 /**
+ * Круглая метка-«миниатюра» третьей строки фактов («Категория и цвет» — задача тимлида
+ * 27.09, придирчивая сверка с Figma): в макете там своя фотография-миниатюра, как у сорта/
+ * региона, но у нас нет третьего фото-ассета под неё (только thumb-grape.jpg/thumb-region.jpg,
+ * заводить новый файл без утверждённого кадра — выдумывать материал). Вместо фото — закрашенный
+ * кружок того же размера/посадки (.fact-thumb-icon рядом с .fact-thumb в global.css): честная
+ * заглушка «тут признак цвета», не случайная фотография не по теме.
+ */
+function CategoryColorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={14} height={14} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="var(--accent)" />
+    </svg>
+  );
+}
+
+/**
  * Иконка «миска с паром» у заголовка «К чему подать» — перенос макета Figma (карточка вина,
  * секция «Сочетание с блюдами», задача тимлида 27.09, reports/frontend-card-widgets.md).
  * Тот же контур, что DishModeIcon в ScanScreen.tsx (design/ui-prototype/assets/brand/
@@ -213,33 +229,43 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
   return (
     <>
       <div className="card stack">
-        <WineImage src={source.image_url} alt={source.name} width={96} className="wine-card-image" />
-        <TitleTag className="screen__title">{source.name}</TitleTag>
-        <p className="screen__subtitle">
-          {source.winery_name} · {source.region_name}
-        </p>
-
-        <div className="row">
-          <span className="badge">{source.color}</span>
-          {/* sugar_category отсутствует у карточки-фолбэка каталога кейса (v0.4.11) — category её честная замена, когда она есть. */}
-          {source.sugar_category && <span className="badge">{source.sugar_category}</span>}
-          {source.category && <span className="badge">{source.category}</span>}
-          {source.vintage && <span className="badge text-mono">{source.vintage}</span>}
+        {/* Заголовочный блок (задача тимлида 27.09, вторая правка после прямого просмотра
+            макета и стенда тимлидом): в Figma «карточка вина» сверху название, под ним
+            винодельня и плашка — и только НИЖЕ крупное фото бутылки; весь этот блок выровнен
+            по центру, не по левому краю. Было наоборот (фото → название, всё по левому краю) —
+            и порядок, и выравнивание расходились с макетом, это правится здесь. */}
+        <div className="wine-card-header">
+          <TitleTag className="screen__title">{source.name}</TitleTag>
+          <p className="screen__subtitle">
+            {source.winery_name} · {source.region_name}
+          </p>
         </div>
 
-        <p>{source.description}</p>
+        <WineImage src={source.image_url} alt={source.name} width={96} className="wine-card-image" />
 
-        {/* Виноградник — декоративная фотография переноса дизайна (design/ui-prototype/assets/
-            brand/vineyard.png, сжато под reports/frontend-design-transfer.md). Один и тот же
-            снимок для любой карточки — это настроение/воздух между текстом, а не иллюстрация
-            конкретного региона, поэтому alt="" (декоративная, не информативная картинка). */}
-        <img src="/brand/vineyard.jpg" alt="" className="wine-vineyard" />
-
+        {/* Порядок блоков карточки (задача тимлида 27.09, придирчивая сверка с Figma «карточка
+            вина»): факты → фото виноградника → плитки характеристик → описание — буквально
+            как в макете (ранее описание стояло сразу после бейджей, ДО фото/фактов/плиток —
+            расхождение с макетом, не осознанное отступление, здесь исправлено).
+            Порядок строк факт-блока — Регион → Сорт → Категория и цвет, как в макете (было
+            Сорт → Регион). Прежние отдельные чипы «цвет / сахарная категория / винтаж» под
+            названием — вторая правка тимлида (прямой просмотр макета и стенда, 27.09): в
+            Figma этой строки чипов нет вовсе, их место — третья строка факт-блока ниже
+            («Категория и цвет», значение — цвет+сахарная категория одной фразой, как в
+            макете "Белое сухое"). Год урожая (vintage) в макете отдельно не показан —
+            выдумывать для него новую строку не стали (нет образца), обычно виден в названии.*/}
         <dl className="stack stack--tight">
+          {/* .wine-fact-row — на самом <dt>, не на обёртке: иначе getByText(...).closest("div")
+              в WineCardContent.test.tsx находит новый div вместо исходного row--between и
+              перестаёт видеть соседний <dd> (см. reports/frontend-design-transfer.md). */}
           <div className="row row--between">
-            {/* .wine-fact-row — на самом <dt>, не на обёртке: иначе getByText(...).closest("div")
-                в WineCardContent.test.tsx находит новый div вместо исходного row--between и
-                перестаёт видеть соседний <dd> (см. reports/frontend-design-transfer.md). */}
+            <dt className="text-small wine-fact-row">
+              <img src="/brand/thumb-region.jpg" alt="" className="fact-thumb" />
+              {t("wineCard.regionLabel")}
+            </dt>
+            <dd>{source.region_name}</dd>
+          </div>
+          <div className="row row--between">
             <dt className="text-small wine-fact-row">
               <img src="/brand/thumb-grape.jpg" alt="" className="fact-thumb" />
               {t("wineCard.grapesLabel")}
@@ -248,12 +274,25 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
           </div>
           <div className="row row--between">
             <dt className="text-small wine-fact-row">
-              <img src="/brand/thumb-region.jpg" alt="" className="fact-thumb" />
-              {t("wineCard.regionLabel")}
+              <span className="fact-thumb-icon" aria-hidden="true">
+                <CategoryColorIcon />
+              </span>
+              {t("wineCard.categoryColorLabel")}
             </dt>
-            <dd>{source.region_name}</dd>
+            {/* sugar_category (обычная карточка) — только слово сахарной категории ("сухое"),
+                цвет к нему приписываем сами. category (карточка-фолбэк каталога кейса, когда
+                sugar_category нет вовсе, v0.4.11) — ГОТОВАЯ фраза "цвет+категория" ("красное
+                сухое", видно на фикстуре WineCardContent.test.tsx) — приписывать цвет второй
+                раз нельзя, иначе на экране дублируется слово. */}
+            <dd>{source.sugar_category ? `${source.color} ${source.sugar_category}` : (source.category ?? source.color)}</dd>
           </div>
         </dl>
+
+        {/* Виноградник — декоративная фотография переноса дизайна (design/ui-prototype/assets/
+            brand/vineyard.png, сжато под reports/frontend-design-transfer.md). Один и тот же
+            снимок для любой карточки — это настроение/воздух между текстом, а не иллюстрация
+            конкретного региона, поэтому alt="" (декоративная, не информативная картинка). */}
+        <img src="/brand/vineyard.jpg" alt="" className="wine-vineyard" />
 
         {/* Плитки температуры подачи / крепости — Figma «карточка вина»: 2 колонки, значок-
             кружок + подпись + крупное значение, порядок температура→крепость (задача тимлида
@@ -286,6 +325,8 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
             )}
           </div>
         )}
+
+        <p>{source.description}</p>
 
         <a
           className="btn btn--ghost"

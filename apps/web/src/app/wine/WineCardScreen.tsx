@@ -103,20 +103,23 @@ export function WineCardScreen() {
       {wine.similar_wines && wine.similar_wines.length > 0 ? (
         <div className="stack">
           <h2>{t("wineCard.similarTitle")}</h2>
-          <div className="match-list">
+          {/* Задача тимлида 27.09 (придирчивая сверка с макетом Figma): тот же 2-колоночный
+              грид-плитка 163px/radius 30, что в «Каталоге вин» и в блоках-аналогах экрана
+              скана (ScanScreen.tsx::WineResultChip) — в Figma это один и тот же переиспользуемый
+              компонент для любого "списка вин с фото", не построчный список. */}
+          <div className="catalog-grid">
             {wine.similar_wines.map((item) => (
               <button
                 key={item.wine_id}
                 type="button"
-                className="match-item"
+                className="catalog-tile"
                 onClick={() => handleSimilarClick(item.wine_id)}
               >
-                <span className="match-item__main">
-                  {item.image_url && (
-                    <WineImage src={item.image_url} alt={item.name} width={40} className="match-item__thumb" />
-                  )}
-                  <span>{item.winery ? `${item.name} · ${item.winery}` : item.name}</span>
+                <span className="catalog-tile__image-frame">
+                  <WineImage src={item.image_url ?? undefined} alt={item.name} width={110} className="catalog-tile__image" />
                 </span>
+                <span className="catalog-tile__name">{item.name}</span>
+                {item.winery && <span className="catalog-tile__winery">{item.winery}</span>}
               </button>
             ))}
           </div>

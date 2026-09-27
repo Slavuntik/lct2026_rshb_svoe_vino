@@ -31,18 +31,25 @@ type ResolveOutcome = {
 /**
  * v0.4.11: тот же компонент для similar/analogs (AnalogWine, без фото) и для candidates
  * (ScanCandidateWine, с фото) — "in" различает форму без отдельного пропа-дискриминатора.
+ *
+ * Плитка каталога (задача тимлида 27.09, придирчивая сверка с макетом Figma): «Найдено по
+ * прямому попаданию» → «Нашли ещё N бутылок с похожей этикеткой» и «Если не нашлось» →
+ * «Аналоги» в макете — тот же 2-колоночный грид карточек 163px/radius 30, что и экран
+ * «Каталог вин» (сверено в Figma напрямую: одинаковый компонент переиспользован дизайнером
+ * во всех трёх местах), а не построчный список. Переиспользуем классы `catalog-tile*`
+ * (CatalogScreen.tsx) один в один — тот же визуальный компонент, тот же CSS, никакого
+ * нового стиля изобретать не пришлось; `.match-item`/`.match-list` остаются для чата
+ * (узкий пузырь `.chat-bubble`, где грид с крупными фото не поместится) и карточек блюда.
  */
 function WineResultChip({ wine, onClick }: { wine: AnalogWine | ScanCandidateWine; onClick: () => void }) {
   const imageUrl = "image_url" in wine ? wine.image_url : undefined;
   return (
-    <button type="button" className="match-item" onClick={onClick}>
-      <span className="match-item__main">
-        {imageUrl && <WineImage src={imageUrl} alt={wine.name} width={40} className="match-item__thumb" />}
-        <span>
-          {wine.name} · {wine.winery_name}
-        </span>
+    <button type="button" className="catalog-tile" onClick={onClick}>
+      <span className="catalog-tile__image-frame">
+        <WineImage src={imageUrl ?? undefined} alt={wine.name} width={110} className="catalog-tile__image" />
       </span>
-      {wine.region_name && <span className="text-caption">{wine.region_name}</span>}
+      <span className="catalog-tile__name">{wine.name}</span>
+      {wine.winery_name && <span className="catalog-tile__winery">{wine.winery_name}</span>}
     </button>
   );
 }
@@ -612,7 +619,7 @@ export function ScanScreen() {
           {result && result.analogs.length > 0 && (
             <div className="stack" data-testid="scan-analogs-block">
               <h2>{t("scan.analogsTitle")}</h2>
-              <div className="match-list">
+              <div className="catalog-grid">
                 {result.analogs.map((wine) => (
                   <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
                 ))}
@@ -631,7 +638,7 @@ export function ScanScreen() {
                   {inYourTaste && <span className="badge">{t("scan.tasteAnalogsInYourTaste")}</span>}
                 </p>
                 {tasteAnalogs.wines.length > 0 && (
-                  <div className="match-list">
+                  <div className="catalog-grid">
                     {tasteAnalogs.wines.map((wine) => (
                       <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
                     ))}
@@ -660,7 +667,7 @@ export function ScanScreen() {
                   (reports/qa-auto-field-photos.md), где нарезка на бутылку в бой не пошла
                   (reports/ml-eng-ml3.md); при < 5 кандидатах подсказку не показываем. */}
               {result.candidates.length === 5 && <p className="text-small">{t("scan.candidatesManyHint")}</p>}
-              <div className="match-list">
+              <div className="catalog-grid">
                 {result.candidates.map((wine) => (
                   <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
                 ))}
@@ -675,7 +682,7 @@ export function ScanScreen() {
           {result.analogs.length > 0 && (
             <>
               <p className="field__label">{t("scan.analogsTitle")}</p>
-              <div className="match-list">
+              <div className="catalog-grid">
                 {result.analogs.map((wine) => (
                   <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
                 ))}
@@ -797,7 +804,7 @@ export function ScanScreen() {
         <div className="card stack" data-testid="scan-text-analogs">
           <h2>{t("scan.analogsFoundTitle")}</h2>
           {outcome.analogReason && <p className="text-small">{outcome.analogReason}</p>}
-          <div className="match-list">
+          <div className="catalog-grid">
             {outcome.analogs.map((wine) => (
               <WineResultChip key={wine.wine_id} wine={wine} onClick={() => goToWine(wine.wine_id, "scan")} />
             ))}

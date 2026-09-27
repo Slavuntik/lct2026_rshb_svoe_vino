@@ -57,9 +57,10 @@ describe("WineCardScreen", () => {
       await screen.findByText("Шардоне Резерв");
 
       // Первая позиция в фикстуре similar (mocks/fixtures/wines.ts) — severny-sklon-riesling-
-      // poluslad-2023; клик по тексту всплывает на кнопку-обёртку (тот же приём, что
-      // ScanScreen.test.tsx для WineResultChip — обходит дублирование alt/текста в имени роли).
-      fireEvent.click(screen.getByText("Рислинг Полусладкий · Усадьба Северный Склон"));
+      // poluslad-2023; клик по названию (плитка catalog-tile, задача тимлида 27.09 — сверка с
+      // Figma) всплывает на кнопку-обёртку (тот же приём, что ScanScreen.test.tsx для
+      // WineResultChip — обходит дублирование alt/текста в имени роли).
+      fireEvent.click(screen.getByText("Рислинг Полусладкий"));
 
       await waitFor(() => expect(screen.getByText("Рислинг Полусладкий")).toBeInTheDocument());
       const viewed = events.filter((e) => e.name === "wine_card_viewed");
@@ -85,8 +86,12 @@ describe("WineCardScreen", () => {
     expect(screen.queryByText("dom-tihaya-buhta-brut-2022")).not.toBeInTheDocument();
     expect(screen.queryByText(/Похожее вино/)).not.toBeInTheDocument();
 
-    const first = screen.getByText("Рислинг Полусладкий · Усадьба Северный Склон");
-    const second = screen.getByText("Брют Резерв · Дом Тихая Бухта");
+    // Плитка catalog-tile (задача тимлида 27.09, сверка с Figma) несёт название и винодельню
+    // отдельными строками, не одной "Имя · Винодельня" — проверяем оба текста по отдельности.
+    const first = screen.getByText("Рислинг Полусладкий");
+    const second = screen.getByText("Брют Резерв");
+    expect(screen.getByText("Усадьба Северный Склон")).toBeInTheDocument();
+    expect(screen.getByText("Дом Тихая Бухта")).toBeInTheDocument();
     expect(first.closest("button")).not.toHaveAttribute("title");
     expect(second.closest("button")).not.toHaveAttribute("title");
     // Картинка — WineImage с alt по имени вина (contracts/openapi.yaml similar_wines.image_url).
