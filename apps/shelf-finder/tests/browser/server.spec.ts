@@ -43,7 +43,9 @@ test('a warming server shows a retry and can recover without reloading', async (
   await setup(page);let calls=0;
   await page.route('**/v1/shelf/health', r => {calls++;return r.fulfill(calls===1?{status:503,json:{ready:false}}:{json:{ready:true}});});
   await page.goto('/?engine=server');await expect(page.locator('#connect')).toBeVisible();
+  await expect(page.locator('#dot')).toHaveAttribute('data-state','error');
   await page.locator('#connect').click();await expect(page.locator('#status')).toContainText('Готово');
+  await expect(page.locator('#dot')).toHaveAttribute('data-state','ok');
   await expect(page.locator('#error')).toBeHidden();
 });
 
