@@ -48,8 +48,14 @@ h1 {
   font-size: var(--fs-h1);
 }
 
+/* --fs-h2 (32px) — заголовок страницы (h1 использует свой --fs-h1, но исторически некоторые
+   макеты делят один display-размер на оба уровня); здесь h2 — ВСЕГДА заголовок секции внутри
+   карточки/строки (aside, "На снимке", диалог), поэтому размер --fs-h2-card (22px, tokens.css),
+   а не --fs-h2 (32, тот же токен, что и заголовок всей страницы). Правка после ревью 27.09:
+   на 32px "Соберите свой выбор" переносилось на 2 строки, "На снимке" не совпадало по
+   базовой линии с подписью справа. */
 h2 {
-  font-size: var(--fs-h2);
+  font-size: var(--fs-h2-card);
 }
 
 [hidden] {
@@ -86,9 +92,25 @@ button:hover,
   opacity: 0.92;
 }
 
+/* Правка после ревью 27.09: opacity:.45 гасит ЦЕЛИКОМ и заливку, и текст к фону страницы —
+   белый на бордовом при 45% превращается в ~white/~pink и даёт контраст 1.99:1 (посчитано
+   формулой WCAG, эффективные цвета #FEFEFC на #D9ACAD), т.е. "выключено" читалось хуже, чем
+   активная кнопка. Вместо прозрачности — непрозрачная нейтральная заливка: ink/mono-bg даёт
+   10.98:1, с большим запасом от обязательных 4.5:1, и на глаз всё равно однозначно "неактивно". */
 button:disabled {
-  opacity: 0.45;
+  opacity: 1;
   cursor: wait;
+  background: var(--mono-bg);
+  color: var(--ink);
+  border-color: transparent;
+}
+
+/* .quiet — кнопка без заливки (текст на фоне страницы/карточки, не на себе самой): тушим
+   только текст до --muted, серую плашку --mono-bg сюда не добавляем — она смотрелась бы как
+   новая заливка там, где обычно вообще нет фона. muted/bg=5.31, muted/card=5.13 — оба ≥4.5. */
+.quiet:disabled {
+  background: transparent;
+  color: var(--muted);
 }
 
 input[type="file"] {
@@ -98,9 +120,13 @@ input[type="file"] {
   opacity: 0;
 }
 
+/* Тот же приём, что button:disabled выше (не opacity, а непрозрачная нейтральная заливка) —
+   .secondary-плашка вокруг disabled input[type=file] ("Открыть фото" до готовности воркера). */
 .button:has(input:disabled) {
-  opacity: 0.45;
+  opacity: 1;
   pointer-events: none;
+  background: var(--mono-bg);
+  color: var(--ink);
 }
 
 button:focus-visible,
@@ -287,18 +313,35 @@ main {
   font-size: var(--fs-small);
 }
 
+/* Цвет точки отражает состояние из main.ts (updateDot(): ready/busy/видимость #error) — не
+   новая классификация, а те же три состояния, что код и так различает. По умолчанию/атрибут
+   не проставлен — нейтральное ожидание (--muted), т.к. до первого вызова status()/error()
+   (доля мс на холодном старте) явного состояния ещё нет. Правка после ревью 27.09: раньше
+   точка была жёстко зелёной и горела рядом с текстом ошибки. */
 .dot {
   width: 7px;
   height: 7px;
   flex: none;
-  background: var(--ok);
+  background: var(--muted);
   border-radius: 50%;
 }
 
+.dot[data-state="ok"] {
+  background: var(--ok);
+}
+
+.dot[data-state="error"] {
+  background: var(--danger);
+}
+
+/* --danger/--danger-bg — локальное добавление в tokens.css (предложено архитектору, см.
+   reports/frontend-shelf-finder-restyle.md): отказ сервера/сети — это не предупреждение,
+   красить в охристый --warn было категориальной ошибкой (--warn остаётся для реальных
+   предупреждений, если такие появятся). Правка после ревью 27.09. */
 .error {
-  background: var(--warn-bg);
-  border: 1px solid var(--warn);
-  color: var(--warn);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
   border-radius: var(--radius-sm);
   padding: var(--space-3);
   font-size: var(--fs-small);
@@ -444,6 +487,10 @@ dialog input {
   font-size: var(--fs-small);
 }
 
+/* 11px — сознательно ниже пола шкалы (--fs-caption=12): "Выбрано: 0"+"Выбрать найденные"+
+   "Снять выбор" в один ряд 335px сайдбара при 12px переносили последнюю ссылку на вторую
+   строку (найдено на скриншоте ревью 27.09; при 11px, как было до переноса, влезает). Ряд
+   плотных счётчика+двух действий — не проза, отдельный случай, не повод менять пол шкалы. */
 .selection {
   display: flex;
   align-items: center;
@@ -452,11 +499,21 @@ dialog input {
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
   padding: var(--space-2) 0;
-  font-size: var(--fs-caption);
+  font-size: 11px;
 }
 
 .selection .quiet {
-  font-size: var(--fs-caption);
+  font-size: 11px;
+}
+
+/* Обёртка вокруг обеих ссылок-действий: если счётчик+обе ссылки не помещаются в одну строку
+   (узкая колонка на брейкпоинте 900px, aside сужается до 290px), пусть переносится ЦЕЛИКОМ
+   пара действий на вторую строку, а не одна из двух ссылок сама по себе — так было при плоском
+   flex из трёх элементов с justify-content:space-between (внутренний gap здесь не space-between,
+   ссылки всегда рядом). На 375/десктопе всё по-прежнему помещается в одну строку. */
+.selection__actions {
+  display: flex;
+  gap: var(--space-2);
 }
 
 .catalog {

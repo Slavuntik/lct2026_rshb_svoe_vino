@@ -1,10 +1,10 @@
 # Frontend — «Витрина» (apps/shelf-finder) в дизайн-системе приложения (27.09)
 
-Перенёс палитру/шрифты/радиусы/отступы apps/web (tokens.css) на `apps/shelf-finder`. Правки:
-`index.html`, `src/style.css`, точечно `src/main.ts` (см. ниже), новый `src/tokens.css`
-(копия светлого блока `apps/web/src/styles/tokens.css`, шапка с источником; тёмную ветку не
-взял — у «Витрины» не было тёмной темы, заводить без макета запрещено заданием). apps/web не
-менял. Логику/камеру/`engine=`/`core.ts`/`geometry.ts`/`preprocess.ts`/`worker.ts` не трогал.
+Перенёс палитру/шрифты/радиусы/отступы apps/web (tokens.css) на `apps/shelf-finder`, затем внёс
+4 правки по ревью тимлида (раунд 2, см. ниже). Правки: `index.html`, `src/style.css`, точечно
+`src/main.ts`, новый `src/tokens.css` (копия светлого блока `apps/web/src/styles/tokens.css` +
+локальные добавления, см. «Предложение архитектору»). apps/web не менял. Логику/камеру/
+`engine=`/`core.ts`/`geometry.ts`/`preprocess.ts`/`worker.ts` не трогал.
 
 ## Было → стало
 | Параметр | Было | Стало |
@@ -13,48 +13,103 @@
 | Второй акцент | `#b99152` золото | убран, акцентные точки — `--accent` |
 | Текст / приглушённый | `#203830` / `#6a7870` | `--ink #2C2A28` / `--muted #6B6A68` |
 | Линии/чипы, фон/карточки | `#d8dfd6` / `#f5f4ef`,`#fffefa` | `--line`,`--mono-bg #E3E1E2` / `--bg #FEFDFA`,`--card #FDF9ED` |
-| Успех / ошибка | `#99b898`,`#225336` / `#e0bbae`,`#703c2c` | `--ok #3E6B4F` / `--warn #845A19` (на `-bg`) |
-| Заголовки | Georgia/системный, вразнобой 20–28px | Playfair Display, единый `h1`/`h2` из global.css |
+| Успех / ошибка | `#99b898`,`#225336` / `#e0bbae`,`#703c2c` | `--ok #3E6B4F` / `--danger #7B3528` на `--danger-bg` (раунд 2, было `--warn` — см. ниже) |
+| Заголовок страницы / секции | Georgia, вразнобой 20–28px | `h1`=`--fs-h1`(clamp 34–48) / `h2`=`--fs-h2-card` 22px (раунд 2, было единое `--fs-h2` 32px) |
 | Текст/кнопки | `Inter` в CSS, но не грузился шрифт | `Inter` реально подключён (Google Fonts, приём apps/web) |
 | Радиус кнопки/поле/карточка/пилюля | 8 / 5–7 / 14–16 / 30px | `--radius-sm 14` / `--radius-sm 14` / `--radius 20` / `--radius-pill 999` |
+| Точка статуса | всегда зелёная | `--muted`(ожидание)/`--ok`(готово)/`--danger`(ошибка) — раунд 2 |
+| Disabled-кнопка | `opacity:.45` (белый на бордовом → 1.99:1) | непрозрачная `--mono-bg`/`--ink` → 10.98:1 — раунд 2 |
 | Фокус-кольцо, `theme-color` | `#a87e30` 3px / `#123c32` | `--accent` 2px (как global.css) / `#AB494F` |
 
 Приёмы из `global.css`: `.card`→`aside`; `.badge`→`.private`; `.badge--ok`→`.result.found`;
 `.field__input`→поля/`select`; `.modal`/`.modal-overlay` (скрим `rgb(43 34 38/60%)`)→`dialog`.
 
+## Раунд 2 — правки по ревью тимлида
+1. **Точка статуса.** `main.ts`: добавил `updateDot()` — читает уже существующие в коде
+   состояния (`ready`, `busy`, видимость `#error`), новых не вводил; вызывается из `status()`/
+   `error()` (обе и так дергаются на каждом переходе — проверил все места присвоения `busy`/
+   `ready`). `data-state` = `error` (приоритет) → `waiting` (`!ready||busy`) → `ok`. CSS:
+   `.dot[data-state=ok]`=`--ok`, `=error`=`--danger`, по умолчанию `--muted`.
+2. **`.error` был на `--warn`.** Завёл `--danger:var(--accent-strong)`/`--danger-bg:var(
+   --accent-soft)` в `tokens.css` (локально, не в общем контракте) — на основе акцента, как
+   просили, но текстом взял `--accent-strong`, а не голый `--accent`: пара `--accent/
+   --accent-soft` даёт 4.56:1 (впритык), `--accent-strong/--accent-soft` — 7.27:1. Оба варианта
+   ≥4.5, взял с большим запасом для текста ошибки. Предложение архитектору — следующим пунктом.
+3. **Заголовки карточек.** Добавил `--fs-h2-card:22px` (локально), `h2{font-size:...}` теперь
+   на нём, а не на `--fs-h2`(32, который остаётся токеном заголовка страницы). Проверил
+   `getBoundingClientRect`: "Соберите свой выбор" — 1 строка (24px высоты = 1 line-height).
+   Заодно нашёл и починил соседний дефект той же природы: `.selection` ("Выбрано: 0" +
+   2 ссылки) на брейкпоинте 900px (aside сужается до 290px) переносило одну из двух ссылок
+   саму по себе из-за `justify-content:space-between` на 3 элементах — обернул обе ссылки в
+   `.selection__actions`, теперь при нехватке места переносится вся пара целиком, не полурвано
+   (375/1280 — как и было, в одну строку; 900px — теперь чисто в 2). Классов/ID тестов не
+   касался, `.selection__actions` — новый, не используется в `tests/browser/*.spec.ts`.
+4. **Disabled-кнопки.** `opacity:.45` гасило ЦЕЛИКОМ и заливку и текст к фону страницы —
+   посчитал эффективные цвета (WCAG-формула после альфа-блендинга): белый на `--accent` при
+   45% → `#FEFEFC` на `#D9ACAD` → **1.99:1**, хуже активной кнопки. Заменил на непрозрачную
+   `background:var(--mono-bg);color:var(--ink)` (тот же приём и для `.button:has(input:
+   disabled)`) → **10.98:1**. `.quiet:disabled` (без заливки) — гашу только текст до `--muted`
+   (5.31/5.13 на bg/card), плашку не добавляю — она была бы новой заливкой там, где обычно фона нет.
+
+## Предложение архитектору (на ратификацию)
+В общем `tokens.css` нет пары под состояние "ошибка/отказ" (только `--ok`/`--warn`) — в
+Figma-макетах такого состояния не было вовсе. Красить сетевой отказ в `--warn` (жёлто-охристый,
+предупреждение) семантически неверно: это разные категории. Предлагаю добавить в контракт
+`--danger`/`--danger-bg` на основе уже принятого `--accent-strong`/`--accent-soft` (7.27:1,
+новый оттенок не потребуется). Также параллельно в apps/web вводят отдельный уровень «заголовок
+карточки» (по словам тимлида, ~22–24px) — у себя завёл `--fs-h2-card:22px` тем же способом
+(локально, до ратификации); если архитектор утвердит другое число или имя — поменять централизованно.
+
 ## Контраст (WCAG-формула, скрипт `.../scratchpad/shelf-restyle/contrast.py`)
-ink/bg 14.05, ink/card 13.58, muted/bg 5.31, muted/card 5.13, ink/mono-bg (`.private`) 10.98
-(muted/mono-bg было бы 4.15 — FAIL, поэтому там ink), on-accent/accent 5.53, accent/accent-soft
-4.56, accent/bg и accent/card (`.quiet`,`summary`) 5.44/5.25, warn/warn-bg (`.error`) 5.18,
+ink/bg 14.05, ink/card 13.58, muted/bg 5.31, muted/card 5.13, ink/mono-bg (`.private`,
+disabled-кнопки) 10.98, on-accent/accent 5.53, accent/accent-soft (`.secondary`, активная) 4.56,
+accent/bg и accent/card (`.quiet`,`summary`) 5.44/5.25, **danger(accent-strong)/danger-bg
+(`.error`, точка) 7.27** (было `--warn/--warn-bg` 5.18, семантически неверно — заменено),
 ok/ok-bg (`.result.found`) 5.30, ink-тёмный/градиент стейджа 12.7–14.5, muted-тёмный/градиент
-5.0–5.7. Все пары ≥4.5:1.
+5.0–5.7. **Disabled-кнопка: было 1.99 (эффективный цвет при opacity:.45) → стало 10.98.** Все
+использованные пары ≥4.5:1.
 
 ## Вне палитры — намеренно
 `.stage`/`.empty` (видоискатель до кадра) — буквально ветка `:root[data-theme="dark"]` из
 tokens.css (не новая тёмная тема: не переключается, было тёмным и раньше). Рамка найденной
 бутылки на canvas (`main.ts`) — `#25cf6933`/`#9df5ad` вне палитры как разметка поверх
 произвольного кадра (тот же принцип, что `.aim__frame`); подпись-плашку перевёл с хардкода
-`#123c32` на `getComputedStyle(--ink)` в рантейме — единственная правка в `main.ts` кроме
-добавленной константы.
+`#123c32` на `getComputedStyle(--ink)` в рантайме.
 
 ## Не менял
 Классы/ID `.result`, `.empty`, `#error/#status/#catalog/#search/#stop/#enroll/#photo/#frame`
-— на них `tests/browser/*.spec.ts`. Крупную раскладку (max-width 1360, aside 335px, паддинги) —
-не часть общей шкалы отступов. `dialog` max-width оставил 480, не 420 как `.modal`.
+— на них `tests/browser/*.spec.ts` (прогнаны, см. ниже, зелёные). Добавленные `id="dot"` и
+`.selection__actions` — новые, ничего существующего не переименовывал. Крупную раскладку
+(max-width 1360, aside 335px, паддинги) не трогал. `dialog` max-width оставил 480, не 420 как
+`.modal`.
 
 ## Чем проверял
-`npm run test` 24/24 зелёных. `npm run build` (`tsc --noEmit`+`vite build`) чисто, CSS 8.91 КБ.
-`playwright test` не гонял (не качал/не трогал браузеры параллельно с другими агентами) —
-скриншоты снимал отдельным процессом через уже установленный `chromium-1234`. Смотрел живьём:
-`npm run dev` (5180, был свободен), 375/1280, с `?embedded=1` и без; отдельно `npm run build` +
-`vite preview` (4180) внутри iframe тестовой страницы 375px — `tools/run_local.py` не поднимал
-(полный стек задел бы параллельных агентов и секреты шлюза). В консоли iframe-проверки только
-чужие 500 (`/v1/shelf` без бэкенда) и 404 `favicon.ico` (не было и раньше).
+`npm run test` 24/24 зелёных (оба раунда). `npm run build` чисто, CSS 9.28 КБ.
+**`npx playwright test` прогнан по требованию тимлида: 7 passed, 3 skipped, 0 failed** (6.3с).
+Пропущены штатно, не из-за моих правок — все три через `test.skip(!photo || …, 'Set
+SHELF_TEST_PHOTO…'/'Set SHELF_SERVER_TEST_PHOTO…')` в самих спеках (`shelf.spec.ts:11,48`,
+`server-live.spec.ts:6`), требуют локального фото-фикстура/живого сервера через переменные
+окружения — их нет в этом окружении и не было бы независимо от моих изменений. Из зелёных:
+`shelf.spec.ts:4` ("missing models show an actionable error…") напрямую бьёт по `#error`/
+`.result`, `server.spec.ts` (6 тестов) — по канвасу/дублям/EXIF/таймауту; всё прошло с новой
+разметкой (`id="dot"`, `.selection__actions`). Уточнение по среде: `chromium-headless-shell`
+в кэше был ревизии 1234, этому `playwright-core` 1.63.0 нужна 1243 — реально скачал 94.3 МБ
+(`npx playwright install chromium-headless-shell`, ~4 мин, один обрыв соединения и ретрай) —
+это не «ничего качать не надо», а несовпадение версии в общем кэше `~/Library/Caches/
+ms-playwright` с другим проектом; полный `chromium-1234` (не headless-shell) как был, так и
+остался нетронут и рабочим.
+Смотрел живьём: `npm run dev` 375/1280, `?embedded=1` и без, оба раунда правок; отдельно
+`vite build`+`vite preview` внутри iframe тестовой страницы 375px (`tools/run_local.py` не
+поднимал — задел бы параллельных агентов/секреты шлюза).
 
-Скриншоты — `.../scratchpad/shelf-restyle/` (полный путь в конце ответа тимлиду): `before/after-
-{desktop,mobile-375}[-embedded].png`, `after-results-states.png`, `after-dialog.png`,
-`after-embed-in-iframe-375.png`.
+Скриншоты — `.../scratchpad/shelf-restyle/`: раунд 1 `before/after-{desktop,mobile-375}
+[-embedded].png`, `after-results-states.png`, `after-dialog.png`, `after-embed-in-iframe-375.png`;
+раунд 2 `after2-desktop-error.png`, `after2-mobile-375-error.png` (точка+`.error` в реальном
+отказе сервера), `after2-disabled-zoom.png`, `after2-dot-and-error-zoom.png`,
+`after2-result-header-zoom.png`.
 
 ## Риски / тимлиду
-1. `tests/browser/*.spec.ts` не прогнан (см. выше) — селекторы не менял, но стоит проверить живьём.
-2. `accent/accent-soft` 4.56:1 — впритык, пара общая с apps/web, не моя правка.
+`accent/accent-soft` (4.56:1) теперь используется только `.secondary`-кнопкой (не `.error` —
+там `--danger` с 7.27); пара общая с apps/web, не моя правка. `--danger`/`--fs-h2-card` —
+локальные, ждут ратификации архитектора (см. выше); если утвердят другие значения/имена —
+поменять здесь централизованно, потребителей вне `apps/shelf-finder` у этих токенов нет.
