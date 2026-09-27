@@ -480,6 +480,88 @@ _FUSION_OCR_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-
 _FUSION_MODEL_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="fusion-model")
 
 
+class _BoundedPool:
+    """Бортовая переборка (bulkhead) поверх `ThreadPoolExecutor` — тимлид 27.09,
+    находка при разборе залипания сервиса после серии отказов VLM на стенде
+    cpulab (`reports/devops-new-stand.md`: "100 подряд провалов VLM оставили
+    процесс в состоянии, которое штатный предохранитель не почистил" — top-1
+    упал до 0%, честный `not_in_catalog`, не крэш; помог только `systemctl
+    restart`; на ams3 та же авария НЕ залипла — там редкие ОДИНОЧНЫЕ запросы).
+
+    Доказано экспериментом (`apps/api/tests/test_vlm_outage_recovery.py`):
+    ГОЛЫЙ `ThreadPoolExecutor.submit()` НИКОГДА не отказывает — его внутренняя
+    очередь неограничена. `_fusion_text_and_vectors()` ниже ограничивает только
+    СВОЁ ожидание конкретного `Future` (`fut.result(timeout=...)`), а не то,
+    сколько задач УЖЕ отправлено в пул и ещё не завершилось: под всплеском
+    запросов, прибывающих гуще, чем 8 воркеров успевают их разгребать (см.
+    докстринг `_fusion_text_and_vectors` — конкурентные обращения, разбор
+    оживления шлюза посреди уже отправленной пачки и т.п.), очередь растёт БЕЗ
+    ПОТОЛКА: задачи, чей исходный вызывающий код давно получил ответ (упал в
+    локальный фолбэк по своему дедлайну), продолжают копиться и запускаться
+    одна за другой — 20 одновременных обращений к зависшему на 8с шлюзу
+    (таймаут модели 6с, 8 воркеров) оставляют 12 НИ РАЗУ не запущенных задач в
+    очереди сразу после того, как ВСЕ 20 вызывающих кодов уже получили свой
+    ответ и ушли. Для предохранителя модели (`_ModelBreaker`) это вдобавок
+    ЗАТЯГИВАЕТ восстановление: каждая задержавшаяся задача из хвоста очереди,
+    провалившись уже ПОСЛЕ того, как шлюз починили, всё равно вызывает
+    `record_failure()` и заново отодвигает `_opened_until` на полный cooldown
+    — реальное время до первого успешного пробного скана растягивается кратно
+    размеру хвоста, а не ограничено одним `VISION_LLM_BREAKER_COOLDOWN_S`. Для
+    OCR-пула (`_FUSION_OCR_POOL`) риск ещё хуже — там вообще нет предохранителя,
+    который останавливал бы НОВЫЕ попытки после нескольких неудач, так что
+    очередь копится, пока длится сама нагрузка, не 3 первых сбоя.
+
+    `try_submit()` — неблокирующая попытка: "в полёте" (отправлено, ещё не
+    завершилось) уже `capacity` задач -> возвращает `None` НЕМЕДЛЕННО, ничего
+    не отправляя в пул (вызывающий код обязан честно откатиться на локальный
+    путь без ожидания — пул и так занят под завязку, шанс успеть к дедлайну
+    исчезающе мал, а ожидание было бы ровно той тратой времени, которой
+    предохранитель и так избегает при открытом состоянии). Меньше `capacity` —
+    отправляет и возвращает `Future`, снятие счётчика — по завершении
+    (`add_done_callback`, срабатывает и на успехе, и на исключении, и на
+    отмене). `has_capacity()` — дешёвая проверка ДО обращения к предохранителю
+    модели (`_ModelBreaker.allow()`): если пул уже полон, нет смысла тратить
+    "ровно один пробный скан" предохранителя на попытку, которую всё равно
+    некому будет выполнить — эта проверка сохраняет пробный шанс до момента,
+    когда в пуле реально освободится место."""
+
+    def __init__(self, executor: ThreadPoolExecutor, capacity: int) -> None:
+        self._executor = executor
+        self._capacity = capacity
+        self._lock = threading.Lock()
+        self._in_flight = 0
+
+    @property
+    def in_flight(self) -> int:
+        with self._lock:
+            return self._in_flight
+
+    def has_capacity(self) -> bool:
+        with self._lock:
+            return self._in_flight < self._capacity
+
+    def try_submit(self, fn, /, *args, **kwargs):
+        with self._lock:
+            if self._in_flight >= self._capacity:
+                return None
+            self._in_flight += 1
+        fut = self._executor.submit(fn, *args, **kwargs)
+        fut.add_done_callback(self._on_done)
+        return fut
+
+    def _on_done(self, _fut) -> None:
+        with self._lock:
+            self._in_flight -= 1
+
+
+# Потолок = max_workers физического пула — не отправляем в пул больше задач,
+# чем он способен исполнять ПРЯМО СЕЙЧАС (см. докстринг `_BoundedPool`): любая
+# задача, принятая переборкой, либо запускается сразу на свободном воркере,
+# либо честно и мгновенно отклоняется, но никогда не ждёт своей очереди молча.
+_FUSION_OCR_BULKHEAD = _BoundedPool(_FUSION_OCR_POOL, capacity=8)
+_FUSION_MODEL_BULKHEAD = _BoundedPool(_FUSION_MODEL_POOL, capacity=8)
+
+
 class _ModelBreaker:
     """Предохранитель на ОДНУ модель ("vlm" или "vlm_local" — см. `_MODEL_BREAKERS`
     ниже, свой экземпляр на каждую) — тимлид 22.09, расширение брифа scan-budget
@@ -561,18 +643,27 @@ def _verify_with_budget(
     ограниченный раньше — реальный кандидат в объяснение разрыва (наравне с
     совпадением по времени с параллельным запросом чата, см. отчёт).
 
-    Отправляется в `_FUSION_OCR_POOL` (тот же ресурс, что `read_query_text()` —
-    тоже CPU-OCR, не сеть — см. `_fusion_text_and_vectors`) и ждётся не дольше
-    остатка `deadline` — ТОГО ЖЕ бюджета (`t0 + CV_SCAN_BUDGET_S`), что и OCR
-    текстовой ветки: "весь запрос", не отдельный шаг со своим бюджетом. Не
-    успел/бросил исключение -> `None`, WARNING без содержимого (ни фото, ни
-    текста, ни кандидатов) — вызывающий код остаётся на top-1 ANN/слияния БЕЗ
-    OCR-верификации (контракт уже предусматривает `None` как честный исход
-    "не смог разлить", см. докстринг `LabelVerifier.verify()`). Поток НЕ
-    отменяется (Python не умеет прервать блокирующий вызов в чужом потоке) —
-    доработает в фоне пула, тот же риск/компромисс, что у OCR текстовой ветки
-    (см. reports/ml-eng-scan-budget.md, оценка "съедает ли ядра")."""
-    fut = _FUSION_OCR_POOL.submit(verifier.verify, image_bytes, candidates, ocr_text=ocr_text)
+    Отправляется в `_FUSION_OCR_BULKHEAD` (переборка над тем же пулом, что
+    `read_query_text()` — тоже CPU-OCR, не сеть — см. `_fusion_text_and_vectors`
+    и докстринг `_BoundedPool`) и ждётся не дольше остатка `deadline` — ТОГО ЖЕ
+    бюджета (`t0 + CV_SCAN_BUDGET_S`), что и OCR текстовой ветки: "весь запрос",
+    не отдельный шаг со своим бюджетом. Пул уже занят под завязку (`capacity`
+    задач "в полёте") -> `try_submit()` возвращает `None` НЕМЕДЛЕННО, тот же
+    честный исход, что и "не успел/бросил исключение" — WARNING без содержимого
+    (ни фото, ни текста, ни кандидатов), без единой секунды ожидания впустую.
+    Отправленная задача НЕ отменяется, если мы перестали её ждать (Python не
+    умеет прервать блокирующий вызов в чужом потоке) — доработает в фоне пула
+    (счётчик переборки корректно освобождается по её завершению), но НОВЫЕ
+    задачи, пока переборка полна, в пул больше не поступают (см. докстринг
+    `_BoundedPool` про накопление без потолка, найденное на cpulab)."""
+    fut = _FUSION_OCR_BULKHEAD.try_submit(verifier.verify, image_bytes, candidates, ocr_text=ocr_text)
+    if fut is None:
+        logger.warning(
+            "cv_fusion: near-dup verify() пропущен — OCR-пул занят (%d/%d в полёте), "
+            "кандидат остаётся без OCR-верификации",
+            _FUSION_OCR_BULKHEAD.in_flight, _FUSION_OCR_BULKHEAD._capacity,
+        )
+        return None
     try:
         return fut.result(timeout=max(0.0, deadline - time.monotonic()))
     except Exception:  # noqa: BLE001 — не успел к бюджету/сбой потока: честно "не смог разлить"
@@ -633,13 +724,24 @@ def _fusion_text_and_vectors(
       запроса вовсе (не тратят дедлайн, не занимают поток `_FUSION_MODEL_POOL`).
     - OCR и модели читаются РАЗНЫМИ пулами (`_FUSION_OCR_POOL`/`_FUSION_MODEL_POOL`) —
       зависший запрос к шлюзу не крадёт поток у CPU-OCR следующего скана.
+    - Тимлид 27.09 (залипание сервиса на cpulab после серии отказов VLM, разбор —
+      докстринг `_BoundedPool`): ОБА пула — `_FUSION_OCR_BULKHEAD`/`_FUSION_MODEL_
+      BULKHEAD`, не голые `.submit()`. Пул уже занят под завязку -> `try_submit()`
+      возвращает `None` НЕМЕДЛЕННО, без единой попытки/секунды ожидания — тот же
+      честный откат на локальный путь, что и у остальных сбоев ниже, но без риска
+      копить в очереди пула задачи без потолка (доказанный на cpulab и в тесте
+      `test_vlm_outage_recovery.py` механизм: заброшенные, но НЕ отменённые задачи
+      от прошлых запросов иначе накапливаются быстрее, чем 8 воркеров успевают их
+      разгрести под всплеском нагрузки, и не дают ни новым OCR-запросам, ни пробным
+      сканам предохранителя реально выполниться вовремя).
     - Любое исключение/таймаут ЛЮБОГО источника — WARNING без содержимого фото/текста,
       наружу ничего не бросается: не успел OCR -> текст модели, если она ответила,
       иначе только CV (`label_text=""`); не ответила ни одна модель -> текст OCR (как
       раньше). Поток, который мы перестали ждать, НЕ отменяется (Python не умеет
-      прервать блокирующий вызов в чужом потоке) — продолжает работать в фоне пула,
-      см. `reports/ml-eng-scan-budget.md` про оценку риска "съедает ли ядра следующего
-      запроса" и предложенную меру.
+      прервать блокирующий вызов в чужом потоке) — доработает в фоне пула, но НОВЫЕ
+      задачи, пока переборка полна, туда больше не поступают (см. `reports/
+      ml-eng-scan-budget.md` про изначальную оценку риска "съедает ли ядра следующего
+      запроса" и `reports/ml-eng-vlm-outage-recovery.md` про доведённую до конца меру).
 
     agents/ML-1-*.md (задача 1): `settings.cv_fusion_merge_model_text` (дефолт
     выключен) — когда включён И хотя бы одна модель ответила, OCR ДОБАВЛЯЕТСЯ к
@@ -657,33 +759,48 @@ def _fusion_text_and_vectors(
     readers: dict[str, object] = {}
     if (
         mode in ("vlm", "vlm_both") and settings.vision_llm_url and settings.vision_llm_key
-        and _MODEL_BREAKERS["vlm"].allow(cooldown_s=cooldown_s)
+        and _FUSION_MODEL_BULKHEAD.has_capacity() and _MODEL_BREAKERS["vlm"].allow(cooldown_s=cooldown_s)
     ):
-        readers["vlm"] = _FUSION_MODEL_POOL.submit(
+        fut = _FUSION_MODEL_BULKHEAD.try_submit(
             vision_llm.read_label_fields_or_raise, image_bytes,
             url=settings.vision_llm_url, key=settings.vision_llm_key, model=settings.vision_llm_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
+        if fut is not None:  # None — переборка заполнилась В ПРОМЕЖУТКЕ между has_capacity() и try_submit()
+            readers["vlm"] = fut
     if (
         mode in ("vlm_local", "vlm_both") and settings.vision_llm_local_url
-        and _MODEL_BREAKERS["vlm_local"].allow(cooldown_s=cooldown_s)
+        and _FUSION_MODEL_BULKHEAD.has_capacity() and _MODEL_BREAKERS["vlm_local"].allow(cooldown_s=cooldown_s)
     ):
-        readers["vlm_local"] = _FUSION_MODEL_POOL.submit(
+        fut = _FUSION_MODEL_BULKHEAD.try_submit(
             vision_llm.read_label_fields_or_raise, image_bytes,
             url=settings.vision_llm_local_url, key=None, model=settings.vision_llm_local_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
-    f_ocr = _FUSION_OCR_POOL.submit(verifier.read_query_text, image_bytes)
+        if fut is not None:
+            readers["vlm_local"] = fut
+    f_ocr = _FUSION_OCR_BULKHEAD.try_submit(verifier.read_query_text, image_bytes)
     vectors = image_index.embed_fusion_query(image_bytes)  # ValueError на битых байтах — как раньше
-    try:
-        ocr_text = f_ocr.result(timeout=max(0.0, scan_deadline - time.monotonic()))
-    except Exception:  # noqa: BLE001 — не успел к бюджету/сбой потока: сливаем без OCR
+    if f_ocr is None:
+        # OCR-пул занят под завязку (`_FUSION_OCR_BULKHEAD.capacity` задач уже "в
+        # полёте") — тот же честный откат, что и на таймаут ниже, но БЕЗ единой
+        # секунды ожидания: пул и так не успевает, ждать дедлайн бессмысленно
+        # (см. докстринг `_BoundedPool` — находка cpulab, залипание без потолка).
         logger.warning(
-            "cv_fusion: OCR не уложился в CV_SCAN_BUDGET_S=%.1fс (с начала запроса прошло %.2fс) "
-            "— ответ без OCR-текста",
-            settings.cv_scan_budget_s, time.monotonic() - effective_t0,
+            "cv_fusion: OCR-пул занят (%d/%d в полёте) — ответ без OCR-текста, без ожидания бюджета",
+            _FUSION_OCR_BULKHEAD.in_flight, _FUSION_OCR_BULKHEAD._capacity,
         )
         ocr_text = ""
+    else:
+        try:
+            ocr_text = f_ocr.result(timeout=max(0.0, scan_deadline - time.monotonic()))
+        except Exception:  # noqa: BLE001 — не успел к бюджету/сбой потока: сливаем без OCR
+            logger.warning(
+                "cv_fusion: OCR не уложился в CV_SCAN_BUDGET_S=%.1fс (с начала запроса прошло %.2fс) "
+                "— ответ без OCR-текста",
+                settings.cv_scan_budget_s, time.monotonic() - effective_t0,
+            )
+            ocr_text = ""
 
     got: dict[str, str] = {}
     bottle_flags: dict[str, bool | None] = {}
