@@ -64,6 +64,54 @@ describe("CatalogScreen (GET /v1/catalog, contracts/openapi.yaml v0.3.7, зад�
     expect(within(tile).getByTestId("wine-image-placeholder")).toBeInTheDocument();
   });
 
+  /**
+   * Дефект hack-v27 (задача тимлида 27.09): превью каталога приходят разных пропорций —
+   * без общей рамки картинка растягивала ячейку на свою высоту, соседние плитки в ряду грид-
+   * сетки не совпадали по высоте (рваные ряды). Каждая плитка обязана нести один и тот же
+   * контейнер-рамку фиксированной пропорции (CSS aspect-ratio 3:4, .catalog-tile__image-frame)
+   * независимо от того, пришло реальное фото или заглушка WineImage — сам object-fit:contain
+   * визуально не проверить в jsdom (нет layout-движка), поэтому фиксируем разметку, которая
+   * его включает, плюс однострочную/двухстрочную обрезку названия и винодельни тем же приёмом.
+   */
+  it("каждая плитка несёт рамку фиксированной пропорции под фото — не зависит от того, есть превью или заглушка", async () => {
+    renderCatalog();
+    const grid = await screen.findByTestId("catalog-grid");
+    const tiles = within(grid).getAllByRole("button");
+    expect(tiles.length).toBeGreaterThan(0);
+    for (const tile of tiles) {
+      const frame = tile.querySelector(".catalog-tile__image-frame");
+      expect(frame, "у каждой плитки должна быть общая рамка изображения").toBeInTheDocument();
+      // Реальное фото и заглушка WineImage лежат В рамке, не рядом с ней — рамка задаёт высоту.
+      expect(frame?.querySelector("img.catalog-tile__image, svg.catalog-tile__image")).toBeTruthy();
+    }
+  });
+
+  it("длинное название и винодельня обрезаются (line-clamp), не растягивают ячейку", async () => {
+    vi.spyOn(apiClient, "getCatalog").mockResolvedValueOnce({
+      wines: [
+        {
+          wine_id: "long-name-wine",
+          name: "Очень-очень-очень длинное название вина, которое в один ряд точно не поместится",
+          winery: "Не менее длинное название винодельни с большим количеством слов подряд",
+          color: "белое",
+          sugar: "сухое",
+          image_url: null,
+        },
+      ],
+      total: 1,
+      limit: 24,
+      offset: 0,
+    });
+    renderCatalog();
+
+    const name = await screen.findByText(/очень-очень-очень длинное название/i);
+    expect(name).toHaveClass("catalog-tile__name");
+    const winery = screen.getByText(/не менее длинное название винодельни/i);
+    expect(winery).toHaveClass("catalog-tile__winery");
+    // Классы несут -webkit-line-clamp (см. styles/global.css) — сам визуальный обрез не
+    // проверить в jsdom, но правильный класс на правильном узле — то, от чего он зависит.
+  });
+
   it("поиск по названию/винодельне сужает список (дебаунс, не запрос на каждую клавишу)", async () => {
     renderCatalog();
     await screen.findByTestId("catalog-grid");

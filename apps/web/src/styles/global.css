@@ -767,19 +767,50 @@ button.badge {
   outline-offset: 2px;
 }
 
-.catalog-tile__image {
-  display: block;
-  max-width: 100%;
-  height: auto;
+/* Дефект hack-v27 (задача тимлида 27.09): превью каталога приходят разных пропорций
+   (квадрат/портрет/пейзаж, у части позиций — вовсе плейсхолдер WineImage с фиксированным
+   узким viewBox) — без общей рамки картинка сама определяла высоту ячейки, и соседние
+   плитки в одном ряду грид-сетки оказывались разной высоты (рваные ряды). Рамка 3:4 (под
+   вертикальную бутылку) + object-fit:contain на var(--bg) — тот же приём "мягкой подложки",
+   что .food-pairing__photo-frame выше: одна и та же высота слота у ЛЮБОЙ плитки, фото не
+   обрезается (contain, не cover), пустые поля рамки просто нейтрального цвета, не белые. */
+.catalog-tile__image-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
+.catalog-tile__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Длинное название/винодельня обрезаются одинаково у всех плиток (после этого же дефекта
+   hack-v27: текст переменной длины растягивал ячейку так же, как и разные пропорции фото) —
+   фиксированное число строк с многоточием, не рост ячейки. */
 .catalog-tile__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
   font-size: var(--fs-small);
   font-weight: 500;
   color: var(--ink);
 }
 
 .catalog-tile__winery {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  width: 100%;
   font-size: var(--fs-caption);
   color: var(--muted);
 }

@@ -178,7 +178,14 @@ export function CatalogScreen() {
                   className="catalog-tile"
                   onClick={() => navigate(`/app/wine/${encodeURIComponent(item.wine_id)}`)}
                 >
-                  <WineImage src={item.image_url ?? undefined} alt={item.name} width={110} className="catalog-tile__image" />
+                  {/* Задача тимлида 27.09 (дефект hack-v27): превью каталога приходят разных
+                      пропорций (квадрат/портрет/пейзаж) — без фиксированной рамки ячейка
+                      растягивалась под самое высокое фото в ряду, сетка рвалась. Рамка 3:4 +
+                      object-fit:contain на var(--surface) — одна и та же высота слота у всех
+                      плиток независимо от исходных пропорций фото. */}
+                  <span className="catalog-tile__image-frame">
+                    <WineImage src={item.image_url ?? undefined} alt={item.name} width={110} className="catalog-tile__image" />
+                  </span>
                   <span className="catalog-tile__name">{item.name}</span>
                   {item.winery && <span className="catalog-tile__winery">{item.winery}</span>}
                 </button>
