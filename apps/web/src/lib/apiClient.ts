@@ -18,6 +18,8 @@ import {
   type PostConsentPayload,
   type RegisterPayload,
   type ScanMetricsResponse,
+  type CatalogQuery,
+  type CatalogResponse,
   type DishPairingPayload,
   type DishPairingResponse,
   type ScanPhotoRichResponse,
@@ -159,6 +161,22 @@ export const apiClient = {
 
   getWine(wineId: string): Promise<WineCardResponse> {
     return request(`/wines/${encodeURIComponent(wineId)}`);
+  },
+
+  /**
+   * v0.3.7 (contracts/openapi.yaml, задача тимлида 27.09): постраничная плитка каталога кейса
+   * («Каталог вин»). Пустая/пробельная строка в q/color/sugar на сервере = фильтр не применён —
+   * здесь просто не отправляем такие поля вовсе (тот же результат, чище query string).
+   */
+  getCatalog(query: CatalogQuery = {}): Promise<CatalogResponse> {
+    const params = new URLSearchParams();
+    if (query.limit != null) params.set("limit", String(query.limit));
+    if (query.offset != null) params.set("offset", String(query.offset));
+    if (query.q?.trim()) params.set("q", query.q.trim());
+    if (query.color?.trim()) params.set("color", query.color.trim());
+    if (query.sugar?.trim()) params.set("sugar", query.sugar.trim());
+    const qs = params.toString();
+    return request(`/catalog${qs ? `?${qs}` : ""}`);
   },
 
   /**

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useShelfAvailability } from "../lib/shelfAvailability";
 import { storage } from "../lib/storage";
 import { AppNav } from "./nav/AppNav";
+import { CatalogScreen } from "./catalog/CatalogScreen";
 import { ChatScreen } from "./chat/ChatScreen";
 import { MetricsScreen } from "./metrics/MetricsScreen";
 import { OnboardingScreen } from "./onboarding/OnboardingScreen";
@@ -45,6 +46,14 @@ export default function AppShell() {
             element={
               <RequireOnboarding>
                 <ScanScreen />
+              </RequireOnboarding>
+            }
+          />
+          <Route
+            path="catalog"
+            element={
+              <RequireOnboarding>
+                <CatalogScreen />
               </RequireOnboarding>
             }
           />

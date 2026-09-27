@@ -49,6 +49,10 @@ export function NavMenu({ panelId, shelfAvailable, triggerRef, onClose }: NavMen
 
   const items: NavItem[] = [
     { to: "/app/scan", label: t("nav.scan") },
+    // Задача тимлида 27.09: последний пункт «есть в Figma, нет у нас» — домашний экран
+    // «Каталог вин» в макете, у нас сканер остаётся главным действием (решение тимлида),
+    // поэтому раздел — только здесь, в меню; вариант «сделать домашним» разобран в отчёте.
+    { to: "/app/catalog", label: t("nav.catalog") },
     ...(shelfAvailable ? [{ to: "/app/shelf", label: t("nav.shelf") }] : []),
     { to: "/app/chat", label: t("nav.chat") },
     { to: "/app/taste", label: t("nav.taste") },

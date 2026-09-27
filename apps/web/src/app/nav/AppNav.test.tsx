@@ -55,6 +55,9 @@ describe("AppNav — шапка и сэндвич-меню", () => {
     renderApp(<Harness shelfAvailable={false} />, "/app/profile");
     await openMenu();
     expect(screen.getByRole("link", { name: "Скан" })).toHaveAttribute("href", "/app/scan");
+    // Задача тимлида 27.09: последний пункт «есть в Figma, нет у нас» — «Каталог вин» отдельным
+    // разделом меню (сканер остаётся главным действием, домашний экран не меняем).
+    expect(screen.getByRole("link", { name: "Каталог вин" })).toHaveAttribute("href", "/app/catalog");
     expect(screen.getByRole("link", { name: "Сомелье" })).toHaveAttribute("href", "/app/chat");
     expect(screen.getByRole("link", { name: "Вкус" })).toHaveAttribute("href", "/app/taste");
     expect(screen.getByRole("link", { name: "Профиль" })).toHaveAttribute("href", "/app/profile");

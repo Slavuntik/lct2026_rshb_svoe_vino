@@ -22,6 +22,7 @@ import type {
   WaitlistPayload,
   WinePairingsResponse,
 } from "../lib/apiTypes";
+import { CATALOG_FIXTURE } from "./fixtures/catalog";
 import { chunkAnswer, pickChatResponse, pickChatResponseForWine } from "./fixtures/chat";
 import { buildDishCategoryResponse, buildDishPhotoResponse, isDishCategory } from "./fixtures/dishPairing";
 import { popularStyleNames, resolveStyle, styleNamesFor, winesForStyle } from "./fixtures/styles";
@@ -334,6 +335,41 @@ export const handlers: HttpHandler[] = [
       similar: wines.slice(1, 3).map(toAnalogWine),
       analogs: wines.slice(3, 5).map(toAnalogWine),
     } satisfies ScanPhotoRichResponse);
+  }),
+
+  // v0.3.7 (contracts/openapi.yaml, задача тимлида 27.09): «Каталог вин» — постраничная плитка.
+  // Пустая/пробельная строка в q/color/sugar = фильтр не применён (apiClient.ts и так не шлёт
+  // такие поля, но мок держит то же поведение и на случай прямого fetch в тестах). Везде
+  // casefold с обеих сторон — как в боевом контракте (у части фикстур цвет/сахар не всегда
+  // совпадают регистром с тем, что введёт пользователь).
+  http.get(`${API}/catalog`, ({ request }) => {
+    const url = new URL(request.url);
+    const limitRaw = url.searchParams.get("limit");
+    const offsetRaw = url.searchParams.get("offset");
+    const limit = limitRaw === null ? 24 : Number(limitRaw);
+    const offset = offsetRaw === null ? 0 : Number(offsetRaw);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(offset) || offset < 0) {
+      return errorJson(422, "validation_error", "limit должен быть 1…100, offset — не меньше 0.");
+    }
+    const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+    const color = (url.searchParams.get("color") ?? "").trim().toLowerCase();
+    const sugar = (url.searchParams.get("sugar") ?? "").trim().toLowerCase();
+
+    let filtered = CATALOG_FIXTURE;
+    if (q) {
+      filtered = filtered.filter(
+        (item) => item.name.toLowerCase().includes(q) || (item.winery ?? "").toLowerCase().includes(q),
+      );
+    }
+    if (color) filtered = filtered.filter((item) => (item.color ?? "").toLowerCase() === color);
+    if (sugar) filtered = filtered.filter((item) => (item.sugar ?? "").toLowerCase() === sugar);
+
+    return HttpResponse.json({
+      wines: filtered.slice(offset, offset + limit),
+      total: filtered.length,
+      limit,
+      offset,
+    });
   }),
 
   // --- wines ---

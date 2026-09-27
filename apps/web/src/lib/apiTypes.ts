@@ -175,6 +175,42 @@ export interface WineCardResponse {
 }
 
 /**
+ * v0.3.7 (openapi.yaml, задача тимлида 27.09): GET /v1/catalog — постраничная плитка каталога
+ * кейса для экрана «Каталог вин» (макет Figma). Порядок детерминирован (имя, тай-брейк
+ * wine_id), фильтры его только сужают. `image_url` — `null`, если файла превью реально нет на
+ * диске (49 из 2103 позиций на снимке 27.09) — вино НЕ выбрасывается из выдачи, клиент рисует
+ * заглушку (CatalogScreen.tsx переиспользует WineImage — она уже это умеет).
+ */
+export interface CatalogItem {
+  wine_id: string;
+  name: string;
+  winery: string | null;
+  color: string | null;
+  sugar: string | null;
+  image_url: string | null;
+}
+
+/** Пустая строка/строка из пробелов в q/color/sugar = фильтр не применён (не «ничего не
+ * найдено») — контракт требует это на сервере; клиент просто не шлёт пустые поля (apiClient.ts). */
+export interface CatalogQuery {
+  limit?: number;
+  offset?: number;
+  q?: string;
+  color?: string;
+  sugar?: string;
+}
+
+export interface CatalogResponse {
+  wines: CatalogItem[];
+  /** После q/color/sugar, ДО limit/offset — по нему считаем «показано N из total» и остаток страниц. */
+  total: number;
+  /** Эхо применённого лимита. */
+  limit: number;
+  /** Эхо; offset за концом выборки — пустой wines и тот же total, не 404. */
+  offset: number;
+}
+
+/**
  * v0.3.3 (contracts/post-scan.md v1.0, contracts/openapi.yaml): GET /wines/{wine_id}/pairings —
  * гастропары к распознанному вину. `basis` честно называет источник — catalog (как в
  * source.food_pairings, score всегда null), sensory (derived.sensory через мини-DSL правил),

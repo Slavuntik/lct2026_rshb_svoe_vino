@@ -312,9 +312,24 @@ button.icon-badge:disabled {
   text-align: center;
 }
 
+/* Мягкая подложка --bg (страничный фон, самый светлый нейтральный токен) под фото блюда —
+   задача тимлида 27.09: белая тарелка кадра на кремовом --surface плитки без неё выглядела
+   вклеенной заплаткой, тонкое кольцо той же плотности, что фон страницы, снимает жёсткий стык
+   без теней/рамок (переносу макета Figma тени/обводки не нужны — см. frontend-figma-restyle.md). */
+.food-pairing__photo-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
 .food-pairing__photo {
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -717,6 +732,56 @@ button.badge {
 .match-item__thumb {
   flex-shrink: 0;
   border-radius: var(--radius);
+}
+
+/* --- каталог вин (задача тимлида 27.09, GET /v1/catalog) — сетка плиток. auto-fill вместо
+   фиксированных 2 колонок Figma (163px, один статичный кадр 375): у нас контейнер до 720px
+   на десктопе, плитки должны сами добирать колонки, а не тянуться на всю ширину. --- */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.catalog-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  background: var(--card);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-3);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.catalog-tile:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.catalog-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.catalog-tile__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.catalog-tile__name {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.catalog-tile__winery {
+  font-size: var(--fs-caption);
+  color: var(--muted);
 }
 
 /* --- чат --- */

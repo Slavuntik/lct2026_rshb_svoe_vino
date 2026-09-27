@@ -6,27 +6,43 @@ import type { WinePairing } from "../lib/apiTypes";
 
 /**
  * Фото для тегов гастропар (задача тимлида 27.09, макет Figma «Сочетание с блюдами» на
- * карточке вина). Картинок на все 9 тегов `pipeline/ref/food_pairing_rules.yaml`
- * (`portal_tag_defaults`, те же 9, что `ru.scan.dishCategory*` — contracts/post-scan.md v1.2
- * §4.0) у нас нет — реально доступна ровно ОДНА, однозначно узнаваемая: design/ui-prototype/
- * assets/brand/dish-fish.png (лосось на тарелке → «Блюда из рыбы», перенесена в
- * public/brand/dish-fish.jpg, см. reports/frontend-card-widgets.md).
+ * карточке вина; волна 2 — фото от Вячеслава прилетели тем же днём). 8 из 9 канонических
+ * тегов `pipeline/ref/food_pairing_rules.yaml` (`portal_tag_defaults`, те же 9, что
+ * `ru.scan.dishCategory*` — contracts/post-scan.md v1.2 §4.0) закрыты кадрами
+ * `public/brand/dish-{ustritsy,syry,ptitsa,salaty,brusketty,bbq,aziatskaya,vypechka}.jpg`
+ * (600×600, тарелка по центру на белом — уже в едином стиле друг с другом). Из двух кадров
+ * «Выпечка и десерты» (vypechka — круассаны, desert — чизкейк с ягодами) выбран `desert.jpg`:
+ * пятно соуса даёт больше контраста на маленькой плитке 60px, `dish-vypechka.jpg` остаётся в
+ * public/brand про запас, но никуда не подключён (задача тимлида — «второй не подключать»).
  *
- * dish-meat.png/dish-snack.png сознательно НЕ привязаны ни к одному тегу — та же причина, по
- * которой их уже отклонили для чипов режима «Блюдо» на сканере (решение тимлида 27.09,
- * reports/frontend-design-transfer.md: «каждая изображает ровно одно блюдо, мясо/птица/BBQ
- * пересекаются, сопоставление ненадёжно»). dish-meat.png — светлое жареное филе с овощным
- * гарниром: с равным основанием могло бы изображать «Блюда из птицы» ИЛИ «BBQ», выбор одного
- * из двух был бы выдумкой, не переносом макета. dish-snack.png — овощная нарезка без хлеба и
- * заправки: не «Салаты» (нет заправки/смешивания) и не «Брускетты» (нет хлеба). Остальные 8
- * тегов — типографская плитка (см. FoodPairingTile ниже), а не пустое место.
+ * «Блюда из рыбы» — по-прежнему старое `dish-fish.jpg` (108×108, из первой волны, другой
+ * стиль/размер) — тимлид попросит у Вячеслава кадр в новом стиле; замена сводится к тому же
+ * пути `/brand/dish-fish.jpg`, кода трогать не придётся.
  *
- * Ключи словаря — ЗНАЧЕНИЯ `ru.scan.dishCategory*` (то же поле, что заполняет API в
- * WinePairing.tag), а не литералы кириллицы: src/test/i18n-hardcoded-strings.test.ts запрещает
- * кириллицу вне i18n/mocks/test, а mocks/fixtures/dishPairing.ts уже задаёт этот же приём.
+ * `ru.wineCard.pairingsRawTagSeafood` («Морепродукты») — НЕ один из 9 канонических тегов, а
+ * частый СЫРОЙ тег портала уровня basis=catalog (contracts/post-scan.md §1, встречается в
+ * mocks/fixtures/wines.ts) — покрыт тем же фото устриц по прямому указанию тимлида («устрицы и
+ * морепродукты» — оба про морепродукты, картинка одна).
+ *
+ * Ключи словаря — ЗНАЧЕНИЯ `ru.scan.dishCategory*`/`ru.wineCard.pairingsRawTagSeafood` (те же
+ * поля, что уже заполняет API в WinePairing.tag), а не литералы кириллицы: src/test/
+ * i18n-hardcoded-strings.test.ts запрещает кириллицу вне i18n/mocks/test.
+ *
+ * Монограмма-заглушка (FoodPairingTile ниже) НЕ удалена: она остаётся для любого тега вне
+ * этого словаря (basis=catalog — сырой текст портала шире 9 тегов, например «Птица», «Твёрдые
+ * сыры») и для случая, если файл фото не загрузился (onError у <img> ниже).
  */
 const TAG_PHOTO: Partial<Record<string, string>> = {
   [ru.scan.dishCategoryFish]: "/brand/dish-fish.jpg",
+  [ru.scan.dishCategoryOysters]: "/brand/dish-ustritsy.jpg",
+  [ru.wineCard.pairingsRawTagSeafood]: "/brand/dish-ustritsy.jpg",
+  [ru.scan.dishCategoryCheese]: "/brand/dish-syry.jpg",
+  [ru.scan.dishCategoryPoultry]: "/brand/dish-ptitsa.jpg",
+  [ru.scan.dishCategorySalads]: "/brand/dish-salaty.jpg",
+  [ru.scan.dishCategoryBruschetta]: "/brand/dish-brusketty.jpg",
+  [ru.scan.dishCategoryBbq]: "/brand/dish-bbq.jpg",
+  [ru.scan.dishCategoryAsian]: "/brand/dish-aziatskaya.jpg",
+  [ru.scan.dishCategoryDesserts]: "/brand/dish-desert.jpg",
 };
 
 function monogramLetter(tag: string): string {
@@ -35,15 +51,21 @@ function monogramLetter(tag: string): string {
 
 function FoodPairingTile({ tag }: { tag: string }) {
   const photo = TAG_PHOTO[tag];
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = photo && !photoFailed;
   return (
     <div className="food-pairing__tile" data-testid="food-pairing-tile">
-      {photo ? (
-        // Декоративное фото — тег уже назван текстом ниже, дублировать его в alt не нужно
-        // (тот же приём, что миниатюры сорта/региона в WineCardContent.tsx: alt="").
-        <img src={photo} alt="" className="food-pairing__photo" />
+      {showPhoto ? (
+        // Мягкая подложка --bg под фото (задача тимлида 27.09): белая тарелка кадра на кремовом
+        // --surface плитки иначе выглядит вклеенной заплаткой — кольцо той же плотности, что
+        // фон страницы, снимает жёсткий стык. Декоративно — тег уже назван текстом ниже.
+        <span className="food-pairing__photo-frame">
+          <img src={photo} alt="" className="food-pairing__photo" onError={() => setPhotoFailed(true)} />
+        </span>
       ) : (
-        // Типографская плитка (нет своей фотографии) — кружок-монограмма первой буквой тега
-        // на токенах --accent-soft/--accent, тот же контрастный дуэт, что .btn--secondary.
+        // Типографская плитка (нет своей фотографии ИЛИ фото не загрузилось) — кружок-
+        // монограмма первой буквой тега на токенах --accent-soft/--accent, тот же контрастный
+        // дуэт, что .btn--secondary.
         <span className="food-pairing__monogram" aria-hidden="true">
           {monogramLetter(tag)}
         </span>

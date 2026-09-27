@@ -20,6 +20,7 @@ export const ru = {
   },
   nav: {
     scan: "Скан",
+    catalog: "Каталог вин",
     shelf: "Витрина",
     chat: "Сомелье",
     taste: "Вкус",
@@ -32,6 +33,26 @@ export const ru = {
     menuClose: "Закрыть меню",
     menuTitle: "Разделы",
     scanShortcutLabel: "Быстрый переход к скану",
+  },
+  // --- «Каталог вин» (задача тимлида 27.09, GET /v1/catalog, contracts/openapi.yaml v0.3.7) ---
+  catalog: {
+    title: "Каталог вин",
+    subtitle: "Все вина каталога — ищите по названию или винодельне, уточняйте фильтрами.",
+    searchLabel: "Поиск по названию или винодельне",
+    searchPlaceholder: "Например: Шардоне или Тихая бухта",
+    filtersToggle: "Фильтры",
+    filterColor: "Цвет",
+    filterColorPlaceholder: "например: красное",
+    filterSugar: "Сахар",
+    filterSugarPlaceholder: "например: сухое",
+    loading: "Загружаем каталог…",
+    searching: "Обновляем список…",
+    error: "Не удалось загрузить каталог вин.",
+    empty: "Ничего не найдено. Попробуйте изменить запрос или фильтры.",
+    resultsCount: "Найдено вин: {count}",
+    loadMore: "Показать ещё",
+    loadingMore: "Загружаем ещё…",
+    loadMoreError: "Не удалось загрузить ещё — попробуйте ещё раз.",
   },
   shelf: {
     title: "Распознавание витрины",
@@ -231,6 +252,11 @@ export const ru = {
     pairingsSourceCatalog: "По данным карточки вина",
     pairingsSourceSensory: "По вкусовому профилю вина",
     pairingsSourceHeuristic: "Оценочно — по цвету и описанию",
+    // Не канонический тег из 9 (pipeline/ref/food_pairing_rules.yaml), а частый СЫРОЙ тег
+    // портала уровня basis=catalog (contracts/post-scan.md §1: "шире и не обязан совпадать
+    // с 9 тегами") — встречается в наших же фикстурах (mocks/fixtures/wines.ts). Задача
+    // тимлида 27.09: фото устриц закрывает и «Устрицы», и этот тег — оба про морепродукты.
+    pairingsRawTagSeafood: "Морепродукты",
     // --- задача тимлида 27.09 (макет Figma): «Цифровой сомелье», встроенный в карточку ---
     somelierTitle: "Цифровой сомелье",
     // Не "сочетания"/"подача" — эти подстроки в WineCardContent.test.tsx проверяют ОТСУТСТВИЕ
