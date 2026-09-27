@@ -27,8 +27,8 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.15;
+  font-weight: 500;
+  line-height: 1.1;
   margin: 0 0 var(--space-3);
 }
 
@@ -143,14 +143,15 @@ img {
 /* --- карточки --- */
 
 .card {
+  /* Плоская заливка без рамки/тени — так карточки/плитки выглядят во ВСЕХ сэмплированных
+     кадрах Figma («карточка вина», «Найдено по прямому попаданию», плитки крепости/подачи):
+     ни один слой карточки не нёс Effects (тень) или Stroke (рамка), только заливка --card
+     поверх --bg. Тень, добавленная прошлым переносом дизайна прототипа (design/ui-prototype),
+     здесь снята — макет Figma главнее (задача тимлида 27.09, reports/frontend-figma-restyle.md).
+     Вертикальный паддинг 28 / горизонтальный 20 — Figma: карточка вина, плитки характеристик. */
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: var(--space-4);
-  /* Мягкая приподнятость поверх плоской заливки (design/ui-prototype: карточки читаются
-     отдельным слоем над страницей) — нейтральная тень на чёрном, не завязана на токены
-     палитры, тот же приём, что уже есть у .modal/.aim__grip ниже. */
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 16px rgb(0 0 0 / 5%);
+  padding: var(--space-6) var(--space-4);
 }
 
 .wine-card-image {
@@ -167,10 +168,50 @@ img {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent);
+}
+
+.icon-badge svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* --- плитки характеристик (крепость / температура подачи) — Figma «карточка вина»:
+   163×163, радиус 20, паддинг 28/20, значок-кружок 44px --accent, подпись 16/regular,
+   значение 24/500, обе центрированы. Всегда 2 колонки (не auto-fit): показателей ровно
+   два (температура/крепость), auto-fit либо схлопывал их в одну колонку на телефоне
+   (минимум 140px не помещался в паддинг родительской .card), либо растягивал в 4+ узких
+   на десктопе — фиксированные 2 колонки равного размера ведут себя предсказуемо везде. */
+.spec-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.spec-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.spec-tile__label {
+  font-size: var(--fs-body);
+  color: var(--ink);
+}
+
+.spec-tile__value {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  color: var(--ink);
 }
 
 .fact-thumb {
@@ -266,7 +307,9 @@ img {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  border-radius: var(--radius-pill);
+  /* Скруглённый прямоугольник, не пилюля — Figma «Main button» (кнопка «Сканировать»):
+     radius 14, не 100/999. Пилюля осталась у чипов/бейджей/иконок-кнопок ниже. */
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   padding: var(--space-2) var(--space-4);
   font-size: var(--fs-body);
@@ -288,9 +331,9 @@ img {
 }
 
 .btn--primary {
+  /* Плоская заливка без тени — Figma «Main button» не несёт Effects. */
   background: var(--accent);
-  color: var(--bg);
-  box-shadow: 0 6px 16px rgb(0 0 0 / 14%);
+  color: var(--on-accent);
 }
 
 .btn--secondary {
@@ -336,7 +379,7 @@ img {
 .field__input,
 .field__textarea {
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   padding: var(--space-3);
   background: var(--card);
   color: var(--ink);
@@ -413,24 +456,27 @@ button.badge {
 }
 
 .chip {
+  /* Нейтральная плашка --mono-bg без рамки — Figma «Цифровой сомелье» (чипы-подсказки
+     "Аналог импортного вина" и т.д.): заливка светло-серая, Stroke нет, radius полностью
+     круглый (60px на высоте 20 — та же пилюля, что и наш --radius-pill). */
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   border-radius: var(--radius-pill);
-  border: 1px solid var(--line);
-  background: var(--card);
+  border: 1px solid transparent;
+  background: var(--mono-bg);
+  color: var(--ink);
   padding: var(--space-1) var(--space-3);
   font-size: var(--fs-small);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .chip[aria-pressed="true"],
 .chip--selected {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg);
-  box-shadow: 0 4px 10px rgb(0 0 0 / 12%);
+  color: var(--on-accent);
 }
 
 .chip__icon {
@@ -478,12 +524,16 @@ button.badge {
 /* --- скан --- */
 
 .dropzone {
+  /* Тёплая кремовая подложка --card вместо серой --mono-bg — та же заливка, что у
+     hero-блока сканера в Figma («каталог вин»: иллюстрация+CTA внутри карточки --card).
+     Пунктир по --line — единственный явный маркер зоны загрузки, своей рамки в макете
+     нет (там это просто карточка), но для drag&drop нужна видимая граница дропзоны. */
   border: 1px dashed var(--line);
   border-radius: var(--radius);
-  padding: var(--space-5);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
   color: var(--muted);
-  background: var(--mono-bg);
+  background: var(--card);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -513,23 +563,24 @@ button.badge {
 }
 
 .match-item {
+  /* Плоская плитка-строка --card без рамки/тени — тот же приём, что и у .card (Figma не
+     несёт Stroke/Effects ни у одной карточки-плитки). */
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius);
   background: var(--card);
   padding: var(--space-3);
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .match-item:hover {
   border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgb(0 0 0 / 8%);
+  background: var(--surface);
 }
 
 /* v0.4.11: фото у карточек-кандидатов (candidates), similar/analogs — по-прежнему без фото. */
@@ -570,8 +621,6 @@ button.badge {
 .chat-bubble--assistant {
   align-self: flex-start;
   background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 4%);
 }
 
 .chat-bubble--refusal {
@@ -696,13 +745,13 @@ button.badge {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  background: var(--card);
+  /* --surface (не --card) — Figma «Frame 5331099» (пилюля шапки, кадр «каталог вин»):
+     заливка #F9F2EB, отдельная от карточек #FDF9ED. Padding 14/16/14/16, без рамки,
+     radius 80 (у нас --radius-pill 999 — визуально та же полная пилюля на высоте 70px);
+     без тени — панель Properties не показывала Effects у этого слоя. */
+  background: var(--surface);
   border-radius: var(--radius-pill);
-  /* 14/16/14/16 и без рамки — сверено с макетом Figma «РСХБ вино» (сегодня прислал тимлид),
-     кадр шапки на экране «каталог вин»: padding top/bottom 14, left/right 16, border none,
-     radius 80 (у нас --radius-pill 100/999 — визуально та же полная пилюля на высоте 70px). */
   padding: 14px 16px;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 16px rgb(0 0 0 / 5%);
 }
 
 .app-header__brand {
@@ -741,8 +790,10 @@ button.badge {
 }
 
 .app-header__menu-btn {
-  background: var(--accent);
-  color: var(--bg);
+  /* --accent-strong — Figma: кнопка-гамбургер в пилюле шапки залита тёмным акцентом
+     (#7B3528), отдельным от основного CTA-акцента кнопки «Сканировать» (#AB494F). */
+  background: var(--accent-strong);
+  color: var(--on-accent);
 }
 
 .app-header__menu-btn:hover {
@@ -870,13 +921,16 @@ button.badge {
   align-items: center;
   gap: var(--space-2);
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   border-radius: var(--radius-pill);
   padding: var(--space-2) var(--space-4);
   text-decoration: none;
   font-size: var(--fs-small);
   font-weight: 500;
-  box-shadow: 0 6px 16px rgb(0 0 0 / 18%);
+  /* FAB плавает поверх контента — своя лёгкая тень оправдана (в макетах такого элемента
+     нет, это наше решение из reports/frontend-nav-transfer.md), но слабее, чем было у
+     .btn--primary в потоке: элевация нужна только для отрыва от фона под пальцем. */
+  box-shadow: 0 4px 10px rgb(0 0 0 / 14%);
   min-height: 44px;
 }
 

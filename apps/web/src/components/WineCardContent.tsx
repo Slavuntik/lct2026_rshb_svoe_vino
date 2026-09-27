@@ -217,31 +217,39 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
             </dt>
             <dd>{source.region_name}</dd>
           </div>
-          {source.abv_percent != null && (
-            <div className="row row--between">
-              <dt className="text-small wine-fact-row">
-                <span className="icon-badge" aria-hidden="true">
-                  <AbvIcon />
-                </span>
-                {t("wineCard.abvLabel")}
-              </dt>
-              <dd className="text-mono">{source.abv_percent}%</dd>
-            </div>
-          )}
-          {source.serving_temp_c && (
-            <div className="row row--between">
-              <dt className="text-small wine-fact-row">
+        </dl>
+
+        {/* Плитки температуры подачи / крепости — Figma «карточка вина»: 2 колонки, значок-
+            кружок + подпись + крупное значение, порядок температура→крепость (задача тимлида
+            27.09, reports/frontend-figma-restyle.md). Раньше это были строки dt/dd внутри dl
+            рядом с сортом/регионом — вынесены в отдельный блок (не строка таблицы, а плитка
+            с крупным числом), поэтому здесь обычные span/p, не dt/dd вне своего <dl>.
+            WineCardContent.test.tsx ищет ближайший <div> к тексту "подача" и проверяет, что
+            тот же div содержит "°C" — .spec-tile ниже как раз такой общий div-предок. */}
+        {(source.abv_percent != null || source.serving_temp_c) && (
+          <div className="spec-tiles">
+            {source.serving_temp_c && (
+              <div className="spec-tile">
                 <span className="icon-badge" aria-hidden="true">
                   <ServingTempIcon />
                 </span>
-                {t("wineCard.servingTempLabel")}
-              </dt>
-              <dd className="text-mono">
-                {source.serving_temp_c[0]}–{source.serving_temp_c[1]}°C
-              </dd>
-            </div>
-          )}
-        </dl>
+                <span className="spec-tile__label">{t("wineCard.servingTempLabel")}</span>
+                <p className="spec-tile__value text-mono">
+                  {source.serving_temp_c[0]}–{source.serving_temp_c[1]}°C
+                </p>
+              </div>
+            )}
+            {source.abv_percent != null && (
+              <div className="spec-tile">
+                <span className="icon-badge" aria-hidden="true">
+                  <AbvIcon />
+                </span>
+                <span className="spec-tile__label">{t("wineCard.abvLabel")}</span>
+                <p className="spec-tile__value text-mono">{source.abv_percent}%</p>
+              </div>
+            )}
+          </div>
+        )}
 
         <a
           className="btn btn--ghost"

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#7D2A3C" />
+    <meta name="theme-color" content="#AB494F" />
     <meta name="color-scheme" content="light dark" />
     <meta
       name="description"
@@ -22,16 +22,20 @@
       на "all". noscript — честный фолбэк без JS. font-display=swap в самом URL — на случай,
       если шрифт всё же догружается после первой отрисовки текста системным фолбэком.
     -->
+    <!-- 27.09 (frontend-figma-restyle): шрифты по макету Figma — Inter (текст/кнопки/подписи)
+         вместо IBM Plex Sans, Playfair Display (заголовки) без изменений, Cormorant убран
+         (был display-шрифтом до переноса, в макете не встретился). IBM Plex Mono остаётся —
+         технические значения (крепость/год), в макетах отдельный моно-шрифт не встретился. -->
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
       />
     </noscript>
 

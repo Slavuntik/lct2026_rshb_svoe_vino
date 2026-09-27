@@ -3,13 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#7D2A3C" />
+    <meta name="theme-color" content="#AB494F" />
     <meta name="robots" content="noindex, nofollow" />
     <meta
       name="description"
       content="Действующая редакция политики обработки персональных данных сервиса «Свой Сомелье» · Оператором на этом этапе выступает команда проекта, юридическое лицо будет зарегистрировано до коммерческого запуска Сервиса."
     />
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <!-- Синхронизация с приложением (frontend-figma-restyle, 27.09): те же шрифты, что и в
+         apps/web/index.html — иначе ./legal.css ссылалась бы на Playfair Display/Inter,
+         реально ни разу не загруженные на этой отдельной статической странице. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+    />
     <link rel="stylesheet" href="./legal.css" />
     <title>Политика обработки персональных данных — Свой Сомелье</title>
   </head>
