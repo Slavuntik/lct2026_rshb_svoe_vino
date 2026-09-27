@@ -4,6 +4,12 @@ import { useI18n } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { apiClient, ApiRequestError } from "../../lib/apiClient";
 import type { AnalogsResponse, ChatFilters, ChatStreamEvent } from "../../lib/apiTypes";
+import { truncateAtWordBoundary } from "../../lib/text";
+import { ChatMessageText } from "./ChatMessageText";
+
+// qa-manual-final.md п.5: было `.slice(0, 40)` — резало посреди слова и оставляло висячий
+// "·" на конце. CITATION_LABEL_MAX держит тот же бюджет длины бейджа, только по границе слова.
+const CITATION_LABEL_MAX = 40;
 
 interface CitationView {
   n: number;
@@ -56,7 +62,9 @@ function SendIcon() {
  */
 function CitationBadge({ citation }: { citation: CitationView }) {
   const navigate = useNavigate();
-  const label = citation.quote ? citation.quote.slice(0, 40) : citation.wineId ?? citation.chunkId;
+  const label = citation.quote
+    ? truncateAtWordBoundary(citation.quote, CITATION_LABEL_MAX)
+    : citation.wineId ?? citation.chunkId;
 
   if (citation.wineId) {
     const wineId = citation.wineId;
@@ -263,25 +271,31 @@ export function ChatScreen() {
             <span className="field__label">{t("chat.filterColor")}</span>
             <input
               className="field__input"
+              placeholder={t("chat.filterColorPlaceholder")}
               value={filters.color ?? ""}
               onChange={(event) => setFilters((prev) => ({ ...prev, color: event.target.value || undefined }))}
             />
+            <span className="field__hint">{t("chat.filterColorHint")}</span>
           </label>
           <label className="field">
             <span className="field__label">{t("chat.filterSugar")}</span>
             <input
               className="field__input"
+              placeholder={t("chat.filterSugarPlaceholder")}
               value={filters.sugar ?? ""}
               onChange={(event) => setFilters((prev) => ({ ...prev, sugar: event.target.value || undefined }))}
             />
+            <span className="field__hint">{t("chat.filterSugarHint")}</span>
           </label>
           <label className="field">
             <span className="field__label">{t("chat.filterRegion")}</span>
             <input
               className="field__input"
+              placeholder={t("chat.filterRegionPlaceholder")}
               value={filters.region ?? ""}
               onChange={(event) => setFilters((prev) => ({ ...prev, region: event.target.value || undefined }))}
             />
+            <span className="field__hint">{t("chat.filterRegionHint")}</span>
           </label>
         </div>
       )}
@@ -344,7 +358,7 @@ export function ChatScreen() {
 
           return (
             <div key={entry.id} className="chat-bubble chat-bubble--assistant">
-              <div>{entry.text}</div>
+              <ChatMessageText text={entry.text} />
               {linkedCitations.length > 0 && (
                 <div className="chat-citations">
                   {linkedCitations.map((citation) => (

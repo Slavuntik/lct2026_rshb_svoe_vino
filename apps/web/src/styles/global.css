@@ -588,6 +588,18 @@ button.badge {
   margin-top: var(--space-2);
 }
 
+/* Списки в ответе сомелье (ChatMessageText.tsx) — единственное место в приложении с
+   нативными <ol>/<ul>: браузерный дефолт (margin ~1em, padding-left ~40px) выбивается
+   из шкалы отступов приложения (--space-*), поэтому подрезаем под неё. */
+.chat-text-list {
+  margin: 0 0 var(--space-3);
+  padding-left: 1.4em;
+}
+
+.chat-text-list:last-child {
+  margin-bottom: 0;
+}
+
 .chat-input-row {
   position: sticky;
   bottom: 0;
@@ -619,6 +631,13 @@ button.badge {
 }
 
 .taste-axis__fill {
+  /* КРИТИЧНО (qa-manual-final.md п.1): без display:block инлайновый <span> игнорирует
+     свой инлайновый width:NN% (width не применяется к non-replaced inline-элементам) —
+     все 7 шкал визуально выглядели одинаково пустыми/серыми независимо от чисел рядом.
+     .taste-axis (grid) блокифицирует ТОЛЬКО прямых детей (track), но не внука (fill),
+     поэтому родительский .taste-axis__track уже был не виноват. См. тест
+     SensoryVectorView.test.tsx — ловит именно регресс display обратно на inline. */
+  display: block;
   height: 100%;
   background: var(--accent);
   border-radius: var(--radius-pill);
