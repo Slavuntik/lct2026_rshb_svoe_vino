@@ -72,6 +72,32 @@
 #   это довнесение существующего поведения, а бамп требует синхронной правки API_VERSION в
 #   apps/api/app/main.py (зона backend). Два расхождения код/описание, НЕ чинил — см.
 #   reports/architect-post-merge-review.md «Дополнение 3».
+# v0.3.7 (27.09, architect, задача тимлида — ратификация по факту кода): +GET /catalog —
+#   постраничная плитка каталога кейса для экрана «Каталог вин» (макет Figma). Реализация
+#   приехала ПЕРВОЙ (backend, коммит 0674a56, reports/backend-catalog-list.md); описание ниже
+#   сверено architect не по тексту отчёта, а по коду и по сгенерированной FastAPI схеме
+#   (app/routers/catalog.py, app/schemas.py::CatalogItem/CatalogResponse) — в черновике отчёта
+#   не было maxLength=50 у color/sugar, здесь оно есть. info.version БАМПНУТ (0.3.6→0.3.7):
+#   это НЕ довнесение давно живущего поведения (прецеденты «+/scan/photo…» 22.09 и «+box»
+#   26.09, где бампа не было), а новая ручка, появившаяся в коде в тот же день — клиенту
+#   нужен сигнал о новой поверхности API. apps/api/app/main.py::API_VERSION ("0.3.6") и
+#   assert в apps/api/tests/test_docs.py:80 синхронизирует backend (его зона, architect не
+#   трогает) — до этого момента живой /v1/openapi.json отдаёт 0.3.6, это известное и
+#   временное расхождение, тесты от него не краснеют.
+#   Решение по двум вопросам отчёта (reports/architect-catalog-contract.md):
+#   (1) image_url при отсутствии превью — null, НЕ пустая строка. Причины: пустая строка в
+#   <img src=""> заставляет браузер повторно запросить текущий документ (реальный класс бага),
+#   а null/отсутствие поля клиент ветвит явно; в этом же файле уже зафиксирован тот же выбор
+#   словами — PairingWineItem.sugar «null (не пустая строка) у вин без простановки»; код уже
+#   отдаёт null. Вино с отсутствующим превью из выдачи НЕ выбрасывается.
+#   (2) «44» и «49» — РАЗНЫЕ метрики, устаревшего числа нет, править в документации нечего.
+#   Пересчитано architect по данным 27.09: в каталоге 2103 слага; файлов превью
+#   CASE_DATA_DIR/thumbs/<slug>.webp — 2054, значит БЕЗ ПРЕВЬЮ 49 (это и меряет has_thumb(),
+#   это и есть image_url=null). Слагов БЕЗ ПРИГОДНОГО ЭТАЛОНА (slug_refs.json,
+#   mapping[*].chosen == null) — 44, и это про распознаваемость, а не про картинку в плитке
+#   (reports/qa-manual-scan-archive.md, корректно). Множества не совпадают: пересечение 39,
+#   у 5 слагов эталона нет, а превью есть, у 10 наоборот. Слайды (docs/product/slides-7-11.md
+#   «2054 из 2103 = 97.7%») и reports/f4-data-hygiene.md уже согласованы с 49 — не трогал.
 # Ошибки везде: {"error": {"code": "<snake_case>", "message": "<человеческое, по-русски>"}}
 # Словарь code (единственный источник, придумывать новые нельзя):
 #   validation_error | invalid_credentials | unauthorized | age_restricted
@@ -81,7 +107,7 @@
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.3.6
+  version: 0.3.7
 servers:
   - url: /v1
 paths:
@@ -385,6 +411,75 @@ paths:
             not_implemented — серверный OCR сознательно отложен за MVP (решение ревью 01).
             Клиент обязан обработать 501 честной деградацией: предложить ввод текста с
             этикетки. v0.3: контракт приведён к реальности — раньше здесь обещался 200.
+
+  /catalog:
+    get:
+      summary: Каталог вин кейса — постраничная плитка экрана «Каталог вин» (v0.3.7)
+      description: >
+        2103 позиции каталога кейса постранично. Источник — тот же прогретый кэш карточек,
+        что у подбора к блюду (app/dish_pairing.py), сортировка сделана один раз при сборке;
+        на запрос идут только фильтр и срез (p50 1.5 мс, p95 2.4 мс без фильтров на 2103
+        позициях — reports/backend-catalog-list.md).
+        ПОРЯДОК ДЕТЕРМИНИРОВАН: имя (casefold) с тай-брейком по wine_id. Он ОДИН на весь
+        каталог, фильтры его только сужают — поэтому постраничный обход не дублирует и не
+        пропускает позиции между запросами при неизменном каталоге.
+        Фильтры: q — подстрока в названии ИЛИ в винодельне; color и sugar — точное совпадение
+        (source.color и source.sugar_category). Везде casefold с обеих сторон: у слагов
+        вне настоящего RAG-индекса цвет хранится с большой буквы, без casefold фильтр молча
+        не находил бы их. Пустая строка и строка из пробелов в q/color/sugar = фильтр НЕ
+        применён (не «ничего не найдено»).
+        Авторизация — Bearer, гость допущен, как у GET /wines/{wine_id} и POST /analogs
+        (app/security.py: «Гость допущен к scan/chat/wines/analogs»); без токена 401
+        unauthorized.
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 24, minimum: 1, maximum: 100 } }
+        - { name: offset, in: query, schema: { type: integer, default: 0, minimum: 0 } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 }, description: "поиск по названию и винодельне" }
+        - { name: color, in: query, schema: { type: string, maxLength: 50 }, description: "точное значение source.color" }
+        - { name: sugar, in: query, schema: { type: string, maxLength: 50 }, description: "точное значение source.sugar_category" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wines, total, limit, offset]
+                properties:
+                  wines:
+                    type: array
+                    items:
+                      type: object
+                      required: [wine_id, name]
+                      properties:
+                        wine_id: { type: string }
+                        name: { type: string, description: "source.name; фолбэк — сам слаг" }
+                        winery: { type: string, nullable: true, description: "source.winery_name, фолбэк source.winery" }
+                        color: { type: string, nullable: true }
+                        sugar: { type: string, nullable: true, description: "source.sugar_category" }
+                        image_url:
+                          type: string
+                          nullable: true
+                          description: >
+                            Относительный путь «/v1/case-thumbs/{slug}.webp» — ТОЛЬКО если файл
+                            реально есть в CASE_DATA_DIR/thumbs (app/rag/case_catalog.py::
+                            has_thumb, проверка файла на диске). Иначе null — НЕ пустая строка
+                            (v0.3.7, решение по вопросу backend: пустая строка в <img src="">
+                            заставляет браузер перезапросить текущий документ; тот же выбор уже
+                            зафиксирован у PairingWineItem.sugar). Вино без превью из выдачи НЕ
+                            выбрасывается — клиент рисует заглушку.
+                            На снимке данных 27.09 таких позиций 49 из 2103 (превью 2054). Это
+                            НЕ те же 44, что «слаги без пригодного эталона» (slug_refs.json,
+                            chosen=null, про распознавание): пересечение 39, у 5 нет эталона но
+                            есть превью, у 10 наоборот.
+                            Единый локальный источник превью для ВСЕХ позиций плитки: у 1978
+                            слагов source.image_url несёт внешний CDN организатора, у ~125 —
+                            этот же шаблон, но записанный без проверки файла; плитка не мешает
+                            две гарантии на одном экране, а даёт одну.
+                  total: { type: integer, description: "после q/color/sugar, ДО limit/offset — фронту хватает одного запроса на «N вин найдено» и число страниц" }
+                  limit: { type: integer, description: "эхо применённого лимита" }
+                  offset: { type: integer, description: "эхо; offset за концом выборки — пустой wines и тот же total, не 404" }
+        "401": { description: "unauthorized — нет Bearer-токена или он недействителен" }
+        "422": { description: "validation_error — limit вне 1…100, offset < 0, слишком длинные q/color/sugar" }
 
   /wines/{wine_id}:
     get:
