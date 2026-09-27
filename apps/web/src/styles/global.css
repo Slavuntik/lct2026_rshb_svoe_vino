@@ -697,9 +697,11 @@ button.badge {
   justify-content: space-between;
   gap: var(--space-2);
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  /* 14/16/14/16 и без рамки — сверено с макетом Figma «РСХБ вино» (сегодня прислал тимлид),
+     кадр шапки на экране «каталог вин»: padding top/bottom 14, left/right 16, border none,
+     radius 80 (у нас --radius-pill 100/999 — визуально та же полная пилюля на высоте 70px). */
+  padding: 14px 16px;
   box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 16px rgb(0 0 0 / 5%);
 }
 
