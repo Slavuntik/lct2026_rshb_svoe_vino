@@ -99,3 +99,22 @@ test('CPU scan can exceed 45 seconds and respects the advertised deadline', asyn
   await page.clock.fastForward(255_000);
   await expect(page.locator('#error')).toContainText('300 секунд');
 });
+
+test('standalone shelf uses main tokens, local fonts and touch controls', async ({page})=>{
+  await setup(page);
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/?engine=server');
+  await expect(page.locator('#status')).toContainText('Готово');
+  await page.evaluate(()=>document.fonts.ready);
+  expect(await page.evaluate(()=>document.fonts.check('16px Inter', 'Вино'))).toBe(true);
+  expect(await page.evaluate(()=>document.fonts.check('500 24px "Playfair Display"', 'Вино'))).toBe(true);
+  expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(254, 253, 250)');
+  expect(await page.locator('#camera').evaluate(e=>getComputedStyle(e).backgroundColor)).toBe('rgb(171, 73, 79)');
+  expect(await page.locator('#camera').evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('#recognition-mode')).toBeHidden();
+  await page.getByText('Способ распознавания',{exact:true}).click();
+  await expect(page.locator('#recognition-mode')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'artifacts/ui-standalone-mobile.png',fullPage:true});
+});

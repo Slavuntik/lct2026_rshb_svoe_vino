@@ -9,6 +9,8 @@ export type ShelfAvailability = "pending" | "available" | "unavailable";
 // в src/mocks/handlers.ts.
 export const SHELF_HEALTH_PATH = "/v1/shelf/health";
 const DEFAULT_TIMEOUT_MS = 1500;
+export const SHELF_RETRY_MS = 5000;
+const READY_TTL_MS = 30000;
 
 function healthUrl(): string {
   // VITE_SHELF_UI_URL — необязательная переменная сборки: если задан отдельный origin для
@@ -23,7 +25,7 @@ function healthUrl(): string {
  * Лёгкий живой запрос к сервису витрин с коротким таймаутом (по умолчанию 1.5 с).
  * Важно (reports/architect-post-merge-review.md §3): в проде nginx без локейшна для
  * /shelf-ui и /v1/shelf отдаёт try_files-фолбэк — наш же index.html с кодом 200. Поэтому
- * критерий живости — не просто response.ok, а ok И Content-Type: application/json;
+ * проверяем HTTP-статус, Content-Type и ready/state/catalogSize/busy в JSON;
  * фолбэк и любая наша страница — всегда text/html.
  */
 export async function probeShelfHealth(timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<ShelfAvailability> {
@@ -38,7 +40,12 @@ export async function probeShelfHealth(timeoutMs: number = DEFAULT_TIMEOUT_MS): 
     if (!response.ok || !contentType.includes("application/json")) {
       return "unavailable";
     }
-    return "available";
+    const body: unknown = await response.json();
+    if (!body || typeof body !== "object") return "unavailable";
+    const health = body as Record<string, unknown>;
+    return health.ready === true && health.state === "ready"
+      && Number.isInteger(health.catalogSize) && (health.catalogSize as number) >= 0
+      && typeof health.busy === "boolean" ? "available" : "unavailable";
   } catch {
     // Таймаут (abort), сеть недоступна, CORS-блокировка — во всех случаях честно
     // "недоступен", без выброса наружу: проверка не должна ронять загрузку приложения
@@ -50,33 +57,48 @@ export async function probeShelfHealth(timeoutMs: number = DEFAULT_TIMEOUT_MS): 
 }
 
 let inFlight: Promise<ShelfAvailability> | null = null;
+let cached: { value: ShelfAvailability; expires: number } | null = null;
+let generation = 0;
 
-/** Один запрос на весь жизненный цикл вкладки — повторные вызовы отдают тот же промис. */
+/** Share pending probes and cache results briefly, including transient failures. */
 export function checkShelfAvailability(): Promise<ShelfAvailability> {
-  if (!inFlight) {
-    inFlight = probeShelfHealth();
-  }
-  return inFlight;
+  if (inFlight) return inFlight;
+  if (cached && Date.now() < cached.expires) return Promise.resolve(cached.value);
+  const current = generation;
+  const request = probeShelfHealth().then(value => {
+    if (current === generation) {
+      cached = { value, expires: Date.now() + (value === "available" ? READY_TTL_MS : SHELF_RETRY_MS) };
+    }
+    return value;
+  }).finally(() => { if (inFlight === request) inFlight = null; });
+  inFlight = request;
+  return request;
 }
 
-/** Только для тестов: сбрасывает кеш между it(), иначе второй тест унаследует результат первого. */
+/** Reset module state between tests; stale pending probes cannot overwrite it. */
 export function resetShelfAvailabilityForTests(): void {
+  generation++;
   inFlight = null;
+  cached = null;
 }
 
-/**
- * Реактивное состояние проверки: "pending" до ответа, дальше "available"/"unavailable".
- * Не блокирует рендер — запрос уходит в фоне, состояние обновляется по готовности.
- */
+/** Recover from warmup/network failures without requiring a page reload. */
 export function useShelfAvailability(): ShelfAvailability {
   const [state, setState] = useState<ShelfAvailability>("pending");
   useEffect(() => {
     let cancelled = false;
-    checkShelfAvailability().then((result) => {
-      if (!cancelled) setState(result);
-    });
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      const result = await checkShelfAvailability();
+      if (!cancelled) {
+        setState(result);
+        timer = setTimeout(refresh, SHELF_RETRY_MS);
+      }
+    };
+    void refresh();
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, []);
   return state;

@@ -34,6 +34,8 @@
   --accent-soft: #F3E6E9; /* светлая подложка вторичных кнопок/чипа "выбрано" — в макетах не встретилась, тон подобран под новый --accent */
   --line: #E3E1E2; /* бордеры/нейтральный фон чипов (Figma: стиль "2") */
   --on-accent: #FFFFFF; /* текст/иконки поверх заливки --accent или --accent-strong — НЕ в контракте v0.1 */
+  --danger: var(--accent-strong);
+  --danger-bg: var(--accent-soft);
   --ok: #3E6B4F;
   --ok-bg: #E9F0EB;
   /* --warn не из Figma (в макетах нет предупреждающего состояния) — оставлен из контракта
@@ -43,6 +45,15 @@
   --warn: #845A19;
   --warn-bg: #F5ECDC;
   --mono-bg: #E3E1E2; /* нейтральный фон бейджей/капсул (Figma: та же плашка чипа-подсказки, стиль "2") */
+
+  /* Photo overlays retain contrast over arbitrary photos, independent of theme. */
+  --photo-match: #8AE8A0;
+  --photo-match-fill: #22BB662C;
+  --photo-match-label: #174D36;
+  --photo-uncertain: #E8B960;
+  --photo-uncertain-fill: #E8B96022;
+  --photo-uncertain-label: #6A4C18;
+  --photo-label-ink: #FFFFFF;
 
   /* типографика: display — Playfair Display (Figma: стиль "заголовок"), текст — Inter
      (Figma: тело/кнопки/подписи всех сэмплированных экранов), данные — IBM Plex Mono
@@ -87,7 +98,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme="light"]):not([data-theme="portal"]) {
     /* Тёмная тема в макетах не показана (страница «Done» — только светлый фрейм 375).
        Значения ниже не трогаем: тот же тёплый бордовый семейный тон, что и в новой светлой
        палитре (бумага/бордо), пропорции те же, что были до переноса — менять их без

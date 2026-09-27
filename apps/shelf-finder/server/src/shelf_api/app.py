@@ -16,6 +16,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, UnidentifiedImageError
 from starlette.datastructures import UploadFile
+from python_multipart.exceptions import MultipartParseError
 from .schema import ScanResponse, HealthResponse
 
 log = logging.getLogger("shelf_api")
@@ -261,7 +262,6 @@ def create_app(factory=None, settings=None):
                 headers={"Retry-After": "3"},
             )
         state["busy"] = True
-        image = None
         form = None
         try:
             if (
@@ -290,38 +290,61 @@ def create_app(factory=None, settings=None):
                 return {"type": "http.request", "body": bytes(body), "more_body": False}
 
             bounded = Request(request.scope, receive)
-            form = await bounded.form(max_files=1, max_fields=0)
+            try:
+                form = await bounded.form(max_files=1, max_fields=0)
+            except MultipartParseError:
+                raise HTTPException(400, "Некорректный multipart-запрос")
             upload = form.get("image")
             if not isinstance(upload, UploadFile):
                 raise HTTPException(400, "Нужно поле image с файлом")
             data = await upload.read(settings.max_bytes + 1)
             if len(data) > settings.max_bytes:
                 raise HTTPException(413, "Фото превышает 20 МБ")
-            image = await asyncio.to_thread(decode_image, data, settings)
-            width, height = image.size
-            task = asyncio.create_task(asyncio.to_thread(current.scan, image))
+
+            def process():
+                # The native worker owns the image until inference actually stops.
+                decoded = decode_image(data, settings)
+                try:
+                    width, height = decoded.size
+                    result = current.scan(decoded)
+                    return {
+                        **result,
+                        "requestId": str(uuid.uuid4()),
+                        "image": {"width": width, "height": height},
+                    }
+                finally:
+                    decoded.close()
+
+            task = asyncio.create_task(asyncio.to_thread(process))
             state["inference"] = task
             try:
-                result = await asyncio.shield(task)
+                return await asyncio.shield(task)
             except asyncio.CancelledError:
-                # Client cancellation does not free the GPU admission slot before native work stops.
-                await task
+                # Repeated request cancellation must never cancel the thread's
+                # awaitable or release its admission slot. Retrieve its exception
+                # even if the original client no longer waits for the response.
+                while not task.done():
+                    try:
+                        await asyncio.shield(task)
+                    except asyncio.CancelledError:
+                        continue
+                    except Exception:
+                        break
+                if not task.cancelled():
+                    task.exception()
+                raise
+            except HTTPException:
                 raise
             except Exception:
                 log.exception("Shelf inference failed")
                 raise HTTPException(500, "Не удалось обработать витрину")
-            return {
-                **result,
-                "requestId": str(uuid.uuid4()),
-                "image": {"width": width, "height": height},
-            }
         finally:
-            if form is not None:
-                await form.close()
-            if image is not None:
-                image.close()
-            state["inference"] = None
-            state["busy"] = False
+            try:
+                if form is not None:
+                    await form.close()
+            finally:
+                state["inference"] = None
+                state["busy"] = False
 
     if settings.static:
         root = Path(settings.static).resolve()

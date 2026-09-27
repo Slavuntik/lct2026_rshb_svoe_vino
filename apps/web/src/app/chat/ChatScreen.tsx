@@ -307,7 +307,7 @@ export function ChatScreen() {
       <div className="chat-log" aria-live="polite">
         {entries.length === 0 && <p className="text-small">{t("chat.emptyState")}</p>}
 
-        {entries.map((entry) => {
+        {entries.map((entry, entryIndex) => {
           if (entry.kind === "user") {
             return (
               <div key={entry.id} className="chat-bubble chat-bubble--user">
@@ -363,6 +363,10 @@ export function ChatScreen() {
           return (
             <div key={entry.id} className="chat-bubble chat-bubble--assistant">
               <ChatMessageText text={entry.text} />
+              {entry.answerId && <button type="button" className="btn btn--secondary btn--sm" onClick={()=>{
+                const question = entries.slice(0,entryIndex).reverse().find(e=>e.kind==='user');
+                navigate('/app/shelf', {state:{wish: question && question.kind==='user' ? question.text : ''}});
+              }}>{t('shelf.fromChat')}</button>}
               {linkedCitations.length > 0 && (
                 <div className="chat-citations">
                   {linkedCitations.map((citation) => (

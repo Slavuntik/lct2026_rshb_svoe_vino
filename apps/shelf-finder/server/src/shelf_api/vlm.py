@@ -1,5 +1,7 @@
 """Optional server-side LiteLLM refinement. A model guess never bypasses geometry."""
 
+import asyncio
+import time
 import base64
 from collections import Counter
 import hashlib
@@ -44,6 +46,8 @@ class LiteLLMClient:
             timeout,
         )
         self.references = Path(references) if references else None
+        self.failures = 0
+        self.retry_at = 0.0
 
     def image_content(self, image):
         buffer = BytesIO()
@@ -57,6 +61,42 @@ class LiteLLMClient:
         }
 
     def choose(self, image, items, wines):
+        if time.monotonic() < self.retry_at:
+            raise RuntimeError("LiteLLM cooldown")
+        try:
+            result = self._choose(image, items, wines)
+        except Exception:
+            self.failures += 1
+            if self.failures >= 2:
+                self.retry_at = time.monotonic() + 30
+            raise
+        self.failures = 0
+        self.retry_at = 0.0
+        return result
+
+    async def request(self, body, budget):
+        # One total network deadline, including upload, headers and streaming body.
+        async with asyncio.timeout(budget):
+            async with httpx.AsyncClient(
+                timeout=budget, follow_redirects=False
+            ) as client:
+                async with client.stream(
+                    "POST",
+                    self.url + "/chat/completions",
+                    headers={"Authorization": "Bearer " + self.key},
+                    json=body,
+                ) as response:
+                    if not response.is_success:
+                        raise RuntimeError("LiteLLM HTTP " + str(response.status_code))
+                    data = bytearray()
+                    async for chunk in response.aiter_bytes(chunk_size=16384):
+                        data.extend(chunk)
+                        if len(data) > 262144:
+                            raise ValueError("LiteLLM response exceeds 256 KiB")
+                    return json.loads(data)
+
+    def _choose(self, image, items, wines):
+        started = time.monotonic()
         content = [{"type": "text", "text": PROMPT}]
         slots = {}
         for number, item in enumerate(items, 1):
@@ -108,19 +148,24 @@ class LiteLLMClient:
             "response_format": {"type": "json_object"},
             "messages": [{"role": "user", "content": content}],
         }
-        with httpx.Client(timeout=self.timeout, follow_redirects=False) as client:
-            response = client.post(
-                self.url + "/chat/completions",
-                headers={"Authorization": "Bearer " + self.key},
-                json=body,
-            )
-        if not response.is_success:
-            raise RuntimeError("LiteLLM HTTP " + str(response.status_code))
-        payload = response.json()
-        choice = payload["choices"][0]
+        budget = self.timeout - (time.monotonic() - started)
+        if budget <= 0:
+            raise TimeoutError("LiteLLM preparation exceeded deadline")
+        payload = asyncio.run(self.request(body, budget))
+        choices = payload.get("choices") if isinstance(payload, dict) else None
+        if (
+            not isinstance(choices, list)
+            or not choices
+            or not isinstance(choices[0], dict)
+        ):
+            raise ValueError("Invalid LiteLLM envelope")
+        choice = choices[0]
         if choice.get("finish_reason") == "length":
             raise ValueError("Truncated LiteLLM response")
-        parsed = json.loads(choice["message"]["content"])
+        message = choice.get("message")
+        if not isinstance(message, dict) or not isinstance(message.get("content"), str):
+            raise ValueError("Invalid LiteLLM message")
+        parsed = json.loads(message["content"])
         return self.validate(parsed, slots)
 
     @staticmethod
@@ -189,14 +234,9 @@ class LiteLLMEngine(ShelfEngine):
             return
         try:
             choices = self.vlm_client.choose(image, items, self.wines)
-        except (
-            httpx.HTTPError,
-            ValueError,
-            KeyError,
-            IndexError,
-            TypeError,
-            RuntimeError,
-        ) as error:
+        except Exception as error:
+            # Optional provider/reference failures must preserve native matches.
+            # Do not swallow BaseException (shutdown/interrupt).
             logging.getLogger(__name__).warning(
                 "LiteLLM refinement failed (%s)", type(error).__name__
             )
@@ -216,5 +256,6 @@ class LiteLLMEngine(ShelfEngine):
                 item["evidence"] = evidence
                 self.last_vlm["confirmed"] += 1
         self.scan_warnings.append(
-            f'Qwen проверил {len(items)} спорных бутылок. Дополнительно подтверждено: {self.last_vlm["confirmed"]}.'
+            f"Отправлено Qwen: {len(items)}. Предложений: {len(choices)}. "
+            f'Дополнительно подтверждено: {self.last_vlm["confirmed"]}.'
         )

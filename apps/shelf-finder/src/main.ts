@@ -1,4 +1,7 @@
+import '../../web/src/styles/global.css';
 import './style.css';
+import portalLogo from '../../web/public/brand/logo-svoe-vino.svg?url';
+document.documentElement.dataset.theme = 'light';
 import { ServerClient } from './server-client';
 const engine = new URLSearchParams(location.search).get('engine') ?? 'server';
 const serverMode = engine === 'server';
@@ -7,14 +10,16 @@ import { parseCatalog, Tracker } from './core';
 import { loadCatalog, saveCatalog } from './storage';
 import type { Catalog, ModelManifest, ScanResult, Track } from './types';
 
+const insideMainApp = location.pathname.startsWith('/shelf-ui/');
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 $('app').innerHTML = `
-<header><a class="logo" href="./">V<span>•</span> Витрина</a><span class="private">${serverMode ? 'Распознавание на сервере' : 'На вашем устройстве'}</span></header>
+<header><a class="logo" href="${insideMainApp ? '/app/shelf' : './'}"><img src="${portalLogo}" alt="Своё Вино" width="132"></a><span class="private">${serverMode ? 'Распознавание на сервере' : 'На вашем устройстве'}</span></header>
 <main>
-  <section class="intro"><p class="eyebrow">VINCHIK / ПОИСК НА ПОЛКЕ</p><h1>Ваше вино.<br>Среди десятков бутылок.</h1><p>Выберите вина или группу, наведите камеру на витрину. Найденные позиции появятся в зелёных рамках.</p></section>
+  ${insideMainApp ? '<a class="back-link" href="/app/shelf">← К подбору сомелье</a>' : ''}
+  <section class="intro"><p class="eyebrow">ВИТРИНА · РАСШИРЕННЫЙ СКАНЕР</p><h1>Найдите вино на полке</h1><p>Выберите вина или группу, наведите камеру на витрину. Найденные позиции появятся в зелёных рамках.</p></section>
   <div class="workspace">
     <section class="viewer">
-      <div class="toolbar"><select id="recognition-mode" aria-label="Способ распознавания"><option value="server">На сервере</option><option value="hybrid">На устройстве: детали этикетки</option><option value="baseline">Базовое сравнение</option></select><button id="camera" disabled>Включить камеру</button><label class="button secondary">Открыть фото<input id="photo" type="file" accept="image/*" disabled></label><button id="capture" hidden>Снять витрину</button><button id="connect" class="quiet" hidden>Повторить подключение</button><button id="stop" class="quiet" hidden>Остановить</button></div>
+      <details class="engine-settings"><summary>Способ распознавания</summary><select id="recognition-mode" aria-label="Способ распознавания"><option value="server">На сервере</option><option value="hybrid">На устройстве: детали этикетки</option><option value="baseline">Базовое сравнение</option></select></details><div class="toolbar"><button id="camera" disabled>Включить камеру</button><label class="button secondary">Открыть фото<input id="photo" type="file" accept="image/*" disabled></label><button id="capture" hidden>Снять витрину</button><button id="connect" class="quiet" hidden>Повторить подключение</button><button id="stop" class="quiet" hidden>Остановить</button></div>
       <div class="stage" id="stage"><canvas id="frame" width="960" height="720"></canvas><canvas id="overlay" width="960" height="720"></canvas><div class="empty" id="empty"><span class="reticle">⌗</span><h2>Посмотрим на полку</h2><p>Загрузите фото или включите заднюю камеру.<br>${serverMode ? 'Фото отправляется на сервер для распознавания и не сохраняется.' : 'Снимки не отправляются на сервер.'}</p></div></div>
       <video id="video" playsinline muted hidden></video>
       <div class="status" role="status" aria-live="polite"><span class="dot" id="dot" data-state="waiting"></span><span id="status">${serverMode ? 'Подключаемся к серверу…' : 'Подготавливаем локальное распознавание…'}</span></div>
@@ -27,19 +32,21 @@ $('app').innerHTML = `
     </section>
     <aside><div class="section-label">ЧТО ИЩЕМ</div><h2>Соберите свой выбор</h2><div class="modes"><label><input type="radio" name="mode" value="selected" checked> Мой выбор</label><label><input type="radio" name="mode" value="all"> Вся полка</label></div><input id="search" class="search" type="search" placeholder="Название, производитель, регион" aria-label="Поиск по каталогу"><select id="group" aria-label="Группа вин"><option value="">Все группы</option></select><div class="selection"><span id="selected-count">Выбрано: 0</span><span class="selection__actions"><button id="select-visible" class="quiet">Выбрать найденные</button><button id="clear" class="quiet">Снять выбор</button></span></div><div id="catalog" class="catalog"></div><p class="hint">Выбор фильтрует подсветку, а распознавание сравнивает со всем каталогом — это уменьшает ложные совпадения.</p><details id="custom-catalog"><summary>Мой каталог и эталоны</summary><p>Можно импортировать подготовленный каталог или добавить эталон: нажмите на найденную бутылку под снимком и задайте название. Эталоны хранятся только в этом браузере.</p><label class="button secondary">Импорт JSON<input id="import" type="file" accept="application/json,.json"></label><button id="export" class="quiet" disabled>Экспорт каталога</button><button id="reset-catalog" class="quiet" disabled>Вернуть исходный каталог</button></details></aside>
   </div>
-</main><footer>Отдельный экспериментальный модуль Vinchik · 18+<span>${serverMode ? 'Снимок отправляется на сервер только для распознавания' : 'Камера и фотографии остаются на устройстве'}</span></footer>
+</main><footer>Свой Сомелье · Витрина · 18+<span>${serverMode ? 'Снимок отправляется на сервер только для распознавания' : 'Камера и фотографии остаются на устройстве'}</span></footer>
 <dialog id="enroll"><form id="enroll-form"><h2>Добавить эталон</h2><p>Название задайте по читаемой этикетке. Не угадывайте неизвестные позиции.</p><input id="wine-name" required maxlength="160" placeholder="Название вина" aria-label="Название вина"><input id="wine-brand" maxlength="100" placeholder="Производитель" aria-label="Производитель"><select id="existing-wine" aria-label="Добавить фото существующей позиции"><option value="">Новая позиция</option></select><p id="candidates" class="hint"></p><div class="toolbar"><button type="submit">Сохранить на устройстве</button><button type="button" id="cancel-enroll" class="quiet">Отмена</button></div></form></dialog>`;
 
+// Same button variants as the main frontend, including dynamically created results.
+function styleButtons(root: ParentNode) {
+  root.querySelectorAll<HTMLElement>('button, .button').forEach(button => {
+    if (button.classList.contains('result')) return;
+    button.classList.add('btn', button.classList.contains('quiet') ? 'btn--ghost' : button.classList.contains('secondary') ? 'btn--secondary' : 'btn--primary');
+  });
+}
+styleButtons(document);
 const worker = serverMode ? new ServerClient(import.meta.env.VITE_SHELF_API_URL || '/v1/shelf') : new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 const frame = $<HTMLCanvasElement>('frame'), overlay = $<HTMLCanvasElement>('overlay');
 const context = frame.getContext('2d')!, drawing = overlay.getContext('2d')!;
 const video = $<HTMLVideoElement>('video');
-// Подпись рамки найденной бутылки рисуется на canvas поверх произвольного кадра камеры/фото —
-// цвет фона плашки читаем из --ink (тот же тон, что и текст приложения), а не хардкодим старый
-// брендовый зелёный (#123c32). Зелёная заливка/обводка рамки ниже (#25cf6933/#9df5ad) остаются
-// вне палитры намеренно: это разметка поверх произвольного изображения (см. .aim__frame в
-// apps/web/src/styles/global.css), где важнее контраст с любым фоном фото, чем совпадение с темой.
-const overlayLabelBg = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#2C2A28';
 const tracker = new Tracker();
 let catalog: Catalog | null = null, originalCatalog: Catalog | null = null, manifest: ModelManifest;
 let selected = new Set<string>();
@@ -86,6 +93,7 @@ function renderCatalog() {
     const more = document.createElement('button'); more.className = 'quiet'; more.textContent = `Показать ещё (${visibleWines} из ${filtered.length})`; more.addEventListener('click', () => { visibleWines += 100; renderCatalog(); }); container.append(more);
   }
   if (!container.childElementCount) container.textContent = 'По этому запросу нет позиций.';
+  styleButtons(container);
   renderSelection();
 }
 function renderSelection() { $('selected-count').textContent = `Выбрано: ${selected.size}`; }
@@ -116,16 +124,16 @@ function renderResults() {
     const highlight = track.confirmed && !!wine && (mode() === 'all' || [wine.id, ...alternatives].some(id => selected.has(id)));
     const [x1, y1, x2, y2] = track.box;
     if (highlight) {
-      drawing.fillStyle = '#25cf6933';
+      drawing.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--photo-match-fill').trim();
       drawing.fillRect(x1 * overlay.width, y1 * overlay.height, (x2 - x1) * overlay.width, (y2 - y1) * overlay.height);
-      drawing.strokeStyle = '#9df5ad'; drawing.lineWidth = 3;
+      drawing.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--photo-match').trim(); drawing.lineWidth = 3;
       drawing.strokeRect(x1 * overlay.width, y1 * overlay.height, (x2 - x1) * overlay.width, (y2 - y1) * overlay.height);
       const label = `${alternatives.length ? 'Варианты: ' : ''}${displayName}`;
       const fontSize = Math.max(14, overlay.width / 55); drawing.font = `600 ${fontSize}px sans-serif`;
       const width = Math.min(drawing.measureText(label).width + 14, overlay.width * .55);
       const tx = Math.min(x1 * overlay.width, overlay.width - width), ty = Math.max(fontSize + 8, y1 * overlay.height);
-      drawing.fillStyle = overlayLabelBg; drawing.fillRect(tx, ty - fontSize - 8, width, fontSize + 8);
-      drawing.fillStyle = '#c5ffd1'; drawing.fillText(label, tx + 7, ty - 5, width - 14);
+      drawing.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--photo-match-label').trim(); drawing.fillRect(tx, ty - fontSize - 8, width, fontSize + 8);
+      drawing.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--photo-label-ink').trim(); drawing.fillText(label, tx + 7, ty - 5, width - 14);
     }
     const button = document.createElement('button'); button.className = `result ${highlight ? 'found' : ''}`;
     const name = document.createElement('strong'), detail = document.createElement('small');

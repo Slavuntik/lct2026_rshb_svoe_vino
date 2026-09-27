@@ -1,5 +1,11 @@
 # LLD: RAG-поиск, чат-сомелье и гастропары
 
+Дополнение 27.09.2026: [сомелье и несколько полок](../product/shelf-sommelier.md)
+используют общий каталог, фильтры чата и гастропары. CV работает отдельно;
+новый основной endpoint — `/v1/sommelier/shelf-selection` (OpenAPI 0.3.8).
+[Текущая готовность по PDF](../product/requirements-check.md) отделена от
+датированных замеров и состояний стенда, сохранённых ниже.
+
 Детальный раздел LLD «Свой Сомелье», по заданию тимлида 22.09 (решение Вячеслава). Автор — backend,
 по коду (не по намерениям): `packages/rag`, `packages/llm`, `apps/api/app/{chat,rag}`,
 `apps/api/app/food_pairing.py`, `apps/api/app/routers/{wines,analogs,auth}.py`, `apps/api/app/security.py`,

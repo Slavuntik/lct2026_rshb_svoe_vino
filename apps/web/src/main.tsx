@@ -9,9 +9,7 @@ import "./themes/portal.css";
 // VITE_THEME=portal — тема каталога «Своё Вино» (кейс ЛЦТ) поверх дефолтной; ставим
 // атрибут до рендера, чтобы не было мигания дефолт->портал. portal.css всегда в бандле
 // (мал, ничего не весит при выключенном флаге — эффект только под [data-theme="portal"]).
-if (getTheme() === "portal") {
-  document.documentElement.dataset.theme = "portal";
-}
+document.documentElement.dataset.theme = getTheme() === "portal" ? "portal" : "light";
 
 // Мок-слой стартует параллельно с рендером, а НЕ до него: первый пейнт лендинга не должен
 // платить временем за загрузку MSW-чанка (см. Lighthouse-заметку в reports/c-report.md).

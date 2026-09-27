@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#AB494F" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <meta
       name="description"
       content="Свой Сомелье — сканируйте этикетку, получайте честный разбор вина и подбор по вкусу, без рекламы «купи»."
@@ -12,32 +12,6 @@
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/icon-maskable.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!--
-      Шрифты Google Fonts не должны блокировать первый рендер (Lighthouse: render-blocking
-      request на fonts.googleapis.com стоил ~10 пунктов perf). Классический loadCSS-приём:
-      грузим с media="print" (низкий приоритет, не блокирует), после загрузки переключаем
-      на "all". noscript — честный фолбэк без JS. font-display=swap в самом URL — на случай,
-      если шрифт всё же догружается после первой отрисовки текста системным фолбэком.
-    -->
-    <!-- 27.09 (frontend-figma-restyle): шрифты по макету Figma — Inter (текст/кнопки/подписи)
-         вместо IBM Plex Sans, Playfair Display (заголовки) без изменений, Cormorant убран
-         (был display-шрифтом до переноса, в макете не встретился). IBM Plex Mono остаётся —
-         технические значения (крепость/год), в макетах отдельный моно-шрифт не встретился. -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap"
-      />
-    </noscript>
 
     <title>Свой Сомелье</title>
   </head>

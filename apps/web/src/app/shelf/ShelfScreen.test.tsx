@@ -41,10 +41,8 @@ describe("Shelf navigation", () => {
     mockShelfServiceHealthy();
     storage.setOnboardingComplete(true);
     renderApp(<Routes><Route path="/app/*" element={<AppShell />} /></Routes>, "/app/shelf");
-    expect(await screen.findByTitle("Поиск вин на витрине")).toHaveAttribute(
-      "src",
-      "/shelf-ui/?engine=server&embedded=1",
-    );
+    expect(await screen.findByRole("heading", {name:"Найти своё вино на полке"})).toBeInTheDocument();
+    expect(screen.getByRole("textbox", {name:"Какое вино ищем?"})).toBeInTheDocument();
     await openNavMenu();
     expect(await screen.findByRole("link", { name: "Витрина" })).toHaveAttribute("href", "/app/shelf");
     expect(screen.getByRole("link", { name: "Сомелье" })).toHaveAttribute("href", "/app/chat");
