@@ -35,6 +35,7 @@ from .routers import (
     pairing,
     profile,
     scan,
+    shelf_selection,
     taste,
     waitlist,
     wines,
@@ -92,7 +93,7 @@ OPENAPI_URL = "/v1/openapi.json"
 # 0.3.6 -> 0.3.7 (27.09): architect ратифицировал GET /v1/catalog (коммит
 # 173c892, reports/architect-catalog-contract.md) — новая ручка, не довнесение
 # поведения существующей; тимлид подтвердил, что бамп уместен.
-API_VERSION = "0.3.7"
+API_VERSION = "0.3.8"
 
 API_DESCRIPTION = """\
 API «Свой Сомелье» — сканер российских вин по фото (кейс №10 РСХБ, хакатон ЛЦТ 2026).
@@ -295,6 +296,7 @@ def create_app() -> FastAPI:
         metrics.router,
         case_thumbs.router,
         catalog.router,
+        shelf_selection.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
 

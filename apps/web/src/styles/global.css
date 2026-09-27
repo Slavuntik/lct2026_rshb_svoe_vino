@@ -1,5 +1,6 @@
 /* Базовые стили «Свой Сомелье». Цвета/шрифты — ТОЛЬКО через переменные tokens.css. */
 @import "./tokens.css";
+@import "./fonts.css";
 
 *,
 *::before,
@@ -234,7 +235,9 @@ button.icon-badge {
 }
 
 button.icon-badge:disabled {
-  opacity: 0.45;
+  opacity: 1;
+  background: var(--mono-bg);
+  color: var(--ink);
   cursor: not-allowed;
 }
 
@@ -1462,3 +1465,5 @@ button.badge {
     width: min(300px, 88vw);
   }
 }
+
+.btn--ghost:disabled { background: transparent; color: var(--muted); }

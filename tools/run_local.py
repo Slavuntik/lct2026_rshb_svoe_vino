@@ -85,14 +85,18 @@ try:
         wanted_profile = env.get('SHELF_PROFILE', 'baseline')
         wanted_device = env.get('SHELF_DEVICE', 'auto')
         if (existing_shelf.get('profile', 'baseline') != wanted_profile
-                or (wanted_device == 'cpu' and existing_shelf.get('device') != 'cpu')):
+                or (wanted_device == 'cpu' and existing_shelf.get('device') != 'cpu')
+                or (wanted_device in ('cuda', 'cuda:0')
+                    and existing_shelf.get('device') != 'cuda:0')):
             raise RuntimeError('Existing shelf service uses another profile/device; restart it to apply .env changes')
     if existing_shelf and existing_shelf.get('ready'):
         print('Reusing ready remote shelf API' if remote_shelf else f'Reusing ready shelf API on {shelf_port}', flush=True)
     else:
         shelf = spawn('shelf-api', [python, '-m', 'uvicorn', 'shelf_api.app:app', '--host', '127.0.0.1', '--port', str(shelf_port)], ROOT / 'apps/shelf-finder', {
             'PYTHONPATH': str(ROOT / 'apps/shelf-finder/server/src'),
-            'CUDA_VISIBLE_DEVICES': '' if env.get('SHELF_DEVICE') == 'cpu' else env.get('SHELF_GPU', '2'),
+            **({'CUDA_VISIBLE_DEVICES': ''} if env.get('SHELF_DEVICE') == 'cpu'
+               else {'CUDA_VISIBLE_DEVICES': env['SHELF_GPU']} if env.get('SHELF_GPU')
+               else {}),
             'SHELF_STATIC_DIR': str(ROOT / 'apps/shelf-finder/dist'),
             'OMP_NUM_THREADS': '4', 'OPENBLAS_NUM_THREADS': '4',
         })

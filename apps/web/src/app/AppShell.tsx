@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useShelfAvailability } from "../lib/shelfAvailability";
 import { storage } from "../lib/storage";
@@ -34,6 +34,8 @@ export default function AppShell() {
   // проверка не подтвердит сервис витрин живым.
   const shelfAvailability = useShelfAvailability();
   const shelfAvailable = shelfAvailability === "available";
+  const shelfWasAvailable = useRef(false);
+  if (shelfAvailable) shelfWasAvailable.current = true;
 
   return (
     <div className="app-shell">
@@ -61,7 +63,7 @@ export default function AppShell() {
             path="shelf"
             element={
               <RequireOnboarding>
-                {shelfAvailable ? <ShelfScreen /> : <ShelfUnavailableScreen />}
+                {shelfAvailable || shelfWasAvailable.current ? <ShelfScreen /> : <ShelfUnavailableScreen />}
               </RequireOnboarding>
             }
           />

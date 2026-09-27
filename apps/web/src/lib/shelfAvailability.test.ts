@@ -1,11 +1,14 @@
 import { delay, http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
 import { server } from "../mocks/server";
 import {
   checkShelfAvailability,
   probeShelfHealth,
   resetShelfAvailabilityForTests,
   SHELF_HEALTH_PATH,
+  SHELF_RETRY_MS,
+  useShelfAvailability,
 } from "./shelfAvailability";
 
 // Кеш держится в модуле между it() — без сброса второй тест унаследует результат первого.
@@ -55,7 +58,7 @@ describe("probeShelfHealth", () => {
     server.use(
       http.get(SHELF_HEALTH_PATH, async () => {
         await delay("infinite");
-        return HttpResponse.json({ ready: true });
+        return HttpResponse.json({ ready: true, busy: false, state: "ready", catalogSize: 7 });
       }),
     );
     await expect(probeShelfHealth(30)).resolves.toBe("unavailable");
@@ -68,12 +71,54 @@ describe("checkShelfAvailability", () => {
     server.use(
       http.get(SHELF_HEALTH_PATH, () => {
         requests += 1;
-        return HttpResponse.json({ ready: true });
+        return HttpResponse.json({ ready: true, busy: false, state: "ready", catalogSize: 7 });
       }),
     );
     const [first, second] = await Promise.all([checkShelfAvailability(), checkShelfAvailability()]);
     expect(first).toBe("available");
     expect(second).toBe("available");
     expect(requests).toBe(1);
+  });
+});
+
+// Exercise the mounted consumer, not only repeated calls to the cache helper.
+describe("useShelfAvailability recovery", () => {
+  it("updates mounted consumers after a temporary failure and deduplicates retries", async () => {
+    vi.useFakeTimers();
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(Response.json({ready:false}, {status:503}))
+      .mockImplementation(() => Promise.resolve(Response.json({ready:true,busy:false,state:"ready",catalogSize:7})));
+    vi.stubGlobal("fetch", fetch);
+    const first = renderHook(() => useShelfAvailability());
+    const second = renderHook(() => useShelfAvailability());
+    try {
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      expect(first.result.current).toBe("unavailable");
+      expect(second.result.current).toBe("unavailable");
+      expect(fetch).toHaveBeenCalledTimes(1);
+      await act(async () => { await vi.advanceTimersByTimeAsync(SHELF_RETRY_MS); });
+      expect(first.result.current).toBe("available");
+      expect(second.result.current).toBe("available");
+      expect(fetch).toHaveBeenCalledTimes(2);
+      first.unmount(); second.unmount();
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(fetch).toHaveBeenCalledTimes(2);
+    } finally {
+      first.unmount(); second.unmount();
+      vi.unstubAllGlobals(); vi.useRealTimers();
+    }
+  });
+});
+
+
+describe("health response contract", () => {
+  it.each([
+    {ready:false,state:"failed"},
+    {unrelated:"different API"},
+    {ready:true,state:"ready",catalogSize:1.5,busy:false},
+    {ready:true,state:"ready",catalogSize:-1,busy:false},
+  ])("rejects malformed/unready 200 JSON: %j", async body => {
+    server.use(http.get(SHELF_HEALTH_PATH, () => HttpResponse.json(body)));
+    await expect(probeShelfHealth()).resolves.toBe("unavailable");
   });
 });

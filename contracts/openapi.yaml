@@ -107,10 +107,60 @@
 openapi: 3.1.0
 info:
   title: Svoy Somelye API
-  version: 0.3.7
+  version: 0.3.8
 servers:
   - url: /v1
 paths:
+  /sommelier/shelf-selection:
+    post:
+      summary: Подбор сомелье для поиска на полках
+      description: >
+        Требуется Bearer гостя 18+ или пользователя. Без wine_ids — предварительный
+        подбор из каталога; пустой массив — ничего не найдено. После распознавания
+        передаются только найденные слаги со всех фото, неизвестные слаги отбрасываются.
+        Цвет, сахар и регион — фильтры; гастропары каталога выше правил, затем
+        текстовая релевантность общего поиска. Цены и точный SKU близнецов не гарантируются.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wish]
+              properties:
+                wish: {type: string, minLength: 2, maxLength: 1000}
+                wine_ids:
+                  type: array
+                  nullable: true
+                  maxItems: 640
+                  items: {type: string, minLength: 1, maxLength: 300}
+                dish: {type: string, nullable: true, maxLength: 100}
+      responses:
+        "200":
+          description: Ранжирование до 50 вин из каталога
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [wines, understood, warnings, message]
+                properties:
+                  wines:
+                    type: array
+                    maxItems: 50
+                    items:
+                      type: object
+                      required: [wine_id, name, rank, reason, basis]
+                      properties:
+                        wine_id: {type: string}
+                        name: {type: string}
+                        rank: {type: integer, minimum: 1}
+                        reason: {type: string}
+                        basis: {type: string, enum: [catalog-filters, catalog-pairing, pairing-rules, text-search]}
+                  understood: {type: array, items: {type: string}}
+                  warnings: {type: array, items: {type: string}}
+                  message: {type: string}
+        "401": {description: Требуется авторизация}
+        "422": {description: Некорректные входные данные}
   /healthz:
     get:
       summary: Живость сервиса и версия индекса

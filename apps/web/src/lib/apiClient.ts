@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { streamChatResponse } from "./sse";
 import {
   ApiRequestError,
+  type ShelfSelection,
   type AnalogsPayload,
   type AnalogsResponse,
   type ChatFeedbackPayload,
@@ -103,6 +104,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const apiClient = {
+  selectShelf(wish: string, wineIds?: string[], signal?: AbortSignal): Promise<ShelfSelection> {
+    return request('/sommelier/shelf-selection', {
+      method: 'POST', body: JSON.stringify({wish, wine_ids: wineIds}), signal,
+    });
+  },
   healthz(): Promise<{ status: string; index_version: string }> {
     return request("/healthz");
   },

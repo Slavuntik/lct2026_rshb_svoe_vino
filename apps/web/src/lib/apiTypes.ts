@@ -475,3 +475,10 @@ export interface EventPayload {
   name: string;
   props: Record<string, unknown>;
 }
+
+export interface ShelfSelection {
+  wines: {wine_id:string; name:string; rank:number; reason:string; basis:string}[];
+  understood: string[];
+  warnings: string[];
+  message: string;
+}

@@ -26,10 +26,10 @@ HLD.md` §3–4, `models-and-algorithms.md` §0.
 
 | Что | Где | Статус на сдачу |
 |---|---|---|
-| **Боевой путь** — `packages/cv` + слияние с текстом (RapidOCR/VLM) за `apps/api` | `packages/cv`, `apps/api/app/cv` | **Продукт.** `IMAGE_PROVIDER=real` на стенде, hack-v17: top-1 96.8% (60/62), top-5 98.4%, p50/p95 4.3/5.2 с |
+| **Боевой путь** — `packages/cv` + слияние с текстом (RapidOCR/VLM) за `apps/api` | `packages/cv`, `apps/api/app/cv` | **Продукт.** `IMAGE_PROVIDER=real` на стенде, hack-v22: top-1 96.8% (60/62), top-5 98.4%, flat p50/p95 4.436/5.216 с |
 | Второй движок за тем же контрактом `ImageIndex` | `packages/winescan` (`IMAGE_PROVIDER=winescan`) | Альтернатива за контрактом, умолчанием не является; сравнение 17.09 сделано на синтетике и **не** доказывает преимущество над текущим CV/VLM (`docs/sync-2026-09-24.md`) |
 | Автономное приложение того же кейса целиком | `standalone/winescan` (162 файла) | **Архивный снимок** исходного репозитория (subtree, 24.09). Не собирается и не деплоится в составе продукта |
-| Поиск вина на витрине (YOLO11n + SigLIP2 so400m + ALIKED/XFeat) | `apps/shelf-finder` (118 файлов, свой Python API на :8086, свой UI на :5180) | **Отдельный эксперимент.** Требует NVIDIA GPU; в приватной проверке (одиночные фото бутылок) не участвует |
+| Поиск вина на витрине (YOLO11n + SigLIP2 so400m + ALIKED/XFeat) | `apps/shelf-finder` (118 файлов, свой Python API на :8086, свой UI на :5180) | **Дополнительная функция.** CPU/GPU сервис + экран сомелье `/app/shelf`; в проверке одиночных этикеток не участвует |
 
 Правило границы: контракты `contracts/` описывают **только** боевой путь и `/v1/*` основного
 API. `apps/shelf-finder` объявляет собственные `/v1/shelf/*` (`apps/shelf-finder/docs/server-api.md`)
@@ -37,6 +37,14 @@ API. `apps/shelf-finder` объявляет собственные `/v1/shelf/*`
 v0.4.18). Пакеты `packages/winescan` и `standalone/winescan` делят 43 байт-в-байт одинаковых
 файла, в том числе 3.5 МБ весов (`box_ranker_v1/v2.joblib`, `metric_v1.npz`) — осознанное
 дублирование ради автономности снимка, сверяется `tools/sync_winescan.py`.
+
+## Сомелье и несколько полок
+
+Основной API `/v1/sommelier/shelf-selection` переиспользует поиск и фильтры чата,
+общий каталог и правила гастропар. CV остаётся независимым в `/v1/shelf/scan`.
+Клиент после распознавания передаёт в ранжирование только найденные слаги со всех
+фото. Желание пользователя не изменяет идентификацию бутылки. Подробности и ограничения:
+[docs/product/shelf-sommelier.md](docs/product/shelf-sommelier.md).
 
 ## Два движка распознавания за одним контрактом
 
@@ -72,9 +80,9 @@ eval-гейт: просевшие метрики не публикуют вер�
 ## Оценка качества и тесты
 
 `qa/scan_eval.py` — F1 top-1/top-5 (macro), match-rate, p50/p95, стабильный SHA-сплит
-dev/holdout. Текущий боевой снимок (живые фото организаторов, выкат hack-v17) — **top-1 96.8%
+dev/holdout. Текущий боевой снимок (живые фото организаторов, выкат hack-v22) — **top-1 96.8%
 (60/62), top-5 98.4% (61/62)** — история точности по волнам и методика —
-`models-and-algorithms.md` §3. Тесты (перемерены 26.09, architect, живой прогон): `apps/api`
+`models-and-algorithms.md` §3. Исторические тесты (перемерены 26.09, architect, живой прогон): `apps/api`
 **553 passed/12 skipped** · `packages/cv` **421 passed + 1 failed** (микробенчмарк
 `test_verify_p95_latency_budget`, тикет у ml-engineer) · `packages/llm` **32 passed** ·
 `apps/web` **124 passed** (21 файл) · `packages/rag` **115 passed** (хронология роста 98→115 за
@@ -88,5 +96,7 @@ dev/holdout. Текущий боевой снимок (живые фото ор�
 `SCAN_FLAT_DEFAULT`. Полный справочник env (дефолт кода + значения стенда) —
 `docs/architecture/operations.md` §4 + `docs/architecture/LLD.md` §4. Всё локально, GPU не
 обязателен (замеры на Apple Silicon MPS: embed p95 24.5 мс, полный поиск p95 31 мс — мягкая
-цель ТЗ ≤3 c перекрыта с запасом; жёсткий лимит 10 с и его бюджетирование —
+это замер компонента, не доказательство выполнения цели ТЗ ≤3 c всем HTTP-пайплайном; жёсткий лимит 10 с и его бюджетирование —
 `docs/architecture/HLD.md` §2.2–2.3).
+
+Текущая сверка требований и проверок: [готовность проекта](docs/product/requirements-check.md).
