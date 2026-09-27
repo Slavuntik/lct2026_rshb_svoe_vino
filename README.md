@@ -44,6 +44,17 @@
 
 ## Быстрый старт (без ключей и без данных)
 
+Одной командой, с проверкой окружения и понятными сообщениями об ошибках:
+
+```bash
+scripts/quickstart.sh          # веб, API, Swagger; сомелье на реальном индексе из репозитория
+scripts/quickstart.sh full     # настоящее распознавание: модели и сборка индекса, 40 мин – 1.5 ч
+scripts/quickstart.sh verify   # официальный скрипт проверки против локального сервиса
+```
+
+Подробности, требования и что работает в каждом режиме — [docs/QUICKSTART.md](docs/QUICKSTART.md).
+Ниже — то же самое вручную:
+
 ```bash
 cd apps/api && uv venv && uv pip install -e . && ./.venv/bin/uvicorn app.main:app   # mock-LLM + mock-RAG
 cd apps/web && npm i && npm run dev                                                 # клиент в mock-режиме
