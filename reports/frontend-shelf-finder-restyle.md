@@ -112,8 +112,54 @@ ms-playwright` с другим проектом; полный `chromium-1234` (�
 отказе сервера), `after2-disabled-zoom.png`, `after2-dot-and-error-zoom.png`,
 `after2-result-header-zoom.png`.
 
+## Раунд 3 — ратификация v0.2, чужой мёрдж, верификация (без правок кода)
+
+Архитектор ратифицировал `--danger`/`--danger-bg` (=`--accent-strong`/`--accent-soft`, как и
+предлагал) и переименовал `--fs-h2-card` → **`--fs-h2-sm`** (contracts/tokens.css v0.2,
+reports/architect-tokens-v02.md). Пока применял переименование, в `main` прилетел мёрдж чужого
+коммита `dfb9302`, который переписал `apps/shelf-finder/src/{tokens.css,style.css,main.ts}` на
+более чистую архитектуру: `tokens.css` — не копия, а `@import "../../web/src/styles/tokens.css"`
+(«копий не расходятся, потому что копии нет»), `main.ts` импортирует `apps/web/src/styles/
+global.css` напрямую и рантайм-функцией `styleButtons()` навешивает `.btn`/`.btn--*` на все
+кнопки. Мои содержательные правки (состояния точки, `--danger`, `--fs-h2-sm`, disabled-контраст)
+сохранены внутри этой новой архитектуры.
+
+**Моя ошибка и откат.** Не увидев сразу этот мёрдж, я один раз переписал `tokens.css` обратно в
+полную копию (коммит `bd3af96`) — ровно та переделка, от которой тимлид просил воздержаться.
+Отменено коммитом `04c439c` тем же приёмом (`git checkout <мёрдж> -- tokens.css`), файл вернулся
+байт-в-байт к состоянию после `dfb9302`. `git stash` с моей старой версией не поднимал.
+
+**Верификация чужого мёрджа (все проверки — по вычисленным значениям, Playwright, не на глаз):**
+- Точка статуса: `data-state` waiting→error при отказе сервера, `backgroundColor` = `rgb(123, 53,
+  40)` = `--danger` — во всех 4 комбинациях (standalone/`?embedded=1` × 375/1280).
+- `.error`: `background rgb(243,230,233)` / `color`+`border rgb(123,53,40)` — контраст 7.27:1.
+- Заголовки: `aside h2`, `.result-header h2`, `.empty h2`, диалог `#enroll h2` — все 22px,
+  высота 24px = 1 строка (line-height 24.2px), нигде не переносится на 2 строки.
+- Disabled-кнопка (`#camera` до `ready`): `opacity:1`, `background rgb(227,225,226)`/`color
+  rgb(44,42,40)` — контраст **10.98:1**.
+- Тёмная ОС (`colorScheme:'dark'` в Playwright, 375 и 1280): вычисленный `getComputedStyle(html).
+  colorScheme` = **"light"**, фон страницы `rgb(254,253,250)` (светлый, не тёмный). Открыл
+  `<select id="recognition-mode">` и заскриншотил — рендерится светлым (белый фон, тёмная
+  стрелка), нативного тёмного виджета нет (скриншот `verify3-select-dark-full.png`).
+- `npm run test` — 24/24. `npx playwright test` (полный набор, включая новые спеки второго
+  разработчика) — **8 passed, 5 skipped, 0 failed**; все skip — штатный `test.skip` по
+  отсутствующим `SHELF_TEST_PHOTO`/`SHELF_SERVER_TEST_PHOTO`/`SHELF_MAIN_UI_URL`, не мои правки.
+  Отдельно отмечу `server.spec.ts:105` («standalone shelf uses main tokens, local fonts and
+  touch controls», зелёный) — новый тест второго разработчика уже проверяет то же самое
+  (тёмная ОС, фон `rgb(254,253,250)`, шрифты Inter/Playfair Display, `#camera` `rgb(171,73,79)`,
+  44px тап-зона) машинно и на CI, не только у меня руками.
+
+**Вывод: всё цело.** Ни одна из четырёх моих правок по ревью не откатилась и не сломалась.
+`apps/shelf-finder/src/tokens.css` — единственный файл, который я трогал в этом раунде (откат
+своей же ошибки); `style.css`/`main.ts` не мои — их полностью переписал `dfb9302`, и они рабочие.
+
+Новые скриншоты — `.../scratchpad/shelf-restyle/`: `verify3-{standalone,embedded}-{375,1280}.png`,
+`verify3-dark-{375,1280}.png`, `verify3-select-dark-full.png`.
+
 ## Риски / тимлиду
-`accent/accent-soft` (4.56:1) теперь используется только `.secondary`-кнопкой (не `.error` —
-там `--danger` с 7.27); пара общая с apps/web, не моя правка. `--danger`/`--fs-h2-card` —
-локальные, ждут ратификации архитектора (см. выше); если утвердят другие значения/имена —
-поменять здесь централизованно, потребителей вне `apps/shelf-finder` у этих токенов нет.
+1. `--fs-h2-card`/`--danger` в старой формулировке этого отчёта (раунды 1–2) — устарели, читать
+   раунд 3 и `reports/architect-tokens-v02.md` как источник истины по именам/значениям.
+2. `contracts/check_tokens.py` в текущем виде не понимает `@import` и после `dfb9302` продолжит
+   рапортовать `apps/shelf-finder/src/tokens.css: нет блока :root`, если его прогнать буквально —
+   это ожидаемо при выбранной архитектуре («копий не расходятся, потому что копии нет»), не
+   регрессия; чинить скрипт или контракт — решение архитектора/тимлида, не моя зона.
