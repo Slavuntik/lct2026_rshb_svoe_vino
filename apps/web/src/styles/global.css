@@ -627,9 +627,13 @@ dl .row--between dd {
 }
 
 .btn--danger {
+  /* --danger (contracts/tokens.css v0.2) вместо --accent — «Удалить аккаунт» семантически
+     опасное действие, не обычный CTA-акцент, хотя раньше красилось тем же токеном, что и
+     ссылки/основной CTA. --danger = var(--accent-strong) — темнее --accent, контраст 8.67:1
+     на --bg (было 5.44 на голом --accent) — находка architect при ратификации v0.2. */
   background: transparent;
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .btn--block {

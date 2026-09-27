@@ -1,3 +1,17 @@
 /* Compatibility alias: the portal and the default UI share the source tokens.
    The portal flag preserves its public API without maintaining a second palette. */
-:root[data-theme="portal"] { color-scheme: light; }
+:root[data-theme="portal"] {
+  color-scheme: light;
+  /* Правило R2 (contracts/tokens.css v0.2): блок, переопределяющий тему, обязан объявить
+     ВСЕ 15 литеральных цветов + color-scheme, иначе частичное переопределение молча
+     смешивает две темы — находка architect на живом стенде 27.09: на тёмной ОС боевая
+     сборка (VITE_THEME=portal) отдавала светлую страницу, но --warn-bg/--ok-bg доезжали
+     тёмными из @media(dark)-блока tokens.css (офлайн-баннер — почти чёрный прямоугольник).
+     tokens.css отдельно исключает data-theme="portal" из своего тёмного блока
+     (:not([data-theme="portal"])) — тех же двух цветов это уже не пускает, но R2 требует
+     самостоятельной полноты именно этого блока, не полагаясь на соседний файл. */
+  --ok: #3E6B4F;
+  --ok-bg: #E9F0EB;
+  --warn: #845A19;
+  --warn-bg: #F5ECDC;
+}
