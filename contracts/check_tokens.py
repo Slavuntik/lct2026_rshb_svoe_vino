@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
-"""Сверка копий дизайн-токенов с contracts/tokens.css v0.2.
+"""Сверка дизайн-токенов с contracts/tokens.css v0.2.1.
 
-Зачем. Общей сборки у потребителей нет: apps/web и apps/shelf-finder — отдельные проекты
-Vite, страницы public/legal/ не проходят сборку вовсе, кросс-импорт `../../web/...` ломает
-build одного приложения при отсутствии другого. Механизм синхронизации — копия + ЭТА
-проверка (contracts/tokens.css, раздел «Потребители и сверка»), а не «сверим глазами».
+Зачем именно это. Копий токенов в репозитории больше нет: `apps/shelf-finder/src/tokens.css`
+— это `@import` реализации, `/legal/tokens.css` генерируется из неё плагином Vite. Импорты
+сняли расхождение между потребителями, поэтому сверка «пяти копий» (v0.2) стала бессмысленной
+и была бы худшим видом проверки — зелёной всегда. Осталось ровно три вещи, которые импорт НЕ
+решает, и скрипт стережёт только их:
 
-Проверяются три правила:
-  A. Ни один потребитель не объявляет токен контракта с ДРУГИМ значением и не изобретает
-     собственных `--токенов` в блоке темы.
-  B. Полные копии светлого блока объявляют ВЕСЬ нормативный набор имён.
-  C. Блок, переопределяющий палитру (правило R2 контракта), объявляет все 15 литеральных
-     цветов и `color-scheme` — частичное переопределение молча смешивает две темы.
+  1. КОНТРАКТ ↔ РЕАЛИЗАЦИЯ. `contracts/tokens.css` — отдельный файл, и он расходится с кодом
+     молча: именно так v0.1 разъехался на 17 значений из 27 и месяц никто не заметил.
+  2. КОПИЯ НЕ ЗАВЕЛАСЬ СНОВА. Любой CSS в `apps/**`, объявляющий ≥8 имён контракта мимо
+     реализации, — вернувшаяся копия. За один день 27.09 её воссоздавали дважды, так что
+     правило «импорт, а не копия» без сторожа не держится.
+  3. СХЕМА И ПАЛИТРА НЕ РАЗЪЕЗЖАЮТСЯ (правило R2). Кто объявляет `color-scheme: light`, тот
+     обязан быть исключён из тёмного блока. Ровно этот дефект тимлид снял с боевого стенда
+     27.09: `--warn-bg #2e2820`, `--ok-bg #222a26`, `color-scheme: dark` на светлой странице.
 
 Запуск (без зависимостей, ~0.05 с)::
 
-    python3 contracts/check_tokens.py           # 0 — синхронно, 1 — список расхождений
+    python3 contracts/check_tokens.py           # 0 — порядок, 1 — список расхождений
     python3 contracts/check_tokens.py --root .  # другой корень репозитория
 
-Правка начинается в contracts/tokens.css, потом расходится копиями. Скрипт ничего не
-чинит и ничего не пишет — только печатает отчёт.
+Скрипт ничего не чинит и не пишет — только печатает отчёт.
 """
 
 from __future__ import annotations
@@ -31,36 +33,28 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = "contracts/tokens.css"
+IMPLEMENTATION = "apps/web/src/styles/tokens.css"
 
 LIGHT = ":root"
-DARK_MEDIA = ':root:not([data-theme="light"])'
+DARK_MEDIA = ':root:not([data-theme="light"]):not([data-theme="portal"])'
 DARK_ATTR = ':root[data-theme="dark"]'
 
-# Псевдонимы: var()-ссылки на другие токены. В блок-переопределение темы НЕ входят —
-# следуют за своей целью автоматически (см. правило R2 контракта).
-ALIASES = ("--danger", "--danger-bg")
+# Правило 2: сколько имён контракта в одном файле уже означает «копия», а не точечное
+# переопределение. themes/portal.css законно объявляет 4 (+color-scheme).
+COPY_THRESHOLD = 8
 
-FULL_COPY = "full-copy"        # весь нормативный набор имён светлого блока
-PALETTE_OVERRIDE = "palette"   # все литеральные цвета + color-scheme
-VALUES_ONLY = "values"         # только правило A
-
-# (путь, селектор, режим, тема-эталон)
-CONSUMERS = (
-    ("apps/web/src/styles/tokens.css", LIGHT, FULL_COPY, LIGHT),
-    ("apps/web/src/styles/tokens.css", DARK_MEDIA, PALETTE_OVERRIDE, DARK_MEDIA),
-    ("apps/web/src/styles/tokens.css", DARK_ATTR, PALETTE_OVERRIDE, DARK_ATTR),
-    ("apps/web/public/legal/tokens.css", LIGHT, FULL_COPY, LIGHT),
-    # у legal.css поверх стоит безусловный пин светлой темы, тёмный блок здесь инертен —
-    # полноты не требуем, но значения обязаны совпадать
-    ("apps/web/public/legal/tokens.css", DARK_MEDIA, VALUES_ONLY, DARK_MEDIA),
-    ("apps/web/public/legal/tokens.css", DARK_ATTR, VALUES_ONLY, DARK_ATTR),
-    ("apps/web/public/legal/legal.css", DARK_MEDIA, PALETTE_OVERRIDE, LIGHT),
-    ("apps/web/src/themes/portal.css", ':root[data-theme="portal"]', PALETTE_OVERRIDE, LIGHT),
-    ("apps/shelf-finder/src/tokens.css", LIGHT, FULL_COPY, LIGHT),
+# Правило 3: (файл с пином схемы, имя темы, где искать подтверждение).
+# Тема `light` подтверждается атрибутом в index.html обоих приложений.
+SCHEME_PINS = (
+    ("apps/web/src/themes/portal.css", "portal"),
+    ("apps/web/index.html", "light"),
+    ("apps/shelf-finder/index.html", "light"),
 )
 
 COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 DECL_RE = re.compile(r"(--[\w-]+|color-scheme)\s*:\s*([^;}]+)")
+NOT_THEME_RE = re.compile(r':not\(\[data-theme="([^"]+)"\]\)')
+HTML_THEME_RE = re.compile(r'<html[^>]*\bdata-theme="([^"]+)"')
 
 
 def strip_comments(text: str) -> str:
@@ -69,13 +63,12 @@ def strip_comments(text: str) -> str:
 
 def find_block(text: str, selector: str) -> dict[str, str] | None:
     """Объявления блока с данным селектором. None — блока в файле нет."""
-    needle = selector + " {"
-    start = text.find(needle)
-    if start < 0:
-        needle = selector + "{"
+    for needle in (selector + " {", selector + "{"):
         start = text.find(needle)
-        if start < 0:
-            return None
+        if start >= 0:
+            break
+    else:
+        return None
     open_brace = start + len(needle) - 1
     depth, i = 0, open_brace
     while i < len(text):
@@ -86,8 +79,7 @@ def find_block(text: str, selector: str) -> dict[str, str] | None:
             if depth == 0:
                 break
         i += 1
-    body = text[open_brace + 1 : i]
-    return {name: " ".join(value.split()) for name, value in DECL_RE.findall(body)}
+    return {n: " ".join(v.split()) for n, v in DECL_RE.findall(text[open_brace + 1 : i])}
 
 
 def load(path: Path, selector: str) -> dict[str, str] | None:
@@ -96,74 +88,121 @@ def load(path: Path, selector: str) -> dict[str, str] | None:
     return find_block(strip_comments(path.read_text(encoding="utf-8")), selector)
 
 
+def rule_contract_vs_implementation(root: Path, problems: list[str]) -> dict[str, str]:
+    """Правило 1. Возвращает нормативный светлый набор (нужен правилу 2)."""
+    contract, impl = root / CONTRACT, root / IMPLEMENTATION
+    light: dict[str, str] = {}
+    for selector in (LIGHT, DARK_MEDIA, DARK_ATTR):
+        expected = load(contract, selector)
+        actual = load(impl, selector)
+        if expected is None:
+            problems.append(f"{CONTRACT}: нет блока {selector}")
+            continue
+        if selector == LIGHT:
+            light = expected
+        if actual is None:
+            problems.append(
+                f"{IMPLEMENTATION}: нет блока {selector} — он есть в контракте (правило 1)"
+            )
+            continue
+        for name, value in expected.items():
+            if name not in actual:
+                problems.append(f"{IMPLEMENTATION} [{selector}]: нет {name} (правило 1)")
+            elif actual[name] != value:
+                problems.append(
+                    f"{IMPLEMENTATION} [{selector}]: {name} = {actual[name]}, "
+                    f"контракт = {value} (правило 1)"
+                )
+        for name in actual:
+            if name not in expected:
+                problems.append(
+                    f"{IMPLEMENTATION} [{selector}]: {name} — нет в контракте; "
+                    f"ратифицировать или убрать (правила 1 и R5)"
+                )
+    return light
+
+
+def rule_no_new_copies(root: Path, light: dict[str, str], problems: list[str]) -> int:
+    """Правило 2. Возвращает число просмотренных файлов."""
+    names = set(light)
+    seen = 0
+    for path in sorted((root / "apps").rglob("*.css")):
+        rel = path.relative_to(root).as_posix()
+        if rel == IMPLEMENTATION or "node_modules" in rel or "/dist/" in rel:
+            continue
+        if "/android/" in rel or "/ios/" in rel:  # собранные артефакты Capacitor
+            continue
+        seen += 1
+        declared = {n for n, _ in DECL_RE.findall(strip_comments(path.read_text(encoding="utf-8")))}
+        hits = declared & names
+        if len(hits) >= COPY_THRESHOLD:
+            problems.append(
+                f"{rel}: объявляет {len(hits)} имён контракта — это копия. Подключись "
+                f'импортом `@import "…/{IMPLEMENTATION.split("/")[-1]}"` (правило 2)'
+            )
+    return seen
+
+
+def rule_scheme_matches_palette(root: Path, problems: list[str]) -> None:
+    """Правило 3 (R2): кто пинит color-scheme: light — исключён из тёмного блока."""
+    impl_text = strip_comments((root / IMPLEMENTATION).read_text(encoding="utf-8"))
+    dark_selector = ""
+    for line in impl_text.splitlines():
+        if ":root" in line and ":not(" in line and "{" in line:
+            dark_selector = line
+            break
+    excluded = set(NOT_THEME_RE.findall(dark_selector))
+    if not excluded:
+        problems.append(
+            f"{IMPLEMENTATION}: тёмный блок никого не исключает — любой потребитель с "
+            f"`color-scheme: light` получит тёмную палитру (правило 3/R2)"
+        )
+        return
+    for rel, theme in SCHEME_PINS:
+        path = root / rel
+        if not path.exists():
+            problems.append(f"{rel}: файла нет, а правило 3 на него ссылается")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if rel.endswith(".html"):
+            found = HTML_THEME_RE.search(text)
+            if not found or found.group(1) != theme:
+                problems.append(
+                    f'{rel}: <html> без data-theme="{theme}" — на тёмной ОС приложение '
+                    f"получит тёмную палитру при светлой схеме (правило 3/R2)"
+                )
+                continue
+        elif "color-scheme" not in strip_comments(text):
+            continue  # схему не пинит — правило не про него
+        if theme not in excluded:
+            problems.append(
+                f'{rel}: тема "{theme}" пинит светлую схему, но НЕ исключена из тёмного '
+                f"блока {IMPLEMENTATION} (правило 3/R2)"
+            )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(REPO_ROOT), help="корень репозитория")
     args = parser.parse_args()
     root = Path(args.root).resolve()
 
-    contract_path = root / CONTRACT
-    if not contract_path.exists():
-        print(f"НЕТ КОНТРАКТА: {contract_path}")
+    if not (root / CONTRACT).exists() or not (root / IMPLEMENTATION).exists():
+        print(f"НЕТ ФАЙЛА: {CONTRACT} или {IMPLEMENTATION}")
         return 1
 
-    reference: dict[str, dict[str, str]] = {}
-    for selector in (LIGHT, DARK_MEDIA, DARK_ATTR):
-        block = load(contract_path, selector)
-        if block is None:
-            print(f"НЕТ БЛОКА {selector} в {CONTRACT}")
-            return 1
-        reference[selector] = block
-
-    light = reference[LIGHT]
-    colors = tuple(
-        name
-        for name, value in light.items()
-        if name.startswith("--") and value.startswith("#") and name not in ALIASES
-    )
-    required_override = colors + ("color-scheme",)
-
     problems: list[str] = []
-    checked = 0
-    for rel, selector, mode, theme in CONSUMERS:
-        path = root / rel
-        block = load(path, selector)
-        if block is None:
-            if mode == VALUES_ONLY:
-                continue  # необязательный блок (правило R3) — его отсутствие норма
-            problems.append(f"{rel}: нет блока {selector}")
-            continue
-        checked += 1
-        expected = reference[theme]
-        where = f"{rel} [{selector}]"
+    light = rule_contract_vs_implementation(root, problems)
+    scanned = rule_no_new_copies(root, light, problems)
+    rule_scheme_matches_palette(root, problems)
 
-        for name, value in block.items():
-            if name not in expected:
-                problems.append(f"{where}: {name} — нет в контракте (правило R5)")
-            elif value != expected[name]:
-                problems.append(
-                    f"{where}: {name} = {value}, контракт = {expected[name]} (правило A)"
-                )
-
-        if mode == FULL_COPY:
-            missing = [n for n in expected if n not in block]
-            if missing:
-                problems.append(f"{where}: не хватает {', '.join(missing)} (правило B)")
-        elif mode == PALETTE_OVERRIDE:
-            missing = [n for n in required_override if n not in block]
-            if missing:
-                problems.append(
-                    f"{where}: переопределение палитры неполное, не хватает "
-                    f"{', '.join(missing)} (правило R2/C)"
-                )
-
-    print(f"contracts/tokens.css: {len(light)} объявлений в :root, {len(colors)} литеральных цветов")
-    print(f"проверено блоков: {checked} в {len({c[0] for c in CONSUMERS})} файлах")
+    print(f"контракт: {len(light)} объявлений в :root; реализация — {IMPLEMENTATION}")
+    print(f"просмотрено CSS в apps/ на предмет вернувшихся копий: {scanned}")
     if problems:
         print(f"\nРАСХОЖДЕНИЙ: {len(problems)}")
         for problem in problems:
             print(f"  - {problem}")
-        print("\nПравка начинается в contracts/tokens.css, копии подтягиваются под неё.")
+        print("\nПравка начинается в contracts/tokens.css, следом — реализация.")
         return 1
     print("расхождений нет")
     return 0
