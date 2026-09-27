@@ -113,7 +113,7 @@ def test_slow_ocr_is_abandoned_within_budget_and_returns_cv_only():
     settings = _settings(cv_scan_budget_s=0.3, cv_fusion_text_source="ocr")
     verifier = _SlowVerifier(delay_s=2.0)
     t0 = time.monotonic()
-    label_text, source, ocr_text, _vectors = service_module._fusion_text_and_vectors(
+    label_text, source, ocr_text, _vectors, _no_bottle = service_module._fusion_text_and_vectors(
         b"photo", _FakeFusionIndex(), verifier, settings, t0,
     )
     elapsed = time.monotonic() - t0
@@ -129,10 +129,10 @@ def test_slow_ocr_with_model_answered_returns_model_text_not_blocked(monkeypatch
         vision_llm_url="http://fake-gateway.invalid", vision_llm_key="k",
         vision_llm_timeout_s=2.0,  # модель сама успевает — тестируем именно бюджет OCR
     )
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", lambda *a, **kw: ("ТЕКСТ МОДЕЛИ", None))
     verifier = _SlowVerifier(delay_s=2.0)
     t0 = time.monotonic()
-    label_text, source, ocr_text, _vectors = service_module._fusion_text_and_vectors(
+    label_text, source, ocr_text, _vectors, _no_bottle = service_module._fusion_text_and_vectors(
         b"photo", _FakeFusionIndex(), verifier, settings, t0,
     )
     elapsed = time.monotonic() - t0
@@ -148,7 +148,7 @@ def test_ocr_exception_does_not_propagate_and_logs_warning_without_content(caplo
     роутере)."""
     settings = _settings(cv_scan_budget_s=1.0, cv_fusion_text_source="ocr")
     with caplog.at_level(logging.WARNING, logger="app.cv.service"):
-        label_text, source, ocr_text, _vectors = service_module._fusion_text_and_vectors(
+        label_text, source, ocr_text, _vectors, _no_bottle = service_module._fusion_text_and_vectors(
             b"photo", _FakeFusionIndex(), _RaisingVerifier(), settings, time.monotonic(),
         )
     assert (label_text, source, ocr_text) == ("", "ocr", "")
@@ -320,7 +320,7 @@ def test_fusion_skips_model_after_breaker_opens_without_calling_it(monkeypatch):
         calls.append(1)
         raise service_module.vision_llm.VisionLLMError("boom")
 
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", always_fails)
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", always_fails)
     for _ in range(3):
         service_module._fusion_text_and_vectors(
             b"photo", _FakeFusionIndex(), _SpyLabelVerifier(ocr_text="ocr"), settings, time.monotonic(),
@@ -348,9 +348,9 @@ def test_fusion_model_success_after_failures_does_not_open_breaker(monkeypatch):
         outcome = next(outcomes)
         if outcome == "fail":
             raise service_module.vision_llm.VisionLLMError("boom")
-        return "ТЕКСТ"
+        return "ТЕКСТ", None
 
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", flaky)
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", flaky)
     for _ in range(5):
         service_module._fusion_text_and_vectors(
             b"photo", _FakeFusionIndex(), _SpyLabelVerifier(ocr_text="ocr"), settings, time.monotonic(),
@@ -480,7 +480,7 @@ def _run_choose_scenario(client, app, tmp_path, monkeypatch, *, choose: str) -> 
     idx = _FusionImageIndex([_m("cv-favorite", 0.80), _m("needs-ocr", 0.79)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="Уникальная Винодельня")
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", lambda *a, **kw: ("НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА", None))
     _enable_fusion(
         app, tmp_path, monkeypatch, catalog_rows=_CHOOSE_CATALOG_ROWS,
         cv_fusion_w=0.3, cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",
@@ -527,7 +527,7 @@ def test_scan_photo_result_carries_local_model_agreement_fields_when_they_disagr
     idx = _FusionImageIndex([_m("cv-favorite", 0.80), _m("needs-ocr", 0.79)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="Уникальная Винодельня")
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", lambda *a, **kw: ("НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА", None))
     _enable_fusion(
         app, tmp_path, monkeypatch, catalog_rows=_CHOOSE_CATALOG_ROWS,
         cv_fusion_w=0.3, cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",
@@ -546,7 +546,7 @@ def test_scan_photo_result_agreement_fields_when_both_sides_agree(app, tmp_path,
     idx = _FusionImageIndex([_m("shato-vymysel-cabernet", 0.90), _m("far-rival", 0.30)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="")
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", lambda *a, **kw: ("", None))
     _enable_fusion(app, tmp_path, monkeypatch)
 
     result = _run_photo_scan_direct(app)
@@ -560,7 +560,7 @@ def test_chosen_answer_side_local_uses_ocr_as_text_source(client: TestClient, ap
     idx = _FusionImageIndex([_m("cv-favorite", 0.80), _m("needs-ocr", 0.79)])
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="Уникальная Винодельня")
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА")
+    monkeypatch.setattr(service_module.vision_llm, "read_label_fields_or_raise", lambda *a, **kw: ("НЕИНФОРМАТИВНЫЙ ТЕКСТ ШУМА", None))
     _enable_fusion(
         app, tmp_path, monkeypatch, catalog_rows=_CHOOSE_CATALOG_ROWS,
         cv_fusion_w=0.3, cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",

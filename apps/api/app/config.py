@@ -331,6 +331,34 @@ class Settings:
     cv_fusion_choose: str = field(
         default_factory=lambda: os.environ.get("CV_FUSION_CHOOSE", "merge").strip().lower()
     )
+    # ml-lead/тимлид 27.09 (reports/ml-eng-not-a-bottle.md, находка reports/qa-manual-
+    # final.md п.3: фото здания винодельни давало уверенную карточку без единой
+    # оговорки). Вето по образцу обратного гейта режима «Блюдо» (is_food/is_wine_bottle,
+    # app/dish_recognition.py): когда модель (vlm/vlm_local, см. vision_llm.PROMPT
+    # `bottle_visible`) ПРЯМО говорит "бутылки/этикетки на кадре нет", а НЕ просто
+    # молчит — переводим уже прошедший гейт `confident` кадр в not_in_catalog, тем же
+    # честным исходом, что "нет совпадений вовсе" (best_guess_slug тоже обнуляется,
+    # см. app/cv/service.py::_run_photo_scan_fusion). Дефолт ВКЛЮЧЁН (в отличие от
+    # cv_fusion_merge_model_text/cv_shelf_crop и т.п.) — цена ошибки асимметрична
+    # (см. cv_not_a_bottle_cv_ceiling ниже) и это прямое исправление найденного
+    # регресса демо, не экспериментальный рычаг точности.
+    cv_not_a_bottle_veto: bool = field(
+        default_factory=lambda: _bool_env("CV_NOT_A_BOTTLE_VETO", True)
+    )
+    # Осторожность с ценой ошибки (бриф тимлида, п.2): вето применяется ТОЛЬКО когда
+    # cv_score(top1) < этот потолок — то есть НИКОГДА не переигрывает визуально очень
+    # уверенное совпадение, даже если модель ошиблась. Калибровано на данных (reports/
+    # ml-eng-not-a-bottle.md), не на интуиции: на 62 живых фото каталога (stand-
+    # hack-v22-rich.jsonl, confident=true И top-1 верный) cv_score p75 = 0.875 — порог
+    # 0.88 защищает верхнюю четверть исторически самых уверенных верных совпадений
+    # безусловно. Живой репро находки (кроп здания винодельни из qa-manual-final,
+    # тот же индекс/энкодер) дал cv_score=0.8577 — заметно НИЖЕ 0.88, вето его достаёт
+    # с запасом. CV_FUSION_CV_FLOOR (0.80) — нижняя граница гейта confident; этот
+    # потолок — верхняя граница зоны, где вето вообще рассматривается, независимый
+    # параметр (можно поднять/опустить без изменения самого гейта уверенности).
+    cv_not_a_bottle_cv_ceiling: float = field(
+        default_factory=lambda: float(os.environ.get("CV_NOT_A_BOTTLE_CV_CEILING", "0.88"))
+    )
     # Шлюз VLM. Адрес и ключ — только из окружения (на стенде — секреты GitHub
     # VISION_LLM_URL/VISION_LLM_KEY через infra/ams3/push-release.sh), в репозиторий не
     # попадают. TLS проверяется штатно.

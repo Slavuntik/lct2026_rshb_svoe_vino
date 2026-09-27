@@ -51,10 +51,14 @@ def test_rich_scan_logs_vlm_local_source_when_model_answers(client: TestClient, 
     app.state.image_index = idx
     app.state.label_verifier = _SpyLabelVerifier(ocr_text="")
     # Тимлид 22.09 (расширение брифа scan-budget, п.8): _fusion_text_and_vectors()
-    # теперь зовёт read_label_or_raise() (различает сбой шлюза и честный пустой
-    # ответ для предохранителя _ModelBreaker) — read_label() лишь тонкая обёртка
-    # над ней, подмена должна целиться в реальный вызов.
-    monkeypatch.setattr(service_module.vision_llm, "read_label_or_raise", lambda *a, **kw: "ТЕКСТ МОДЕЛИ, НЕ ЛОГИРОВАТЬ")
+    # теперь зовёт read_label_fields_or_raise() (различает сбой шлюза и честный
+    # пустой ответ для предохранителя _ModelBreaker; 27.09, вето "не бутылка" —
+    # read_label_or_raise()/read_label() лишь тонкие обёртки над ней) — подмена
+    # должна целиться в реальный вызов и вернуть `(текст, bottle_visible)`.
+    monkeypatch.setattr(
+        service_module.vision_llm, "read_label_fields_or_raise",
+        lambda *a, **kw: ("ТЕКСТ МОДЕЛИ, НЕ ЛОГИРОВАТЬ", None),
+    )
     _enable_fusion(
         app, tmp_path, monkeypatch,
         cv_fusion_text_source="vlm_local", vision_llm_local_url="http://fake-local.invalid",

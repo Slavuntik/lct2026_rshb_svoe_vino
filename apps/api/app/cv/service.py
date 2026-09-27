@@ -580,11 +580,32 @@ def _verify_with_budget(
         return None
 
 
+def _no_bottle_signal(bottle_flags: dict[str, bool | None]) -> bool:
+    """ml-lead/тимлид 27.09 (reports/ml-eng-not-a-bottle.md): агрегирует
+    `bottle_visible` ОТВЕТИВШИХ моделей (vlm/vlm_local, см. `vision_llm.
+    read_label_fields_or_raise`) в один сигнал "модель прямо говорит, что
+    бутылки/этикетки на кадре нет". `True` — ТОЛЬКО когда хотя бы одна модель
+    ДАЛА булево значение поля И ни одна из ответивших не сказала `True`
+    (осторожность с ценой ошибки, бриф тимлида п.2: расхождение "vlm говорит
+    нет, vlm_local говорит да" — НЕ сигнал, слишком похоже на ошибку одной из
+    моделей, не на честный кадр без бутылки). Модели, которые не ответили
+    вовсе (таймаут/сбой/предохранитель/не настроены — `None` в словаре),
+    участия не принимают ни за, ни против — тот же принцип, что и остальные
+    поля PROMPT (пустой-но-честный ответ отличается от сбоя)."""
+    votes = [v for v in bottle_flags.values() if v is not None]
+    return bool(votes) and all(v is False for v in votes)
+
+
 def _fusion_text_and_vectors(
     image_bytes: bytes, image_index: ImageIndex, verifier: LabelVerifier, settings: Settings,
     t0: float | None = None,
-) -> tuple[str, str, str, tuple[list[float], list[float]]]:
-    """(текст для слияния, источник, текст OCR, CV-векторы) — всё параллельно.
+) -> tuple[str, str, str, tuple[list[float], list[float]], bool]:
+    """(текст для слияния, источник, текст OCR, CV-векторы, no_bottle_signal) —
+    всё параллельно. `no_bottle_signal` (27.09, вето "не бутылка" — см.
+    `_no_bottle_signal()` выше) — `True`, когда модель(и), реально ответившая
+    в ЭТОМ запросе, прямо сообщила `bottle_visible=false`; вызывающий код
+    (`_run_photo_scan_fusion`) решает, применять ли вето, ПО ДАННЫМ (порог
+    `settings.cv_not_a_bottle_cv_ceiling`), эта функция только несёт сигнал.
 
     PaddleOCR/RapidOCR читается всегда (фолбэк и вход near-dup верификатора). Модели — по
     `CV_FUSION_TEXT_SOURCE`: "vlm" — GPU-сервер (шлюз), "vlm_local" — локальная MLX-модель,
@@ -639,7 +660,7 @@ def _fusion_text_and_vectors(
         and _MODEL_BREAKERS["vlm"].allow(cooldown_s=cooldown_s)
     ):
         readers["vlm"] = _FUSION_MODEL_POOL.submit(
-            vision_llm.read_label_or_raise, image_bytes,
+            vision_llm.read_label_fields_or_raise, image_bytes,
             url=settings.vision_llm_url, key=settings.vision_llm_key, model=settings.vision_llm_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
@@ -648,7 +669,7 @@ def _fusion_text_and_vectors(
         and _MODEL_BREAKERS["vlm_local"].allow(cooldown_s=cooldown_s)
     ):
         readers["vlm_local"] = _FUSION_MODEL_POOL.submit(
-            vision_llm.read_label_or_raise, image_bytes,
+            vision_llm.read_label_fields_or_raise, image_bytes,
             url=settings.vision_llm_local_url, key=None, model=settings.vision_llm_local_model,
             timeout_s=settings.vision_llm_timeout_s, image_size=settings.vision_llm_image_size,
         )
@@ -665,22 +686,25 @@ def _fusion_text_and_vectors(
         ocr_text = ""
 
     got: dict[str, str] = {}
+    bottle_flags: dict[str, bool | None] = {}
     for name, fut in readers.items():
         try:
-            text = fut.result(timeout=max(0.0, model_deadline - time.monotonic()))
+            text, bottle_visible = fut.result(timeout=max(0.0, model_deadline - time.monotonic()))
         except Exception:  # noqa: BLE001 — не успела к дедлайну/сбой потока/HTTP-ошибка шлюза
             _MODEL_BREAKERS[name].record_failure(name=name, fails_threshold=fails_threshold, cooldown_s=cooldown_s)
-            text = ""
+            text, bottle_visible = "", None
         else:
             _MODEL_BREAKERS[name].record_success(name=name)  # пустой, но ЧЕСТНЫЙ ответ — не сбой
+        bottle_flags[name] = bottle_visible
         if text.strip():
             got[name] = text
+    no_bottle_signal = _no_bottle_signal(bottle_flags)
     if not got:
-        return ocr_text, "ocr", ocr_text, vectors
+        return ocr_text, "ocr", ocr_text, vectors, no_bottle_signal
     source = "vlm_both" if len(got) == 2 else next(iter(got))
     model_text = " ".join(got[k] for k in ("vlm", "vlm_local") if k in got)
     label_text = f"{model_text} {ocr_text}".strip() if settings.cv_fusion_merge_model_text else model_text
-    return label_text, source, ocr_text, vectors
+    return label_text, source, ocr_text, vectors, no_bottle_signal
 
 
 def _choose_fusion_result(model_result, local_result, mode: str) -> tuple[object, str]:
@@ -752,7 +776,7 @@ def _run_photo_scan_fusion(
     """
     cv_families, text_fusion, tr = _import_cv_fusion_deps()
 
-    label_text, text_source, ocr_text, vectors = _fusion_text_and_vectors(
+    label_text, text_source, ocr_text, vectors, model_no_bottle = _fusion_text_and_vectors(
         image_bytes, image_index, verifier, settings, t0,
     )
     text_index = _fusion_text_index(str(tr.default_catalog_csv_path()))
@@ -878,6 +902,37 @@ def _run_photo_scan_fusion(
     confident = ranked_top[0].cv_score >= settings.cv_fusion_cv_floor and (
         ocr_verified or chosen_result.gap is None or chosen_result.gap >= settings.cv_fusion_gap_floor
     )
+
+    # ml-lead/тимлид 27.09 (reports/ml-eng-not-a-bottle.md, находка reports/
+    # qa-manual-final.md п.3): вето "не бутылка" — по образцу обратного гейта
+    # режима «Блюдо» (is_food/is_wine_bottle, app/dish_recognition.py), см.
+    # app/config.py::cv_not_a_bottle_veto/cv_not_a_bottle_cv_ceiling. Применяется
+    # ТОЛЬКО когда кадр УЖЕ прошёл гейт `confident` (иначе рич-режим и так честно
+    # хеджирует, см. фото моря в разборе находки) И модель, реально ответившая
+    # в этом запросе, прямо сказала "бутылки/этикетки нет" (`model_no_bottle`,
+    # НЕ молчание/таймаут шлюза — см. `_no_bottle_signal()`) И визуальный скор
+    # top1 НИЖЕ калиброванного потолка (осторожность с ценой ошибки, бриф п.2:
+    # очень уверенное CV-совпадение НИКОГДА не переигрывается словом модели).
+    # Эффект — тот же честный исход, что "нет совпадений вовсе" (`best_guess_slug`
+    # тоже обнуляется, не только `slug`): flat-путь /v1/eval/predict отдаёт
+    # пустой slug ровно так, как уже предусмотрено контрактом для not_in_catalog
+    # (contracts/image-scan.md, "flat ВСЕГДА отдаёт лучший доступный slug" — но
+    # тут его просто нет, кадр не про вино). Формат ответа не меняется ни одним
+    # новым полем.
+    not_a_bottle_veto = (
+        confident
+        and model_no_bottle
+        and settings.cv_not_a_bottle_veto
+        and ranked_top[0].cv_score < settings.cv_not_a_bottle_cv_ceiling
+    )
+    if not_a_bottle_veto:
+        confident = False
+        best_guess_slug = None
+        logger.info(
+            "cv_fusion: вето 'не бутылка' — модель сообщила bottle_visible=false, "
+            "cv_score=%.4f < potolok=%.2f, кадр честно not_in_catalog",
+            ranked_top[0].cv_score, settings.cv_not_a_bottle_cv_ceiling,
+        )
 
     card = build_wine_card(retriever, chosen_slug) if confident else None
     similar: list[dict] = []

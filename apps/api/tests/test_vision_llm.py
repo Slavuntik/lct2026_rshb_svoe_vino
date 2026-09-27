@@ -8,6 +8,7 @@ import io
 import json
 import time
 
+import pytest
 from PIL import Image
 from starlette.testclient import TestClient
 
@@ -125,6 +126,96 @@ def test_read_label_broken_image_is_empty_without_network(monkeypatch):
     assert vision_llm.read_label(b"not an image", url="https://gw", key="k", model="m", timeout_s=1) == ""
 
 
+# --------------------------------------------------------------------------------------
+# read_label_fields_or_raise() — вето "не бутылка" (27.09, reports/ml-eng-not-a-bottle.md):
+# поле `bottle_visible` отдельно от текста этикетки (FIELDS его не видит, см. PROMPT).
+# read_label_or_raise() — тонкая обёртка, отбрасывающая bottle_visible (текст бит-в-бит).
+# --------------------------------------------------------------------------------------
+
+
+def test_prompt_asks_for_bottle_visible_field():
+    """Страховка от случайного отката промпта — поле реально запрашивается."""
+    assert "bottle_visible" in vision_llm.PROMPT
+
+
+def test_read_label_fields_bottle_visible_false_with_empty_fields(monkeypatch):
+    def fake_urlopen(req, timeout, context):
+        return _Resp(_chat_payload(
+            '{"bottle_visible": false, "winery": "", "name": "", "grapes": "", '
+            '"color": "", "sugar": "", "vintage": ""}'
+        ))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", fake_urlopen)
+    text, bottle_visible = vision_llm.read_label_fields_or_raise(
+        _jpeg(), url="https://gw.example/v1", key="k", model="m", timeout_s=1,
+    )
+    assert text == ""
+    assert bottle_visible is False
+
+
+def test_read_label_fields_bottle_visible_true_with_real_text(monkeypatch):
+    def fake_urlopen(req, timeout, context):
+        return _Resp(_chat_payload('{"bottle_visible": true, "winery": "ТАБИЯ", "name": "Резерв"}'))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", fake_urlopen)
+    text, bottle_visible = vision_llm.read_label_fields_or_raise(
+        _jpeg(), url="https://gw.example/v1", key="k", model="m", timeout_s=1,
+    )
+    assert text == "ТАБИЯ Резерв"
+    assert bottle_visible is True
+
+
+def test_read_label_fields_missing_field_is_none_not_false(monkeypatch):
+    """Старый формат ответа (без bottle_visible вовсе, напр. модель другой
+    версии) -> None, НЕ False — вызывающий код не должен голосовать "нет
+    бутылки" за отсутствие мнения (см. app/cv/service.py::_no_bottle_signal)."""
+    def fake_urlopen(req, timeout, context):
+        return _Resp(_chat_payload('{"winery": "ТАБИЯ"}'))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", fake_urlopen)
+    text, bottle_visible = vision_llm.read_label_fields_or_raise(
+        _jpeg(), url="https://gw.example/v1", key="k", model="m", timeout_s=1,
+    )
+    assert text == "ТАБИЯ"
+    assert bottle_visible is None
+
+
+def test_read_label_fields_non_bool_bottle_visible_is_none(monkeypatch):
+    """Модель вернула не-булево значение (напр. строку) -> не доверяем, None."""
+    def fake_urlopen(req, timeout, context):
+        return _Resp(_chat_payload('{"bottle_visible": "да", "winery": "ТАБИЯ"}'))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", fake_urlopen)
+    _text, bottle_visible = vision_llm.read_label_fields_or_raise(
+        _jpeg(), url="https://gw.example/v1", key="k", model="m", timeout_s=1,
+    )
+    assert bottle_visible is None
+
+
+def test_read_label_fields_without_url_touches_no_network(monkeypatch):
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", lambda *a, **k: (_ for _ in ()).throw(AssertionError))
+    assert vision_llm.read_label_fields_or_raise(_jpeg(), url=None, key="k", model="m", timeout_s=1) == ("", None)
+
+
+def test_read_label_fields_http_error_raises_vision_llm_error(monkeypatch):
+    def http_error(*a, **k):
+        raise vision_llm.urllib.error.HTTPError("u", 500, "boom", {}, io.BytesIO(b""))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", http_error)
+    with pytest.raises(vision_llm.VisionLLMError):
+        vision_llm.read_label_fields_or_raise(_jpeg(), url="https://gw", key="k", model="m", timeout_s=1)
+
+
+def test_read_label_or_raise_is_a_thin_wrapper_discarding_bottle_visible(monkeypatch):
+    """read_label_or_raise() — байт-в-байт старое поведение (текст, без флага)."""
+    def fake_urlopen(req, timeout, context):
+        return _Resp(_chat_payload('{"bottle_visible": false, "winery": "ТАБИЯ"}'))
+
+    monkeypatch.setattr(vision_llm.urllib.request, "urlopen", fake_urlopen)
+    text = vision_llm.read_label_or_raise(_jpeg(), url="https://gw.example/v1", key="k", model="m", timeout_s=1)
+    assert text == "ТАБИЯ"
+
+
 def test_settings_repr_never_shows_the_gateway_key(monkeypatch):
     monkeypatch.setenv("VISION_LLM_KEY", "sk-very-secret")
     from app.config import Settings
@@ -163,12 +254,16 @@ def _fake_readers(monkeypatch, *, remote_text="", local_text="", delay_s=0.0):
         calls.append(url)
         if delay_s:
             time.sleep(delay_s)
-        return local_text if url.startswith("http://127.0.0.1") else remote_text
+        text = local_text if url.startswith("http://127.0.0.1") else remote_text
+        return text, None
 
     # Тимлид 22.09 (расширение брифа scan-budget, п.8): _fusion_text_and_vectors()
-    # зовёт read_label_or_raise() (различает сбой шлюза и честный пустой ответ для
-    # предохранителя _ModelBreaker), read_label() — тонкая обёртка над ней.
-    monkeypatch.setattr(vision_llm, "read_label_or_raise", fake)
+    # зовёт read_label_fields_or_raise() (различает сбой шлюза и честный пустой
+    # ответ для предохранителя _ModelBreaker), read_label_or_raise()/read_label() —
+    # тонкие обёртки над ней (27.09, вето "не бутылка" — `bottle_visible=None`
+    # здесь означает "модель про бутылку не высказалась", тот же нейтральный
+    # результат, что и у ответа без этого поля — вето не срабатывает).
+    monkeypatch.setattr(vision_llm, "read_label_fields_or_raise", fake)
     return calls
 
 

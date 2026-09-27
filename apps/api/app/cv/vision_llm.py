@@ -30,11 +30,24 @@ logger = logging.getLogger(__name__)
 # доли ширины/высоты кадра x0, y0, x1, y1 — те же, что в замере.
 CENTER_CROP = (0.15, 0.05, 0.85, 0.98)
 FIELDS = ("winery", "name", "grapes", "color", "sugar", "vintage")
+# ml-lead/тимлид 27.09 (reports/ml-eng-not-a-bottle.md, находка reports/qa-manual-final.md
+# п.3): добавлено ОДНО поле `bottle_visible` — тот же приём, что `is_food`/`is_wine_bottle`
+# в app/dish_recognition.py::_prompt() (обратный гейт режима «Блюдо»), только наоборот —
+# здесь дефолтное ожидание "это бутылка", а поле ловит явный отказ модели ("bottle_visible":
+# false), когда на кадре нет вообще ни бутылки, ни этикетки (здание, пейзаж и т.п.). Поле
+# НЕ входит в FIELDS (parse_fields()/fields_to_text() его не видят и не подмешивают "true"/
+# "false" в текст этикетки для слияния) — читается ОТДЕЛЬНО, см. read_label_fields_or_raise().
+# Проверено вручную на живом шлюзе (qwen3.8-27b) на кропах здания/моря из qa-manual-final и
+# на двух настоящих бутылках каталога (95.63.../1.73... — оба читают этикетку как раньше,
+# bottle_visible=true) — формулировка не меняет чтение полей у настоящих бутылок.
 PROMPT = (
-    "На фото винные бутылки. Смотри только на центральную бутылку, которая видна целиком. "
-    "Прочитай этикетку и ответь строго одним JSON без пояснений: "
-    '{"winery": "", "name": "", "grapes": "", "color": "", "sugar": "", "vintage": ""}. '
-    "Русские надписи — кириллицей, латинские — латиницей. Чего не видно — пустая строка."
+    "На фото может быть винная бутылка. Смотри только на центральную бутылку, если она видна "
+    "целиком. Ответь строго одним JSON без пояснений: "
+    '{"bottle_visible": true, "winery": "", "name": "", "grapes": "", "color": "", "sugar": "", "vintage": ""}. '
+    "bottle_visible — false, если на фото нет винной бутылки и этикетки вовсе (здание, пейзаж, "
+    "человек, еда, другой предмет) — тогда остальные поля пустые. Если бутылка есть, но текст "
+    "этикетки не виден — bottle_visible true, поля пустые. Прочитай этикетку. Русские надписи — "
+    "кириллицей, латинские — латиницей. Чего не видно — пустая строка."
 )
 _JSON_RE = re.compile(r"\{.*\}", re.S)
 # Тимлид 22.09 (расширение брифа scan-budget, п.7): читаем тело ответа ЧАНКАМИ,
@@ -150,7 +163,7 @@ def _read_response_within_deadline(resp, deadline: float) -> bytes:
     return b"".join(chunks)
 
 
-def read_label_or_raise(
+def read_label_fields_or_raise(
     image_bytes: bytes,
     *,
     url: str | None,
@@ -158,22 +171,31 @@ def read_label_or_raise(
     model: str,
     timeout_s: float,
     image_size: int = 1024,
-) -> str:
-    """То же, что `read_label()` ниже, но РАЗЛИЧАЕТ сбой шлюза (сеть/HTTP/таймаут/
-    формат — бросает `VisionLLMError`) и легальный пустой ответ модели (""
-    остаётся "" — модель ответила, просто не увидела текста). Отсутствующий
-    `url` — тоже НЕ сбой (конфигурация, не CV_FUSION_TEXT_SOURCE=vlm*) — как и
-    раньше, просто "". Нужен предохранителю `app/cv/service.py::_ModelBreaker`
-    (тимлид 22.09, расширение брифа scan-budget, п.8): считать пустые-но-честные
-    ответы как "сбой" открывало бы предохранитель на серии нечитаемых фото, а не
-    на реально сломанном шлюзе. `key` необязателен (локальный сервер модели без
-    авторизации). Ключ шлюза не логируется и не несётся в исключении."""
+) -> tuple[str, bool | None]:
+    """`(текст этикетки, bottle_visible)` — ml-lead/тимлид 27.09 (reports/ml-eng-
+    not-a-bottle.md, вето скана по находке reports/qa-manual-final.md п.3).
+    `bottle_visible` — `True`/`False`, если модель вернула булево поле PROMPT
+    (см. его докстринг), `None` — поле отсутствует/не булево (старый формат
+    ответа, нечитаемый JSON, отсутствующий `url`) — вызывающий код (`app/cv/
+    service.py::_fusion_text_and_vectors`) тогда честно НЕ учитывает эту модель
+    в решении о вето (не голосует ни за, ни против), тот же принцип осторожности,
+    что и у остальных полей PROMPT.
+
+    Текст (первый элемент) — БИТ В БИТ то же значение, что вернул бы старый
+    `read_label_or_raise()` на тот же ответ модели: тот же `FIELDS`-фильтр,
+    просто применённый здесь напрямую (`parse_json_object()` + ручной словарь)
+    вместо `parse_fields()` — единственная причина держать оба пути в одной
+    функции: `bottle_visible` не входит в `FIELDS` и `parse_fields()` его
+    отбросил бы вместе с шумом.
+
+    Раскрывает те же исключения/пустые ответы, что и `read_label_or_raise()`
+    (см. её докстринг — теперь тонкая обёртка над этой функцией)."""
     if not url:
-        return ""
+        return "", None
     try:
         img = prepare_image(image_bytes, image_size)
     except Exception:  # noqa: BLE001 — битые байты: не сбой шлюза, пусть CV/OCR-путь решает сам
-        return ""
+        return "", None
     body = {
         "model": model,
         "messages": [{"role": "user", "content": [
@@ -200,7 +222,38 @@ def read_label_or_raise(
     except Exception as exc:  # noqa: BLE001 — сеть/таймаут/формат: фолбэк на OCR
         logger.warning("vision_llm: %s — фолбэк на OCR", type(exc).__name__)
         raise VisionLLMError(type(exc).__name__) from exc
-    return fields_to_text(parse_fields(content))
+    data = parse_json_object(content) or {}
+    text = fields_to_text({k: str(data.get(k) or "").strip() for k in FIELDS})
+    raw_bottle_visible = data.get("bottle_visible")
+    bottle_visible = raw_bottle_visible if isinstance(raw_bottle_visible, bool) else None
+    return text, bottle_visible
+
+
+def read_label_or_raise(
+    image_bytes: bytes,
+    *,
+    url: str | None,
+    key: str | None,
+    model: str,
+    timeout_s: float,
+    image_size: int = 1024,
+) -> str:
+    """То же, что `read_label()` ниже, но РАЗЛИЧАЕТ сбой шлюза (сеть/HTTP/таймаут/
+    формат — бросает `VisionLLMError`) и легальный пустой ответ модели (""
+    остаётся "" — модель ответила, просто не увидела текста). Отсутствующий
+    `url` — тоже НЕ сбой (конфигурация, не CV_FUSION_TEXT_SOURCE=vlm*) — как и
+    раньше, просто "". Нужен предохранителю `app/cv/service.py::_ModelBreaker`
+    (тимлид 22.09, расширение брифа scan-budget, п.8): считать пустые-но-честные
+    ответы как "сбой" открывало бы предохранитель на серии нечитаемых фото, а не
+    на реально сломанном шлюзе. `key` необязателен (локальный сервер модели без
+    авторизации). Ключ шлюза не логируется и не несётся в исключении.
+
+    Тонкая обёртка над `read_label_fields_or_raise()` (27.09, вето "не бутылка") —
+    отбрасывает `bottle_visible`, текст БИТ В БИТ как раньше (см. её докстринг)."""
+    text, _bottle_visible = read_label_fields_or_raise(
+        image_bytes, url=url, key=key, model=model, timeout_s=timeout_s, image_size=image_size,
+    )
+    return text
 
 
 def read_label(
