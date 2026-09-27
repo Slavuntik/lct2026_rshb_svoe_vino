@@ -1,0 +1,95 @@
+name: Deploy hack stand (cpulab)
+
+# Второй хак-стенд сканера (8 vCPU/15 ГБ, без VPN-ограничений ams3) — задание Вячеслава
+# 27.09, живёт ПАРАЛЛЕЛЬНО infra/ams3/deploy-hack-ams3.yml, пока новый стенд не проверен
+# и не станет боевым. Тег hack-v* закреплён за ams3 — этот workflow слушает СВОЙ префикс
+# hack-cpulab-v* (тот же приём, что deploy-hack-yc.yml для линии Yandex Cloud), иначе один
+# тег катил бы оба стенда разом. Код и веб — infra/cpulab/push-release.sh (git-archive +
+# готовая сборка веба), данные/модели — infra/cpulab/sync-data.sh (ручной запуск с Mac,
+# не отсюда — тот же принцип, что у ams3). Процедура с нуля — infra/cpulab/README.md.
+#
+# Секреты репозитория: CPULAB_HOST, CPULAB_SSH_KEY (приватный ключ, тот же ~/.ssh/cpu_lab,
+# которым сейчас пользуется тимлид/девопс вручную), CPULAB_KNOWN_HOSTS.
+# необязательные VISION_LLM_URL/VISION_LLM_KEY/GIGACHAT_AUTH_KEY — как в deploy-hack-ams3.yml,
+# на практике для cpulab секреты переносятся ОДНИМ РАЗОМ с ams3 (README, «Секреты»), а не
+# через этот workflow — переменные здесь только для будущей ротации именно на этом стенде.
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Пропустить тесты (аварийный выкат)"
+        type: boolean
+        default: false
+  push:
+    tags: ["hack-cpulab-v*"]
+
+concurrency:
+  group: deploy-hack-cpulab
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          HOST: ${{ secrets.CPULAB_HOST }}
+          KEY: ${{ secrets.CPULAB_SSH_KEY }}
+          KNOWN: ${{ secrets.CPULAB_KNOWN_HOSTS }}
+        run: |
+          if [ -n "$HOST" ] && [ -n "$KEY" ] && [ -n "$KNOWN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Секреты CPULAB_HOST / CPULAB_SSH_KEY / CPULAB_KNOWN_HOSTS не заданы — деплой пропущен"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  tests:
+    needs: guard
+    if: needs.guard.outputs.ready == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.skip_tests)
+    uses: ./.github/workflows/ci.yml
+    with:
+      skip_optional: true
+
+  deploy:
+    needs: [guard, tests]
+    if: always() && needs.guard.outputs.ready == 'true' && (needs.tests.result == 'success' || needs.tests.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Сборка веба
+        working-directory: apps/web
+        env:
+          VITE_API_MODE: real
+          VITE_THEME: portal
+        run: npm ci && npm run build
+
+      - name: SSH-ключ CI
+        env:
+          KEY: ${{ secrets.CPULAB_SSH_KEY }}
+          KNOWN: ${{ secrets.CPULAB_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/cpulab_ci && chmod 600 ~/.ssh/cpulab_ci
+          printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+
+      - name: Выкат и healthz-гейт
+        env:
+          HOST: ${{ secrets.CPULAB_HOST }}
+          GIGACHAT_AUTH_KEY: ${{ secrets.GIGACHAT_AUTH_KEY }}
+          VISION_LLM_URL: ${{ secrets.VISION_LLM_URL }}
+          VISION_LLM_KEY: ${{ secrets.VISION_LLM_KEY }}
+        run: bash infra/cpulab/push-release.sh "$HOST" ~/.ssh/cpulab_ci

@@ -11,8 +11,9 @@
 #                PUSH_ONLY=1 — залить без рестарта. Перед запуском:
 #                cd apps/web && VITE_API_MODE=real VITE_THEME=portal npm run build
 set -euo pipefail
-HOST="${1:-46.243.211.32}"
-KEY="${2:-$HOME/.ssh/cpu_lab}"
+. "$(cd "$(dirname "$0")" && pwd)/target.env"
+HOST="${1:-$CPULAB_HOST}"
+KEY="${2:-$CPULAB_KEY}"
 REF="${DEPLOY_REF:-HEAD}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-cpulab-%r@%h -o ControlPersist=120"

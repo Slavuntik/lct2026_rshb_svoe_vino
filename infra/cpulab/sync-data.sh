@@ -11,21 +11,22 @@
 #   sync-data.sh rollback-rag <host> [ключ]               — откат RAG_DATA_DIR (тумблер туда-обратно)
 #   DRY_RUN=1 перед любой формой — ничего не меняет, только печатает.
 set -euo pipefail
+. "$(cd "$(dirname "$0")" && pwd)/target.env"
 
 ACTION="${1:-}"
 case "$ACTION" in
   switch-rag)
     HOST="${2:?укажи хост}"
     RAG_INDEX_DST="${3:?укажи каталог на сервере, напр. rag-20260922}"
-    KEY="${4:-$HOME/.ssh/cpu_lab}"
+    KEY="${4:-$CPULAB_KEY}"
     ;;
   rollback-rag)
     HOST="${2:?укажи хост}"
-    KEY="${3:-$HOME/.ssh/cpu_lab}"
+    KEY="${3:-$CPULAB_KEY}"
     ;;
   *)
-    HOST="${ACTION:-46.243.211.32}"
-    KEY="${2:-$HOME/.ssh/cpu_lab}"
+    HOST="${ACTION:-$CPULAB_HOST}"
+    KEY="${2:-$CPULAB_KEY}"
     ;;
 esac
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

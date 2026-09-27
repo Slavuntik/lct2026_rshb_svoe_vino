@@ -6,8 +6,9 @@
 #
 # Использование: pull-scans.sh [host] [ключ]
 set -euo pipefail
-HOST="${1:-46.243.211.32}"
-KEY="${2:-$HOME/.ssh/cpu_lab}"
+. "$(cd "$(dirname "$0")" && pwd)/target.env"
+HOST="${1:-$CPULAB_HOST}"
+KEY="${2:-$CPULAB_KEY}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DEST="${CASE_DATA_DIR:-$ROOT/../case-data}/stand-scans"
 mkdir -p "$DEST"
