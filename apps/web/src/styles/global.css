@@ -671,36 +671,211 @@ button.badge {
   font-size: var(--fs-caption);
 }
 
-/* --- навигация /app --- */
+/* --- навигация /app (шапка + сэндвич-меню, задача тимлида 27.09,
+   agents/frontend-nav-transfer.md — перенос из design/ui-prototype/web/src) --- */
 
 .app-shell {
   min-height: 100%;
-  padding-bottom: 64px;
+  padding-bottom: 96px;
 }
 
-.app-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--bg);
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  /* Тот же max-width/центровка, что у .container ниже — на десктопе плашка шапки не
+     растягивается на всю ширину экрана шире колонки контента под ней. */
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.app-header__pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   background: var(--card);
-  border-top: 1px solid var(--line);
-  padding: var(--space-2) var(--space-4);
-  justify-content: space-around;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%), 0 6px 16px rgb(0 0 0 / 5%);
 }
 
-.app-nav__link {
-  color: var(--muted);
-  text-decoration: none;
-  font-size: var(--fs-small);
-  padding: var(--space-1) var(--space-2);
+.app-header__brand {
+  display: block;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.app-header__brand img {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.app-header__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.app-header__icon-btn:hover {
+  background: var(--accent-soft);
+}
+
+.app-header__menu-btn {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.app-header__menu-btn:hover {
+  opacity: 0.92;
+}
+
+/* --- выезжающее меню разделов --- */
+
+.nav-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(43 34 38 / 45%);
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  animation: nav-menu-fade-in 0.2s ease-out;
+}
+
+.nav-menu__panel {
+  background: var(--card);
+  width: min(320px, 86vw);
+  height: 100%;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: -12px 0 32px rgb(0 0 0 / 12%);
+  animation: nav-menu-slide-in 0.22s ease-out;
+  overflow-y: auto;
+}
+
+.nav-menu__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-menu__head h2 {
+  margin: 0;
+  font-size: var(--fs-h2);
+}
+
+.nav-menu__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  border: 0;
+  background: var(--accent-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.nav-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nav-menu__link {
+  display: block;
+  padding: var(--space-3);
   border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--fs-body);
 }
 
-.app-nav__link--active {
+.nav-menu__link:hover {
+  background: var(--accent-soft);
+}
+
+.nav-menu__link--active {
+  background: var(--accent-soft);
   color: var(--accent);
   font-weight: 500;
-  background: var(--accent-soft);
+}
+
+.nav-menu__legal {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nav-menu__legal a {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+@keyframes nav-menu-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nav-menu-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu__backdrop,
+  .nav-menu__panel {
+    animation: none;
+  }
+}
+
+/* --- плавающий ярлык «Скан»: не вторая навигация, а ускоритель одного действия
+   (обоснование — reports/frontend-nav-transfer.md, раздел про нижнюю панель) --- */
+
+.scan-shortcut {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 18%);
+  min-height: 44px;
 }
 
 .shelf-frame {
@@ -713,13 +888,12 @@ button.badge {
   border-radius: var(--radius);
 }
 
-@media (max-width: 420px) {
-  .app-nav { padding-inline: 4px; gap: 0; }
-  .app-nav__link { padding-inline: 6px; }
-}
-
 @media (max-width: 640px) {
   .container {
     padding: 0 var(--space-3);
+  }
+
+  .nav-menu__panel {
+    width: min(300px, 88vw);
   }
 }

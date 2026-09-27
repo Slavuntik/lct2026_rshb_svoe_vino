@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { resetShelfAvailabilityForTests, SHELF_HEALTH_PATH } from "../../lib/shelfAvailability";
@@ -22,6 +23,13 @@ function mockShelfServiceHealthy() {
   );
 }
 
+// Задача тимлида 27.09 (agents/frontend-nav-transfer.md): «Витрина» переехала из всегда
+// видимой нижней панели в сэндвич-меню шапки — пункт появляется только внутри открытой
+// панели, поэтому тесты навигации теперь сперва открывают меню кнопкой из TopHeader.
+function openNavMenu() {
+  return userEvent.click(screen.getByRole("button", { name: "Открыть меню разделов" }));
+}
+
 describe("Shelf navigation", () => {
   it("keeps the shelf behind onboarding", async () => {
     storage.setOnboardingComplete(false);
@@ -37,6 +45,7 @@ describe("Shelf navigation", () => {
       "src",
       "/shelf-ui/?engine=server&embedded=1",
     );
+    await openNavMenu();
     expect(await screen.findByRole("link", { name: "Витрина" })).toHaveAttribute("href", "/app/shelf");
     expect(screen.getByRole("link", { name: "Сомелье" })).toHaveAttribute("href", "/app/chat");
     storage.setOnboardingComplete(false);
@@ -62,6 +71,11 @@ describe("Shelf navigation", () => {
       await screen.findByText("Раздел витрины доступен, когда запущен сервис распознавания витрин"),
     ).toBeInTheDocument();
     expect(screen.queryByTitle("Поиск вин на витрине")).not.toBeInTheDocument();
+    await openNavMenu();
+    // Пункт «Витрина» честно скрыт (не задизейблен — его просто нет в DOM), пока живой
+    // health-чек не подтвердит сервис: сверяем, что меню открылось (есть другие пункты),
+    // а не то, что мы забыли его открыть.
+    expect(screen.getByRole("link", { name: "Сомелье" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Витрина" })).not.toBeInTheDocument();
     storage.setOnboardingComplete(false);
   });

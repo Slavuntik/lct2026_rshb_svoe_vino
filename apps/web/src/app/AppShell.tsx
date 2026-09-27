@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { useI18n } from "../i18n";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useShelfAvailability } from "../lib/shelfAvailability";
 import { storage } from "../lib/storage";
+import { AppNav } from "./nav/AppNav";
 import { ChatScreen } from "./chat/ChatScreen";
 import { MetricsScreen } from "./metrics/MetricsScreen";
 import { OnboardingScreen } from "./onboarding/OnboardingScreen";
@@ -18,30 +18,6 @@ function RequireOnboarding({ children }: { children: ReactNode }) {
     return <Navigate to="/app/onboarding" replace />;
   }
   return <>{children}</>;
-}
-
-function BottomNav({ shelfAvailable }: { shelfAvailable: boolean }) {
-  const { t } = useI18n();
-  const items: Array<{ to: string; label: string }> = [
-    { to: "/app/scan", label: t("nav.scan") },
-    ...(shelfAvailable ? [{ to: "/app/shelf", label: t("nav.shelf") }] : []),
-    { to: "/app/chat", label: t("nav.chat") },
-    { to: "/app/taste", label: t("nav.taste") },
-    { to: "/app/profile", label: t("nav.profile") },
-  ];
-  return (
-    <nav className="app-nav row" aria-label={t("common.appName")}>
-      {items.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          className={({ isActive }) => `app-nav__link${isActive ? " app-nav__link--active" : ""}`}
-        >
-          {item.label}
-        </NavLink>
-      ))}
-    </nav>
-  );
 }
 
 /**
@@ -60,6 +36,7 @@ export default function AppShell() {
 
   return (
     <div className="app-shell">
+      {showNav && <AppNav shelfAvailable={shelfAvailable} />}
       <div className="container">
         <Routes>
           <Route path="onboarding" element={<OnboardingScreen />} />
@@ -112,14 +89,14 @@ export default function AppShell() {
             }
           />
           {/* v0.4.10: метрики распознавания — числа последнего прогона оценки. Экран намеренно
-              вне нижней навигации: она рассчитана на шесть пользовательских разделов, а это
-              страница для демонстрации и проверки, доступная по прямой ссылке /app/metrics. */}
+              вне меню разделов (app/nav/NavMenu.tsx): оно рассчитано на пользовательские
+              разделы, а это страница для демонстрации и проверки, доступная по прямой ссылке
+              /app/metrics. */}
           <Route path="metrics" element={<MetricsScreen />} />
           <Route index element={<Navigate to={storage.isOnboardingComplete() ? "scan" : "onboarding"} replace />} />
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
       </div>
-      {showNav && <BottomNav shelfAvailable={shelfAvailable} />}
     </div>
   );
 }

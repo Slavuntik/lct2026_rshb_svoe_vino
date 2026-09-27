@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { WineCardContent } from "../../components/WineCardContent";
 import { WineImage } from "../../components/WineImage";
 import { useI18n, type DictionaryPath } from "../../i18n";
@@ -203,6 +203,7 @@ async function resolveTasteAnalogs(source: WineSource) {
 export function ScanScreen() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // --- режим: бутылка (по умолчанию) | блюдо ---
   const [scanMode, setScanMode] = useState<ScanMode>("bottle");
@@ -223,6 +224,18 @@ export function ScanScreen() {
   const [textError, setTextError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "resolving" | "error">("idle");
   const [outcome, setOutcome] = useState<ResolveOutcome>(null);
+  const textSearchRef = useRef<HTMLTextAreaElement>(null);
+
+  // Иконка поиска в шапке (app/nav/TopHeader.tsx) ведёт сюда через navigate("/app/scan#scan-
+  // text-search") — задача тимлида 27.09, п.(3). Реагируем на location.hash, а не только на
+  // монтаж: с этого экрана уже можно быть, повторный клик по иконке поиска не размонтирует
+  // ScanScreen, а react-router всё равно даёт новый location.key на каждый navigate(), даже
+  // если итоговый путь+хэш совпадают с текущими — этим и ловим повторный клик.
+  useEffect(() => {
+    if (location.hash === "#scan-text-search") {
+      textSearchRef.current?.focus();
+    }
+  }, [location.hash, location.key]);
 
   // --- «Что подать» по фото блюда (задача тимлида 22.09) ---
   // loadingPhoto/loadingCategory разведены задачей тимлида 23.09 (qa-manual-hack-v16.md §2):
@@ -757,6 +770,8 @@ export function ScanScreen() {
           <label className="field">
             <span className="field__label">{t("scan.textLabel")}</span>
             <textarea
+              id="scan-text-search"
+              ref={textSearchRef}
               className="field__textarea"
               value={text}
               onChange={(event) => setText(event.target.value)}
