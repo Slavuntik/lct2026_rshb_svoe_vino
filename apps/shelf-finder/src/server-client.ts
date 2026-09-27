@@ -17,6 +17,7 @@ export class ServerClient {
   private generation = 0;
   private wineIds = new Set<string>();
   private catalogVersion = '';
+  private scanTimeoutMs = 45000;
   constructor(private base = '/v1/shelf') { this.base = base.replace(/\/$/, ''); }
   private emit(data: unknown) { this.onmessage?.({ data } as MessageEvent); }
   private async json(path: string, options: RequestInit, signal: AbortSignal) {
@@ -39,11 +40,12 @@ export class ServerClient {
   private async run(message: Message) {
     this.active?.abort(); const controller = new AbortController(); this.active = controller;
     const generation = ++this.generation; this.currentRequest = message.requestId;
-    const timer = setTimeout(() => controller.abort(), 45_000);
+    const timer = setTimeout(() => controller.abort(), message.type === 'scan' ? this.scanTimeoutMs : 45_000);
     try {
       if (message.type === 'init') {
         const health = await this.json('/health', {}, controller.signal);
         if (!health?.ready) throw new Error('Сервер ещё не готов');
+        if (Number.isInteger(health.scanTimeoutSeconds) && health.scanTimeoutSeconds >= 15 && health.scanTimeoutSeconds <= 600) this.scanTimeoutMs = health.scanTimeoutSeconds * 1000;
         const remote = await this.json('/catalog', {}, controller.signal);
         if (typeof remote.catalogVersion !== 'string' || !Array.isArray(remote.wines)) throw new Error('Неверный ответ каталога');
         this.catalogVersion = remote.catalogVersion;
@@ -71,7 +73,7 @@ export class ServerClient {
       }
     } catch (error) {
       message.bitmap?.close();
-      if (generation === this.generation) this.emit({ type: 'error', requestId: message.requestId, message: controller.signal.aborted ? 'Сервер не ответил за 45 секунд. Повторите попытку.' : error instanceof Error ? error.message : String(error) });
+      if (generation === this.generation) this.emit({ type: 'error', requestId: message.requestId, message: controller.signal.aborted ? `Сервер не ответил за ${message.type === 'scan' ? this.scanTimeoutMs / 1000 : 45} секунд. Повторите попытку.` : error instanceof Error ? error.message : String(error) });
     } finally { clearTimeout(timer); }
   }
   terminate() { this.generation++; this.active?.abort(); }

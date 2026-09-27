@@ -22,12 +22,13 @@ class SemanticRetriever:
             ):
                 raise ValueError("Invalid semantic asset")
         self.device = device
+        self.dtype = torch.float32 if device == "cpu" else torch.float16
         self.processor = AutoImageProcessor.from_pretrained(
             directory / "encoder", local_files_only=True
         )
         self.model = (
             AutoModel.from_pretrained(
-                directory / "encoder", local_files_only=True, dtype=torch.float16
+                directory / "encoder", local_files_only=True, dtype=self.dtype
             )
             .to(device)
             .eval()
@@ -80,7 +81,7 @@ class SemanticRetriever:
                 inputs = self.processor(images=images, return_tensors="pt")
                 inputs = {
                     k: v.to(
-                        self.device, torch.float16 if v.is_floating_point() else v.dtype
+                        self.device, self.dtype if v.is_floating_point() else v.dtype
                     )
                     for k, v in inputs.items()
                 }

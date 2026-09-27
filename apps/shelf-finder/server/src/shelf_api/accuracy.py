@@ -11,6 +11,7 @@ import torch
 from PIL import Image
 
 from .engine import ShelfEngine, Features
+from .runtime import load_model
 from .policy import select_strong, disagreement_priority, rescue_candidates
 
 
@@ -77,9 +78,7 @@ class AccuracyEngine(ShelfEngine):
         self.reference_metadata = json.loads(
             (accuracy_dir / "references.json").read_text()
         )
-        self.strong = torch.jit.load(
-            str(accuracy_dir / "aliked-matcher.pt"), map_location=self.device
-        ).eval()
+        self.strong = load_model(accuracy_dir / "aliked-matcher.pt", self.device)
         self.labels = {}
         for slug, file in self.reference_metadata["referenceFiles"].items():
             with np.load(accuracy_dir / file, allow_pickle=False) as f:

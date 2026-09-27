@@ -83,3 +83,19 @@ test('original JPEG orientation agrees with server EXIF normalization', async ({
   expect(await page.locator('#frame').evaluate((c: HTMLCanvasElement) => [c.width,c.height])).toEqual([64,32]);
   await expect(page.locator('#error')).toBeHidden();
 });
+
+test('CPU scan can exceed 45 seconds and respects the advertised deadline', async ({page}) => {
+  await setup(page);
+  await page.route('**/v1/shelf/health', r => r.fulfill({json: {ready:true,scanTimeoutSeconds:300}}));
+  let started = false;
+  await page.route('**/v1/shelf/scan', () => { started = true; });
+  await page.clock.install();
+  await page.goto('/?engine=server');
+  await expect(page.locator('#status')).toContainText('Готово');
+  await page.locator('#photo').setInputFiles({name:'test.png',mimeType:'image/png',buffer:png});
+  await expect.poll(() => started).toBe(true);
+  await page.clock.fastForward(46_000);
+  await expect(page.locator('#error')).toBeHidden();
+  await page.clock.fastForward(255_000);
+  await expect(page.locator('#error')).toContainText('300 секунд');
+});

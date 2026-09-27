@@ -1,4 +1,4 @@
-"""Native GPU implementation of the browser hybrid pipeline, with a fully resident gallery."""
+"""Native CPU/GPU implementation of the browser hybrid pipeline, with a fully resident gallery."""
 
 import hashlib
 import json
@@ -14,6 +14,7 @@ from PIL import Image
 import torch
 
 from .detection import detect
+from .runtime import load_model
 from .policy import independent, plausible, select
 
 
@@ -27,14 +28,12 @@ class Features:
 class ShelfEngine:
     def __init__(self, directory: Path, device="cuda", threads=4):
         self.directory = directory.resolve()
-        self.device = "cuda:0"
-        if device not in ("cuda", "cuda:0"):
-            raise ValueError(
-                "Use CUDA_VISIBLE_DEVICES to select one GPU; CPU serving is not supported"
-            )
+        from .runtime import resolve_device
+
+        self.device = resolve_device(device)
         device = self.device
-        if device.startswith("cuda") and not torch.cuda.is_available():
-            raise RuntimeError("CUDA is required for this service")
+        if not 1 <= threads <= 64:
+            raise ValueError("SHELF_CPU_THREADS must be between 1 and 64")
         torch.set_num_threads(threads)
         cv2.setNumThreads(threads)
         self.manifest = json.loads((directory / "server-manifest.json").read_text())
@@ -66,10 +65,11 @@ class ShelfEngine:
                 (directory / "server-manifest.json").read_bytes()
                 + b"".join(
                     Path(__file__).with_name(name).read_bytes()
-                    for name in ("engine.py", "policy.py", "detection.py")
+                    for name in ("engine.py", "policy.py", "detection.py", "runtime.py")
                 )
             ).hexdigest()[:12]
         )
+        self.pipeline_version += "-" + device.replace(":", "-")
         self.wines = {w["id"]: w for w in self.catalog["wines"]}
         self.index = json.loads(self.asset("local-index.json").read_text())
         self.ids = self.index["ids"]
@@ -90,15 +90,9 @@ class ShelfEngine:
             options,
             providers=["CPUExecutionProvider"],
         )
-        self.extractor = torch.jit.load(
-            str(self.asset("extractor.pt")), map_location=device
-        ).eval()
-        self.retriever = torch.jit.load(
-            str(self.asset("retriever.pt")), map_location=device
-        ).eval()
-        self.matcher = torch.jit.load(
-            str(self.asset("matcher.pt")), map_location=device
-        ).eval()
+        self.extractor = load_model(self.asset("extractor.pt"), device)
+        self.retriever = load_model(self.asset("retriever.pt"), device)
+        self.matcher = load_model(self.asset("matcher.pt"), device)
         self.centers = torch.tensor(
             np.fromfile(self.asset("centers.bin"), "<f4").reshape(32, 128),
             device=device,

@@ -31,7 +31,7 @@ class Settings:
             )
         ).resolve()
     )
-    device: str = field(default_factory=lambda: os.getenv("SHELF_DEVICE", "cuda"))
+    device: str = field(default_factory=lambda: os.getenv("SHELF_DEVICE", "auto"))
     threads: int = field(
         default_factory=lambda: int(os.getenv("SHELF_CPU_THREADS", "4"))
     )
@@ -60,6 +60,34 @@ class Settings:
         default_factory=lambda: float(os.getenv("SHELF_BUDGET_SECONDS", "10"))
     )
     ocr: bool = field(default_factory=lambda: os.getenv("SHELF_OCR", "0") == "1")
+    vlm_url: str = field(
+        default_factory=lambda: os.getenv(
+            "SHELF_LITELLM_URL", os.getenv("VISION_LLM_URL", "")
+        )
+    )
+    vlm_key: str = field(
+        default_factory=lambda: os.getenv(
+            "SHELF_LITELLM_API_KEY", os.getenv("VISION_LLM_KEY", "")
+        ),
+        repr=False,
+    )
+    vlm_model: str = field(
+        default_factory=lambda: os.getenv(
+            "SHELF_LITELLM_MODEL", "qwen3.8-27b-uncensored"
+        )
+    )
+    vlm_timeout: float = field(
+        default_factory=lambda: float(os.getenv("SHELF_LITELLM_TIMEOUT", "60"))
+    )
+    vlm_limit: int = field(
+        default_factory=lambda: int(os.getenv("SHELF_LITELLM_LIMIT", "3"))
+    )
+    vlm_references: str = field(
+        default_factory=lambda: os.getenv("SHELF_LITELLM_REFERENCES_DIR", "")
+    )
+    scan_timeout: int = field(
+        default_factory=lambda: int(os.getenv("SHELF_SCAN_TIMEOUT_SECONDS", "300"))
+    )
     max_bytes: int = 20 * 1024 * 1024
     max_pixels: int = 24_000_000
     upload_seconds: float = 30
@@ -87,12 +115,31 @@ def decode_image(data, settings):
 
 def create_app(factory=None, settings=None):
     settings = settings or Settings()
+    if not 15 <= settings.scan_timeout <= 600:
+        raise ValueError("SHELF_SCAN_TIMEOUT_SECONDS must be 15..600")
     state = {"engine": None, "busy": False, "failed": False, "inference": None}
     if factory is None:
 
         def factory():
             from .engine import ShelfEngine
 
+            if settings.profile == "litellm":
+                from .vlm import LiteLLMClient, LiteLLMEngine
+
+                client = LiteLLMClient(
+                    settings.vlm_url,
+                    settings.vlm_key,
+                    settings.vlm_model,
+                    settings.vlm_timeout,
+                    settings.vlm_references,
+                )
+                return LiteLLMEngine(
+                    settings.models,
+                    settings.device,
+                    settings.threads,
+                    client,
+                    settings.vlm_limit,
+                )
             if settings.profile == "accuracy":
                 if not settings.accuracy_models:
                     raise ValueError(
@@ -166,6 +213,9 @@ def create_app(factory=None, settings=None):
                     "ready" if ready else "failed" if state["failed"] else "warming"
                 ),
                 "catalogSize": len(current.wines) if ready else 0,
+                "device": getattr(current, "device", settings.device),
+                "profile": settings.profile,
+                "scanTimeoutSeconds": settings.scan_timeout,
             },
             status_code=200 if ready else 503,
             headers={} if ready else {"Retry-After": "5"},

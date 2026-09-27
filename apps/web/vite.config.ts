@@ -30,8 +30,8 @@ export default defineConfig({
       "/v1/shelf": {
         target: process.env.VINCHIK_SHELF_URL || "http://127.0.0.1:8086",
         changeOrigin: true,
-        timeout: 60_000,
-        proxyTimeout: 60_000,
+        timeout: 330_000,
+        proxyTimeout: 330_000,
       },
       "/shelf-ui": {
         target: process.env.VINCHIK_SHELF_URL || "http://127.0.0.1:8086",

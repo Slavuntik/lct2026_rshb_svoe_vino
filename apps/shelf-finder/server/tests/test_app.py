@@ -178,3 +178,17 @@ async def test_shared_reference_variants_survive_api_serialization():
         match = result.json()["matches"][0]
         assert match["alternativeWineIds"] == ["other"]
         assert match["identificationLevel"] == "shared-reference"
+
+
+@pytest.mark.anyio
+async def test_health_advertises_runtime_without_credentials():
+    settings = Settings(
+        device="cpu", profile="litellm", vlm_key="test-secret", scan_timeout=300
+    )
+    assert "test-secret" not in repr(settings)
+    async with client_for(settings=settings) as (client, _):
+        response = await client.get("/v1/shelf/health")
+        assert response.json()["device"] == "cpu"
+        assert response.json()["profile"] == "litellm"
+        assert response.json()["scanTimeoutSeconds"] == 300
+        assert "test-secret" not in response.text

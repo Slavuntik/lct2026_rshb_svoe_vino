@@ -33,3 +33,7 @@ class HealthResponse(BaseModel):
     busy: bool
     state: Literal["ready", "warming", "failed"]
     catalogSize: int
+
+    device: str = "auto"
+    profile: str = "baseline"
+    scanTimeoutSeconds: int = Field(default=300, ge=15, le=600)
