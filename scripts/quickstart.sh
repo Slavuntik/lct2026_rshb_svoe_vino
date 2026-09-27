@@ -119,7 +119,13 @@ check_verify_tools() {
 
 # --------------------------------------------------------------- порты ----
 port_busy() {
-  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
+  # Проверяем и IPv4-, и IPv6-loopback: живая проверка на общей машине поймала
+  # случай, когда чужой vite слушал только `::1` (IPv6), а наш `--host 127.0.0.1`
+  # спокойно забиндился рядом на IPv4 того же номера порта — проверка только по
+  # 127.0.0.1 такое соседство не замечала (см. reports/devops-quickstart.md).
+  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && return 0
+  (exec 3<>"/dev/tcp/::1/$1") 2>/dev/null && return 0
+  return 1
 }
 
 port_owner_hint() {
@@ -248,7 +254,11 @@ cmd_status() {
 
 print_summary() {
   step "Готово ($1)"
-  say "Веб:       http://127.0.0.1:$WEB_PORT/"
+  if [ "$NO_WEB" = 0 ]; then
+    say "Веб:       http://127.0.0.1:$WEB_PORT/"
+  else
+    say "Веб:       не поднят (--no-web)"
+  fi
   say "Swagger:   http://127.0.0.1:$API_PORT/v1/docs"
   say "Метрики:   http://127.0.0.1:$API_PORT/v1/metrics/scan"
   say "Healthz:   http://127.0.0.1:$API_PORT/v1/healthz"
@@ -256,7 +266,11 @@ print_summary() {
   say "Проверка официальным скриптом:  scripts/quickstart.sh verify"
   say "Статус:                         scripts/quickstart.sh status"
   say "Остановить:                     scripts/quickstart.sh stop"
-  say "Логи:                           $LOG_DIR/api.log , $LOG_DIR/web.log"
+  if [ "$NO_WEB" = 0 ]; then
+    say "Логи:                           $LOG_DIR/api.log , $LOG_DIR/web.log"
+  else
+    say "Логи:                           $LOG_DIR/api.log"
+  fi
 }
 
 # ------------------------------------------------------------- fast -------
@@ -269,7 +283,17 @@ cmd_fast() {
   [ "$NO_WEB" = 1 ] || require_free_port "$WEB_PORT" "веб-клиента"
 
   step "Зависимости API (быстрый режим — без сканера, без torch)"
-  ( cd "$ROOT/apps/api" && uv sync --frozen )
+  # --inexact: ДОБАВИТЬ недостающее, не ТРОГАТЬ лишнее. Обычный `uv sync --frozen`
+  # синхронизирует окружение ТОЧНО под базовый набор — если venv уже содержит
+  # больше (например, кто-то уже ставил --extra integration), он их снесёт.
+  # Проверено вживую (см. reports/devops-quickstart.md, "Риски/находки"): именно
+  # так один прогон fast-режима в существующем dev-окружении удалил 94 пакета
+  # (torch/transformers/paddleocr/...), а собранные заново по кускам (несколько
+  # разных `uv sync` подряд) опенсv-пакеты пересеклись файлами и сломали импорт
+  # cv2 — почти на час заблокировав приёмочные прогоны команды. --inexact не
+  # трогает то, что уже стоит, поэтому на чистом клоне ведёт себя так же, а на
+  # уже подготовленной машине — безопасно.
+  ( cd "$ROOT/apps/api" && uv sync --frozen --inexact )
   say "добавляю реальный поиск сомелье (packages/rag — лёгкий пакет, без torch)…"
   ( cd "$ROOT/apps/api" && uv pip install --python "$ROOT/apps/api/.venv/bin/python" -q -e ../../packages/rag )
   say ""
@@ -378,7 +402,9 @@ PLAN
   confirm_or_exit "Продолжить?"
 
   step "Python-зависимости (тяжёлые — torch/transformers/PaddleOCR/RapidOCR)"
-  ( cd "$ROOT/apps/api" && uv sync --frozen --extra integration )
+  # --inexact — та же причина, что в cmd_fast выше: не трогать то, что уже стоит
+  # в этом окружении (dev-зависимости, другие extras).
+  ( cd "$ROOT/apps/api" && uv sync --frozen --extra integration --inexact )
 
   step "Сборка индекса сканера из вашего каталога (см. план выше)"
   CV_DATA_DIR_FULL="$ROOT/packages/cv/data"
