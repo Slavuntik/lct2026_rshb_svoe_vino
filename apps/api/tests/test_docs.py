@@ -77,7 +77,7 @@ def test_v1_openapi_json_contains_every_registered_v1_route(client: TestClient):
 
     schema = r.json()
     assert schema["info"]["title"] == "Свой Сомелье API"
-    assert schema["info"]["version"] == "0.3.6"
+    assert schema["info"]["version"] == "0.3.7"
 
     schema_paths = set(schema["paths"])
     # Истина — пути, собранные напрямую из модулей роутеров (не сама схема,
