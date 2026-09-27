@@ -1,8 +1,685 @@
+/* «Витрина» — стили. Перенос на общую дизайн-систему «Свой Сомелье» (задача тимлида 27.09,
+   agents/frontend-shelf-finder-restyle.md): раньше здесь была отдельная палитра (зелёный
+   #123c32, золото #b99152, Georgia, свои радиусы) — теперь те же токены/приёмы, что в
+   apps/web/src/styles/global.css (см. reports/frontend-shelf-finder-restyle.md, таблица
+   «было → стало»). Логика (main.ts) не тронута — только разметка/классы там, где это чисто
+   про внешний вид. Правки поведения/распознавания здесь нет и быть не должно. */
 
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#203830;background:#f5f4ef;font-synthesis:none;font-size:15px;--green:#123c32;--muted:#6a7870;--line:#d8dfd6}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,.button{cursor:pointer;border:0;border-radius:8px;background:var(--green);color:white;padding:13px 19px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}button:hover,.button:hover{filter:brightness(1.12)}button:disabled{opacity:.45;cursor:wait}input[type=file]{position:absolute;width:1px;height:1px;opacity:0}.button:has(input:disabled){opacity:.45;pointer-events:none}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #a87e30;outline-offset:3px}.secondary{background:#e7ebe1;color:var(--green)}.quiet{background:transparent;color:var(--green);padding:8px 4px;font-size:13px}.logo{font-weight:800;font-size:23px;letter-spacing:-1px;color:var(--green);text-decoration:none}.logo span{color:#b99152;margin-right:13px}.private{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:30px;padding:8px 13px}.private:before{content:'●';font-size:9px;color:#4d885f;margin-right:8px}header{max-width:1360px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:26px 42px;border-bottom:1px solid var(--line)}main{max-width:1360px;margin:auto;padding:42px}.intro{max-width:670px;margin-bottom:34px}.eyebrow,.section-label{font-size:10px;font-weight:700;letter-spacing:2px;color:#7b887d}h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(36px,4.4vw,60px);line-height:1.05;letter-spacing:-1.8px;margin:18px 0}h2{font-size:20px;font-weight:650;letter-spacing:-.4px;margin:12px 0}.intro>p:last-child{color:var(--muted);font-size:16px;line-height:1.6;max-width:560px}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:36px;align-items:start}.viewer{min-width:0}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.stage{background:#1c2926;position:relative;border-radius:14px;overflow:hidden;min-height:230px;box-shadow:0 14px 35px #20383010}.stage canvas{width:100%;height:auto;display:block}.stage #overlay{position:absolute;inset:0;pointer-events:none}.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#e2e8df;text-align:center;padding:20px;background:radial-gradient(ellipse at 50% 40%,#314c41,#192b25)}.empty[hidden]{display:none}.empty h2{font-family:Georgia,serif;font-size:28px;font-weight:400}.empty p{font-size:13px;line-height:1.8;color:#a5b7aa}.reticle{font-size:58px;font-weight:100;color:#a5bda6;line-height:1;margin-bottom:16px}.status{display:flex;align-items:center;gap:9px;padding:15px 0;font-size:13px}.dot{width:7px;height:7px;flex:none;background:#59936e;border-radius:50%}.error{background:#f5e6df;border:1px solid #e0bbae;color:#703c2c;border-radius:8px;padding:14px;font-size:13px;line-height:1.6;overflow-wrap:anywhere}.controls{display:flex;align-items:center;flex-wrap:wrap;gap:14px;border-top:1px solid var(--line);padding-top:8px}.controls label{font-size:13px}.hint,.muted{font-size:12px;line-height:1.65;color:var(--muted)}.result-header{display:flex;justify-content:space-between;align-items:center;margin-top:30px}.result-header span{font-size:11px;color:var(--muted)}.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.result{display:block;text-align:left;color:#53605a;background:#eaece6;border:1px solid transparent;padding:12px;border-radius:8px;font-weight:400}.result strong,.result small{display:block}.result strong{font-size:12px}.result small{font-size:10px;line-height:1.4;margin-top:5px;color:#7a867d}.result.found{border-color:#99b898;background:#e3eedf;color:#225336}.result:disabled{cursor:default}.result:disabled:has(strong){opacity:.8}aside{border:1px solid var(--line);border-radius:14px;background:#fffefa;padding:24px}aside h2{margin-bottom:22px;font-family:Georgia,serif;font-size:27px;font-weight:400}.modes{display:flex;border-radius:8px;background:#eeeee7;padding:4px;margin-bottom:18px;gap:4px}.modes label{flex:1;text-align:center;padding:9px 5px;font-size:12px;border-radius:5px;cursor:pointer}.modes input{appearance:none;margin:0;width:0}.modes label:has(input:checked){background:var(--green);color:white}.modes label:focus-within{outline:2px solid #b99152}.search,select,dialog input{display:block;width:100%;padding:12px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--green);margin:10px 0;font-size:13px}.selection{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0;font-size:11px}.selection .quiet{font-size:11px}.catalog{max-height:445px;overflow:auto;padding:8px 0}.wine{display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid #eaede5;padding:13px 0;cursor:pointer}.wine strong{display:block;font-size:12px;line-height:1.5;font-weight:600}.wine small{display:block;color:#7b877d;font-size:10px;line-height:1.6;margin-top:3px}input[type=checkbox]{accent-color:var(--green);width:16px;height:16px;flex:none}.wine input{margin-top:3px}details{border-top:1px solid var(--line);padding:16px 0;margin-top:18px;font-size:12px;color:var(--muted);line-height:1.6}summary{cursor:pointer;color:var(--green);font-weight:600}details .button{font-size:12px;padding:10px}details label{display:block;margin-top:10px}details input[type=number]{width:70px;border:1px solid var(--line);border-radius:5px;padding:6px;margin-left:8px}footer{max-width:1276px;margin:35px auto 0;border-top:1px solid var(--line);padding:22px 0 35px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:20px}dialog{border:1px solid var(--line);border-radius:16px;padding:28px;max-width:480px;width:90%;color:var(--green);background:#fffefa}dialog::backdrop{background:#0e211aba}dialog p{font-size:13px;line-height:1.6}.viewer>details{margin-top:25px} [hidden]{display:none!important}@media(max-width:900px){main{padding:28px 22px}.workspace{grid-template-columns:minmax(0,1fr) 290px;gap:20px}header{padding:20px 22px}aside{padding:18px}footer{margin:30px 22px 0}}@media(max-width:720px){.workspace{display:flex;flex-direction:column}.viewer,aside{width:100%}aside{order:-1}.intro{margin-bottom:25px}h1{font-size:42px}.catalog{max-height:185px}.intro>p:last-child{font-size:14px}.workspace{gap:24px}.private{font-size:10px;padding:7px}.logo{font-size:21px}header{padding:20px}.toolbar button,.toolbar .button{padding:12px 14px;font-size:13px}.result-header span{max-width:45%;text-align:right}.results{grid-template-columns:1fr}footer{flex-direction:column;gap:8px}.stage{min-height:200px}}
-html.embedded header, html.embedded .intro, html.embedded footer { display: none; }
-html.embedded main { padding-top: 12px; }
+@import "./tokens.css";
 
-html.embedded main { padding: 12px; }
-html.embedded .workspace { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-html.embedded aside { order: 1; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.1;
+  margin: 0 0 var(--space-3);
+}
+
+h1 {
+  font-size: var(--fs-h1);
+}
+
+h2 {
+  font-size: var(--fs-h2);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* --- кнопки: тот же компонент, что .btn/.btn--primary/--secondary/--ghost в global.css --- */
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.15s ease, transform 0.05s ease;
+}
+
+button:active,
+.button:active {
+  transform: scale(0.98);
+}
+
+button:hover,
+.button:hover {
+  opacity: 0.92;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.button:has(input:disabled) {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.secondary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.quiet {
+  background: transparent;
+  color: var(--accent);
+  padding: var(--space-2) var(--space-1);
+  font-size: var(--fs-small);
+  min-height: 0;
+}
+
+/* --- шапка --- */
+
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 23px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--accent);
+  margin-right: var(--space-2);
+}
+
+/* Нейтральная плашка статуса — тот же приём, что .badge в global.css (--mono-bg, без рамки,
+   полностью круглые углы). Точка перед текстом — акцент «локальная обработка активна». */
+.private {
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  background: var(--mono-bg);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-3);
+}
+
+.private::before {
+  content: "●";
+  font-size: 9px;
+  color: var(--ok);
+  margin-right: var(--space-2);
+}
+
+header {
+  max-width: 1360px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 42px;
+  border-bottom: 1px solid var(--line);
+}
+
+main {
+  max-width: 1360px;
+  margin: auto;
+  padding: 42px;
+}
+
+.intro {
+  max-width: 670px;
+  margin-bottom: 34px;
+}
+
+.eyebrow,
+.section-label {
+  display: block;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+}
+
+.intro > p:last-child {
+  color: var(--muted);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* --- рабочая область --- */
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 335px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.viewer {
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+/* «Сцена» камеры/канвас и заглушка .empty внутри неё — единственное место в «Витрине»,
+   намеренно окрашенное вне СВЕТЛОЙ палитры: до появления кадра это тёмный видоискатель (нужен
+   контраст с любым будущим фото/видео сверху), а поверх реального кадра камеры main.ts рисует
+   рамки найденных бутылок произвольными контрастными цветами прямо на canvas — задание
+   разрешает это отдельно от темы для разметки поверх произвольного видео/фото (см. .aim__frame
+   в apps/web/src/styles/global.css и комментарий у overlayLabelBg в main.ts).
+   Цвета здесь — не случайные, а буквально ветка :root[data-theme="dark"] из
+   apps/web/src/styles/tokens.css (--surface #2A2024, --bg #1C1518, --ink #EDE5E2,
+   --muted #9C8E93): тот же приём «взять готовый тёмный вариант нашей палитры», а не изобретать
+   новый тёмно-зелёный. Контраст проверен формулой WCAG на обоих концах градиента (светлее/темнее):
+   --ink-тёмный/градиент 12.7–14.5:1, --muted-тёмный/градиент 5.0–5.7:1 — оба ≥4.5:1 с запасом
+   (подробности и цифры — reports/frontend-shelf-finder-restyle.md). */
+.stage {
+  position: relative;
+  background: radial-gradient(ellipse at 50% 30%, #2a2024, #1c1518);
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-height: 230px;
+  box-shadow: 0 14px 35px rgb(44 42 40 / 10%); /* тень тонирована --ink, не чёрным */
+}
+
+.stage canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.stage #overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4);
+  color: #ede5e2; /* = --ink тёмной ветки токенов */
+}
+
+.empty h2 {
+  font-size: 28px;
+}
+
+.empty p {
+  font-size: var(--fs-small);
+  line-height: 1.8;
+  color: #9c8e93; /* = --muted тёмной ветки токенов */
+}
+
+.reticle {
+  font-size: 58px;
+  font-weight: 100;
+  color: #9c8e93; /* = --muted тёмной ветки токенов */
+  line-height: 1;
+  margin-bottom: var(--space-3);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  font-size: var(--fs-small);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  background: var(--ok);
+  border-radius: 50%;
+}
+
+.error {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-2);
+}
+
+.controls label {
+  font-size: var(--fs-small);
+}
+
+.hint,
+.muted {
+  font-size: var(--fs-caption);
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-5);
+}
+
+.result-header span {
+  font-size: var(--fs-caption);
+  color: var(--muted);
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+/* Плитка найденной/неопознанной бутылки — тот же приём, что .match-item в global.css:
+   плоская заливка --card без тени, рамка появляется только как маркер состояния (found). */
+.result {
+  display: block;
+  text-align: left;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid transparent;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: 400;
+}
+
+.result strong,
+.result small {
+  display: block;
+}
+
+.result strong {
+  font-size: var(--fs-caption);
+}
+
+.result small {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  margin-top: var(--space-1);
+  color: var(--muted);
+}
+
+/* Совпадение подтверждено — те же токены успеха, что .badge--ok в global.css. */
+.result.found {
+  border-color: var(--ok);
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.result:disabled {
+  cursor: default;
+}
+
+.result:disabled:has(strong) {
+  opacity: 0.8;
+}
+
+/* --- боковая панель: карточка --card без рамки/тени, паддинг 28/20 — как .card в global.css --- */
+
+aside {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: var(--space-6) var(--space-4);
+}
+
+.modes {
+  display: flex;
+  border-radius: var(--radius-sm);
+  background: var(--mono-bg);
+  padding: var(--space-1);
+  margin-bottom: var(--space-4);
+  gap: var(--space-1);
+}
+
+.modes label {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-2) 5px;
+  font-size: var(--fs-caption);
+  border-radius: calc(var(--radius-sm) - var(--space-1));
+  cursor: pointer;
+}
+
+.modes input {
+  appearance: none;
+  margin: 0;
+  width: 0;
+}
+
+.modes label:has(input:checked) {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.modes label:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.search,
+select,
+dialog input {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  margin: var(--space-2) 0;
+  font-size: var(--fs-small);
+}
+
+.selection {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-2) 0;
+  font-size: var(--fs-caption);
+}
+
+.selection .quiet {
+  font-size: var(--fs-caption);
+}
+
+.catalog {
+  max-height: 445px;
+  overflow: auto;
+  padding: var(--space-2) 0;
+}
+
+.wine {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-3) 0;
+  cursor: pointer;
+}
+
+.wine strong {
+  display: block;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.wine small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-caption);
+  line-height: 1.6;
+  margin-top: var(--space-1);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.wine input {
+  margin-top: var(--space-1);
+}
+
+details {
+  border-top: 1px solid var(--line);
+  padding: var(--space-3) 0;
+  margin-top: var(--space-4);
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Раскрывающийся заголовок — то же смысловое место, что обычная текстовая ссылка (a{color:
+   var(--accent)} в global.css): единственный явный "clickable text" акцент вне кнопок. */
+summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+details .button {
+  font-size: var(--fs-caption);
+  padding: var(--space-2);
+  min-height: 0;
+}
+
+details label {
+  display: block;
+  margin-top: var(--space-2);
+}
+
+details input[type="number"] {
+  width: 70px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  margin-left: var(--space-2);
+  background: var(--card);
+  color: var(--ink);
+}
+
+footer {
+  max-width: 1276px;
+  margin: 35px auto 0;
+  border-top: 1px solid var(--line);
+  padding: var(--space-4) 0 35px;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* Модалка «Добавить эталон» — те же токены, что .modal/.modal-overlay в global.css. */
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  max-width: 480px;
+  width: 90%;
+  color: var(--ink);
+  background: var(--card);
+}
+
+dialog::backdrop {
+  /* Буквально тот же цвет, что .modal-overlay в global.css (там тоже не токен, а литерал). */
+  background: rgb(43 34 38 / 60%);
+}
+
+dialog p {
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+.viewer > details {
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 900px) {
+  main {
+    padding: 28px 22px;
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 290px;
+    gap: var(--space-4);
+  }
+
+  header {
+    padding: 20px 22px;
+  }
+
+  aside {
+    padding: var(--space-4);
+  }
+
+  footer {
+    margin: 30px 22px 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .workspace {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .viewer,
+  aside {
+    width: 100%;
+  }
+
+  aside {
+    order: -1;
+  }
+
+  .intro {
+    margin-bottom: 25px;
+  }
+
+  .catalog {
+    max-height: 185px;
+  }
+
+  .intro > p:last-child {
+    font-size: var(--fs-small);
+  }
+
+  .workspace {
+    gap: var(--space-4);
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  header {
+    padding: var(--space-4);
+  }
+
+  .toolbar button,
+  .toolbar .button {
+    padding: var(--space-3);
+    font-size: var(--fs-small);
+  }
+
+  .result-header span {
+    max-width: 45%;
+    text-align: right;
+  }
+
+  .results {
+    grid-template-columns: 1fr;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .stage {
+    min-height: 200px;
+  }
+}
+
+/* --- встраивание айфреймом (/app/shelf → /shelf-ui/?embedded=1): только раскладка,
+   без изменений темы/цвета --- */
+
+html.embedded header,
+html.embedded .intro,
+html.embedded footer {
+  display: none;
+}
+
+html.embedded main {
+  padding: var(--space-3);
+}
+
+html.embedded .workspace {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+html.embedded aside {
+  order: 1;
+}

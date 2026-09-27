@@ -34,6 +34,12 @@ const worker = serverMode ? new ServerClient(import.meta.env.VITE_SHELF_API_URL 
 const frame = $<HTMLCanvasElement>('frame'), overlay = $<HTMLCanvasElement>('overlay');
 const context = frame.getContext('2d')!, drawing = overlay.getContext('2d')!;
 const video = $<HTMLVideoElement>('video');
+// Подпись рамки найденной бутылки рисуется на canvas поверх произвольного кадра камеры/фото —
+// цвет фона плашки читаем из --ink (тот же тон, что и текст приложения), а не хардкодим старый
+// брендовый зелёный (#123c32). Зелёная заливка/обводка рамки ниже (#25cf6933/#9df5ad) остаются
+// вне палитры намеренно: это разметка поверх произвольного изображения (см. .aim__frame в
+// apps/web/src/styles/global.css), где важнее контраст с любым фоном фото, чем совпадение с темой.
+const overlayLabelBg = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#2C2A28';
 const tracker = new Tracker();
 let catalog: Catalog | null = null, originalCatalog: Catalog | null = null, manifest: ModelManifest;
 let selected = new Set<string>();
@@ -113,7 +119,7 @@ function renderResults() {
       const fontSize = Math.max(14, overlay.width / 55); drawing.font = `600 ${fontSize}px sans-serif`;
       const width = Math.min(drawing.measureText(label).width + 14, overlay.width * .55);
       const tx = Math.min(x1 * overlay.width, overlay.width - width), ty = Math.max(fontSize + 8, y1 * overlay.height);
-      drawing.fillStyle = '#123c32'; drawing.fillRect(tx, ty - fontSize - 8, width, fontSize + 8);
+      drawing.fillStyle = overlayLabelBg; drawing.fillRect(tx, ty - fontSize - 8, width, fontSize + 8);
       drawing.fillStyle = '#c5ffd1'; drawing.fillText(label, tx + 7, ty - 5, width - 14);
     }
     const button = document.createElement('button'); button.className = `result ${highlight ? 'found' : ''}`;
