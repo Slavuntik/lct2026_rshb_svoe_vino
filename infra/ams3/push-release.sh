@@ -7,9 +7,17 @@
 # использовала rsync с --exclude и на macOS налетела на openrsync, который эти шаблоны игнорирует —
 # уехало 1.4 ГБ локальных venv'ов.) Данные и модели сюда не входят — их везёт sync-data.sh.
 #
+# Находка 27.09 (reports/devops-new-stand.md): сборка веба раньше шла прямо по рабочему
+# дереву (`cd apps/web && npm run build`, вручную ДО этого скрипта) — в многоагентной сессии
+# это гонка: кто-то ещё правит apps/web/src в ТОМ ЖЕ дереве, dist/ не в git, последняя сборка
+# побеждает молча — на боевой стенд рисковало уехать чужое незакоммиченное. Теперь сборка
+# ВНУТРИ скрипта, из ИЗОЛИРОВАННОЙ git-archive копии $REF — веб гарантированно тот же коммит,
+# что и API. apps/shell/plugins/ocr-plugin — локальная file:-зависимость apps/web/package.json
+# (`svoy-somelye-ocr-plugin`), без неё `tsc -b` падает; других file:-зависимостей на момент
+# правки не было (grep "\"file:" apps/web/package.json — проверить перед добавлением путей).
+#
 # Использование: push-release.sh <host> [ключ]   ·  DEPLOY_REF=<ref> — выкатить другой коммит
-#                PUSH_ONLY=1 — залить без рестарта. Перед запуском:
-#                cd apps/web && VITE_API_MODE=real VITE_THEME=portal npm run build
+#                PUSH_ONLY=1 — залить без рестарта.
 set -euo pipefail
 HOST="${1:?укажи хост ams3}"
 KEY="${2:-$HOME/.ssh/ci_do_ams3}"
@@ -17,15 +25,19 @@ REF="${DEPLOY_REF:-HEAD}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SSH="ssh -i $KEY -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-%r@%h -o ControlPersist=120"
 
-[ -f "$ROOT/apps/web/dist/index.html" ] || {
-  echo "нет сборки веба — cd apps/web && VITE_API_MODE=real VITE_THEME=portal npm run build"; exit 1; }
-
 echo "код ($(git -C "$ROOT" rev-parse --short "$REF")) →"
 git -C "$ROOT" archive --format=tar "$REF" apps/api packages contracts infra pipeline/ref pipeline/catalog pipeline/build | gzip \
   | $SSH "somelye@$HOST" 'rm -rf /opt/somelye/app/* /opt/somelye/app/.[!.]* 2>/dev/null; mkdir -p /opt/somelye/app; tar xzf - -C /opt/somelye/app'
 
-echo "веб →"
-tar -czf - -C "$ROOT/apps/web/dist" . \
+echo "веб (сборка из изолированной копии $REF, не из рабочего дерева) →"
+WEBTMP="$(mktemp -d)"
+trap 'rm -rf "$WEBTMP"' EXIT
+git -C "$ROOT" archive "$REF" apps/web apps/shell/plugins/ocr-plugin | tar -x -C "$WEBTMP"
+( cd "$WEBTMP/apps/web" \
+  && npm ci --silent --no-progress \
+  && VITE_API_MODE=real VITE_THEME=portal npm run build --silent )
+[ -f "$WEBTMP/apps/web/dist/index.html" ] || { echo "сборка веба не дала dist/index.html"; exit 1; }
+tar -czf - -C "$WEBTMP/apps/web/dist" . \
   | $SSH "somelye@$HOST" 'rm -rf /opt/somelye/web/* 2>/dev/null; mkdir -p /opt/somelye/web; tar xzf - -C /opt/somelye/web'
 
 # Ключ GigaChat из секрета GitHub (GIGACHAT_AUTH_KEY) — едет через stdin, а не аргументом:
