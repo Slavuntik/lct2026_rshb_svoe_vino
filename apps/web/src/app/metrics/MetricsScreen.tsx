@@ -80,27 +80,38 @@ export function MetricsScreen() {
 
       {status === "ready" && measured && metrics && (
         <div className="card stack" data-testid="metrics-report">
-          <dl className="stats">
-            <div className="stat">
+          {/* Плитки вместо строк dt/dd (задача тимлида 27.09, живой просмотр 375px): было —
+              auto-fit на 3 показателя давал рваную сетку (2 в ряд + 1 сирота), числа обычным
+              текстом. Фиксированные 3 колонки .metric-tiles (global.css) — в духе .spec-tiles
+              карточки вина, значения/подписи те же (share() ниже не менялся). */}
+          <dl className="metric-tiles">
+            <div className="metric-tile">
               <dt>{t("metrics.matchRate")}</dt>
               <dd>{share(metrics.match_rate)}</dd>
             </div>
-            <div className="stat">
+            <div className="metric-tile">
               <dt>{t("metrics.f1Top1")}</dt>
               <dd>{share(metrics.f1_top1)}</dd>
             </div>
-            <div className="stat">
+            <div className="metric-tile">
               <dt>{t("metrics.f1Top5")}</dt>
               <dd>{share(metrics.f1_top5)}</dd>
             </div>
           </dl>
-          <p className="text-small">
-            {t("metrics.evalSet")}: {metrics.eval_set ?? "—"} · {t("metrics.measuredAt")}:{" "}
-            {when(metrics.measured_at)}
-          </p>
-          <p className="text-small">
-            {t("metrics.indexVersion")}: {metrics.index_version ?? "—"}
-          </p>
+          {/* Технические строки (выборка/дата замера/версия индекса) были стеной мелкого
+              текста прямо под цифрами — свёрнуты в <details>, заголовок раскрытия — уже
+              существующий перевод "Выборка" (metrics.evalSet), новый текст не заводился;
+              само содержимое (данные с сервера) не изменено, только мельче/приглушённее
+              (text-caption вместо text-small). */}
+          <details className="metrics-details">
+            <summary>{t("metrics.evalSet")}</summary>
+            <p className="text-caption">
+              {metrics.eval_set ?? "—"} · {t("metrics.measuredAt")}: {when(metrics.measured_at)}
+            </p>
+            <p className="text-caption">
+              {t("metrics.indexVersion")}: {metrics.index_version ?? "—"}
+            </p>
+          </details>
           <p className="text-caption">{t("metrics.caveat")}</p>
         </div>
       )}

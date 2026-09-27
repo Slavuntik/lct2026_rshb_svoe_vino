@@ -8,7 +8,9 @@ import { renderApp } from "../../test/renderApp";
 import { ChatScreen } from "./ChatScreen";
 
 function sendMessage(text: string) {
-  fireEvent.change(screen.getByPlaceholderText(/например: что взять к стейку/i), { target: { value: text } });
+  // Плейсхолдер укорочен задачей тимлида 27.09 (i18n/ru.ts::chat.placeholder, обрезался
+  // посреди слова на 375px) — регэксп подобран под новый текст "Что взять к стейку на гриле?".
+  fireEvent.change(screen.getByPlaceholderText(/что взять к стейку/i), { target: { value: text } });
   fireEvent.click(screen.getByRole("button", { name: /спросить/i }));
 }
 

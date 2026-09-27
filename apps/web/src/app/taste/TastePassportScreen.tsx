@@ -108,7 +108,7 @@ export function TastePassportScreen() {
       <div className="screen container stack" data-testid="taste-gate">
         <h1 className="screen__title">{t("taste.title")}</h1>
         <div className="card stack">
-          <h2>{gate === "guest" ? t("taste.guestTitle") : t("taste.needsProfilingTitle")}</h2>
+          <h2 className="card-heading">{gate === "guest" ? t("taste.guestTitle") : t("taste.needsProfilingTitle")}</h2>
           <p>{gate === "guest" ? t("taste.guestMessage") : t("taste.needsProfilingMessage")}</p>
           <button type="button" className="btn btn--primary" onClick={() => navigate("/app/profile")}>
             {t("taste.goToProfile")}
@@ -159,7 +159,7 @@ export function TastePassportScreen() {
         </div>
       ) : (
         <div className="card stack" data-testid="taste-empty">
-          <h2>{t("taste.emptyTitle")}</h2>
+          <h2 className="card-heading">{t("taste.emptyTitle")}</h2>
           <p>{t("taste.emptyMessage")}</p>
         </div>
       )}
@@ -167,7 +167,7 @@ export function TastePassportScreen() {
       {profile && (
         <div className="card stack">
           <p className="text-small">{t("taste.swipesCount", { count: profile.swipes_count })}</p>
-          <h2>{t("taste.vectorTitle")}</h2>
+          <h2 className="card-heading">{t("taste.vectorTitle")}</h2>
           <SensoryVectorView vector={profile.vector} />
           {/* Задача тимлида 23.09 (аудит architect, openapi 0.3.6): top_styles рендерился голым
               слагом стиля ("chablis") — тот же класс дефекта, что «Похожие вина» (qa-manual

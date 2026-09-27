@@ -783,7 +783,11 @@ export function ScanScreen() {
             />
           </label>
           {textError && <p className="field__error">{textError}</p>}
-          <button type="submit" className="btn btn--ghost" disabled={status === "resolving"}>
+          {/* Задача тимлида 27.09: было btn--ghost — та же роль, что «Отмена»/«Назад», хотя
+              это единственное действие своей карточки (отправка текстового поиска), а не
+              второстепенный выход. btn--secondary — «настоящее», но не конкурирующее с
+              «Выбрать фото» (btn--primary) действие: фото остаётся первичным путём. */}
+          <button type="submit" className="btn btn--secondary" disabled={status === "resolving"}>
             {t("scan.textSubmit")}
           </button>
         </form>

@@ -148,6 +148,23 @@ dd {
   margin: 0;
 }
 
+/* Заголовок секции/карточки, НЕ заголовок экрана (задача тимлида 27.09, «Остальные экраны»,
+   живой просмотр на 375px): базовый h2 = --fs-h2 = 32px нарочно крупный для карточки вина/
+   скана (Figma «Цифровой сомелье»/«Сочетание с блюдами», см. tokens.css) — тот же размер на
+   "Удаление аккаунта"/"Согласия"/"Пока вы — гость" читался вторым h1 и переносился на две
+   строки. Адресный класс, не правка тега h2 — WineCardContent.tsx/SomelierCardWidget.tsx
+   сейчас не трогаем (соседний агент доделывает .spec-tile* и .scan-shortcut в этом же файле,
+   а виджет сомелье лежит РЯДОМ на той же странице с заголовками "Вкусовой профиль"/"К чему
+   подать", которые тоже остаются 32px — уменьшить один из трёх соседних заголовков на той
+   же карточке было бы новой рассогласованностью, а не починкой старой). */
+.card-heading {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-h2-sm);
+}
+
 /* --- карточки --- */
 
 .card {
@@ -485,24 +502,68 @@ dl .row--between dd {
 .aim__grip--sw { bottom: -11px; left: -11px; cursor: nesw-resize; }
 .aim__grip--se { bottom: -11px; right: -11px; cursor: nwse-resize; }
 
-/* --- числа измерений (экран метрик) --- */
-
-.stats {
+/* --- числа измерений (экран метрик, задача тимлида 27.09) — плитки в духе .spec-tiles
+   карточки вина: тот же приём (заливка var(--card), та же, что у родительской .card — тайл
+   держится паддингом/зазором грида, не цветом, см. WineCardContent.tsx), крупное значение +
+   подпись var(--muted). Раньше — dl.stats с auto-fit на 3 показателя: 2 в ряд + 1 сирота под
+   ними (рваная сетка, живой просмотр 375px), числа обычным текстом без плитки. Фиксированные
+   3 колонки (не auto-fit) — показателей всегда ровно три, и на 375px они умещаются в ряд без
+   схлопывания (та же причина, по которой .spec-tiles фиксирует 2 колонки, не auto-fit). */
+.metric-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
   margin: 0;
 }
 
-.stat dt {
+.metric-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+}
+
+.metric-tile dt {
+  /* "Совпадения в топ-1" переносится на 2 строки в узкой плитке, "F1 топ-1"/"F1 топ-5" — в
+     одну: без резерва высоты их значения (dd) съезжали на разный уровень между плитками в
+     одном ряду. min-height под 2 строки + центрирование однострочных подписей держит все
+     три значения на одной линии независимо от длины подписи. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4em;
   font-size: var(--fs-caption);
   color: var(--muted);
 }
 
-.stat dd {
+.metric-tile dd {
   margin: 0;
-  font-size: var(--fs-h2);
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Технический абзац (Выборка/Версия индекса) — задача тимлида 27.09: был стеной мелкого
+   текста прямо под плитками, вынесен в раскрывающийся блок; сворачивается, чтобы не спорить
+   с плитками за внимание, но не пропадает — данные важны для проверки жюри. Заголовок
+   раскрытия — существующий перевод "Выборка" (metrics.evalSet), новый текст не заводился. */
+.metrics-details summary {
+  cursor: pointer;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.metrics-details summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.metrics-details[open] summary {
+  margin-bottom: var(--space-2);
 }
 
 /* --- кнопки --- */
@@ -531,8 +592,18 @@ dl .row--between dd {
 
 .btn:disabled,
 .btn[aria-disabled="true"] {
-  opacity: 0.45;
+  /* Раньше — opacity:0.45 на всю кнопку. На --btn--primary это блендило И заливку, И белый
+     текст в сторону фона под кнопкой почти на равных — оба светлели, разница между ними
+     проседала до ~2:1 (посчитано WCAG-формулой), живой пример — "Спросить" в чате с пустым
+     полем: розовый текст на розовом фоне, читать физически тяжело (задача тимлида 27.09).
+     Явные bg/color вместо блёклой заливки держат контраст ЛЮБОЙ роли кнопки (primary/
+     secondary/ghost/danger) на ~11:1 (ink на line) в обеих темах — см. reports/
+     frontend-screens-restyle.md. */
+  opacity: 1;
   cursor: not-allowed;
+  background: var(--line);
+  color: var(--ink);
+  border-color: var(--line);
 }
 
 .btn--primary {
@@ -622,13 +693,70 @@ button.icon-badge:focus-visible {
   align-items: flex-start;
   gap: var(--space-2);
   font-size: var(--fs-small);
+  /* Зона нажатия ≥44px (задача тимлида 27.09): визуальный квадрат ниже — 20px, но <label>
+     оборачивает и его, и текст — клик по всей строке уже переключает чекбокс, min-height
+     только гарантирует высоту строки на коротких однострочных вариантах (Профиль, без
+     подсказки под меткой); двухстрочные варианты (Онбординг, с подсказкой) и так выше. */
+  min-height: 44px;
 }
 
+/* Свой чекбокс вместо нативного (задача тимлида 27.09, живой просмотр на 375px): невыбранный
+   нативный чекбокс рисовался браузером сплошным ЧЁРНЫМ квадратом на онбординге и в профиле —
+   грубо выбивалось из палитры на двух экранах сразу (см. тот же класс дефекта у иконки
+   календаря, tokens.css::color-scheme). appearance:none снимает нативную отрисовку целиком,
+   дальше квадрат/заливку/галочку рисуем сами — под контролем на любой ОС/браузере. */
 .checkbox-row input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0;
   margin-top: 3px;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.checkbox-row input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Галочка — рисованный уголок (border-trick), не SVG data-URI: цвет через var(--on-accent)
+   остаётся правильным и в тёмной теме (там --on-accent тёмный, а не белый, потому что сам
+   --accent в тёмной теме нарочно светлее — см. tokens.css). */
+.checkbox-row input:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Обязательное согласие (aria-readonly, не disabled — checked readOnly без onChange, логику
+   не трогаем): видимо приглушённый, но не серо-мёртвый — та же бордовая семья тоном светлее
+   (--accent-soft/--accent), не --line/--muted, чтобы отличаться от "выключено" (ниже) и не
+   выглядеть как сломанный контрол. */
+.checkbox-row input:checked[aria-readonly="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  cursor: default;
+}
+
+.checkbox-row input:checked[aria-readonly="true"]::after {
+  border-color: var(--accent);
+}
+
+.checkbox-row input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* --- бейджи / чипы --- */
@@ -643,6 +771,16 @@ button.icon-badge:focus-visible {
   font-size: var(--fs-caption);
   background: var(--mono-bg);
   color: var(--muted);
+}
+
+/* Бейдж как прямой ребёнок .stack (колоночный flex) растягивался на всю ширину карточки —
+   .stack сам не задаёт align-items, поэтому действует UA-дефолт stretch по поперечной оси
+   колонки (горизонтали); нашлось на "Гостевой доступ" в профиле (задача тимлида 27.09, живой
+   просмотр 375px). flex-start возвращает бейджу его естественную ширину "по тексту". Только
+   для прямых детей .stack — бейдж внутри .row (там свой align-items:center по вертикали) или
+   внутри <p> этим селектором не задет. */
+.stack > .badge {
+  align-self: flex-start;
 }
 
 /* Цитата-вино в чате — внутренняя навигация кнопкой, не ссылка (правило ссылок, 22.09):
@@ -952,8 +1090,10 @@ button.badge {
   position: sticky;
   bottom: 0;
   background: var(--bg);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line);
+  /* Линия-разделитель над полем ввода заменена отступом (задача тимлида 27.09, живой просмотр:
+     "старый стиль", не в духе безрамочной карточки вина) — --space-4 вместо прежних --space-3
+     +border, чтобы поле не "прилипало" к ленте сообщений без линии-подсказки о границе. */
+  padding-top: var(--space-4);
 }
 
 /* --- виджет сомелье, встроенный в карточку вина (SomelierCardWidget.tsx, задача тимлида
@@ -1070,6 +1210,19 @@ button.badge {
      растягивается на всю ширину экрана шире колонки контента под ней. */
   max-width: 720px;
   margin: 0 auto;
+  /* Задача тимлида 27.09, живой просмотр: при скролле в зазорах слева/справа от пилюли на
+     мгновение проезжал контент из-под шапки (на профиле — красная кнопка). Заливка --bg на
+     самой .app-header уже покрывает всю область под собой (проверено программно — зонд под
+     шапкой не виден ни на одном кадре), поэтому это не дыра в разметке, а известный класс
+     артефактов компоновки sticky-элементов при скролле: браузер может на кадр не перекласть
+     фон вместе с закреплённым блоком. isolation создаёт шапке свой контекст наложения, а
+     translateZ/will-change поднимают её в отдельный композитный слой — тогда её фон
+     перерисовывается вместе с блоком одним слоем, а не пересчитывается по кускам на каждый
+     кадр скролла. Не смогли воспроизвести течь в автоматическом браузере (Chromium,
+     статический кадр) — если на живом устройстве проблема останется, смотреть сюда первой. */
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .app-header__pill {

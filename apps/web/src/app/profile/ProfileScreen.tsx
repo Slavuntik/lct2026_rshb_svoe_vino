@@ -131,7 +131,7 @@ export function ProfileScreen() {
             переключение бейджа и держится до размонтирования экрана (следующей навигации). */}
         {upgradeStatus === "done" && <p className="badge badge--ok">{t("profile.guestSuccess")}</p>}
 
-        <h2>{t("profile.consentsTitle")}</h2>
+        <h2 className="card-heading">{t("profile.consentsTitle")}</h2>
         <div className="checkbox-row">
           <input type="checkbox" checked readOnly aria-readonly="true" />
           <span>
@@ -152,7 +152,7 @@ export function ProfileScreen() {
 
       {accountKind !== "registered" && (
         <form className="card stack" onSubmit={handleUpgrade}>
-          <h2>{t("profile.guestTitle")}</h2>
+          <h2 className="card-heading">{t("profile.guestTitle")}</h2>
           <p className="text-small">{t("profile.guestMessage")}</p>
           <label className="field">
             <span className="field__label">{t("profile.guestEmailLabel")}</span>
@@ -185,7 +185,7 @@ export function ProfileScreen() {
       )}
 
       <div className="card stack">
-        <h2>{t("profile.exportTitle")}</h2>
+        <h2 className="card-heading">{t("profile.exportTitle")}</h2>
         <p className="text-small">{t("profile.exportHint")}</p>
         {exportStatus === "done" && <p className="badge badge--ok">{t("profile.exportDone")}</p>}
         {exportStatus === "error" && <p className="field__error">{t("profile.exportError")}</p>}
@@ -195,7 +195,7 @@ export function ProfileScreen() {
       </div>
 
       <div className="card stack">
-        <h2>{t("profile.deleteTitle")}</h2>
+        <h2 className="card-heading">{t("profile.deleteTitle")}</h2>
         <p className="text-small">{t("profile.deleteWarning")}</p>
         {deleteStatus === "error" && <p className="field__error">{t("profile.deleteError")}</p>}
         <button type="button" className="btn btn--danger" onClick={() => setConfirmingDelete(true)}>
@@ -206,7 +206,7 @@ export function ProfileScreen() {
       {confirmingDelete && (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal stack">
-            <h2>{t("profile.deleteConfirmTitle")}</h2>
+            <h2 className="card-heading">{t("profile.deleteConfirmTitle")}</h2>
             <p>{t("profile.deleteConfirmMessage")}</p>
             <div className="row">
               <button type="button" className="btn btn--danger" onClick={() => void handleDelete()} disabled={deleteStatus === "loading"}>

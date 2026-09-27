@@ -259,7 +259,11 @@ export function ChatScreen() {
           {t("chat.modeAnalog")}
         </button>
         {mode === "ask" && (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setFiltersOpen((prev) => !prev)}>
+          /* Задача тимлида 27.09 (живой просмотр): три пилюли режима/фильтров были в двух
+             чужих стилях — прямоугольная btn--ghost рядом с круглыми chip. Один и тот же
+             .chip (система карточки вина), aria-pressed=filtersOpen — та же визуальная роль
+             "переключатель", что у режимов Вопрос/Аналог рядом. */
+          <button type="button" className="chip" aria-pressed={filtersOpen} onClick={() => setFiltersOpen((prev) => !prev)}>
             {t("chat.filtersToggle")}
           </button>
         )}

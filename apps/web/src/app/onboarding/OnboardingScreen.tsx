@@ -101,43 +101,51 @@ export function OnboardingScreen() {
         <p className="screen__subtitle">{t("onboarding.stepAgeSubtitle")}</p>
       </header>
 
-      <form className="stack" onSubmit={handleSubmit} noValidate>
-        <label className="field">
-          <span className="field__label">{t("onboarding.birthDateLabel")}</span>
-          <input
-            className="field__input"
-            type="date"
-            value={birthDate}
-            onChange={(event) => setBirthDate(event.target.value)}
-            max={new Date().toISOString().slice(0, 10)}
-          />
-        </label>
-        {birthDateError && <p className="field__error">{birthDateError}</p>}
+      {/* Задача тимлида 27.09 («Остальные экраны», живой просмотр): линия-разделитель между
+          возрастным гейтом и согласиями была в старом стиле, не в духе безрамочной карточки
+          вина — заменена отступом. Две группы вместо одного плоского .stack — единственный
+          способ дать ИМЕННО между ними больше воздуха, чем внутри каждой (.stack.gap
+          одинаков для всех прямых детей): form.stack--loose (36px) снаружи, обычный .stack
+          (16px) внутри каждой группы. */}
+      <form className="stack stack--loose" onSubmit={handleSubmit} noValidate>
+        <div className="stack">
+          <label className="field">
+            <span className="field__label">{t("onboarding.birthDateLabel")}</span>
+            <input
+              className="field__input"
+              type="date"
+              value={birthDate}
+              onChange={(event) => setBirthDate(event.target.value)}
+              max={new Date().toISOString().slice(0, 10)}
+            />
+          </label>
+          {birthDateError && <p className="field__error">{birthDateError}</p>}
+        </div>
 
-        <hr className="divider" />
+        <div className="stack">
+          <h2 className="card-heading">{t("onboarding.consentsTitle")}</h2>
+          <p className="text-small">{t("onboarding.consentsSubtitle")}</p>
 
-        <h2>{t("onboarding.consentsTitle")}</h2>
-        <p className="text-small">{t("onboarding.consentsSubtitle")}</p>
-
-        <div className="stack stack--tight">
-          <div className="checkbox-row">
-            <input type="checkbox" checked readOnly aria-readonly="true" />
-            <span>
-              {t(SCOPE_COPY.base.label)}
-              <br />
-              <span className="text-caption">{t(SCOPE_COPY.base.hint)}</span>
-            </span>
-          </div>
-          {OPTIONAL_CONSENT_SCOPES.map((scope) => (
-            <label className="checkbox-row" key={scope}>
-              <input type="checkbox" checked={scopes[scope]} onChange={() => toggleScope(scope)} />
+          <div className="stack stack--tight">
+            <div className="checkbox-row">
+              <input type="checkbox" checked readOnly aria-readonly="true" />
               <span>
-                {t(SCOPE_COPY[scope].label)}
+                {t(SCOPE_COPY.base.label)}
                 <br />
-                <span className="text-caption">{t(SCOPE_COPY[scope].hint)}</span>
+                <span className="text-caption">{t(SCOPE_COPY.base.hint)}</span>
               </span>
-            </label>
-          ))}
+            </div>
+            {OPTIONAL_CONSENT_SCOPES.map((scope) => (
+              <label className="checkbox-row" key={scope}>
+                <input type="checkbox" checked={scopes[scope]} onChange={() => toggleScope(scope)} />
+                <span>
+                  {t(SCOPE_COPY[scope].label)}
+                  <br />
+                  <span className="text-caption">{t(SCOPE_COPY[scope].hint)}</span>
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {status === "error" && <p className="field__error">{t("onboarding.registerFailed")}</p>}
