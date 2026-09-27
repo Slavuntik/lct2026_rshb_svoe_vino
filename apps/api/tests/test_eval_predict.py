@@ -190,3 +190,95 @@ def test_predict_sequential_posts_all_valid_json(client: TestClient):
         body = json.loads(r.text)
         assert set(body.keys()) == {"slug"}
         assert isinstance(body["slug"], str)
+
+
+# --- первый шаг: кадр больше 1024 px уменьшается до большей стороны 1024 ----
+
+def _jpeg(size: tuple[int, int], orientation: int | None = None) -> bytes:
+    import io
+
+    from PIL import Image
+
+    exif = Image.Exif()
+    if orientation is not None:
+        exif[0x0112] = orientation
+    buffer = io.BytesIO()
+    Image.new("RGB", size, (120, 30, 60)).save(buffer, format="JPEG", exif=exif.tobytes())
+    return buffer.getvalue()
+
+
+def _size(data: bytes) -> tuple[int, int]:
+    import io
+
+    from PIL import Image
+
+    with Image.open(io.BytesIO(data)) as image:
+        return image.size
+
+
+def test_downscale_landscape_keeps_proportions():
+    from app.cv.downscale import downscale_to_max_side
+
+    assert _size(downscale_to_max_side(_jpeg((3000, 2000)), 1024)) == (1024, 683)
+
+
+def test_downscale_portrait_keeps_proportions():
+    from app.cv.downscale import downscale_to_max_side
+
+    assert _size(downscale_to_max_side(_jpeg((3024, 4032)), 1024)) == (768, 1024)
+
+
+def test_downscale_when_only_one_side_exceeds_limit():
+    from app.cv.downscale import downscale_to_max_side
+
+    assert _size(downscale_to_max_side(_jpeg((1500, 600)), 1024)) == (1024, 410)
+
+
+def test_downscale_applies_exif_orientation():
+    """Телефонный снимок: пиксели лежат 4032×3024, EXIF велит повернуть на 90°."""
+    from app.cv.downscale import downscale_to_max_side
+
+    assert _size(downscale_to_max_side(_jpeg((4032, 3024), orientation=6), 1024)) == (768, 1024)
+
+
+def test_downscale_leaves_small_image_bytes_untouched():
+    from app.cv.downscale import downscale_to_max_side
+
+    for size in [(1024, 1024), (1024, 700), (800, 600)]:
+        data = _jpeg(size)
+        assert downscale_to_max_side(data, 1024) is data
+
+
+def test_downscale_passes_through_undecodable_bytes():
+    from app.cv.downscale import downscale_to_max_side
+
+    for data in [b"MOCKPHOTO:shato-vymysel-cabernet", b"\xff\xd8\xff\xe0garbage"]:
+        assert downscale_to_max_side(data, 1024) is data
+
+
+class _RecordingImageIndex:
+    index_version = "recording-stub"
+
+    def __init__(self) -> None:
+        self.seen: list[bytes] = []
+
+    def embed(self, image: bytes) -> list[float]:
+        return [0.0]
+
+    def search(self, image: bytes, top_k: int = 5) -> list[Match]:
+        self.seen.append(image)
+        return []
+
+    def build(self, refs, version) -> None:
+        return None
+
+    def add(self, slug, images) -> None:
+        return None
+
+
+def test_predict_hands_downscaled_image_to_pipeline(client: TestClient, app):
+    index = _RecordingImageIndex()
+    app.state.image_index = index
+    r = _predict(client, _jpeg((2048, 1536)))
+    assert r.status_code == 200
+    assert index.seen and _size(index.seen[0]) == (1024, 768)

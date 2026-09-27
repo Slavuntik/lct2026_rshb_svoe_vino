@@ -200,3 +200,35 @@ def test_winescan_manual_box_skips_detector_through_http(app, client):
         )
         assert response.status_code == 200
     assert calls == [False, False]
+
+
+# --- первый шаг: кадр больше 1024 px уменьшается до большей стороны 1024 ----
+
+def _seen_size(index: _RecordingIndex) -> tuple[int, int]:
+    assert len(index.seen) == 1
+    with Image.open(io.BytesIO(index.seen[0])) as frame:
+        return frame.size
+
+
+def test_large_frame_is_downscaled_before_the_engine_in_both_modes(app, client: TestClient):
+    for url in ("/v1/scan/photo", "/v1/scan/photo?flat=1"):
+        index = _with_recording_index(app)
+        response = client.post(url, files={"image": ("label.jpg", _photo_bytes((1536, 2048)), "image/jpeg")})
+        assert response.status_code == 200, response.text
+        assert _seen_size(index) == (768, 1024), url
+
+
+def test_box_is_applied_to_the_downscaled_frame(app, client: TestClient):
+    """Рамка в долях кадра — после уменьшения она вырезает ту же часть бутылки."""
+    index = _with_recording_index(app)
+
+    response = client.post(
+        "/v1/scan/photo",
+        files={"image": ("label.jpg", _photo_bytes((2000, 4000)), "image/jpeg")},
+        data={"box": "0.25,0.10,0.75,0.60"},
+    )
+
+    assert response.status_code == 200, response.text
+    width, height = _seen_size(index)
+    assert abs(width - 256) <= 1
+    assert abs(height - 512) <= 1

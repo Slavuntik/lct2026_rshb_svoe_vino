@@ -46,6 +46,7 @@ from ..config import Settings, get_settings_dep
 from ..cv.eval_report import read_eval_report
 from ..cv.interface import ImageIndex, LabelVerifier
 from ..cv.archive import archive_scan_safe
+from ..cv.downscale import downscale_to_max_side
 from ..cv.service import PhotoScanResult, run_photo_scan
 from ..cv.user_box import apply_user_box
 from ..db import get_db
@@ -224,6 +225,7 @@ async def flat_scan_response(
     try:
         if upload is None or not data or len(data) > settings.max_upload_bytes:
             return ScanPhotoFlatResponse(slug="")
+        data = downscale_to_max_side(data)
         # v0.4.10: рамка пользователя. Во flat негодная рамка НЕ ломает ответ — она просто
         # игнорируется: у скрипта оценки поля box нет вовсе, и появиться оно может только
         # по ошибке, а несгораемость важнее аккуратности ввода.
@@ -281,6 +283,10 @@ async def scan_photo(
         raise ApiError(400, "validation_error", "Пустой файл изображения")
     if len(data) > settings.max_upload_bytes:
         raise ApiError(400, "validation_error", f"Файл больше {settings.max_upload_bytes} байт")
+    # Первый шаг обработки (как во flat и /v1/eval/predict): кадр больше 1024 px по любой
+    # стороне уменьшается до большей стороны 1024 px. Рамка задана в долях кадра, поэтому
+    # применять её после уменьшения корректно.
+    data = downscale_to_max_side(data)
     # v0.4.10: рамка пользователя применяется ДО движка — контракт ImageIndex не меняется,
     # и прицел работает у обоих провайдеров. В rich негодная рамка — честная 400, как и
     # любой другой негодный ввод.
