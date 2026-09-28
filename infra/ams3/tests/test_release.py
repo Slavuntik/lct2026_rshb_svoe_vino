@@ -83,6 +83,8 @@ def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path)
     assert (base/'app/apps/api/main.py').read_text() == 'same runtime'
     assert not (release/'previous').exists()
     (release/'app/apps/api/main.py').write_text('same runtime')
+    (base/'app/packages/cv/.embed_cache').mkdir(parents=True)
+    (base/'app/packages/cv/.embed_cache/model.json').write_text('{}')
     accepted=run('bash',str(script),str(release),env=env)
     assert accepted.returncode == 0,accepted.stdout+accepted.stderr
     assert (base/'deployed-commit').read_text() == 'new-sha\n'

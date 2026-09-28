@@ -4,7 +4,7 @@ import hashlib
 import sys
 
 PATHS = ('apps/api', 'apps/shelf-finder/server', 'packages', 'pipeline')
-IGNORE = {'__pycache__', '.pytest_cache', '.ruff_cache', '.venv', 'node_modules', '.DS_Store'}
+IGNORE = {'__pycache__', '.pytest_cache', '.ruff_cache', '.venv', 'node_modules', '.DS_Store', '.embed_cache'}
 
 
 def snapshot(root):
