@@ -75,3 +75,15 @@ it('retries a rate-limited upload with the same photo',async()=>{
   expect((await scanShelf(new Blob(['original']),new AbortController().signal)).matches).toHaveLength(1);
   expect(fetch.mock.calls[1][1].body).toBe(fetch.mock.calls[2][1].body);
 });
+
+
+it('does not parse an HTML gateway error as health JSON',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response('<html>Bad gateway</html>',{status:502})));
+  await expect(scanShelf(new Blob(),new AbortController().signal)).rejects.toThrow('Распознавание пока не готово');
+});
+it('reports an HTML upload response as service unavailable',async()=>{
+  vi.stubGlobal('fetch',vi.fn()
+    .mockResolvedValueOnce(new Response(JSON.stringify({ready:true,asyncJobs:true})))
+    .mockResolvedValueOnce(new Response('<html>Unexpected upstream response</html>')));
+  await expect(scanShelf(new Blob(),new AbortController().signal)).rejects.toThrow('Сервис распознавания временно недоступен');
+});

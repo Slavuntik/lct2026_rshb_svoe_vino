@@ -2,6 +2,10 @@ import { storage } from './storage';
 import { translate } from '../i18n/translate';
 const t = (key: Parameters<typeof translate>[1], vars?: Parameters<typeof translate>[2]) => translate('ru', key, vars);
 
+async function shelfJson(response:Response) {
+  return response.json().catch(()=>{throw new Error(t('shelf.serviceUnavailable'));});
+}
+
 export interface ShelfMatch {
   box: [number, number, number, number];
   wineId: string;
@@ -41,7 +45,8 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
   let timer = setTimeout(abort, 15_000);
   try {
     const health = await fetch('/v1/shelf/health', {signal:controller.signal, credentials:'same-origin'});
-    const config = await health.json();
+    if (!health.ok) throw new Error(t('shelf.notReady'));
+    const config = await shelfJson(health);
     if (!health.ok || config.ready !== true) throw new Error(t('shelf.notReady'));
     clearTimeout(timer);
     const seconds = Number.isInteger(config.scanTimeoutSeconds) && config.scanTimeoutSeconds >= 15 && config.scanTimeoutSeconds <= 600 ? config.scanTimeoutSeconds : 300;
@@ -63,11 +68,11 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
       response=await upload();
     }
     const check = (status: number) => {
-      if (status < 200 || status >= 300) throw new Error(status === 429 ? t('shelf.rateLimited') : status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
+      if (status < 200 || status >= 300) throw new Error(status === 502 || status === 504 ? t('shelf.serviceUnavailable') : status === 429 ? t('shelf.rateLimited') : status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
     };
     check(response.status);
-    if (config.asyncJobs !== true) return parseShelfScan(await response.json());
-    const job = await response.json();
+    if (config.asyncJobs !== true) return parseShelfScan(await shelfJson(response));
+    const job = await shelfJson(response);
     if (response.status !== 202 || typeof job.jobId !== 'string' || !/^[a-f0-9]{32}$/.test(job.jobId)) throw new Error(t('shelf.invalidResult'));
     for (;;) {
       await new Promise<void>((resolve, reject) => {
@@ -78,7 +83,7 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
       });
       const poll = await fetch(`/v1/shelf/jobs/${job.jobId}`, options);
       check(poll.status);
-      const result = await poll.json();
+      const result = await shelfJson(poll);
       if (result.state === 'running') continue;
       if (result.state !== 'done' && result.state !== 'failed') throw new Error(t('shelf.invalidResult'));
       check(result.status);

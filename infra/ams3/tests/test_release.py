@@ -57,3 +57,33 @@ def test_failed_warmup_restores_previous_app_and_leaves_web(tmp_path):
     assert (base / 'web/index.html').read_text() == 'old-web'
     assert (base / 'somelye.env').read_text() == 'SECRET=keep\n'
     assert (release / 'failed-app/apps/api/uv.lock').exists()
+
+
+def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path):
+    import sys
+    base=tmp_path/'base';release=base/'releases/ui'
+    for root in (base/'app',release/'app'):
+        for directory in ('apps/api','apps/shelf-finder/server','packages','pipeline','infra/ams3'):
+            (root/directory).mkdir(parents=True,exist_ok=True)
+        (root/'apps/api/uv.lock').write_text('same dependencies')
+        (root/'apps/api/main.py').write_text('same runtime')
+        (root/'infra/ams3/check-release.py').write_text('pass\n')
+        (root/'infra/ams3/deploy.sh').write_text('exit 91\n')
+    shutil.copy(ROOT/'infra/ams3/runtime-unchanged.py',release/'app/infra/ams3/runtime-unchanged.py')
+    for root in (base,release):
+        (root/'web').mkdir();(root/'web/index.html').write_text(str(root))
+    (base/'somelye.env').write_text('SAME=1\n');(release/'commit').write_text('new-sha\n')
+    (base/'venv/bin').mkdir(parents=True);(base/'venv/bin/python').symlink_to(sys.executable)
+    tools=tmp_path/'tools';tools.mkdir();executable(tools/'curl','exit 0\n')
+    script=tmp_path/'activate.sh';script.write_text((ROOT/'infra/ams3/activate-release.sh').read_text().replace('BASE=/opt/somelye',f'BASE="{base}"'))
+    env={**os.environ,'SKIP_API_RESTART':'1','PATH':f'{tools}:{os.environ["PATH"]}'}
+    (release/'app/apps/api/main.py').write_text('changed runtime')
+    rejected=run('bash',str(script),str(release),env=env)
+    assert rejected.returncode != 0
+    assert (base/'app/apps/api/main.py').read_text() == 'same runtime'
+    assert not (release/'previous').exists()
+    (release/'app/apps/api/main.py').write_text('same runtime')
+    accepted=run('bash',str(script),str(release),env=env)
+    assert accepted.returncode == 0,accepted.stdout+accepted.stderr
+    assert (base/'deployed-commit').read_text() == 'new-sha\n'
+    assert (base/'web/index.html').read_text() == str(release)

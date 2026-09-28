@@ -18,6 +18,10 @@ if cmp -s "$RELEASE/commit" "$BASE/deployed-commit"; then
     exit 0
   fi
 fi
+if [ "${SKIP_API_RESTART:-0}" = 1 ]; then
+  "$BASE/venv/bin/python" "$RELEASE/app/infra/ams3/runtime-unchanged.py" "$BASE/app" "$RELEASE/app"
+  "$BASE/venv/bin/python" "$BASE/app/infra/ams3/check-release.py"
+fi
 BACKUP="$RELEASE/previous"
 mkdir "$BACKUP"
 cp -p "$BASE/somelye.env" "$BACKUP/somelye.env"
@@ -34,7 +38,7 @@ rollback() {
       [ ! -e "$BASE/web" ] || mv "$BASE/web" "$RELEASE/failed-web"
       mv "$BACKUP/web" "$BASE/web"
     fi
-    bash "$BASE/app/infra/ams3/deploy.sh" || echo 'ОШИБКА: автоматический откат API требует проверки'
+    [ "${SKIP_API_RESTART:-0}" = 1 ] || bash "$BASE/app/infra/ams3/deploy.sh" || echo 'ОШИБКА: автоматический откат API требует проверки'
   fi
   exit "$rc"
 }
@@ -42,7 +46,9 @@ trap rollback EXIT
 mv "$BASE/app" "$BACKUP/app"
 app_moved=1
 mv "$RELEASE/app" "$BASE/app"
-bash "$BASE/app/infra/ams3/deploy.sh"
+if [ "${SKIP_API_RESTART:-0}" != 1 ]; then
+  bash "$BASE/app/infra/ams3/deploy.sh"
+fi
 # Only publish the UI once the API is warm and the configured shelf is reachable.
 "$BASE/venv/bin/python" "$BASE/app/infra/ams3/check-release.py"
 mv "$BASE/web" "$BACKUP/web"

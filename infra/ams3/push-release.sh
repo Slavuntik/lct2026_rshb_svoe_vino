@@ -29,4 +29,4 @@ tar -czf - -C "$BUILD/apps/web/dist" . | "${SSH[@]}" "somelye@$HOST" "tar xzf - 
 printf '%s\n' "$REF" | "${SSH[@]}" "somelye@$HOST" "cat > '$REMOTE/commit'"
 # Existing production environment (including LLM keys) is deliberately preserved.
 [ "${PUSH_ONLY:-0}" = 1 ] && { echo "Релиз подготовлен в $REMOTE; работающий сервер не изменён"; exit 0; }
-"${SSH[@]}" "somelye@$HOST" "bash '$REMOTE/app/infra/ams3/activate-release.sh' '$REMOTE'"
+"${SSH[@]}" "somelye@$HOST" "SKIP_API_RESTART=${SKIP_API_RESTART:-0} bash '$REMOTE/app/infra/ams3/activate-release.sh' '$REMOTE'"
