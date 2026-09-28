@@ -1,0 +1,7 @@
+{
+  "n": 119,
+  "changed_accepted_decisions_vs_baseline": [],
+  "same_input_hashes": true,
+  "name_guard": false,
+  "cache": "warm; populated during guard run; latency is not a cold/new-photo measurement"
+}

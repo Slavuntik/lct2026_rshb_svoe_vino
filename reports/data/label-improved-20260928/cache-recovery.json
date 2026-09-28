@@ -1,0 +1,30 @@
+{
+  "test": "rename live cache directory without API restart, rescan C01",
+  "previous_cache_preserved": true,
+  "cache_recreated": true,
+  "metrics": {
+    "n": 1,
+    "known": 1,
+    "absent": 0,
+    "unscored": 0,
+    "http_or_protocol_errors": 0,
+    "candidate_top1_correct": 1,
+    "candidate_top5_correct": 1,
+    "correct_accepted": 1,
+    "accepted_total": 1,
+    "wrong_accepted_known": 0,
+    "false_accepts_absent": 0,
+    "correct_rejections": 0,
+    "precision_accepted": 1.0,
+    "recall_accepted_known": 1.0,
+    "end_to_end_accuracy": 1.0,
+    "latency_ms": {
+      "p50": 14093.91,
+      "p95": 14093.91,
+      "max": 14093.91,
+      "n": 1
+    },
+    "over_3s": 1,
+    "over_10s": 1
+  }
+}
