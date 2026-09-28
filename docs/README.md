@@ -1,9 +1,11 @@
 # Документация проекта
 
-- [Основной сканер: API, кэш, прицел, проверка имени и приёмка](label-recognition.md).
+- [Основной сканер: архитектура, API, исходники и проверка имени](label-recognition.md).
+- [Эксплуатация сканера: настройки, диагностика, Git-релизы и откат](label-recognition-operations.md).
+- [Оценка сканера: данные, воспроизведение, тесты и ограничения метрик](label-recognition-evaluation.md).
 - [Docker Compose: quick-start всего проекта и витрины](DOCKER_QUICKSTART.md)
 
-## Актуальные точки входа — 27.09.2026
+## Актуальные точки входа — 28.09.2026
 
 - [Итоговый прогон интеграции](product/shelf-integration-validation-2026-09-27.md).
 - [Сверка с оригинальным PDF и готовность](product/requirements-check.md).
