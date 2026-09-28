@@ -14,7 +14,7 @@ beforeEach(()=>{
   URL.createObjectURL=vi.fn(()=>`blob:test-${++id}`); URL.revokeObjectURL=vi.fn();
   vi.mocked(prepareShelfPhoto).mockResolvedValue({blob:new Blob(['image']),width:100,height:200});
   vi.spyOn(apiClient,'selectShelf').mockImplementation(async (_wish, ids) => ({
-    wines:(ids??['wine-a']).map((wine_id,i)=>({wine_id,name: wine_id==='wine-a'?'Первое вино':'Второе вино',rank:i+1,reason:'Белое сухое',basis:'catalog-filters'})),
+    wines:(ids??['wine-a']).map((wine_id,i)=>({wine_id,name: wine_id==='wine-a'?'Первое вино':'Второе вино',rank:i+1,reason:'Белое сухое',basis:'catalog-filters',relevance:i===0?'high' as const:'low' as const})),
     warnings:[],understood:['белое','сухое'],message:'Подбор готов',
   }));
 });
@@ -37,10 +37,10 @@ describe('Sommelier shelf flow',()=>{
     await waitFor(()=>expect(scanShelf).toHaveBeenCalledTimes(1));
     await screen.findByRole('img',{name:'Полка 1'});
     expect(apiClient.selectShelf).not.toHaveBeenCalled();
-    expect(screen.queryByText('#1 Первое вино')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^#1 Первое вино/)).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Какое вино ищем?'),'белое сухое');
     await user.click(screen.getByRole('button',{name:'Подобрать и найти на полках'}));
-    await screen.findByText('#1 Первое вино');
+    await screen.findByText(/^#1 Первое вино/);
     expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',['wine-a'],expect.any(AbortSignal));
     expect(scanShelf).toHaveBeenCalledTimes(1);
   });
@@ -56,7 +56,8 @@ describe('Sommelier shelf flow',()=>{
     await screen.findByRole('heading',{name:'Подходят на ваших полках'});
     await waitFor(()=>expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',['wine-a','wine-b'],expect.any(AbortSignal)));
     expect(max).toBe(1);
-    await screen.findByText('#1 Первое вино'); await screen.findByText('#2 Второе вино');
+    await screen.findByText(/^#1 Первое вино/);
+    expect((await screen.findByText(/^#2 Второе вино/)).closest('a')).toHaveClass('shelf-box--low');
     expect(screen.getAllByRole('img')).toHaveLength(2);
     const photoOne=screen.getByRole('heading',{name:'Полка 1'}).closest('article')!;
     await user.click(within(photoOne).getByRole('button',{name:'Удалить'}));
@@ -68,9 +69,9 @@ describe('Sommelier shelf flow',()=>{
     const user=await begin();
     await user.upload(screen.getByLabelText('Добавить фото полок'),[new File(['a'],'a.jpg',{type:'image/jpeg'}),new File(['b'],'b.jpg',{type:'image/jpeg'})]);
     await screen.findByText('Ошибка второй полки');
-    await screen.findByText('#1 Первое вино');
+    await screen.findByText(/^#1 Первое вино/);
     await user.click(screen.getByRole('button',{name:'Повторить эту полку'}));
-    await screen.findByText('#2 Второе вино');
+    await screen.findByText(/^#2 Второе вино/);
     expect(scanShelf).toHaveBeenCalledTimes(3);
   });
   it('does not show the preview catalog as found when recognition returns no matches',async()=>{

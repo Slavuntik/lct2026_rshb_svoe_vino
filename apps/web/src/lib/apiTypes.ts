@@ -477,7 +477,8 @@ export interface EventPayload {
 }
 
 export interface ShelfSelection {
-  wines: {wine_id:string; name:string; rank:number; reason:string; basis:string}[];
+  wines: {wine_id:string; name:string; rank:number; reason:string; basis:string; relevance?:'high'|'medium'|'low'}[];
+  total_eligible?: number;
   understood: string[];
   warnings: string[];
   message: string;

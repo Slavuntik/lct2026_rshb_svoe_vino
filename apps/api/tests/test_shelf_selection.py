@@ -125,3 +125,37 @@ def test_long_identifiers_rejected(client):
         json={"wish": "белое", "wine_ids": ["a" * 301]},
     )
     assert response.status_code == 422
+
+
+def test_full_catalog_and_shelf_beyond_first_fifty(client, monkeypatch):
+    from app.rag.mock import MockRetriever
+    from app.rag.interface import Candidate
+
+    data = tuple((f"wine-{i:03}", {"name": f"Wine {i}", "color": "белое", "sugar_category": "сухое"}, None) for i in range(75))
+    monkeypatch.setattr(dish_pairing, "_iter_catalog_cards", lambda *args: data)
+    def search(self, query, *, top_k, **kwargs):
+        assert top_k >= len(data)
+        return [Candidate(id=row[0], kind="wine", score=-i, text="", url="", meta={}) for i, row in enumerate(data)]
+    monkeypatch.setattr(MockRetriever, "search", search)
+    headers = auth_header(make_guest(client))
+    preview = client.post("/v1/sommelier/shelf-selection", headers=headers, json={"wish": "ароматное"}).json()
+    assert len(preview["wines"]) == 75
+    assert preview["total_eligible"] == 75
+    assert {w["relevance"] for w in preview["wines"]} == {"high", "medium", "low"}
+    found = client.post("/v1/sommelier/shelf-selection", headers=headers, json={"wish": "ароматное", "wine_ids": ["wine-070", "wine-074"]}).json()
+    assert [w["wine_id"] for w in found["wines"]] == ["wine-070", "wine-074"]
+    assert all(w["relevance"] == "low" for w in found["wines"])
+    all_found = client.post("/v1/sommelier/shelf-selection", headers=headers, json={"wish": "белое", "wine_ids": [row[0] for row in data]}).json()
+    assert len(all_found["wines"]) == 75
+
+
+def test_equal_evidence_has_equal_color_and_missing_text_score_is_not_hidden(client, monkeypatch):
+    from app.rag.mock import MockRetriever
+    monkeypatch.setattr(dish_pairing, "_iter_catalog_cards", lambda *args: cards())
+    monkeypatch.setattr(MockRetriever, "search", lambda *args, **kwargs: [])
+    headers = auth_header(make_guest(client))
+    wines = client.post("/v1/sommelier/shelf-selection", headers=headers, json={"wish": "белое"}).json()["wines"]
+    assert len(wines) == 2 and {w["relevance"] for w in wines} == {"high"}
+    fallback = client.post("/v1/sommelier/shelf-selection", headers=headers, json={"wish": "ароматное", "wine_ids": ["red-dry"]}).json()["wines"]
+    assert len(fallback) == 1 and fallback[0]["relevance"] == "low"
+    assert "не подтверждено" in fallback[0]["reason"]

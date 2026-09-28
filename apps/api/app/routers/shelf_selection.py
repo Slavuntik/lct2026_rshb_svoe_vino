@@ -5,7 +5,7 @@ CV remains independent; this endpoint never guesses an identity from an image.
 from __future__ import annotations
 
 import re
-from typing import Annotated
+from typing import Annotated, Literal
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -42,6 +42,7 @@ class RankedWine(BaseModel):
     rank: int
     reason: str
     basis: str
+    relevance: Literal["high", "medium", "low"]
 
 
 class ShelfSelectionResponse(BaseModel):
@@ -49,6 +50,7 @@ class ShelfSelectionResponse(BaseModel):
     understood: list[str]
     warnings: list[str]
     message: str
+    total_eligible: int = 0
 
 
 @router.post("/shelf-selection", response_model=ShelfSelectionResponse)
@@ -104,16 +106,15 @@ def shelf_selection(
             warnings=warnings,
             message="На снимках пока нет уверенно распознанных вин из базы.",
         )
-    hits = retriever.search(positive, filters=filters, collections=("wines",), top_k=50)
+    catalog = dish_pairing.get_catalog_cards(retriever, settings)
+    hits = retriever.search(positive, filters=filters, collections=("wines",), top_k=max(1, len(catalog)))
     relevance = {
-        hit.id: max(0.0, float(hit.score)) for hit in hits if hit.kind == "wine"
+        hit.id: float(hit.score) for hit in hits if hit.kind == "wine"
     }
     rules = _load_rules_data(_rules_path(settings)) if dish else {}
     dish_vector = (rules.get("portal_tag_defaults") or {}).get(dish, {})
     ranked = []
-    for wine_id, source, vector in dish_pairing.get_catalog_cards(retriever, settings):
-        if allowed is not None and wine_id not in allowed:
-            continue
+    for wine_id, source, vector in catalog:
         color, sugar, region = (
             source.get("color"),
             source.get("sugar_category"),
@@ -145,30 +146,41 @@ def shelf_selection(
                 tier, fit, basis = 1, scored[0], "pairing-rules"
                 reasons.append(scored[1] or f"Подбор по правилам к «{dish}»")
             else:
-                continue
+                reasons.append("Сочетание с блюдом не подтверждено каталогом или правилами")
         elif not reasons and not negatives:
-            if wine_id not in relevance:
-                continue
             basis = "text-search"
-            reasons.append("Близко к запросу по поиску сомелье; проверьте описание")
+            reasons.append(
+                "Относительная близость к запросу по поиску сомелье; проверьте описание"
+                if wine_id in relevance else "Соответствие запросу не подтверждено; проверьте описание"
+            )
         if not reasons:
             reasons.append("Соответствует указанным исключениям")
         ranked.append(
-            (tier, fit, relevance.get(wine_id, 0), wine_id, source, reasons, basis)
+            (tier, fit, relevance.get(wine_id, float("-inf")), wine_id, source, reasons, basis)
         )
     ranked.sort(key=lambda r: (-r[0], -r[1], -r[2], r[3]))
-    wines = [
-        RankedWine(
-            wine_id=row[3],
-            name=row[4].get("name") or row[3],
-            rank=i + 1,
-            reason=" · ".join(row[5]),
-            basis=row[6],
-        )
-        for i, row in enumerate(ranked[:50])
-    ]
+    # Equal evidence receives equal color; IDs only stabilize display order.
+    # Bands are relative to the full eligible catalog, never the five preview cards.
+    groups = sorted({row[:3] for row in ranked}, reverse=True)
+    bands = {
+        key: ("high" if i / max(1, len(groups)-1) < 1/3 else
+              "medium" if i / max(1, len(groups)-1) < 2/3 else "low")
+        for i, key in enumerate(groups)
+    }
+    wines = []
+    for row in ranked:
+        if allowed is not None and row[3] not in allowed:
+            continue
+        band = bands[row[:3]]
+        if (dish and row[0] == 0) or (row[6] == "text-search" and row[3] not in relevance):
+            band = "low"
+        wines.append(RankedWine(
+            wine_id=row[3], name=row[4].get("name") or row[3],
+            rank=len(wines)+1, reason=" · ".join(row[5]), basis=row[6], relevance=band,
+        ))
     return ShelfSelectionResponse(
         wines=wines,
+        total_eligible=len(ranked),
         understood=understood,
         warnings=warnings,
         message=(

@@ -137,25 +137,26 @@ paths:
                 dish: {type: string, nullable: true, maxLength: 100}
       responses:
         "200":
-          description: Ранжирование до 50 вин из каталога
+          description: Полный ранжированный каталог или все подходящие распознанные вина
           content:
             application/json:
               schema:
                 type: object
-                required: [wines, understood, warnings, message]
+                required: [wines, understood, warnings, message, total_eligible]
                 properties:
                   wines:
                     type: array
-                    maxItems: 50
                     items:
                       type: object
-                      required: [wine_id, name, rank, reason, basis]
+                      required: [wine_id, name, rank, reason, basis, relevance]
                       properties:
                         wine_id: {type: string}
                         name: {type: string}
                         rank: {type: integer, minimum: 1}
+                        relevance: {type: string, enum: [high, medium, low], description: Относительная группа по всему подходящему каталогу; не вероятность распознавания}
                         reason: {type: string}
                         basis: {type: string, enum: [catalog-filters, catalog-pairing, pairing-rules, text-search]}
+                  total_eligible: {type: integer, minimum: 0, description: Число вариантов полного каталога после строгих фильтров}
                   understood: {type: array, items: {type: string}}
                   warnings: {type: array, items: {type: string}}
                   message: {type: string}
