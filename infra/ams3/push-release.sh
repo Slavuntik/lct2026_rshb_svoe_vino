@@ -5,7 +5,7 @@ HOST="${1:?укажи хост ams3}"
 KEY="${2:-$HOME/.ssh/ci_do_ams3}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 REF="$(git -C "$ROOT" rev-parse "${DEPLOY_REF:-HEAD}^{commit}")"
-SSH=(ssh -i "$KEY" -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-%r@%h -o ControlPersist=120)
+SSH=(ssh -i "$KEY" -o UserKnownHostsFile="${SSH_KNOWN_HOSTS:-$HOME/.ssh/known_hosts}" -o BatchMode=yes -o ControlMaster=auto -o ControlPath=/tmp/somelye-%r@%h -o ControlPersist=120)
 
 # Older queued CI runs must not roll back a newer main. Explicit tags/manual rollback remain supported.
 if [ "${GITHUB_EVENT_NAME:-}" = push ] && [ "${GITHUB_REF:-}" = refs/heads/main ]; then
