@@ -52,9 +52,9 @@ jobs:
       - name: pytest (agents/B-api.md — без сети, mock LLM + mock RAG)
         working-directory: apps/api
         run: uv run pytest -q
-      - name: CPU OCR regression tests
+      - name: CPU recognition regression tests
         working-directory: apps/api
-        run: uv run pytest ../../packages/cv/tests/test_ocr_rapid.py -q
+        run: uv run pytest ../../packages/cv/tests/test_ocr_rapid.py ../../packages/cv/tests/test_encoder.py ../../packages/cv/tests/test_identity.py ../../packages/cv/tests/test_text_fusion.py -q
       - name: Native deployment rollback tests
         working-directory: apps/api
         run: uv run pytest ../../infra/ams3/tests -q

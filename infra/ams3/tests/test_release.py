@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -59,7 +60,8 @@ def test_failed_warmup_restores_previous_app_and_leaves_web(tmp_path):
     assert (release / 'failed-app/apps/api/uv.lock').exists()
 
 
-def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path):
+@pytest.mark.parametrize("publish_fails", [False, True])
+def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path, publish_fails):
     import sys
     base=tmp_path/'base';release=base/'releases/ui'
     for root in (base/'app',release/'app'):
@@ -74,7 +76,7 @@ def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path)
         (root/'web').mkdir();(root/'web/index.html').write_text(str(root))
     (base/'somelye.env').write_text('SAME=1\n');(release/'commit').write_text('new-sha\n')
     (base/'venv/bin').mkdir(parents=True);(base/'venv/bin/python').symlink_to(sys.executable)
-    tools=tmp_path/'tools';tools.mkdir();executable(tools/'curl','exit 0\n')
+    tools=tmp_path/'tools';tools.mkdir();executable(tools/'curl','exit 22\n' if publish_fails else 'exit 0\n')
     script=tmp_path/'activate.sh';script.write_text((ROOT/'infra/ams3/activate-release.sh').read_text().replace('BASE=/opt/somelye',f'BASE="{base}"'))
     env={**os.environ,'SKIP_API_RESTART':'1','PATH':f'{tools}:{os.environ["PATH"]}'}
     (release/'app/apps/api/main.py').write_text('changed runtime')
@@ -85,7 +87,17 @@ def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path)
     (release/'app/apps/api/main.py').write_text('same runtime')
     (base/'app/packages/cv/.embed_cache').mkdir(parents=True)
     (base/'app/packages/cv/.embed_cache/model.json').write_text('{}')
+    (base/'deployed-commit').write_text('old-sha\n')
+    old_inode=(base/'app').stat().st_ino
     accepted=run('bash',str(script),str(release),env=env)
-    assert accepted.returncode == 0,accepted.stdout+accepted.stderr
-    assert (base/'deployed-commit').read_text() == 'new-sha\n'
-    assert (base/'web/index.html').read_text() == str(release)
+    if publish_fails:
+        assert accepted.returncode != 0
+        assert (base/'deployed-commit').read_text() == 'old-sha\n'
+        assert (base/'web/index.html').read_text() == str(base)
+    else:
+        assert accepted.returncode == 0,accepted.stdout+accepted.stderr
+        assert (base/'deployed-commit').read_text() == 'new-sha\n'
+        assert (base/'web/index.html').read_text() == str(release)
+    assert (base/'app').stat().st_ino == old_inode
+    assert (base/'app/packages/cv/.embed_cache/model.json').read_text() == '{}'
+    assert not (release/'previous/app').exists()

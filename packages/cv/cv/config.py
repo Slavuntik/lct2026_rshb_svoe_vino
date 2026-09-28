@@ -21,7 +21,9 @@ DEVFIX_DIR = Path(os.environ.get("CV_DEVFIX_DIR", str(PACKAGE_ROOT / "devfix")))
 DATA_DIR = Path(os.environ.get("CV_DATA_DIR", str(PACKAGE_ROOT / "data")))
 QDRANT_PATH = Path(os.environ.get("CV_QDRANT_PATH", str(DATA_DIR / "qdrant")))
 MANIFEST_PATH = Path(os.environ.get("CV_MANIFEST_PATH", str(DATA_DIR / "manifest.json")))
-EMBED_CACHE_DIR = Path(os.environ.get("CV_EMBED_CACHE_DIR", str(PACKAGE_ROOT / ".embed_cache")))
+# Runtime state must survive an atomic replacement of the application release.
+_USER_CACHE = Path(os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache")))
+EMBED_CACHE_DIR = Path(os.environ.get("CV_EMBED_CACHE_DIR", str(_USER_CACHE / "vinchik" / "embeddings")))
 AUGMENT_CACHE_DIR = Path(os.environ.get("CV_AUGMENT_CACHE_DIR", str(DATA_DIR / "augmented")))
 
 # --- Бэкенд индекса: контракт "IMAGE_INDEX_MODE=qdrant_embedded | pgvector" ---------

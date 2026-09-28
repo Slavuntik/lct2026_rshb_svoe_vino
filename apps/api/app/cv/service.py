@@ -112,6 +112,8 @@ class PhotoScanResult:
     candidates: list[dict] = field(default_factory=list)  # v0.4.11: top-5 позиций, обогащённых карточкой
     # CV_FUSION: чем читали этикетку ("vlm" | "ocr") и что прочитали — для архива сканов
     # и отладки; в HTTP-ответ не выводятся (контракт не меняется).
+    identity_rejection: str | None = None
+    model_label_fields: dict[str, str] = field(default_factory=dict)
     text_source: str | None = None
     label_text: str | None = None
     # Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) — служебное
@@ -686,6 +688,7 @@ def _fusion_text_and_vectors(
         ocr_text = ""
 
     got: dict[str, str] = {}
+    model_status = {}
     bottle_flags: dict[str, bool | None] = {}
     for name, fut in readers.items():
         try:
@@ -693,18 +696,23 @@ def _fusion_text_and_vectors(
         except Exception:  # noqa: BLE001 — не успела к дедлайну/сбой потока/HTTP-ошибка шлюза
             _MODEL_BREAKERS[name].record_failure(name=name, fails_threshold=fails_threshold, cooldown_s=cooldown_s)
             text, bottle_visible = "", None
+            model_status[name] = "error_or_deadline"
         else:
+            model_status[name] = "text" if text.strip() else "empty"
             _MODEL_BREAKERS[name].record_success(name=name)  # пустой, но ЧЕСТНЫЙ ответ — не сбой
         bottle_flags[name] = bottle_visible
         if text.strip():
             got[name] = text
+    logger.info("cv_fusion_sources: models=%s", model_status)
     no_bottle_signal = _no_bottle_signal(bottle_flags)
     if not got:
         return ocr_text, "ocr", ocr_text, vectors, no_bottle_signal
     source = "vlm_both" if len(got) == 2 else next(iter(got))
     model_text = " ".join(got[k] for k in ("vlm", "vlm_local") if k in got)
     label_text = f"{model_text} {ocr_text}".strip() if settings.cv_fusion_merge_model_text else model_text
-    return label_text, source, ocr_text, vectors, no_bottle_signal
+    # Mixed model readings need an explicit consensus policy before a name veto.
+    fields = getattr(next(iter(got.values())), "fields", {}) if len(got) == 1 else {}
+    return vision_llm.LabelText(label_text, fields), source, ocr_text, vectors, no_bottle_signal
 
 
 def _choose_fusion_result(model_result, local_result, mode: str) -> tuple[object, str]:
@@ -934,6 +942,19 @@ def _run_photo_scan_fusion(
             ranked_top[0].cv_score, settings.cv_not_a_bottle_cv_ceiling,
         )
 
+    identity_rejection = None
+    model_fields = getattr(label_text, "fields", {})
+    if confident and model_fields:
+        from cv.identity import name_conflicts
+        entry = getattr(text_index, "catalog", {}).get(chosen_slug)
+        conflict = entry is not None and name_conflicts(model_fields, entry, ocr_text)
+        if conflict:
+            logger.info("cv_identity: name_conflict=True applied=%s", settings.cv_fusion_name_guard)
+            if settings.cv_fusion_name_guard:
+                confident = False
+                identity_rejection = "name_conflict"
+                # Flat remains a best-guess contract; rich asks the user to clarify.
+
     card = build_wine_card(retriever, chosen_slug) if confident else None
     similar: list[dict] = []
     analogs: list[dict] = []
@@ -959,6 +980,8 @@ def _run_photo_scan_fusion(
         # выбрана (chosen_side) — "merge" (дефолт) всегда "model", поэтому здесь
         # БИТ В БИТ старое поведение; при "local" — честно "ocr"/ocr_text, а не
         # модельные значения, которые на самом деле не повлияли на ответ.
+        identity_rejection=identity_rejection,
+        model_label_fields=model_fields,
         text_source=text_source if chosen_side == "model" else "ocr",
         label_text=label_text if chosen_side == "model" else ocr_text,
         local_slug=local_slug,

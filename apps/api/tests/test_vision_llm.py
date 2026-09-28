@@ -325,3 +325,34 @@ def test_hanging_model_is_abandoned_after_timeout(client: TestClient, app, tmp_p
     r = _photo(client, b"MOCKPHOTO:x", flat=True)
     assert time.monotonic() - t < 1.5  # не ждём зависшую модель дольше общего дедлайна
     assert r.json() == {"slug": "tabiya-roze"}  # решил текст OCR
+
+
+def test_reader_preserves_field_boundaries_without_changing_text(monkeypatch):
+    monkeypatch.setattr(vision_llm.urllib.request, 'urlopen', lambda *a, **kw: _Resp(
+        _chat_payload('{"bottle_visible":true,"winery":"Усадьба Дивноморское","name":"Вечерница"}')))
+    text, visible = vision_llm.read_label_fields_or_raise(_jpeg(), url='https://test/v1', key='k', model='m', timeout_s=1)
+    assert isinstance(text, str)
+    assert visible is True
+    assert text.fields == {'winery': 'Усадьба Дивноморское', 'name': 'Вечерница',
+                           'grapes': '', 'color': '', 'sugar': '', 'vintage': ''}
+    assert json.loads(json.dumps(text)) == 'Усадьба Дивноморское Вечерница'
+
+
+def test_name_guard_declines_rich_card_but_preserves_flat_best_guess(app, client, tmp_path, monkeypatch):
+    slug = 'shato-vymysel-cabernet'
+    fields = {'winery': 'Усадьба Дивноморское', 'name': 'Вечерница'}
+    app.state.image_index = _FusionImageIndex([_m(slug, .92), _m('other-wine', .60)])
+    app.state.label_verifier = _SpyLabelVerifier(ocr_text='Усадьба Дивноморское Вечерница')
+    _enable_fusion(app, tmp_path, monkeypatch, catalog_rows=[
+        {'Slug': slug, 'Название вина': 'Южный лес', 'Винодельня': 'Усадьба Дивноморское', 'Категория': 'Красное'},
+        {'Slug': 'other-wine', 'Название вина': 'Другое', 'Винодельня': 'Другая винодельня', 'Категория': 'Белое'},
+    ], cv_fusion_text_source='vlm', vision_llm_url='https://test/v1', vision_llm_key='k', cv_fusion_name_guard=False)
+    _fake_readers(monkeypatch, remote_text=vision_llm.LabelText('Усадьба Дивноморское Вечерница', fields))
+    before = _photo(client, b'MOCKPHOTO:x', flat=False)
+    assert before.status_code == 200 and before.json()['slug'] == slug
+    app.state.settings = dataclasses.replace(app.state.settings, cv_fusion_name_guard=True)
+    after = _photo(client, b'MOCKPHOTO:x', flat=False)
+    assert after.status_code == 200
+    assert after.json()['slug'] is None and after.json()['not_in_catalog'] is True
+    assert after.json()['matches'][0]['slug'] == slug
+    assert _photo(client, b'MOCKPHOTO:x', flat=True).json() == {'slug': slug}

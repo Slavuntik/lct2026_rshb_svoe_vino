@@ -1,0 +1,25 @@
+{
+  "n": 119,
+  "known": 72,
+  "absent": 46,
+  "unscored": 1,
+  "http_or_protocol_errors": 0,
+  "candidate_top1_correct": 70,
+  "candidate_top5_correct": 71,
+  "correct_accepted": 60,
+  "accepted_total": 66,
+  "wrong_accepted_known": 0,
+  "false_accepts_absent": 6,
+  "correct_rejections": 40,
+  "precision_accepted": 0.9090909090909091,
+  "recall_accepted_known": 0.8333333333333334,
+  "end_to_end_accuracy": 0.847457627118644,
+  "latency_ms": {
+    "p50": 9533.74,
+    "p95": 20565.204999999998,
+    "max": 25641.92,
+    "n": 119
+  },
+  "over_3s": 119,
+  "over_10s": 43
+}

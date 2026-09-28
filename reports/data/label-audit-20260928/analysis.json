@@ -1,0 +1,606 @@
+{
+  "metrics": {
+    "n": 119,
+    "known": 72,
+    "absent": 46,
+    "unscored": 1,
+    "http_or_protocol_errors": 0,
+    "candidate_top1_correct": 70,
+    "candidate_top5_correct": 71,
+    "correct_accepted": 61,
+    "accepted_total": 67,
+    "wrong_accepted_known": 0,
+    "false_accepts_absent": 6,
+    "correct_rejections": 40,
+    "precision_accepted": 0.9104477611940298,
+    "recall_accepted_known": 0.8472222222222222,
+    "end_to_end_accuracy": 0.8559322033898306,
+    "latency_ms": {
+      "p50": 9380.0,
+      "p95": 13757.934,
+      "max": 17456.01,
+      "n": 119
+    },
+    "over_3s": 119,
+    "over_10s": 43,
+    "candidate_top1_accuracy": 0.9722222222222222,
+    "candidate_top5_recall": 0.9861111111111112,
+    "false_accept_rate_absent": 0.13043478260869565,
+    "accepted_coverage": 0.5677966101694916,
+    "wilson95_descriptive_only": {
+      "candidate_top1": [
+        0.9042582477856177,
+        0.9923489780955054
+      ],
+      "precision_accepted": [
+        0.8180724780033378,
+        0.9583090493620113
+      ],
+      "recall_accepted": [
+        0.7467771063249946,
+        0.912492912705243
+      ],
+      "false_accept_rate": [
+        0.06117840362035115,
+        0.25665857779073004
+      ]
+    },
+    "text_source_counts": {
+      "vlm": 68,
+      "ocr": 51
+    },
+    "chosen_side_source_counts": {
+      "model/vlm": 68,
+      "local/ocr": 50,
+      "model/ocr": 1
+    }
+  },
+  "sensitivity_excluding_disputed_C56_C58": {
+    "n": 117,
+    "known": 72,
+    "absent": 44,
+    "unscored": 1,
+    "http_or_protocol_errors": 0,
+    "candidate_top1_correct": 70,
+    "candidate_top5_correct": 71,
+    "correct_accepted": 61,
+    "accepted_total": 65,
+    "wrong_accepted_known": 0,
+    "false_accepts_absent": 4,
+    "correct_rejections": 40,
+    "precision_accepted": 0.9384615384615385,
+    "recall_accepted_known": 0.8472222222222222,
+    "end_to_end_accuracy": 0.8706896551724138,
+    "latency_ms": {
+      "p50": 9380.0,
+      "p95": 13764.928,
+      "max": 17456.01,
+      "n": 117
+    },
+    "over_3s": 117,
+    "over_10s": 43
+  },
+  "postfilter_replay_not_new_inference": [
+    {
+      "cv_floor": 0.77,
+      "gap_floor": 0.03,
+      "accepted": 67,
+      "correct": 61,
+      "false_accepts_absent": 6,
+      "precision": 0.9104477611940298,
+      "recall": 0.8472222222222222
+    },
+    {
+      "cv_floor": 0.8,
+      "gap_floor": 0.03,
+      "accepted": 62,
+      "correct": 56,
+      "false_accepts_absent": 6,
+      "precision": 0.9032258064516129,
+      "recall": 0.7777777777777778
+    },
+    {
+      "cv_floor": 0.85,
+      "gap_floor": 0.03,
+      "accepted": 37,
+      "correct": 35,
+      "false_accepts_absent": 2,
+      "precision": 0.9459459459459459,
+      "recall": 0.4861111111111111
+    },
+    {
+      "cv_floor": 0.9,
+      "gap_floor": 0.03,
+      "accepted": 7,
+      "correct": 7,
+      "false_accepts_absent": 0,
+      "precision": 1.0,
+      "recall": 0.09722222222222222
+    },
+    {
+      "cv_floor": 0.77,
+      "gap_floor": 0.05,
+      "accepted": 58,
+      "correct": 55,
+      "false_accepts_absent": 3,
+      "precision": 0.9482758620689655,
+      "recall": 0.7638888888888888
+    },
+    {
+      "cv_floor": 0.77,
+      "gap_floor": 0.08,
+      "accepted": 47,
+      "correct": 45,
+      "false_accepts_absent": 2,
+      "precision": 0.9574468085106383,
+      "recall": 0.625
+    }
+  ],
+  "paired_branches": {
+    "caveat": "Same CV vectors and union of both text candidate sets; not independent OCR-only run",
+    "known": 72,
+    "local_top1_correct": 69,
+    "model_top1_correct": 68,
+    "disagreements": [
+      {
+        "qid": "C59",
+        "truth": "bryut-beloe-zolotaya-balka",
+        "local": "zolotaya-balka-igristoe-krasnoe-polusladkoe",
+        "model": "bryut-beloe-zolotaya-balka",
+        "chosen": "model"
+      },
+      {
+        "qid": "U05",
+        "truth": null,
+        "local": "usadba-divnomorskoe-yuzhnyy-les-merlo-krasnoe-suhoe-137",
+        "model": "usadba-divnomorskoe-solnechnyy-veter-shardone-beloe-suhoe-125",
+        "chosen": "model"
+      },
+      {
+        "qid": "U06",
+        "truth": "kaberne-sovinon-1",
+        "local": "kaberne-sovinon-1",
+        "model": "agora-rosa-viva-cabernet-sauvignon-shiraz",
+        "chosen": "local"
+      },
+      {
+        "qid": "U08",
+        "truth": "kaberne-sovinon-1",
+        "local": "kaberne-sovinon-appasimento",
+        "model": "agora-rosa-viva-cabernet-sauvignon-shiraz",
+        "chosen": "local"
+      },
+      {
+        "qid": "U09",
+        "truth": null,
+        "local": "winepark-kuchuk-isar-kaberne-sovinon-krasnoe-suhoe-135",
+        "model": "ferrum-winery-sabernet-sauvignon-cabernet-franc-kaberne-sovinon-krasnoe-suhoe-12",
+        "chosen": "local"
+      },
+      {
+        "qid": "U10",
+        "truth": null,
+        "local": "winepark-pino-blan-beloe-suhoe-125",
+        "model": "ferrum-winery-sabernet-sauvignon-cabernet-franc-kaberne-sovinon-krasnoe-suhoe-12",
+        "chosen": "local"
+      },
+      {
+        "qid": "F01",
+        "truth": null,
+        "local": "bukovinka",
+        "model": "pino-nuar-2025",
+        "chosen": "local"
+      },
+      {
+        "qid": "F04",
+        "truth": null,
+        "local": "aristov-anima-pinot-grigio-blush",
+        "model": "chteau-le-grand-vostock-pinot-gris-reserve-pino-gri-beloe-suhoe-135",
+        "chosen": "local"
+      },
+      {
+        "qid": "F06",
+        "truth": null,
+        "local": "aristov-anima-pinot-grigio-blush",
+        "model": "chteau-le-grand-vostock-pinot-gris-reserve-pino-gri-beloe-suhoe-135",
+        "chosen": "local"
+      },
+      {
+        "qid": "F07",
+        "truth": null,
+        "local": "aya-organic-wine-vineyards-purity-in-trinity-pino-nuar-rozovoe-suhoe-13",
+        "model": "aya-organic-wine-vineyards-purity-in-chenin-blanc-shenen-blan-beloe-suhoe-11",
+        "chosen": "local"
+      },
+      {
+        "qid": "F08",
+        "truth": null,
+        "local": "olymp-winery-shato-belbek-kaberne-kaberne-sovinon-krasnoe-suhoe-11",
+        "model": "inkerman-shato-ruzh",
+        "chosen": "local"
+      },
+      {
+        "qid": "F11",
+        "truth": "merlo-litavshhuk",
+        "local": "kuban-vino-vysokiy-bereg-merlo-krasnoe-suhoe-135",
+        "model": "soyuz-vino-kubanskoe-traditsionnoe-krasnoe-suhoe-07-krasnye-sorta-vinograda-11",
+        "chosen": "local"
+      },
+      {
+        "qid": "F12",
+        "truth": null,
+        "local": "kuban-vino-flyor-dyu-syud-roze-de-tamane-traminer-rozovyy-rozovoe-suhoe-125",
+        "model": "rozovoe-bryut",
+        "chosen": "local"
+      },
+      {
+        "qid": "F15",
+        "truth": null,
+        "local": "aristov-anima-pinot-grigio-blush",
+        "model": "chteau-le-grand-vostock-pinot-noir-reserve-pino-nuar-krasnoe-suhoe-135",
+        "chosen": "local"
+      },
+      {
+        "qid": "F17",
+        "truth": null,
+        "local": "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+        "model": "chteau-le-grand-vostock-pinot-gris-reserve-pino-gri-beloe-suhoe-135",
+        "chosen": "local"
+      },
+      {
+        "qid": "F19",
+        "truth": null,
+        "local": "bukovinka",
+        "model": "pino-nuar-2025",
+        "chosen": "local"
+      },
+      {
+        "qid": "F24",
+        "truth": null,
+        "local": "novyy-svet-dom-shampanskih-vin-novyy-svet-kokur-kokur-belyy-beloe-ekstra-bryut-12",
+        "model": "abrau-dyurso-brut-dor-blanc-de-blancs-shardone-beloe-bryut-12",
+        "chosen": "local"
+      },
+      {
+        "qid": "F26",
+        "truth": null,
+        "local": "vysokij-bereg-risling-zelenaya-seriya",
+        "model": "lorio-sovinon-blan-2025",
+        "chosen": "local"
+      },
+      {
+        "qid": "F29",
+        "truth": null,
+        "local": "kuban-vino-kaberne-de-tamane-kaberne-sovinon-krasnoe-suhoe-125",
+        "model": "semeynaya-vinodelnya-mihaila-kolesnikova-ispanets-kaberne-sovinon-krasnoe-suhoe-148",
+        "chosen": "model"
+      },
+      {
+        "qid": "F31",
+        "truth": "oleg",
+        "local": "oleg",
+        "model": "soyuz-vino-kubanskoe-traditsionnoe-krasnoe-suhoe-krasnye-sorta-vinograda-11",
+        "chosen": "local"
+      },
+      {
+        "qid": "F34",
+        "truth": null,
+        "local": "vysokij-bereg-risling-zelenaya-seriya",
+        "model": "lorio-sovinon-blan-2025",
+        "chosen": "local"
+      },
+      {
+        "qid": "F37",
+        "truth": null,
+        "local": "vinodelnya-78-muskat-otbornyy-muskat-yantarnyy-beloe-suhoe-125",
+        "model": "lorio-sovinon-blan-2025",
+        "chosen": "local"
+      },
+      {
+        "qid": "F41",
+        "truth": null,
+        "local": "roze-1",
+        "model": "novyy-svet-dom-shampanskih-vin-novyy-svet-polusladkoe-roze-shardone-rozovoe-115",
+        "chosen": "local"
+      },
+      {
+        "qid": "F44",
+        "truth": null,
+        "local": "fanagoriya-fanagoria-extra-brut-rose-2019-pino-nuar-igristoe-bryut-rozovoe-ekstra-bryut-12",
+        "model": "fanagoriya-100-ottenkov-shardone-beloe-suhoe-14",
+        "chosen": "local"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "qid": "C36",
+      "id": "20260922T120825_dd15f2",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "usadba-divnomorskoe-yuzhnyy-les-merlo-krasnoe-suhoe-137",
+      "candidate_top1": "usadba-divnomorskoe-yuzhnyy-les-merlo-krasnoe-suhoe-137",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.863957459949665,
+        "gap": 0.036730259091902084,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 9085.05
+    },
+    {
+      "qid": "C43",
+      "id": "20260922T120922_68b804",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "usadba-divnomorskoe-yuzhnyy-les-merlo-krasnoe-suhoe-137",
+      "candidate_top1": "usadba-divnomorskoe-yuzhnyy-les-merlo-krasnoe-suhoe-137",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.8737346323098196,
+        "gap": 0.040755774248685483,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 8869.44
+    },
+    {
+      "qid": "C56",
+      "id": "20260922T121150_aba69d",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "czitronnyj-magaracha",
+      "candidate_top1": "czitronnyj-magaracha",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.8274499227520582,
+        "gap": 0.09266336521893126,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 9003.37
+    },
+    {
+      "qid": "C58",
+      "id": "20260922T121242_b7d8d2",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "caperavi-avtorskoe-vino",
+      "candidate_top1": "caperavi-avtorskoe-vino",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.8251214983168775,
+        "gap": 0.1784531203682832,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 9906.32
+    },
+    {
+      "qid": "U02",
+      "id": "20260922T120831_abbc9a",
+      "truth_kind": "known",
+      "true_slug": "golubitskoe-estate-kaberne-sovinon-krasnoe-suhoe-137",
+      "shown_slug": null,
+      "candidate_top1": "golubitskoe-estate-kaberne-sovinon-krasnoe-suhoe-137",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.8988630360284977,
+        "gap": 0.011580049067436704,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 10708.33
+    },
+    {
+      "qid": "U05",
+      "id": "20260922T121210_e0ec03",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "usadba-divnomorskoe-solnechnyy-veter-shardone-beloe-suhoe-125",
+      "candidate_top1": "usadba-divnomorskoe-solnechnyy-veter-shardone-beloe-suhoe-125",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.8293396565792369,
+        "gap": 0.07987441697569175,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 12390.24
+    },
+    {
+      "qid": "U06",
+      "id": "20260923T145321_62848b",
+      "truth_kind": "known",
+      "true_slug": "kaberne-sovinon-1",
+      "shown_slug": null,
+      "candidate_top1": "kaberne-sovinon-1",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.9266788324604223,
+        "gap": 0.01546928815926063,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 8540.88
+    },
+    {
+      "qid": "U08",
+      "id": "20260923T145618_f56661",
+      "truth_kind": "known",
+      "true_slug": "kaberne-sovinon-1",
+      "shown_slug": null,
+      "candidate_top1": "kaberne-sovinon-appasimento",
+      "truth_rank": 2,
+      "confidence": {
+        "top1_score": 0.9043934204876914,
+        "gap": 0.001125661633484265,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 9610.98
+    },
+    {
+      "qid": "U11",
+      "id": "20260926T183138_61ed14",
+      "truth_kind": "known",
+      "true_slug": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+      "shown_slug": null,
+      "candidate_top1": "abrau-dyurso-abrau-durso-reserve-brut-shardone-beloe-bryut-115",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.9432460378614208,
+        "gap": 0.003439052884935956,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 8438.38
+    },
+    {
+      "qid": "F05",
+      "id": "20260922T113254_b9368f",
+      "truth_kind": "known",
+      "true_slug": "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13",
+      "shown_slug": null,
+      "candidate_top1": "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.6910763588614789,
+        "gap": 0.026793410235107173,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 8962.57
+    },
+    {
+      "qid": "F11",
+      "id": "20260922T120422_045363",
+      "truth_kind": "known",
+      "true_slug": "merlo-litavshhuk",
+      "shown_slug": null,
+      "candidate_top1": "kuban-vino-vysokiy-bereg-merlo-krasnoe-suhoe-135",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.7440105690377722,
+        "gap": 0.06740896052917256,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 9119.41
+    },
+    {
+      "qid": "F22",
+      "id": "20260922T120734_20d0c3",
+      "truth_kind": "known",
+      "true_slug": "winemaker-selection",
+      "shown_slug": null,
+      "candidate_top1": "winemaker-selection",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.7564357150862187,
+        "gap": 0.0032788786308300955,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 12838.24
+    },
+    {
+      "qid": "F28",
+      "id": "20260922T121040_1d71cb",
+      "truth_kind": "known",
+      "true_slug": "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "shown_slug": null,
+      "candidate_top1": "novyy-svet-dom-shampanskih-vin-rossiyskoe-shampanskoe-vyderzhannoe-polusladkoe-rozovoe-novyy-svet-shardone-125",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.7875593298603041,
+        "gap": 0.024444512444610877,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 11681.73
+    },
+    {
+      "qid": "F29",
+      "id": "20260922T121113_e087d0",
+      "truth_kind": "absent",
+      "true_slug": null,
+      "shown_slug": "semeynaya-vinodelnya-mihaila-kolesnikova-ispanets-kaberne-sovinon-krasnoe-suhoe-148",
+      "candidate_top1": "semeynaya-vinodelnya-mihaila-kolesnikova-ispanets-kaberne-sovinon-krasnoe-suhoe-148",
+      "truth_rank": null,
+      "confidence": {
+        "top1_score": 0.8003265748944007,
+        "gap": 0.04184172806441233,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 11503.53
+    },
+    {
+      "qid": "F31",
+      "id": "20260922T121156_bde664",
+      "truth_kind": "known",
+      "true_slug": "oleg",
+      "shown_slug": null,
+      "candidate_top1": "oleg",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.7615688286684738,
+        "gap": 0.13358024726885753,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 8974.81
+    },
+    {
+      "qid": "F39",
+      "id": "20260922T154522_5fcb22",
+      "truth_kind": "known",
+      "true_slug": "di-kaspiko-di-caspico-fiori-di-mare-verde",
+      "shown_slug": null,
+      "candidate_top1": "di-kaspiko-di-caspico-fiori-di-mare-verde",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.6874466082517433,
+        "gap": 0.06301763005158689,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 11401.59
+    },
+    {
+      "qid": "F40",
+      "id": "20260922T164740_7b5451",
+      "truth_kind": "known",
+      "true_slug": "cru-lermont-risling",
+      "shown_slug": null,
+      "candidate_top1": "cru-lermont-risling",
+      "truth_rank": 1,
+      "confidence": {
+        "top1_score": 0.6995307904861049,
+        "gap": 0.0009684028807920297,
+        "f1_top1": null,
+        "f1_top5": null,
+        "eval_missing": true
+      },
+      "elapsed_ms": 10328.0
+    }
+  ]
+}

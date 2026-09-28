@@ -1,0 +1,70 @@
+{
+  "catalog_mapping_n": 2103,
+  "missing_reference_n": 44,
+  "missing_reference_slugs": [
+    "agora-rosa-viva-beloe-bryut",
+    "agora-rosa-viva-beloe-polusladkoe",
+    "agora-rosa-viva-cabernet-franc",
+    "agora-rosa-viva-cabernet-sauvignon-shiraz",
+    "agora-rosa-viva-muscat",
+    "agora-rosa-viva-riesling",
+    "agora-rosa-viva-rozovoe-polusladkoe",
+    "agora-yachting-cabernet-sauvignon",
+    "aligote-barrel-2024",
+    "aligote-barrel-2025",
+    "aristov-anima-millesimato",
+    "aristov-anima-pinot-grigio-blush",
+    "avtohtonnoe-vino-kryma-beloe-suhoe",
+    "aya-khrustaleva-76-merlot-organik",
+    "beloe-polusladkoe",
+    "beloe-suhoe",
+    "blush-mirage-risling",
+    "blush-mirage-rkacziteli-shiraz",
+    "blush-mirage-sovinon-zelyonyj",
+    "cru-lermont-risling",
+    "di-caspico-rozovoe-bryut",
+    "dva-brata-pet-nat-kokur-2024",
+    "fanagoriya-fanagoriya-hey-bey-shardone-beloe-suhoe-13",
+    "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13",
+    "fanagoriya-velvet-season-risling-beloe-sladkoe-12",
+    "karbon-glyu-2024",
+    "katharon-mezenka-risling-polusuhoe",
+    "kokur-suhoe",
+    "method-classic-kokur",
+    "pet-nat-sosedi-2024",
+    "pino-nuar-2025",
+    "rkacziteli-beloe-suhoe",
+    "rozovoe-bryut",
+    "rozovoe-bryut-1",
+    "rozovoe-bryut-spumante",
+    "rozovoe-polusladkoe",
+    "rozovoe-polusladkoe-1",
+    "shardone-1",
+    "shardone-rezerv",
+    "sosedi-aligote-shardone-2025",
+    "vibes-vermentino-viognier-barrel-fermented-2022",
+    "vinodelnya-vedernikov-vedernikov-tsimlyanskiy-chyornyy-tsimlyanskiy-chernyy-krasnoe-suhoe-14",
+    "winemaker-selection",
+    "zhemchuzhnaya-9-czitron-shardone"
+  ],
+  "known_photo_missing_reference": [
+    {
+      "qid": "F05",
+      "slug": "fanagoriya-velvet-season-muskat-ottonel-beloe-sladkoe-13"
+    },
+    {
+      "qid": "F22",
+      "slug": "winemaker-selection"
+    },
+    {
+      "qid": "F40",
+      "slug": "cru-lermont-risling"
+    }
+  ],
+  "fingerprints": {
+    "manifest.json": "5b6dd0e773059d17e74f8eb3b55fd58b1db807b31f1595c739b17ebe9ca84683",
+    "slug_refs.json": "937169e3d458a0931f68ad966ea1f11baad6bc5d137d476a696619e346390fa9",
+    "strapi_output0709.csv": "12a1b0b620db7a2264b094446861e83940a927708d65a1b7ccffda7ec3aeffee",
+    "families.json": "6f60453ddb8d1f505f6c53fd6f850af7b6ac5a3d2644430c78a4585ac841f0ee"
+  }
+}

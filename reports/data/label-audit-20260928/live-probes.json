@@ -1,0 +1,30 @@
+[
+  {
+    "host": "89.110.72.101",
+    "route": "/v1/scan/photo?flat=0",
+    "status": 500,
+    "body": "{\"error\":{\"code\":\"internal_error\",\"message\":\"Внутренняя ошибка сервиса\"}}",
+    "seconds": 4.974
+  },
+  {
+    "host": "89.110.72.101",
+    "route": "/v1/eval/predict",
+    "status": 200,
+    "body": "{\"slug\":\"\"}",
+    "seconds": 4.317
+  },
+  {
+    "host": "84.201.163.74",
+    "route": "/v1/scan/photo?flat=0",
+    "status": 500,
+    "body": "{\"error\":{\"code\":\"internal_error\",\"message\":\"Внутренняя ошибка сервиса\"}}",
+    "seconds": 1.465
+  },
+  {
+    "host": "84.201.163.74",
+    "route": "/v1/eval/predict",
+    "status": 200,
+    "body": "{\"slug\":\"\"}",
+    "seconds": 1.472
+  }
+]

@@ -218,8 +218,8 @@ def test_large_frame_is_downscaled_before_the_engine_in_both_modes(app, client: 
         assert _seen_size(index) == (768, 1024), url
 
 
-def test_box_is_applied_to_the_downscaled_frame(app, client: TestClient):
-    """Рамка в долях кадра — после уменьшения она вырезает ту же часть бутылки."""
+def test_box_is_applied_before_downscaling_the_selected_frame(app, client: TestClient):
+    """Кроп остаётся в той же области, но получает весь бюджет 1024 px."""
     index = _with_recording_index(app)
 
     response = client.post(
@@ -230,5 +230,26 @@ def test_box_is_applied_to_the_downscaled_frame(app, client: TestClient):
 
     assert response.status_code == 200, response.text
     width, height = _seen_size(index)
-    assert abs(width - 256) <= 1
-    assert abs(height - 512) <= 1
+    assert abs(width - 512) <= 1
+    assert abs(height - 1024) <= 1
+
+
+def test_large_photo_keeps_label_pixels_in_rich_and_flat(app, client):
+    index = _with_recording_index(app)
+    photo = _photo_bytes((4000, 3000))
+    for route in ('/v1/scan/photo?flat=0', '/v1/scan/photo?flat=1'):
+        response = client.post(route, files={'image': ('photo.jpg', photo, 'image/jpeg')},
+                               data={'box': '0.4,0.4,0.6,0.6'})
+        assert response.status_code == 200
+        with Image.open(io.BytesIO(index.seen[-1])) as cropped:
+            assert cropped.size == (800, 600), 'Resize-before-crop used to lose 93.5% of ROI pixels'
+
+
+def test_large_invalid_flat_box_still_resizes_whole_frame(app, client):
+    index = _with_recording_index(app)
+    response = client.post('/v1/scan/photo?flat=1',
+                           files={'image': ('photo.jpg', _photo_bytes((4000, 3000)), 'image/jpeg')},
+                           data={'box': 'invalid'})
+    assert response.status_code == 200
+    with Image.open(io.BytesIO(index.seen[-1])) as frame:
+        assert frame.size == (1024, 768)

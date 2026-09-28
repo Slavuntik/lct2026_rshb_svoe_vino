@@ -20,7 +20,7 @@ if cmp -s "$RELEASE/commit" "$BASE/deployed-commit"; then
 fi
 if [ "${SKIP_API_RESTART:-0}" = 1 ]; then
   "$BASE/venv/bin/python" "$RELEASE/app/infra/ams3/runtime-unchanged.py" "$BASE/app" "$RELEASE/app"
-  "$BASE/venv/bin/python" "$BASE/app/infra/ams3/check-release.py"
+  "$BASE/venv/bin/python" "$RELEASE/app/infra/ams3/check-release.py"
 fi
 BACKUP="$RELEASE/previous"
 mkdir "$BACKUP"
@@ -30,32 +30,39 @@ web_moved=0
 rollback() {
   rc=$?
   trap - EXIT
-  if [ "$rc" -ne 0 ] && [ "$app_moved" = 1 ]; then
+  if [ "$rc" -ne 0 ]; then
     echo 'Новый релиз не прошёл проверку, восстанавливаем предыдущий'
-    [ ! -e "$BASE/app" ] || mv "$BASE/app" "$RELEASE/failed-app"
-    mv "$BACKUP/app" "$BASE/app"
+    if [ "$app_moved" = 1 ]; then
+      [ ! -e "$BASE/app" ] || mv "$BASE/app" "$RELEASE/failed-app"
+      mv "$BACKUP/app" "$BASE/app"
+    fi
     if [ "$web_moved" = 1 ]; then
       [ ! -e "$BASE/web" ] || mv "$BASE/web" "$RELEASE/failed-web"
       mv "$BACKUP/web" "$BASE/web"
     fi
-    [ "${SKIP_API_RESTART:-0}" = 1 ] || bash "$BASE/app/infra/ams3/deploy.sh" || echo 'ОШИБКА: автоматический откат API требует проверки'
+    if [ "$app_moved" = 1 ]; then
+      bash "$BASE/app/infra/ams3/deploy.sh" || echo 'ОШИБКА: автоматический откат API требует проверки'
+    fi
   fi
   exit "$rc"
 }
 trap rollback EXIT
-mv "$BASE/app" "$BACKUP/app"
-app_moved=1
-mv "$RELEASE/app" "$BASE/app"
 if [ "${SKIP_API_RESTART:-0}" != 1 ]; then
+  mv "$BASE/app" "$BACKUP/app"
+  app_moved=1
+  mv "$RELEASE/app" "$BASE/app"
   bash "$BASE/app/infra/ams3/deploy.sh"
 fi
 # Only publish the UI once the API is warm and the configured shelf is reachable.
-"$BASE/venv/bin/python" "$BASE/app/infra/ams3/check-release.py"
+# UI-only releases leave the live app tree (including runtime files) untouched.
+GATE="$BASE/app/infra/ams3/check-release.py"
+[ "${SKIP_API_RESTART:-0}" != 1 ] || GATE="$RELEASE/app/infra/ams3/check-release.py"
+"$BASE/venv/bin/python" "$GATE"
 mv "$BASE/web" "$BACKUP/web"
 web_moved=1
 mv "$RELEASE/web" "$BASE/web"
 # nginx's worker must be able to traverse/read assets created under deployment umask.
 chmod -R a+rX "$BASE/web"
-cp "$RELEASE/commit" "$BASE/deployed-commit"
 curl --fail --silent --show-error http://127.0.0.1/release.json
+cp "$RELEASE/commit" "$BASE/deployed-commit"
 printf '\nРелиз активен: %s; предыдущий сохранён: %s\n' "$(cat "$RELEASE/commit")" "$BACKUP"

@@ -69,6 +69,18 @@ _JSON_RE = re.compile(r"\{.*\}", re.S)
 _READ_CHUNK_BYTES = 1
 
 
+class LabelText(str):
+    """String-compatible OCR text with the original structured VLM fields.
+
+    Existing readers/ranking consume the string; identity checks retain field
+    boundaries instead of trying to recover a wine name from concatenated text.
+    """
+    def __new__(cls, text: str, fields: dict[str, str] | None = None):
+        value = super().__new__(cls, text)
+        value.fields = dict(fields or {})
+        return value
+
+
 class VisionLLMError(Exception):
     """Сбой запроса к шлюзу (сеть/HTTP/таймаут/формат) — тимлид 22.09 (расширение
     брифа scan-budget, п.8): предохранителю (`app/cv/service.py::_ModelBreaker`)
@@ -223,7 +235,8 @@ def read_label_fields_or_raise(
         logger.warning("vision_llm: %s — фолбэк на OCR", type(exc).__name__)
         raise VisionLLMError(type(exc).__name__) from exc
     data = parse_json_object(content) or {}
-    text = fields_to_text({k: str(data.get(k) or "").strip() for k in FIELDS})
+    fields = {k: str(data.get(k) or "").strip() for k in FIELDS}
+    text = LabelText(fields_to_text(fields), fields)
     raw_bottle_visible = data.get("bottle_visible")
     bottle_visible = raw_bottle_visible if isinstance(raw_bottle_visible, bool) else None
     return text, bottle_visible
