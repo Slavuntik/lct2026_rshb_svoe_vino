@@ -89,6 +89,20 @@ Workflow `Deploy native stands (ams3 + YC)` запускается при push �
 сервера. Используются `AMS3_HOST`, `AMS3_SSH_KEY`, `AMS3_KNOWN_HOSTS`; публичный ключ
 CI также установлен пользователю somelye на YC. Host key YC закреплён в
 `yc_known_hosts`. GitHub API-токен не требуется для SSH-доставки релиза.
+CI включает API, RAG, сборку/тесты web и обязательные тесты Shelf API на CPU
+(Python 3.12, PyTorch 2.14.0+cpu, без внешнего LLM и скачивания каталога).
+Ошибка проверки синхронизации исходников или Shelf API блокирует итоговый CI.
+Пропуск тестов перед выкаткой разрешён только явным `skip_tests` при ручном запуске.
+Runners предоставляются GitHub (`ubuntu-latest`); устанавливать runner на серверах
+не требуется. На сервере нужны SSH-доступ somelye, разрешённый restart службы,
+зависимости, данные и локальный env согласно bootstrap.
+
+Проверка 28.09.2026: SSH-доступ, active/enabled API и штатный release gate
+подтверждены на обоих стендах. Наличие GitHub Secrets и успешный автоматический
+запуск Actions требуют отдельной проверки в GitHub: локальная сессия не имеет
+доступа к Actions API. Ручная доставка через тот же Git-скрипт не доказывает,
+что репозиторные Secrets уже заданы.
+
 Старый Docker workflow `deploy-hack-yc.yml` к этим нативным стендам не относится.
 
 `push-release.sh` сначала собирает web из изолированного `git archive`, затем

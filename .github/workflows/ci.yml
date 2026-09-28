@@ -1,11 +1,6 @@
 name: CI
 
-# Монорепо строится параллельно несколькими агентами (см. ../../ORCHESTRATION.md) — на
-# момент написания этого workflow apps/api, apps/web и packages/rag ещё пустые каталоги.
-# Job `detect` смотрит, какие зоны уже реально содержат проект, и остальные jobs включаются
-# только для готовых зон — чтобы чужой ещё не начатый участок не красил CI всем подряд.
-# Как только зона появляется (commit с pyproject.toml/package.json), её job включается сам,
-# без правок этого файла.
+# Проверки API, RAG, веба и отдельного сервиса распознавания полок.
 
 on:
   pull_request:
@@ -60,6 +55,24 @@ jobs:
       - name: Native deployment rollback tests
         working-directory: apps/api
         run: uv run pytest ../../infra/ams3/tests -q
+
+  shelf-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OPENBLAS_CORETYPE: Sandybridge
+      OPENBLAS_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU inference runtime and test dependencies
+        run: |
+          python -m pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e 'apps/shelf-finder/server[ml,vlm,test]'
+      - name: Shelf API tests (no GPU, external LLM or catalog downloads)
+        run: python -m pytest apps/shelf-finder/server/tests -q
 
   rag-tests:
     needs: detect
@@ -116,7 +129,7 @@ jobs:
         working-directory: apps/web
 
   ci-summary:
-    needs: [detect, api-tests, rag-tests, web-tests]
+    needs: [detect, api-tests, rag-tests, web-tests, shelf-tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -125,6 +138,11 @@ jobs:
           echo "api: ${{ needs.detect.outputs.api }} -> ${{ needs.api-tests.result }}"
           echo "rag: ${{ needs.detect.outputs.rag }} -> ${{ needs.rag-tests.result }}"
           echo "web: ${{ needs.detect.outputs.web }} -> ${{ needs.web-tests.result }}"
+          echo "shelf: ${{ needs.shelf-tests.result }}"
+          if [[ "${{ needs.detect.result }}" != "success" || "${{ needs.shelf-tests.result }}" != "success" ]]; then
+            echo "::error::Проверки структуры репозитория или сервиса полок не прошли"
+            exit 1
+          fi
           # Проваленный job для готовой зоны красит весь CI; job для ещё не начатой зоны
           # (skipped, т.к. detect.outputs.* == 'false') считается успехом, не блокирует.
           for pair in "${{ needs.detect.outputs.api }}:${{ needs.api-tests.result }}" \
