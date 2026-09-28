@@ -1,5 +1,7 @@
 # Документация проекта
 
+- [Docker Compose: quick-start всего проекта и витрины](DOCKER_QUICKSTART.md)
+
 ## Актуальные точки входа — 27.09.2026
 
 - [Итоговый прогон интеграции](product/shelf-integration-validation-2026-09-27.md).

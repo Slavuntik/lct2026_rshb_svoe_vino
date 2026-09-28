@@ -1,0 +1,30 @@
+name: Docker quick-start
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['compose.yaml', 'infra/docker/**', 'apps/api/**', 'apps/web/**', 'packages/llm/**', '.github/workflows/docker.yml']
+  push:
+    branches: [main]
+    paths: ['compose.yaml', 'infra/docker/**', 'apps/api/**', 'apps/web/**', 'packages/llm/**', '.github/workflows/docker.yml']
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare temporary configuration
+        run: |
+          umask 077
+          printf 'JWT_SECRET=%s\nDOCKER_PORT=8080\n' "$(openssl rand -hex 32)" > .env.docker
+      - name: Build and start web + API
+        run: docker compose --env-file .env.docker up -d --build --wait --wait-timeout 600
+      - name: Exercise public ingress and guest API
+        run: python3 infra/docker/smoke.py
+      - name: Logs
+        if: failure()
+        run: docker compose --env-file .env.docker logs --tail=100
+      - name: Stop test stack
+        if: always()
+        run: docker compose --env-file .env.docker down -v
