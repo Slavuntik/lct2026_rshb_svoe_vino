@@ -10,6 +10,7 @@ function renderLanding() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app" element={<div>APP_PROBE</div>} />
+      <Route path="/app/shelf" element={<div>SHELF_PROBE</div>} />
     </Routes>,
     "/",
   );
@@ -116,4 +117,14 @@ describe("LandingPage — SEO-минимум", () => {
     expect(document.title).toBe(previousTitle);
     expect(document.head.querySelector('meta[property="og:title"]')).not.toBeInTheDocument();
   });
+});
+
+
+it('opens shelf from the landing page after age confirmation',async()=>{
+  renderLanding();
+  fireEvent.click(screen.getByRole('button',{name:'Найти своё вино на полке'}));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.queryByText('SHELF_PROBE')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:/да, мне есть 18/i}));
+  await waitFor(()=>expect(screen.getByText('SHELF_PROBE')).toBeInTheDocument());
 });

@@ -142,9 +142,6 @@ export function ShelfScreen() {
       {photo.state==='done'&&!photo.result?.matches.length&&<p>{t('shelf.noMatches')}</p>}
     </article>)}
     <Link className="btn btn--secondary" to="/app/chat" state={{prefillMessage:acceptedWish||wish}}>{t('shelf.chat')}</Link>
-    <details className="shelf-secondary-links"><summary>{t('shelf.extraOptions')}</summary>
-      <p className="text-small">{t('shelf.extraDescription')}</p>
-      <a href="/shelf-ui/?engine=server" target="_blank" rel="noopener noreferrer">{t('shelf.advanced')}</a>
-    </details>
+
   </section>;
 }

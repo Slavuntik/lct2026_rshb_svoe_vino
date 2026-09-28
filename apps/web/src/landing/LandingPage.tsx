@@ -18,13 +18,14 @@ type CtaStatus = "idle" | "loading" | "error";
 export function LandingPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const [entryPath, setEntryPath] = useState("/app");
   const [ageGateOpen, setAgeGateOpen] = useState(false);
   const [ageDenied, setAgeDenied] = useState(false);
   const [ctaStatus, setCtaStatus] = useState<CtaStatus>("idle");
 
   useLandingSeo();
 
-  async function enterAppAsGuest() {
+  async function enterAppAsGuest(path = entryPath) {
     setCtaStatus("loading");
     try {
       const token = await apiClient.registerGuest({ age_confirmed: true, consent_version: CONSENT_VERSION });
@@ -33,15 +34,16 @@ export function LandingPage() {
       // Возраст и базовое согласие уже подтверждены гостевым входом — экран онбординга
       // из /app в этом пути не нужен, он остаётся для прямых заходов на /app.
       storage.setOnboardingComplete(true);
-      navigate("/app");
+      navigate(path);
     } catch {
       setCtaStatus("error");
     }
   }
 
-  function handleTryClick() {
+  function handleTryClick(path = "/app") {
+    setEntryPath(path);
     if (storage.hasSeenLandingAgeGate()) {
-      void enterAppAsGuest();
+      void enterAppAsGuest(path);
     } else {
       setAgeDenied(false);
       setAgeGateOpen(true);
@@ -74,8 +76,11 @@ export function LandingPage() {
         <h1>{t("landing.heroTitle")}</h1>
         <p className="screen__subtitle">{t("landing.heroSubtitle")}</p>
         <div className="stack stack--tight" style={{ alignItems: "center" }}>
-          <button type="button" className="btn btn--primary" onClick={handleTryClick} disabled={ctaStatus === "loading"}>
+          <button type="button" className="btn btn--primary" onClick={() => handleTryClick()} disabled={ctaStatus === "loading"}>
             {ctaStatus === "loading" ? t("landing.ctaTryLoading") : t("landing.ctaTry")}
+          </button>
+          <button type="button" className="btn btn--secondary" onClick={() => handleTryClick("/app/shelf")} disabled={ctaStatus === "loading"}>
+            {t("shelf.findTitle")}
           </button>
           {ctaStatus === "error" && <p className="field__error">{t("landing.ctaTryError")}</p>}
           <p className="text-caption">{t("landing.ctaTrust")}</p>

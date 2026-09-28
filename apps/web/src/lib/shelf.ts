@@ -19,6 +19,11 @@ export async function prepareShelfPhoto(file: File): Promise<{blob:Blob; width:n
   try {
     if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > 32_000_000) throw new Error(t('shelf.resolutionError'));
     const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+    // Keep original pixels when resizing/conversion is unnecessary: another JPEG
+    // encoding can erase the tiny label features needed for geometric verification.
+    if (scale === 1 && ['image/jpeg', 'image/png'].includes(file.type)) {
+      return {blob:file, width:bitmap.width, height:bitmap.height};
+    }
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
     canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);

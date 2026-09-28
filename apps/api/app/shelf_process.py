@@ -22,6 +22,7 @@ async def shelf_lifespan(app):
     if core:
         env["OPENBLAS_CORETYPE"] = core
     env["OPENBLAS_NUM_THREADS"] = os.environ.get("SHELF_CPU_THREADS", "2")
+    env["MALLOC_ARENA_MAX"] = "2"
     process = None
 
     async def supervise():

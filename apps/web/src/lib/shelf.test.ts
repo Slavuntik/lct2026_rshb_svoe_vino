@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { parseShelfScan, scanShelf } from './shelf';
+import { parseShelfScan, scanShelf, prepareShelfPhoto } from './shelf';
 const valid = () => ({image:{width:100,height:200},matches:[{wineId:'wine',box:[0,0,1,1]}],warnings:[]});
 afterEach(()=>vi.unstubAllGlobals());
 describe('shelf result boundary',()=>{
@@ -50,4 +50,15 @@ describe('asynchronous shelf gateway',()=>{
     expect((await scanShelf(new Blob(),new AbortController().signal)).matches).toHaveLength(1);
     expect(fetch.mock.calls[1][0]).toBe('/v1/shelf/scan');
   });
+});
+
+
+it.each(['image/jpeg','image/png'])('preserves original small %s pixels before recognition',async(type)=>{
+  const close=vi.fn();
+  vi.stubGlobal('createImageBitmap',vi.fn().mockResolvedValue({width:960,height:1280,close}));
+  const original=new File(['original image bytes'],'shelf',{type});
+  const prepared=await prepareShelfPhoto(original);
+  expect(prepared.blob).toBe(original);
+  expect(prepared.width).toBe(960);
+  expect(close).toHaveBeenCalledOnce();
 });

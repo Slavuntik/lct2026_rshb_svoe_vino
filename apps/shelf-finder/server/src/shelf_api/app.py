@@ -18,6 +18,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from starlette.datastructures import UploadFile
 from python_multipart.exceptions import MultipartParseError
 from .schema import ScanResponse, HealthResponse
+from .memory import release_cpu_memory
 
 log = logging.getLogger("shelf_api")
 
@@ -170,6 +171,8 @@ def create_app(factory=None, settings=None):
     async def initialize():
         try:
             state["engine"] = await asyncio.to_thread(factory)
+            if getattr(state["engine"], "device", settings.device) == "cpu":
+                await asyncio.to_thread(release_cpu_memory)
         except Exception:
             state["failed"] = True
             log.exception("Shelf model initialization failed")
@@ -314,6 +317,8 @@ def create_app(factory=None, settings=None):
                     }
                 finally:
                     decoded.close()
+                    if getattr(current, "device", settings.device) == "cpu":
+                        release_cpu_memory()
 
             task = asyncio.create_task(asyncio.to_thread(process))
             state["inference"] = task

@@ -67,6 +67,11 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 install -m 644 "$SRC_DIR/somelye-api.service" /etc/systemd/system/somelye-api.service
+# A dedicated native host needs room for both CPU model stacks.
+if [ "${VINCHIK_NATIVE_GATEWAY:-0}" = 1 ] && [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge 12000000 ]; then
+  install -d /etc/systemd/system/somelye-api.service.d
+  printf '[Service]\nMemoryHigh=8G\nMemoryMax=10G\n' > /etc/systemd/system/somelye-api.service.d/native-resources.conf
+fi
 systemctl daemon-reload
 systemctl enable somelye-api >/dev/null 2>&1
 
