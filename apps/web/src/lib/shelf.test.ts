@@ -62,3 +62,16 @@ it.each(['image/jpeg','image/png'])('preserves original small %s pixels before r
   expect(prepared.width).toBe(960);
   expect(close).toHaveBeenCalledOnce();
 });
+
+
+it('retries a rate-limited upload with the same photo',async()=>{
+  const reply=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status});
+  const fetch=vi.fn()
+    .mockResolvedValueOnce(reply({ready:true,asyncJobs:true}))
+    .mockResolvedValueOnce(new Response('{}',{status:429,headers:{'Retry-After':'1'}}))
+    .mockResolvedValueOnce(reply({jobId:'a'.repeat(32)},202))
+    .mockResolvedValueOnce(reply({state:'done',status:200,result:valid()}));
+  vi.stubGlobal('fetch',fetch);
+  expect((await scanShelf(new Blob(['original']),new AbortController().signal)).matches).toHaveLength(1);
+  expect(fetch.mock.calls[1][1].body).toBe(fetch.mock.calls[2][1].body);
+});

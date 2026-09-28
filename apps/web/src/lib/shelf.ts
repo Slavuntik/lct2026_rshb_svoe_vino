@@ -50,9 +50,20 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
     const token = storage.getAccessToken();
     const headers: HeadersInit = token ? {Authorization: `Bearer ${token}`} : {};
     const options = {signal:controller.signal, credentials:'same-origin' as const, headers};
-    const response = await fetch(config.asyncJobs === true ? '/v1/shelf/jobs' : '/v1/shelf/scan', {method:'POST', body, ...options});
+    const wait = (ms:number) => new Promise<void>((resolve,reject)=>{
+      const stopped=()=>{clearTimeout(timeout);reject(new DOMException('Aborted','AbortError'));};
+      const timeout=setTimeout(()=>{controller.signal.removeEventListener('abort',stopped);resolve();},ms);
+      if(controller.signal.aborted)stopped();else controller.signal.addEventListener('abort',stopped,{once:true});
+    });
+    const upload=()=>fetch(config.asyncJobs === true ? '/v1/shelf/jobs' : '/v1/shelf/scan', {method:'POST', body, ...options});
+    let response=await upload();
+    for(let attempt=0;response.status===429 && attempt<3;attempt++) {
+      const seconds=Number(response.headers.get('Retry-After') ?? '60');
+      await wait((Number.isFinite(seconds)?Math.max(1,Math.min(60,seconds)):60)*1000);
+      response=await upload();
+    }
     const check = (status: number) => {
-      if (status < 200 || status >= 300) throw new Error(status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
+      if (status < 200 || status >= 300) throw new Error(status === 429 ? t('shelf.rateLimited') : status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
     };
     check(response.status);
     if (config.asyncJobs !== true) return parseShelfScan(await response.json());

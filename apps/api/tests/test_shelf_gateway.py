@@ -89,3 +89,16 @@ def test_sync_scan_uses_same_service(client, enabled, monkeypatch):
     monkeypatch.setattr(gateway, 'remote_json', lambda *args: (200, expected))
     r = client.post('/v1/shelf/scan', headers=auth_header(make_guest(client)), files={'image': ('a.jpg', b'x')})
     assert r.status_code == 200 and r.json() == expected
+
+
+def test_shelf_batch_does_not_inherit_auth_limit(client, enabled, monkeypatch):
+    monkeypatch.setenv('RATE_LIMIT_MAX_REQUESTS', '5')
+    # Admission itself is tested elsewhere; isolate HTTP rate limits here.
+    monkeypatch.setattr(gateway.Jobs, 'start', lambda *args:'a'*32)
+    headers=auth_header(make_guest(client))
+    for _ in range(32):
+        response=client.post('/v1/shelf/jobs',headers=headers,files={'image':('a.jpg',b'photo')})
+        assert response.status_code == 202
+    response=client.post('/v1/shelf/jobs',headers=headers,files={'image':('a.jpg',b'photo')})
+    assert response.status_code == 429
+    assert 1 <= int(response.headers['Retry-After']) <= 60

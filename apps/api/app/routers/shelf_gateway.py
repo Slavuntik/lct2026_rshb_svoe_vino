@@ -139,7 +139,7 @@ async def read_image(image: UploadFile) -> bytes:
     return content
 
 
-@router.post("/jobs", status_code=202, dependencies=[Depends(rate_limit("shelf"))])
+@router.post("/jobs", status_code=202, dependencies=[Depends(rate_limit("shelf", max_requests=32))])
 async def start_job(request: Request, image: UploadFile = File(...),
                     principal: Principal = Depends(get_current_principal)):
     upstream()
@@ -152,7 +152,7 @@ def get_job(job_id: str, request: Request, principal: Principal = Depends(get_cu
     return jobs(request).read(job_id, principal.id)
 
 
-@router.post("/scan", dependencies=[Depends(rate_limit("shelf"))])
+@router.post("/scan", dependencies=[Depends(rate_limit("shelf", max_requests=32))])
 async def scan(request: Request, image: UploadFile = File(...),
                principal: Principal = Depends(get_current_principal)):
     upstream()
