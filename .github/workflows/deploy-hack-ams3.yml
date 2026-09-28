@@ -1,7 +1,7 @@
-name: Deploy hack stand (ams3)
+name: Deploy native stands (ams3 + YC)
 
 # Хак-стенд сканера на exit-ams3 (боевой VPN-бокс, поэтому без Docker — нативный systemd).
-# Релиз: тег hack-v* или ручной запуск. Код и сборка веба едут rsync'ом по SSH от пользователя
+# Релиз: main после тестов, тег hack-v* или ручной запуск. Код и сборка веба едут rsync'ом по SSH от пользователя
 # somelye (без sudo, кроме рестарта своего сервиса); данные и модели сюда не входят —
 # их доставляет infra/ams3/sync-data.sh. Процедура с нуля — infra/ams3/README.md.
 #
@@ -17,6 +17,7 @@ on:
         type: boolean
         default: false
   push:
+    branches: [main]
     tags: ["hack-v*"]
 
 concurrency:
@@ -41,8 +42,8 @@ jobs:
           if [ -n "$HOST" ] && [ -n "$KEY" ] && [ -n "$KNOWN" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::Секреты AMS3_HOST / AMS3_SSH_KEY / AMS3_KNOWN_HOSTS не заданы — деплой пропущен"
-            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Секреты AMS3_HOST / AMS3_SSH_KEY / AMS3_KNOWN_HOSTS не заданы — деплой невозможен"
+            exit 1
           fi
 
   tests:
@@ -53,6 +54,10 @@ jobs:
       skip_optional: true
 
   deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ams3, yc]
     needs: [guard, tests]
     if: always() && needs.guard.outputs.ready == 'true' && (needs.tests.result == 'success' || needs.tests.result == 'skipped')
     runs-on: ubuntu-latest
@@ -65,13 +70,6 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
-      - name: Сборка веба
-        working-directory: apps/web
-        env:
-          VITE_API_MODE: real
-          VITE_THEME: portal
-        run: npm ci && npm run build
-
       - name: SSH-ключ CI
         env:
           KEY: ${{ secrets.AMS3_SSH_KEY }}
@@ -80,12 +78,10 @@ jobs:
           install -d -m 700 ~/.ssh
           printf '%s\n' "$KEY" > ~/.ssh/ams3_ci && chmod 600 ~/.ssh/ams3_ci
           printf '%s\n' "$KNOWN" > ~/.ssh/known_hosts
+          cat infra/native/yc_known_hosts >> ~/.ssh/known_hosts
 
       - name: Выкат и healthz-гейт
         env:
-          HOST: ${{ secrets.AMS3_HOST }}
-          # Необязательный: есть — стенд переключается на GigaChat с этим ключом; нет — LLM не трогается.
-          GIGACHAT_AUTH_KEY: ${{ secrets.GIGACHAT_AUTH_KEY }}
-          VISION_LLM_URL: ${{ secrets.VISION_LLM_URL }}
-          VISION_LLM_KEY: ${{ secrets.VISION_LLM_KEY }}
+          HOST: ${{ matrix.target == 'ams3' && secrets.AMS3_HOST || '84.201.163.74' }}
+          # Existing per-host environment and LLM secrets are preserved.
         run: bash infra/ams3/push-release.sh "$HOST" ~/.ssh/ams3_ci

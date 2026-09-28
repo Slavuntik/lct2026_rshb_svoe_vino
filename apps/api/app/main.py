@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from llm.base import get_llm
 
+from .shelf_process import shelf_lifespan
 from .config import get_settings
 from .cv.factory import get_image_index, get_label_verifier, warm_up_image_index, warm_up_label_verifier
 from .db import make_engine, make_session_factory
@@ -36,6 +37,7 @@ from .routers import (
     profile,
     scan,
     shelf_selection,
+    shelf_gateway,
     taste,
     waitlist,
     wines,
@@ -155,6 +157,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     app = FastAPI(
+        lifespan=shelf_lifespan,
         title="Свой Сомелье API",
         version=API_VERSION,
         description=API_DESCRIPTION,
@@ -198,6 +201,7 @@ def create_app() -> FastAPI:
 
     engine = make_engine(settings)
     Base.metadata.create_all(engine)
+    app.state.shelf_jobs = shelf_gateway.Jobs()
     app.state.engine = engine
     app.state.session_factory = make_session_factory(engine)
 
@@ -297,6 +301,7 @@ def create_app() -> FastAPI:
         case_thumbs.router,
         catalog.router,
         shelf_selection.router,
+        shelf_gateway.router,
     ):
         app.include_router(router, prefix=API_PREFIX)
 

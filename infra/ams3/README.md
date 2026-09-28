@@ -1,5 +1,7 @@
 # Хак-стенд «Свой Сомелье» на exit-ams3
 
+> Обновление 28.09.2026: для действующих нативных стендов используется [CPU + LiteLLM и API-шлюз](../native/README.md). Старые инструкции прямого nginx-проксирования ниже описывают альтернативную схему.
+
 Стенд кейса ЛЦТ живёт на **боевом VPN-боксе** `exit-ams3` (Ubuntu 26.04, 4 vCPU / 7.4 ГБ RAM).
 Всё здесь подчинено одному правилу: **VPN важнее стенда**.
 
@@ -57,7 +59,7 @@ bash infra/ams3/push-release.sh <ams3>                       # код + веб +
 
 ## Обновления
 
-- **Код:** тег `hack-v*` или ручной запуск workflow `Deploy hack stand (ams3)`; локально — `push-release.sh`.
+- **Код:** push в `main` после тестов, тег `hack-v*` или ручной запуск workflow `Deploy native stands (ams3 + YC)`; локально — `push-release.sh`.
 - **Индекс после пересборки на Mac:** `sync-data.sh <ams3>` → `ssh somelye@<ams3> 'sudo systemctl restart somelye-api'`.
   Без простоя (blue/green, отдельный каталог + переключение) — CV: «Смена CV-индекса без простоя»
   ниже; RAG: «Смена RAG-индекса без простоя» ниже (`switch-rag`/`rollback-rag`, с 22.09).

@@ -1,0 +1,93 @@
+# Нативные стенды: CPU и LiteLLM
+
+Актуальная схема с 28.09.2026 для ams3 и YC: nginx → основной API → отдельный
+CPU-процесс Shelf API; уточнение спорных этикеток — Qwen через HTTPS LiteLLM.
+SSH-туннелей к GPU нет. Ключи не попадают в браузер или Git.
+
+## Запуск
+
+`somelye-api` запускает один uvicorn worker. При `VINCHIK_SHELF_LOCAL=1` lifespan
+основного API запускает отдельный Shelf API на `127.0.0.1:8086`, перезапускает его
+при падении и останавливает при завершении API. Оба процесса находятся под
+лимитами существующего systemd-сервиса. GPU-процессы машины разработки не меняются.
+
+Настройки в `/opt/somelye/somelye.env` (0600):
+
+```dotenv
+VINCHIK_SHELF_LOCAL=1
+VINCHIK_SHELF_URL=http://127.0.0.1:8086
+SHELF_PYTHON=/opt/somelye/shelf-venv/bin/python
+SHELF_MODELS_DIR=/opt/somelye/data/shelf-models
+SHELF_DEVICE=cpu
+SHELF_CPU_THREADS=2
+SHELF_OPENBLAS_CORETYPE=Haswell
+SHELF_PROFILE=litellm
+SHELF_LITELLM_MODEL=qwen3.8-27b-uncensored
+SHELF_LITELLM_TIMEOUT=60
+SHELF_SCAN_TIMEOUT_SECONDS=300
+```
+
+`SHELF_LITELLM_URL` и `SHELF_LITELLM_API_KEY` задаются отдельно только на сервере;
+поддерживается fallback к `VISION_LLM_URL`/`VISION_LLM_KEY`. Нужен именно URL шлюза
+`/v1`, а `VINCHIK_SHELF_URL` указывает на полный сервис детекции и сопоставления.
+Каталог и TorchScript-модели устанавливаются один раз из доверенного комплекта
+`apps/shelf-finder/artifacts/server-models`; не скачиваются через LiteLLM.
+CPU PyTorch 2.14.0 соответствует версии экспорта данного комплекта.
+На Common KVM (ams3) OpenBLAS неверно выбирает CPU-ядро: реальный RANSAC
+завершается SIGILL даже с отключёнными оптимизациями OpenCV. Для этих x86-серверов
+явно задан `SHELF_OPENBLAS_CORETYPE=Haswell`; supervisor передаёт его как
+`OPENBLAS_CORETYPE` только дочернему процессу. На другой архитектуре эту настройку
+нужно выбирать под фактический CPU. Регрессия воспроизводится на числовом fixture
+`server/tests/fixtures/kvm-homography.json`, без исходной фотографии.
+
+Новый сервер: `VINCHIK_NATIVE_GATEWAY=1 bash infra/ams3/bootstrap.sh '<CI public key>'`
+от root. Устанавливаются nginx, Python, пользователь somelye и право рестарта
+только своего API. Создаётся отдельный JWT и новая пользовательская БД. Модели,
+индексы и настройки LiteLLM поставляются отдельно через защищённый канал.
+Старый bootstrap по умолчанию сохраняет прежнюю схему nginx.
+
+## HTTP и авторизация
+
+`/v1/shelf/health` публичен и возвращает реальную готовность. Загрузка через
+`POST /v1/shelf/jobs` требует обычный гостевой/пользовательский Bearer, возвращает
+202. Браузер раз в секунду опрашивает `/v1/shelf/jobs/{job_id}`; долгий инференс
+не держит запрос дольше таймаута nginx 60 с. Фотография — до 20 MiB, одновременно
+одна обработка. Чужие результаты закрыты. Задачи теряются при рестарте, завершённые
+доступны 120 секунд. Отмена ожидания не прерывает вычисления.
+
+Основной экран — `/app/shelf`: пожелания → несколько фото → ранжирование найденных
+вин. Синхронный `/v1/shelf/scan` остаётся для клиентов с достаточным таймаутом.
+Старый `/shelf-ui/` и nginx Basic Auth не используются новым API-шлюзом.
+При недоступности LiteLLM распознавание сохраняет локальные подтверждённые результаты
+и возвращает предупреждение; предположение Qwen без геометрии не становится рамкой.
+
+## Git и деплой
+
+Workflow `Deploy native stands (ams3 + YC)` запускается при push в `main`, по тегу
+`hack-v*` или вручную. После общего CI одна и та же ревизия выкатывается на оба
+сервера. Используются `AMS3_HOST`, `AMS3_SSH_KEY`, `AMS3_KNOWN_HOSTS`; публичный ключ
+CI также установлен пользователю somelye на YC. Host key YC закреплён в
+`yc_known_hosts`. GitHub API-токен не требуется для SSH-доставки релиза.
+Старый Docker workflow `deploy-hack-yc.yml` к этим нативным стендам не относится.
+
+`push-release.sh` сначала собирает web из изолированного `git archive`, затем
+загружает код и web в отдельный release. `activate-release.sh` берёт flock, сохраняет
+предыдущие каталоги, обновляет зависимости, перезапускает API и проверяет прогрев,
+контракт и готовность настроенной витрины. Только после этого публикуется web.
+При ошибке восстановления зависимостей/прогрева/проверки возвращается прежний код.
+Среда каждого сервера сохраняется; CI не заменяет ключи значениями из GitHub Secrets.
+
+```bash
+DEPLOY_REF=<commit> bash infra/ams3/push-release.sh <host> <key>
+# PUSH_ONLY=1 только подготавливает release, не меняет активный код.
+curl http://<host>/release.json
+curl http://<host>/v1/healthz
+curl http://<host>/v1/shelf/health
+```
+
+В `/opt/somelye/deployed-commit` и `/release.json` записан SHA. Старые release-каталоги
+сохраняются для ручного отката; следите за свободным диском, автоматического удаления
+нет. Очередной push может заменить выкатываемый SHA: workflow пропускает main,
+который уже устарел к началу сборки. Активные деплои не отменяются на середине.
+Откат на старый SHA выполняется явным `DEPLOY_REF`; миграции БД автоматически не
+откатываются. Требуется резервное копирование перед будущими изменениями схемы БД.

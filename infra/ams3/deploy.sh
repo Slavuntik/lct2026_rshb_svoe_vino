@@ -9,6 +9,15 @@ UV="$BASE/.local/bin/uv"
 cd "$BASE/app/apps/api"
 UV_PROJECT_ENVIRONMENT="$BASE/venv" "$UV" sync --frozen --no-dev --extra integration --python 3.12 --quiet
 
+# Transitive PaddleOCR and RapidOCR wheels share cv2 but use different versions.
+# Fresh uv installs may leave mixed wrappers; restore the locked headless wheel
+# only when its import check fails. Never upgrade the model stack during deploy.
+if ! "$BASE/venv/bin/python" -c 'import cv2' >/dev/null 2>&1; then
+  CV_VERSION="$("$BASE/venv/bin/python" -c 'import importlib.metadata as m; print(m.version("opencv-python-headless"))')"
+  "$UV" pip install --python "$BASE/venv/bin/python" --reinstall-package opencv-python-headless "opencv-python-headless==$CV_VERSION" --quiet
+  "$BASE/venv/bin/python" -c 'import cv2'
+fi
+
 # agents/H2-rapidocr-multiscale.md: предзагрузка моделей RapidOCR (ONNX Runtime) —
 # идемпотентный вызов создания движка ДО рестарта, под пользователем сервиса somelye
 # (тот же пользователь, что владеет venv/кэшами моделей ниже). Сеть на ams3 есть (в
@@ -27,6 +36,13 @@ import numpy as np
 RapidOcrReader(sizes=DEFAULT_RAPID_SIZES).read(np.zeros((32, 32, 3), dtype=np.uint8))
 print('RapidOCR: модели', DEFAULT_RAPID_SIZES, 'на диске')
 " || echo "предзагрузка моделей RapidOCR не удалась (сеть?) — прогреется на первый боевой запрос при CV_OCR_ENGINE=rapid"
+
+# CPU shelf has its own environment; uv sync of the main API cannot remove its dependencies.
+if grep -q '^VINCHIK_SHELF_LOCAL=1$' "$BASE/somelye.env"; then
+  [ -x "$BASE/shelf-venv/bin/python" ] || "$UV" venv "$BASE/shelf-venv" --python 3.12
+  "$UV" pip install --python "$BASE/shelf-venv/bin/python" 'torch==2.14.0' --index-url https://download.pytorch.org/whl/cpu --quiet
+  "$UV" pip install --python "$BASE/shelf-venv/bin/python" -e "$BASE/app/apps/shelf-finder/server[ml,vlm]" --quiet
+fi
 
 sudo /usr/bin/systemctl restart somelye-api
 

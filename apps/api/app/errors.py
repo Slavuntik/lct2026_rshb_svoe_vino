@@ -56,7 +56,7 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(StarletteHTTPException)
     async def _http_error_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         if isinstance(exc.detail, dict) and "error" in exc.detail:
-            return JSONResponse(status_code=exc.status_code, content=exc.detail)
+            return JSONResponse(status_code=exc.status_code, content=exc.detail, headers=exc.headers)
         # Сеть путей/методов FastAPI (404 на неизвестный route, 405 на неверный
         # verb) — единственные случаи, где ошибку поднимает не наш код.
         code = {
@@ -67,7 +67,7 @@ def register_error_handlers(app: FastAPI) -> None:
             status.HTTP_429_TOO_MANY_REQUESTS: "rate_limited",
         }.get(exc.status_code, "validation_error")
         message = exc.detail if isinstance(exc.detail, str) else "Ошибка запроса"
-        return JSONResponse(status_code=exc.status_code, content=_envelope(code, message))
+        return JSONResponse(status_code=exc.status_code, content=_envelope(code, message), headers=exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error_handler(

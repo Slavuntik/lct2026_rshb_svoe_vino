@@ -1,3 +1,4 @@
+import { storage } from './storage';
 import { translate } from '../i18n/translate';
 const t = (key: Parameters<typeof translate>[1], vars?: Parameters<typeof translate>[2]) => translate('ru', key, vars);
 
@@ -41,9 +42,32 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
     const seconds = Number.isInteger(config.scanTimeoutSeconds) && config.scanTimeoutSeconds >= 15 && config.scanTimeoutSeconds <= 600 ? config.scanTimeoutSeconds : 300;
     timer = setTimeout(abort, seconds * 1000);
     const body = new FormData(); body.append('image', blob, 'shelf.jpg');
-    const response = await fetch('/v1/shelf/scan', {method:'POST', body, signal:controller.signal, credentials:'same-origin'});
-    if (!response.ok) throw new Error(response.status === 503 ? t('shelf.serviceBusy') : response.status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status: response.status}));
-    return parseShelfScan(await response.json());
+    const token = storage.getAccessToken();
+    const headers: HeadersInit = token ? {Authorization: `Bearer ${token}`} : {};
+    const options = {signal:controller.signal, credentials:'same-origin' as const, headers};
+    const response = await fetch(config.asyncJobs === true ? '/v1/shelf/jobs' : '/v1/shelf/scan', {method:'POST', body, ...options});
+    const check = (status: number) => {
+      if (status < 200 || status >= 300) throw new Error(status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
+    };
+    check(response.status);
+    if (config.asyncJobs !== true) return parseShelfScan(await response.json());
+    const job = await response.json();
+    if (response.status !== 202 || typeof job.jobId !== 'string' || !/^[a-f0-9]{32}$/.test(job.jobId)) throw new Error(t('shelf.invalidResult'));
+    for (;;) {
+      await new Promise<void>((resolve, reject) => {
+        const stopped = () => { clearTimeout(wait); reject(new DOMException('Aborted', 'AbortError')); };
+        const wait = setTimeout(() => { controller.signal.removeEventListener('abort', stopped); resolve(); }, 1000);
+        if (controller.signal.aborted) stopped();
+        else controller.signal.addEventListener('abort', stopped, {once:true});
+      });
+      const poll = await fetch(`/v1/shelf/jobs/${job.jobId}`, options);
+      check(poll.status);
+      const result = await poll.json();
+      if (result.state === 'running') continue;
+      if (result.state !== 'done' && result.state !== 'failed') throw new Error(t('shelf.invalidResult'));
+      check(result.status);
+      return parseShelfScan(result.result);
+    }
   } catch (error) {
     if (controller.signal.aborted && !signal.aborted) throw new Error(t('shelf.timeout'));
     throw error;

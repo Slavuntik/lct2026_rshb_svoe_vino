@@ -57,6 +57,9 @@ jobs:
       - name: pytest (agents/B-api.md — без сети, mock LLM + mock RAG)
         working-directory: apps/api
         run: uv run pytest -q
+      - name: Native deployment rollback tests
+        working-directory: apps/api
+        run: uv run pytest ../../infra/ams3/tests -q
 
   rag-tests:
     needs: detect
