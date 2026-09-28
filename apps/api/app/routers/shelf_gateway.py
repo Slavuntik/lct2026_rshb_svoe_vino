@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 
 from ..security import Principal, get_current_principal
 from ..ratelimit import rate_limit
+from ..shelf_archive import save_input, save_result
 
 router = APIRouter(prefix="/shelf", tags=["shelf"])
 MAX_BYTES = 20 * 1024 * 1024
@@ -89,10 +90,13 @@ class Jobs:
         return key
 
     def run(self, key: str, image: bytes):
+        started = time.monotonic()
+        archive = save_input(key, image)
         try:
             status, result = remote_json("/v1/shelf/scan", image)
         except Exception:
             status, result = 503, {"detail": "Shelf service is unavailable"}
+        save_result(archive, status, result, time.monotonic() - started)
         with self.lock:
             job = self.jobs[key]
             job.status, job.result = status, result
