@@ -20,9 +20,11 @@ SRC_DIR="$(cd "$(dirname "$0")" && pwd)"   # рядом лежат unit, nginx-�
 # uv ищет uv.toml в рабочей папке и выше — из /root пользователь somelye его не прочтёт.
 cd /
 
+if [ "${VINCHIK_NATIVE_GATEWAY:-0}" != 1 ]; then
 for port in 443 8444; do
   ss -tulpnH | grep -q ":$port " || echo "ВНИМАНИЕ: порт $port не слушается — VPN на месте?"
 done
+fi
 if ss -tlpnH | grep -q ':80 ' && ! ss -tlpnH | grep ':80 ' | grep -q nginx; then
   echo "порт 80 занят не nginx — стоп"; exit 1
 fi
@@ -65,6 +67,11 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 install -m 644 "$SRC_DIR/somelye-api.service" /etc/systemd/system/somelye-api.service
+# A dedicated native host needs room for both CPU model stacks.
+if [ "${VINCHIK_NATIVE_GATEWAY:-0}" = 1 ] && [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge 12000000 ]; then
+  install -d /etc/systemd/system/somelye-api.service.d
+  printf '[Service]\nMemoryHigh=8G\nMemoryMax=10G\n' > /etc/systemd/system/somelye-api.service.d/native-resources.conf
+fi
 systemctl daemon-reload
 systemctl enable somelye-api >/dev/null 2>&1
 
@@ -77,7 +84,11 @@ systemctl enable somelye-api >/dev/null 2>&1
 [ -f /etc/nginx/conf.d/shelf-upstream.conf ] || \
   install -m 644 "$SRC_DIR/shelf-upstream.conf" /etc/nginx/conf.d/shelf-upstream.conf
 
-install -m 644 "$SRC_DIR/nginx-somelye.conf" /etc/nginx/sites-available/somelye
+if [ "${VINCHIK_NATIVE_GATEWAY:-0}" = 1 ]; then
+  install -m 644 "$SRC_DIR/../native/nginx.conf" /etc/nginx/sites-available/somelye
+else
+  install -m 644 "$SRC_DIR/nginx-somelye.conf" /etc/nginx/sites-available/somelye
+fi
 ln -sf /etc/nginx/sites-available/somelye /etc/nginx/sites-enabled/somelye
 rm -f /etc/nginx/sites-enabled/default
 nginx -t -q

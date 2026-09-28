@@ -28,10 +28,10 @@ interface NavMenuProps {
  * a11y: role="dialog" + aria-modal, Esc и клик по подложке закрывают (useFocusTrap ловит
  * Esc, backdrop.onClick — клик вне, панель останавливает всплытие), фокус уходит на кнопку
  * закрытия при открытии и возвращается на кнопку-триггер (шапка) при любом закрытии —
- * см. cleanup эффекта ниже. «Витрина» — строго по shelfAvailable, который считает
- * lib/shelfAvailability.ts (пропс сюда, логика самого чека не дублируется).
+ * см. cleanup эффекта ниже. «Витрина» остаётся в меню при прогреве или временном отказе сервиса;
+ * готовность и восстановление проверяет сам маршрут.
  */
-export function NavMenu({ panelId, shelfAvailable, triggerRef, onClose }: NavMenuProps) {
+export function NavMenu({ panelId, triggerRef, onClose }: NavMenuProps) {
   const { t } = useI18n();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -53,7 +53,7 @@ export function NavMenu({ panelId, shelfAvailable, triggerRef, onClose }: NavMen
     // «Каталог вин» в макете, у нас сканер остаётся главным действием (решение тимлида),
     // поэтому раздел — только здесь, в меню; вариант «сделать домашним» разобран в отчёте.
     { to: "/app/catalog", label: t("nav.catalog") },
-    ...(shelfAvailable ? [{ to: "/app/shelf", label: t("nav.shelf") }] : []),
+    { to: "/app/shelf", label: t("nav.shelf") },
     { to: "/app/chat", label: t("nav.chat") },
     { to: "/app/taste", label: t("nav.taste") },
     { to: "/app/profile", label: t("nav.profile") },

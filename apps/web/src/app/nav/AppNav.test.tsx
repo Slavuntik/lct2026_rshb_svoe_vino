@@ -51,7 +51,7 @@ describe("AppNav — шапка и сэндвич-меню", () => {
     expect(screen.getByRole("button", { name: "Закрыть меню" })).toHaveFocus();
   });
 
-  it("содержит все разделы, кроме «Витрина», когда она недоступна", async () => {
+  it("сохраняет все разделы, включая «Витрина», во время недоступности", async () => {
     renderApp(<Harness shelfAvailable={false} />, "/app/profile");
     await openMenu();
     expect(screen.getByRole("link", { name: "Скан" })).toHaveAttribute("href", "/app/scan");
@@ -61,7 +61,7 @@ describe("AppNav — шапка и сэндвич-меню", () => {
     expect(screen.getByRole("link", { name: "Сомелье" })).toHaveAttribute("href", "/app/chat");
     expect(screen.getByRole("link", { name: "Вкус" })).toHaveAttribute("href", "/app/taste");
     expect(screen.getByRole("link", { name: "Профиль" })).toHaveAttribute("href", "/app/profile");
-    expect(screen.queryByRole("link", { name: "Витрина" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Витрина" })).toHaveAttribute("href", "/app/shelf");
   });
 
   it("показывает «Витрина», когда живой health-чек её разрешает", async () => {

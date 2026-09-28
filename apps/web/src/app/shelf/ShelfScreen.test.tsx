@@ -49,7 +49,7 @@ describe("Shelf navigation", () => {
     storage.setOnboardingComplete(false);
   });
 
-  it("hides the nav item and shows an honest placeholder when nginx's SPA fallback answers instead of the shelf service", async () => {
+  it("keeps the nav item and shows an honest placeholder when nginx's SPA fallback answers instead of the shelf service", async () => {
     // Прод-ловушка (reports/architect-post-merge-review.md §3): nginx без локейшна для
     // /v1/shelf отдаёт try_files-фолбэк — наш же index.html с кодом 200. Это же поведение
     // и есть дефолтный мок-хендлер в src/mocks/handlers.ts, здесь переопределён явно для
@@ -70,11 +70,9 @@ describe("Shelf navigation", () => {
     ).toBeInTheDocument();
     expect(screen.queryByTitle("Поиск вин на витрине")).not.toBeInTheDocument();
     await openNavMenu();
-    // Пункт «Витрина» честно скрыт (не задизейблен — его просто нет в DOM), пока живой
-    // health-чек не подтвердит сервис: сверяем, что меню открылось (есть другие пункты),
-    // а не то, что мы забыли его открыть.
+    // Раздел остаётся доступным из меню даже во время прогрева сервиса.
     expect(screen.getByRole("link", { name: "Сомелье" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Витрина" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Витрина" })).toHaveAttribute("href", "/app/shelf");
     storage.setOnboardingComplete(false);
   });
 });

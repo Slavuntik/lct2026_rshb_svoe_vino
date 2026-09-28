@@ -88,7 +88,7 @@ export function ShelfScreen() {
     }
   }
   function addFiles(files:FileList|null) {
-    if (!files?.length || scanBusy.current || !acceptedWish) return;
+    if (!files?.length || scanBusy.current) return;
     const room=MAX_PHOTOS-photoRef.current.length;
     if (files.length>room) { setError(t('shelf.photoLimit', {count: MAX_PHOTOS})); return; }
     const entries=Array.from(files).map(file=>({file,photo:{id:`photo-${Date.now()}-${++photoSequence.current}`,label:t('shelf.photoLabel', {number: photoSequence.current}),state:'pending' as const}}));
@@ -102,23 +102,25 @@ export function ShelfScreen() {
       <label className="field"><span className="field__label">{t('shelf.wishLabel')}</span><textarea className="field__textarea" value={wish} onChange={e=>setWish(e.target.value)} maxLength={1000} placeholder={t('shelf.placeholder')} required minLength={2}/></label>
       <button className="btn btn--primary" disabled={ranking||wish.trim().length<2}>{acceptedWish?t('shelf.update'):t('shelf.select')}</button>
     </form>
-    {acceptedWish && <>
-      <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>
-      <div className="shelf-actions">
-        <label className="btn btn--secondary">{t('shelf.addPhotos')}<input aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
-        <label className="btn btn--secondary">{t('shelf.takePhoto')}<input aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
-        {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
-      </div>
-      <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>
-    </>}
+    {acceptedWish && <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>}
+    {!acceptedWish && <p className="text-small">{t('shelf.uploadHint')}</p>}
+    <div className="shelf-actions">
+      <label className="btn btn--secondary">{t('shelf.addPhotos')}<input aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
+      <label className="btn btn--secondary">{t('shelf.takePhoto')}<input aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
+      {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
+    </div>
+    <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>
     {error && <p role="alert" className="shelf-alert">{error}</p>}
     {ranking && <p role="status" className="shelf-progress">{t('shelf.ranking')}</p>}
     {selection && <div className="stack--tight shelf-selection">
       {selection.understood.length>0 && <p>{t('shelf.understood', {filters: selection.understood.join(' · ')})}</p>}
       {selection.warnings.map(w=><p className="text-small" key={w}>{w}</p>)}
       <h2>{hasResults?t('shelf.foundTitle'):t('shelf.previewTitle')}</h2><p>{selection.message}</p>
-      <ol className="shelf-ranking">{selection.wines.slice(0,hasResults?50:5).map(w=><li key={w.wine_id}>
-        <Link to={`/app/wine/${encodeURIComponent(w.wine_id)}`}>{w.name}</Link><p className="text-small">{w.reason}</p>
+      {!hasResults && <p>{t('shelf.previewNotice', {count: selection.total_eligible ?? selection.wines.length})}</p>}
+      <p className="shelf-legend">{(['high','medium','low'] as const).map(level=><span key={level} className={`shelf-relevance shelf-relevance--${level}`}>{t(`shelf.relevance.${level}`)}</span>)}</p>
+      <p className="text-caption">{t('shelf.relevanceNotice')}</p>
+      <ol className="shelf-ranking">{(hasResults?selection.wines:selection.wines.slice(0,5)).map(w=><li key={w.wine_id}>
+        <Link to={`/app/wine/${encodeURIComponent(w.wine_id)}`}>{w.name}</Link><p className="text-small">{w.reason}</p><span className={`shelf-relevance shelf-relevance--${w.relevance ?? 'high'}`}>{t(`shelf.relevance.${w.relevance ?? 'high'}`)}</span>
         {hasResults && <div className="shelf-actions">{photos.filter(p=>p.result?.matches.some(m=>m.wineId===w.wine_id||m.alternativeWineIds.includes(w.wine_id))).map(p=><a key={p.id} href={`#shelf-${p.id}`}>{p.label}</a>)}</div>}
       </li>)}</ol>
     </div>}
@@ -132,7 +134,7 @@ export function ShelfScreen() {
           // Shared references are visibly uncertain, never silently a precise SKU.
           const ambiguous=match.alternativeWineIds.length>0;
           const [x1,y1,x2,y2]=match.box;
-          return <a key={i} className={`shelf-box${ambiguous?' shelf-box--uncertain':''}`} style={{left:`${x1*100}%`,top:`${y1*100}%`,width:`${(x2-x1)*100}%`,height:`${(y2-y1)*100}%`}} href={`/app/wine/${encodeURIComponent(best.wine_id)}`} title={ambiguous?t('shelf.ambiguousTitle'):best.reason}><span>#{best.rank} {ambiguous?t('shelf.possible'):''}{best.name}</span></a>;
+          return <a key={i} className={`shelf-box shelf-box--${best.relevance ?? 'high'}${ambiguous?' shelf-box--uncertain':''}`} style={{left:`${x1*100}%`,top:`${y1*100}%`,width:`${(x2-x1)*100}%`,height:`${(y2-y1)*100}%`}} href={`/app/wine/${encodeURIComponent(best.wine_id)}`} title={ambiguous?t('shelf.ambiguousTitle'):best.reason}><span>#{best.rank} {ambiguous?t('shelf.possible'):''}{best.name} · {t(`shelf.relevance.${best.relevance ?? 'high'}`)}</span></a>;
         })}
       </div>}
       {photo.state==='pending'&&<p>{t('shelf.pending')}</p>}{photo.state==='scanning'&&<p role="status" className="shelf-progress">{t('shelf.scanning')}</p>}
@@ -142,9 +144,6 @@ export function ShelfScreen() {
       {photo.state==='done'&&!photo.result?.matches.length&&<p>{t('shelf.noMatches')}</p>}
     </article>)}
     <Link className="btn btn--secondary" to="/app/chat" state={{prefillMessage:acceptedWish||wish}}>{t('shelf.chat')}</Link>
-    <details className="shelf-secondary-links"><summary>{t('shelf.extraOptions')}</summary>
-      <p className="text-small">{t('shelf.extraDescription')}</p>
-      <a href="/shelf-ui/?engine=server" target="_blank" rel="noopener noreferrer">{t('shelf.advanced')}</a>
-    </details>
+
   </section>;
 }

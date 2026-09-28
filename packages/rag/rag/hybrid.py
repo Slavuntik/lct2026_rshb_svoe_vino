@@ -105,7 +105,9 @@ class HybridSearcher:
         use_reranker: bool = True,
         apply_refusal: bool = True,
     ) -> list[Candidate]:
-        pool = config.CANDIDATE_POOL
+        # Large explicit requests (shelf catalog ranking) must not be truncated
+        # by the default retrieval pool. The cross-encoder retains RERANK_POOL.
+        pool = max(config.CANDIDATE_POOL, top_k)
         dense_hits = self._dense_hits(query, filters, collections, pool)
         bm25_hits = self._bm25_hits(query, filters, collections, pool)
 

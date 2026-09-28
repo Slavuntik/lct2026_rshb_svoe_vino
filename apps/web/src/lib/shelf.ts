@@ -1,5 +1,10 @@
+import { storage } from './storage';
 import { translate } from '../i18n/translate';
 const t = (key: Parameters<typeof translate>[1], vars?: Parameters<typeof translate>[2]) => translate('ru', key, vars);
+
+async function shelfJson(response:Response) {
+  return response.json().catch(()=>{throw new Error(t('shelf.serviceUnavailable'));});
+}
 
 export interface ShelfMatch {
   box: [number, number, number, number];
@@ -18,6 +23,11 @@ export async function prepareShelfPhoto(file: File): Promise<{blob:Blob; width:n
   try {
     if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > 32_000_000) throw new Error(t('shelf.resolutionError'));
     const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+    // Keep original pixels when resizing/conversion is unnecessary: another JPEG
+    // encoding can erase the tiny label features needed for geometric verification.
+    if (scale === 1 && ['image/jpeg', 'image/png'].includes(file.type)) {
+      return {blob:file, width:bitmap.width, height:bitmap.height};
+    }
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
     canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
@@ -35,15 +45,50 @@ export async function scanShelf(blob: Blob, signal: AbortSignal): Promise<ShelfS
   let timer = setTimeout(abort, 15_000);
   try {
     const health = await fetch('/v1/shelf/health', {signal:controller.signal, credentials:'same-origin'});
-    const config = await health.json();
+    if (!health.ok) throw new Error(t('shelf.notReady'));
+    const config = await shelfJson(health);
     if (!health.ok || config.ready !== true) throw new Error(t('shelf.notReady'));
     clearTimeout(timer);
     const seconds = Number.isInteger(config.scanTimeoutSeconds) && config.scanTimeoutSeconds >= 15 && config.scanTimeoutSeconds <= 600 ? config.scanTimeoutSeconds : 300;
     timer = setTimeout(abort, seconds * 1000);
     const body = new FormData(); body.append('image', blob, 'shelf.jpg');
-    const response = await fetch('/v1/shelf/scan', {method:'POST', body, signal:controller.signal, credentials:'same-origin'});
-    if (!response.ok) throw new Error(response.status === 503 ? t('shelf.serviceBusy') : response.status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status: response.status}));
-    return parseShelfScan(await response.json());
+    const token = storage.getAccessToken();
+    const headers: HeadersInit = token ? {Authorization: `Bearer ${token}`} : {};
+    const options = {signal:controller.signal, credentials:'same-origin' as const, headers};
+    const wait = (ms:number) => new Promise<void>((resolve,reject)=>{
+      const stopped=()=>{clearTimeout(timeout);reject(new DOMException('Aborted','AbortError'));};
+      const timeout=setTimeout(()=>{controller.signal.removeEventListener('abort',stopped);resolve();},ms);
+      if(controller.signal.aborted)stopped();else controller.signal.addEventListener('abort',stopped,{once:true});
+    });
+    const upload=()=>fetch(config.asyncJobs === true ? '/v1/shelf/jobs' : '/v1/shelf/scan', {method:'POST', body, ...options});
+    let response=await upload();
+    for(let attempt=0;response.status===429 && attempt<3;attempt++) {
+      const seconds=Number(response.headers.get('Retry-After') ?? '60');
+      await wait((Number.isFinite(seconds)?Math.max(1,Math.min(60,seconds)):60)*1000);
+      response=await upload();
+    }
+    const check = (status: number) => {
+      if (status < 200 || status >= 300) throw new Error(status === 502 || status === 504 ? t('shelf.serviceUnavailable') : status === 429 ? t('shelf.rateLimited') : status === 503 ? t('shelf.serviceBusy') : status === 401 ? t('shelf.unauthorized') : t('shelf.scanError', {status}));
+    };
+    check(response.status);
+    if (config.asyncJobs !== true) return parseShelfScan(await shelfJson(response));
+    const job = await shelfJson(response);
+    if (response.status !== 202 || typeof job.jobId !== 'string' || !/^[a-f0-9]{32}$/.test(job.jobId)) throw new Error(t('shelf.invalidResult'));
+    for (;;) {
+      await new Promise<void>((resolve, reject) => {
+        const stopped = () => { clearTimeout(wait); reject(new DOMException('Aborted', 'AbortError')); };
+        const wait = setTimeout(() => { controller.signal.removeEventListener('abort', stopped); resolve(); }, 1000);
+        if (controller.signal.aborted) stopped();
+        else controller.signal.addEventListener('abort', stopped, {once:true});
+      });
+      const poll = await fetch(`/v1/shelf/jobs/${job.jobId}`, options);
+      check(poll.status);
+      const result = await shelfJson(poll);
+      if (result.state === 'running') continue;
+      if (result.state !== 'done' && result.state !== 'failed') throw new Error(t('shelf.invalidResult'));
+      check(result.status);
+      return parseShelfScan(result.result);
+    }
   } catch (error) {
     if (controller.signal.aborted && !signal.aborted) throw new Error(t('shelf.timeout'));
     throw error;

@@ -30,7 +30,7 @@ export default function AppShell() {
   const onOnboarding = location.pathname.startsWith("/app/onboarding");
   const showNav = storage.isOnboardingComplete() && !onOnboarding;
   // Один живой чек на всё приложение (src/lib/shelfAvailability.ts) — не блокирует этот
-  // рендер: "pending" ведёт себя как "unavailable" и в навигации, и в самом роуте, пока
+  // рендер: "pending" ведёт себя как "unavailable" в самом роуте, пока
   // проверка не подтвердит сервис витрин живым.
   const shelfAvailability = useShelfAvailability();
   const shelfAvailable = shelfAvailability === "available";
