@@ -88,7 +88,7 @@ export function ShelfScreen() {
     }
   }
   function addFiles(files:FileList|null) {
-    if (!files?.length || scanBusy.current || !acceptedWish) return;
+    if (!files?.length || scanBusy.current) return;
     const room=MAX_PHOTOS-photoRef.current.length;
     if (files.length>room) { setError(t('shelf.photoLimit', {count: MAX_PHOTOS})); return; }
     const entries=Array.from(files).map(file=>({file,photo:{id:`photo-${Date.now()}-${++photoSequence.current}`,label:t('shelf.photoLabel', {number: photoSequence.current}),state:'pending' as const}}));
@@ -102,15 +102,14 @@ export function ShelfScreen() {
       <label className="field"><span className="field__label">{t('shelf.wishLabel')}</span><textarea className="field__textarea" value={wish} onChange={e=>setWish(e.target.value)} maxLength={1000} placeholder={t('shelf.placeholder')} required minLength={2}/></label>
       <button className="btn btn--primary" disabled={ranking||wish.trim().length<2}>{acceptedWish?t('shelf.update'):t('shelf.select')}</button>
     </form>
-    {acceptedWish && <>
-      <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>
-      <div className="shelf-actions">
-        <label className="btn btn--secondary">{t('shelf.addPhotos')}<input aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
-        <label className="btn btn--secondary">{t('shelf.takePhoto')}<input aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
-        {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
-      </div>
-      <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>
-    </>}
+    {acceptedWish && <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>}
+    {!acceptedWish && <p className="text-small">{t('shelf.uploadHint')}</p>}
+    <div className="shelf-actions">
+      <label className="btn btn--secondary">{t('shelf.addPhotos')}<input aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
+      <label className="btn btn--secondary">{t('shelf.takePhoto')}<input aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
+      {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
+    </div>
+    <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>
     {error && <p role="alert" className="shelf-alert">{error}</p>}
     {ranking && <p role="status" className="shelf-progress">{t('shelf.ranking')}</p>}
     {selection && <div className="stack--tight shelf-selection">

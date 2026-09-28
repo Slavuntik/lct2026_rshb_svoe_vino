@@ -28,6 +28,22 @@ async function begin() {
 }
 
 describe('Sommelier shelf flow',()=>{
+  it('accepts photos before a wish and ranks them later without rescanning',async()=>{
+    vi.mocked(scanShelf).mockResolvedValue(response('wine-a'));
+    const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
+    expect(screen.getByLabelText('Добавить фото полок')).toBeEnabled();
+    expect(screen.getByLabelText('Снять полку')).toBeEnabled();
+    await user.upload(screen.getByLabelText('Добавить фото полок'),new File(['a'],'a.jpg',{type:'image/jpeg'}));
+    await waitFor(()=>expect(scanShelf).toHaveBeenCalledTimes(1));
+    await screen.findByRole('img',{name:'Полка 1'});
+    expect(apiClient.selectShelf).not.toHaveBeenCalled();
+    expect(screen.queryByText('#1 Первое вино')).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText('Какое вино ищем?'),'белое сухое');
+    await user.click(screen.getByRole('button',{name:'Подобрать и найти на полках'}));
+    await screen.findByText('#1 Первое вино');
+    expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',['wine-a'],expect.any(AbortSignal));
+    expect(scanShelf).toHaveBeenCalledTimes(1);
+  });
   it('processes multiple photos sequentially and ranks only found wines across all shelves',async()=>{
     let active=0,max=0;
     vi.mocked(scanShelf).mockImplementation(async()=>{
