@@ -9,6 +9,15 @@ flock -w 900 9
 test -f "$RELEASE/app/apps/api/uv.lock"
 test -f "$RELEASE/web/index.html"
 test -f "$RELEASE/commit"
+# A manual deployment and the queued CI job may target the same SHA.
+# Avoid a second restart only after checking the running API and published UI.
+if cmp -s "$RELEASE/commit" "$BASE/deployed-commit"; then
+  if "$BASE/venv/bin/python" "$BASE/app/infra/ams3/check-release.py" && \
+     "$BASE/venv/bin/python" -c 'import json,sys,urllib.request; from pathlib import Path; assert json.load(urllib.request.urlopen("http://127.0.0.1/release.json", timeout=10))["commit"] == Path(sys.argv[1]).read_text().strip()' "$RELEASE/commit"; then
+    echo 'Эта ревизия уже активна и прошла проверку; повторный рестарт не нужен'
+    exit 0
+  fi
+fi
 BACKUP="$RELEASE/previous"
 mkdir "$BACKUP"
 cp -p "$BASE/somelye.env" "$BACKUP/somelye.env"
