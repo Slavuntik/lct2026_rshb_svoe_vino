@@ -18,7 +18,7 @@ def test_enabled_launches_isolated_cpu_service_and_stops_child(monkeypatch):
     monkeypatch.setenv('VINCHIK_SHELF_LOCAL', '1')
     monkeypatch.setenv('SHELF_PYTHON', '/opt/somelye/shelf-venv/bin/python')
     monkeypatch.setenv('SHELF_DEVICE', 'cpu')
-    monkeypatch.setenv('SHELF_OPENBLAS_CORETYPE', 'Haswell')
+    monkeypatch.setenv('SHELF_OPENBLAS_CORETYPE', 'Sandybridge')
     calls = []
     async def scenario():
         class Process:
@@ -44,5 +44,5 @@ def test_enabled_launches_isolated_cpu_service_and_stops_child(monkeypatch):
     assert args[0] == '/opt/somelye/shelf-venv/bin/python'
     assert '127.0.0.1' in args and '8086' in args
     assert kwargs['env']['SHELF_DEVICE'] == 'cpu'
-    assert kwargs['env']['OPENBLAS_CORETYPE'] == 'Haswell'
+    assert kwargs['env']['OPENBLAS_CORETYPE'] == 'Sandybridge'
     assert kwargs['env']['PYTHONPATH'].endswith('/apps/shelf-finder/server/src')

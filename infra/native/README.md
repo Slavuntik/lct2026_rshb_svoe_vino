@@ -20,7 +20,7 @@ SHELF_PYTHON=/opt/somelye/shelf-venv/bin/python
 SHELF_MODELS_DIR=/opt/somelye/data/shelf-models
 SHELF_DEVICE=cpu
 SHELF_CPU_THREADS=2
-SHELF_OPENBLAS_CORETYPE=Haswell
+SHELF_OPENBLAS_CORETYPE=Sandybridge
 SHELF_PROFILE=litellm
 SHELF_LITELLM_MODEL=qwen3.8-27b-uncensored
 SHELF_LITELLM_TIMEOUT=60
@@ -35,7 +35,7 @@ SHELF_SCAN_TIMEOUT_SECONDS=300
 CPU PyTorch 2.14.0 соответствует версии экспорта данного комплекта.
 На Common KVM (ams3) OpenBLAS неверно выбирает CPU-ядро: реальный RANSAC
 завершается SIGILL даже с отключёнными оптимизациями OpenCV. Для этих x86-серверов
-явно задан `SHELF_OPENBLAS_CORETYPE=Haswell`; supervisor передаёт его как
+явно задан `SHELF_OPENBLAS_CORETYPE=Sandybridge`; supervisor передаёт его как
 `OPENBLAS_CORETYPE` только дочернему процессу. На другой архитектуре эту настройку
 нужно выбирать под фактический CPU. Регрессия воспроизводится на числовом fixture
 `server/tests/fixtures/kvm-homography.json`, без исходной фотографии.

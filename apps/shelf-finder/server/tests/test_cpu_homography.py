@@ -12,7 +12,7 @@ def test_cpu_ransac_with_explicit_blas_core():
     pytest.importorskip('cv2')
     pytest.importorskip('numpy')
     if platform.machine().lower() not in ('x86_64', 'amd64'):
-        pytest.skip('Haswell core applies only to x86_64')
+        pytest.skip('Sandybridge core applies only to x86_64')
     fixture = Path(__file__).parent / 'fixtures/kvm-homography.json'
     code = '''
 import json,sys,cv2,numpy as np
@@ -21,6 +21,6 @@ h,mask=cv2.findHomography(np.asarray(r['src'],dtype=np.float32),np.asarray(r['ds
 assert h is not None and mask is not None and int(mask.sum()) >= 75
 '''
     result = subprocess.run([sys.executable, '-c', code, str(fixture)],
-                            env={**os.environ, 'OPENBLAS_CORETYPE': 'Haswell'},
+                            env={**os.environ, 'OPENBLAS_CORETYPE': 'Sandybridge', 'OPENBLAS_NUM_THREADS': '1'},
                             capture_output=True, text=True, timeout=20)
     assert result.returncode == 0, result.stderr
