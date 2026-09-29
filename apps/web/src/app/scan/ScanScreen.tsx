@@ -223,6 +223,7 @@ export function ScanScreen() {
   const [photoStatus, setPhotoStatus] = useState<"idle" | "searching" | "error">("idle");
   const [result, setResult] = useState<ScanPhotoRichResponse | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   // Уточнение рамкой предлагается после первого поиска, только в режиме бутылки.
   const [aiming, setAiming] = useState(false);
   const [frame, setFrame] = useState<Frame>(DEFAULT_FRAME);
@@ -327,6 +328,7 @@ export function ScanScreen() {
 
   function handleFileInputChange(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0];
+    event.target.value = "";
     if (selected) void handlePhotoSelected(selected);
   }
 
@@ -495,7 +497,7 @@ export function ScanScreen() {
   }
 
   return (
-    <div className="screen container stack">
+    <div className="screen container stack scan-screen">
       <header className="screen__header">
         {/* Решение тимлида 27.09: заголовок/подзаголовок — та же недоделка, что была в
             иллюстрации дропзоны (bottle-текст «Скан этикетки»/«...этикетку...» просачивался
@@ -504,7 +506,7 @@ export function ScanScreen() {
         <p className="screen__subtitle">{scanMode === "dish" ? t("scan.dishSubtitle") : t("scan.subtitle")}</p>
       </header>
 
-      <div className="row" data-testid="scan-mode-toggle">
+      <div className="row scan-mode-toggle" data-testid="scan-mode-toggle">
         <button
           type="button"
           className="chip"
@@ -542,10 +544,9 @@ export function ScanScreen() {
             (scanner.svg, значки режимов, %/термометр на карточке вина) — единой на все блюда
             картинки нет, поэтому режим «Блюдо» остаётся текстовым, без картинки. */}
         {!photoPreviewUrl && scanMode === "bottle" && (
-          <img src="/brand/scanner.svg" alt="" width={64} height={65} className="dropzone__illustration" />
+          <img src="/brand/scanner.svg" alt="" width={119} height={120} className="dropzone__illustration" />
         )}
-        <p>{dragActive ? t("scan.dropHintActive") : t("scan.dropHint")}</p>
-        <p className="text-small">{t("scan.dropOrChoose")}</p>
+        {dragActive && <p role="status">{t("scan.dropHintActive")}</p>}
         <label className="field">
           {/* Задача тимлида 23.09 (qa-manual-hack-v16.md §2): зона загрузки общая для обоих
               режимов, но подпись поля — своя для «Блюдо», не бутылочное «Фото этикетки». */}
@@ -563,9 +564,9 @@ export function ScanScreen() {
         <button type="button" className="btn btn--primary" onClick={() => fileInputRef.current?.click()}>
           {t("scan.choosePhoto")}
         </button>
-        <p className="text-caption" style={{ marginTop: "var(--space-3)" }}>
-          {scanMode === "dish" ? t("scan.dishPhotoCaption") : t("scan.quietPhotoCaption")}
-        </p>
+        <button type="button" className="btn btn--ghost" onClick={() => galleryInputRef.current?.click()}>{t("scan.uploadPhoto")}</button>
+        <input ref={galleryInputRef} hidden type="file" accept="image/*" aria-label={t("scan.uploadPhoto")} onChange={handleFileInputChange}/>
+        <details className="scan-photo-tips"><summary>{t("scan.photoTips")}</summary><p className="text-caption">{scanMode === "dish" ? t("scan.dishPhotoCaption") : t("scan.quietPhotoCaption")}</p></details>
       </div>
 
       {scanMode === "bottle" && photoStatus === "searching" && <p className="text-small">{t("scan.photoSearching")}</p>}
@@ -764,14 +765,11 @@ export function ScanScreen() {
         </div>
       )}
 
-      <p className="text-small" style={{ textAlign: "center" }}>
-        {t("scan.orDivider")}
-      </p>
+      {scanMode === "bottle" && <p className="scan-search-hint">{t("scan.textFallbackTitle")}</p>}
 
       {scanMode === "bottle" ? (
-        <form className="stack card" onSubmit={handleTextSubmit}>
-          <p className="field__label">{t("scan.textFallbackTitle")}</p>
-          <label className="field">
+        <form className="stack scan-text-form" onSubmit={handleTextSubmit}>
+          <label className="field scan-text-field">
             <span className="field__label">{t("scan.textLabel")}</span>
             <textarea
               id="scan-text-search"
@@ -779,7 +777,7 @@ export function ScanScreen() {
               className="field__textarea"
               value={text}
               onChange={(event) => setText(event.target.value)}
-              placeholder={t("scan.textPlaceholder")}
+              placeholder=""
             />
           </label>
           {textError && <p className="field__error">{textError}</p>}

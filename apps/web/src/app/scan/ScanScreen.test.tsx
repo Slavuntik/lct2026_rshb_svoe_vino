@@ -208,6 +208,31 @@ describe("ScanScreen — фото-first (кейс ЛЦТ, contracts/image-scan.m
     vi.restoreAllMocks();
   });
 
+  it("галерея и камера открывают разные поля, повторная загрузка сохраняет распознавание", async () => {
+    const scan = mockScanPhoto(confidentResponse());
+    renderScan();
+    const gallery = screen.getByLabelText("Загрузить фото") as HTMLInputElement;
+    const camera = screen.getByLabelText("Фото этикетки") as HTMLInputElement;
+    const galleryClick = vi.spyOn(gallery, "click");
+    const cameraClick = vi.spyOn(camera, "click");
+    fireEvent.click(screen.getByRole("button", {name: "Загрузить фото"}));
+    expect(galleryClick).toHaveBeenCalledTimes(1);
+    expect(cameraClick).not.toHaveBeenCalled();
+    expect(gallery).not.toHaveAttribute("capture");
+    fireEvent.click(screen.getByRole("button", {name: "Сканировать"}));
+    expect(cameraClick).toHaveBeenCalledTimes(1);
+    expect(camera).toHaveAttribute("capture", "environment");
+    const file = pngFile("same-label.png");
+    fireEvent.change(gallery, {target: {files: [file]}});
+    await screen.findByTestId("scan-photo-result");
+    await waitForTasteAnalogsSettled();
+    expect(gallery.value).toBe("");
+    fireEvent.change(gallery, {target: {files: [file]}});
+    await waitFor(() => expect(scan).toHaveBeenCalledTimes(2));
+    await screen.findByTestId("scan-photo-result");
+    await waitForTasteAnalogsSettled();
+  });
+
   it("уверенный матч — ОДНА карточка сразу, без экрана вариантов и без confidence в UI", async () => {
     mockScanPhoto(confidentResponse());
     renderScan();
@@ -703,19 +728,19 @@ describe("ScanScreen — «Что подать» по фото блюда (пе�
 
   it("заголовок и подзаголовок экрана — свои для «Блюдо», переключаются туда и обратно (регресс тимлида 27.09)", () => {
     renderScan();
-    expect(screen.getByRole("heading", { name: "Скан этикетки" })).toBeInTheDocument();
-    expect(screen.getByText(/наведите камеру на этикетку/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Свои вина" })).toBeInTheDocument();
+    expect(screen.getByText(/сфотографируйте этикетку/i)).toBeInTheDocument();
 
     switchToDish();
     expect(screen.getByRole("heading", { name: "Что подать к блюду" })).toBeInTheDocument();
     expect(screen.getByText(/сфотографируйте блюдо/i)).toBeInTheDocument();
     // Бутылочные заголовок/подзаголовок не должны просачиваться в режим «Блюдо».
-    expect(screen.queryByText(/^скан этикетки$/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/наведите камеру на этикетку/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^свои вина$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/сфотографируйте этикетку/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Бутылка" }));
-    expect(screen.getByRole("heading", { name: "Скан этикетки" })).toBeInTheDocument();
-    expect(screen.getByText(/наведите камеру на этикетку/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Свои вина" })).toBeInTheDocument();
+    expect(screen.getByText(/сфотографируйте этикетку/i)).toBeInTheDocument();
     expect(screen.queryByText(/что подать к блюду/i)).not.toBeInTheDocument();
   });
 
