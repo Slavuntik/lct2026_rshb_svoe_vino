@@ -101,3 +101,29 @@ def test_ui_only_release_keeps_api_running_and_rejects_runtime_changes(tmp_path,
     assert (base/'app').stat().st_ino == old_inode
     assert (base/'app/packages/cv/.embed_cache/model.json').read_text() == '{}'
     assert not (release/'previous/app').exists()
+
+
+@pytest.mark.parametrize('superseded', [False, True])
+def test_tooling_publication_matches_active_revision(tmp_path, superseded):
+    base = tmp_path / 'base'
+    release = base / 'releases/new'
+    for name in ('tools/eval_detector.py', 'eval/participant_test.sh', 'docs/EVAL_DEMO.md'):
+        path = release / 'tooling' / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('fixture')
+    (release / 'commit').write_text('new-sha\n')
+    (base / 'deployed-commit').write_text('newer-sha\n' if superseded else 'new-sha\n')
+    previous = base / 'old-tooling'
+    previous.mkdir()
+    (base / 'tooling').symlink_to(previous)
+    script = tmp_path / 'publish-tooling.sh'
+    script.write_text((ROOT / 'infra/ams3/publish-tooling.sh').read_text().replace('BASE=/opt/somelye', f'BASE="{base}"'))
+    result = run('bash', str(script), str(release))
+    assert result.returncode == 0, result.stdout + result.stderr
+    if superseded:
+        assert (base / 'tooling').resolve() == previous
+        assert not (release / 'tooling/.git-revision').exists()
+    else:
+        assert (base / 'tooling').resolve() == release / 'tooling'
+        assert (base / 'tooling/.git-revision').read_text() == 'new-sha\n'
+    assert previous.is_dir()
