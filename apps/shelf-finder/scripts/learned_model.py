@@ -1,5 +1,5 @@
 """Portable ALIKED, adapted from ALIKED (BSD-3) and LightGlue-ONNX (Apache-2.0).
-See THIRD_PARTY.md. Input: RGB [0,1], height 512, width divisible by 32.
+License texts: apps/shelf-finder/licenses/. Input: RGB [0,1], height 512, width divisible by 32.
 """
 
 # The caller adds the pinned LightGlue-ONNX checkout to sys.path.
