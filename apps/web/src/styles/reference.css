@@ -40,6 +40,8 @@
 .scan-text-field { width: 100%; padding: 6px 16px; border: 1px solid var(--reference-line); border-radius: 12px; background: var(--on-accent); gap: 0; }
 .scan-text-field .field__label { font-size: 11px; line-height: 16px; color: var(--muted); }
 .app-shell .scan-text-field .field__textarea { min-height: 76px; padding: 0; border: 0; border-radius: 0; resize: vertical; background: transparent; }
+/* Фокус обозначает общая рамка поля; textarea не рисует вторую внутри. */
+.app-shell .scan-text-field .field__textarea:focus-visible { outline: none; }
 .scan-text-field:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .scan-text-form > .btn { width: min(279px, 100%); }
 .scan-screen > [data-testid], .scan-screen > .field__error { margin-top: 20px; }
