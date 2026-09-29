@@ -1,4 +1,7 @@
-# Документация проекта
+# Документация «Свой Сомелье» — Digital Rover
+
+- [Команда: участники, роли и контакты](../TEAM.md).
+- [Презентация pre_v3: тезисы, источники цифр и ссылки](product/presentation-pre-v3.md).
 
 - [Оформление по web.zip и галерея основного сканера — 29.09.2026](product/reference-design-2026-09-29.md).
 
@@ -7,7 +10,7 @@
 - [Оценка сканера: данные, воспроизведение, тесты и ограничения метрик](label-recognition-evaluation.md).
 - [Docker Compose: quick-start всего проекта и витрины](DOCKER_QUICKSTART.md)
 
-## Актуальные точки входа — 28.09.2026
+## Актуальные точки входа — 29.09.2026
 
 - [Итоговый прогон интеграции](product/shelf-integration-validation-2026-09-27.md).
 - [Сверка с оригинальным PDF и готовность](product/requirements-check.md).
@@ -15,6 +18,8 @@
 - [Локальный запуск всего Vinchik](local-full-stack.md), [быстрый старт основного приложения](QUICKSTART.md).
 - [Перенос CPU / удалённый GPU / LiteLLM](../apps/shelf-finder/docs/portable-litellm-2026-09-27.md).
 - [Все исправления адверсариального ревью](../apps/shelf-finder/docs/adversarial-fixes-2026-09-27.md).
+
+Актуальные показатели точности и скорости — в [презентации pre_v3](product/presentation-pre-v3.md), это два независимых замера.
 
 Датированные отчёты в `reports/`, `qa/` и `apps/shelf-finder/docs/` сохраняют историю
 своей версии и оборудования. Их результаты не означают текущее состояние production.
