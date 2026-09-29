@@ -4,6 +4,12 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 import { server } from "../mocks/server";
 import { resetMockState } from "../mocks/state";
 
+// jsdom does not implement the native dialog API; browser QA covers modal focus.
+if (typeof HTMLDialogElement !== "undefined" && !HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
+}
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
 });

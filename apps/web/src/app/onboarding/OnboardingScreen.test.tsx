@@ -1,16 +1,11 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderApp } from "../../test/renderApp";
-import { setAnalyticsSink, type AnalyticsEvent } from "../../lib/analytics";
+import { apiClient } from "../../lib/apiClient";
+import { CONSENT_VERSION } from "../../lib/consent";
 import { storage } from "../../lib/storage";
 import { OnboardingScreen } from "./OnboardingScreen";
-
-function isoYearsAgo(years: number): string {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() - years);
-  return date.toISOString().slice(0, 10);
-}
 
 function renderOnboarding() {
   return renderApp(
@@ -22,57 +17,51 @@ function renderOnboarding() {
   );
 }
 
-describe("OnboardingScreen — гейт 18+", () => {
-  it("без даты рождения не пускает дальше: показывает ошибку и остаётся на форме", () => {
-    renderOnboarding();
-    fireEvent.click(screen.getByRole("button", { name: /начать пробовать/i }));
-
-    expect(screen.getByText(/укажите дату рождения/i)).toBeInTheDocument();
-    expect(screen.queryByText("SCAN_SCREEN_PROBE")).not.toBeInTheDocument();
-    expect(storage.isOnboardingComplete()).toBe(false);
-  });
-
-  it("до 18 лет — блокирует честным экраном отказа и шлёт age_gate_failed", () => {
-    const events: AnalyticsEvent[] = [];
-    const restore = setAnalyticsSink((event) => events.push(event));
+describe("OnboardingScreen — подтверждение 18+", () => {
+  it("до подтверждения блокирует сканер и не создаёт гостя", () => {
+    const guest = vi.spyOn(apiClient, "registerGuest");
     try {
       renderOnboarding();
-      const dateInput = screen.getByLabelText(/дата рождения/i);
-      fireEvent.change(dateInput, { target: { value: isoYearsAgo(10) } });
-      fireEvent.click(screen.getByRole("button", { name: /начать пробовать/i }));
-
-      expect(screen.getByTestId("age-denied")).toBeInTheDocument();
-      expect(screen.queryByText("SCAN_SCREEN_PROBE")).not.toBeInTheDocument();
-      expect(events.some((e) => e.name === "age_gate_failed")).toBe(true);
+      expect(screen.getByRole("dialog", { name: "18+" })).toBeInTheDocument();
+      expect(document.querySelector(".age-gate-preview")).toHaveAttribute("inert");
+      expect(screen.queryByRole("button", { name: "Сканировать" })).not.toBeInTheDocument();
       expect(storage.isOnboardingComplete()).toBe(false);
-    } finally {
-      restore();
-    }
+      expect(guest).not.toHaveBeenCalled();
+      const cancel = new Event("cancel", { cancelable: true });
+      fireEvent(screen.getByRole("dialog"), cancel);
+      expect(cancel.defaultPrevented).toBe(true);
+    } finally { guest.mockRestore(); }
   });
 
-  it("совершеннолетний со скоупами: скоупы уходят в API-клиент и онбординг завершается", async () => {
-    const events: AnalyticsEvent[] = [];
-    const restore = setAnalyticsSink((event) => events.push(event));
+  it("подтверждает возраст и сохраняет только базовое согласие без выдуманной даты рождения", async () => {
+    const guest = vi.spyOn(apiClient, "registerGuest");
     try {
       renderOnboarding();
-
-      fireEvent.change(screen.getByLabelText(/дата рождения/i), { target: { value: isoYearsAgo(30) } });
-      fireEvent.click(screen.getByLabelText(/вкусовой профиль/i));
-      fireEvent.click(screen.getByRole("button", { name: /начать пробовать/i }));
-
-      await waitFor(() => expect(screen.getByText("SCAN_SCREEN_PROBE")).toBeInTheDocument());
-
+      fireEvent.click(screen.getByRole("button", { name: "Подтверждаю" }));
+      expect(await screen.findByText("SCAN_SCREEN_PROBE")).toBeInTheDocument();
+      expect(guest).toHaveBeenCalledWith({ age_confirmed: true, consent_version: CONSENT_VERSION });
       expect(storage.isOnboardingComplete()).toBe(true);
-      expect(storage.getConsentScopes()).toEqual(expect.arrayContaining(["base", "profiling"]));
+      expect(storage.getConsentScopes()).toEqual(["base"]);
       expect(storage.getAccountKind()).toBe("guest");
+      expect(storage.getBirthDate()).toBeNull();
+      expect(document.body.style.overflow).not.toBe("hidden");
+    } finally { guest.mockRestore(); }
+  });
 
-      const completed = events.find((e) => e.name === "onboarding_completed");
-      expect(completed?.props).toMatchObject({ scopes: expect.arrayContaining(["base", "profiling"]) });
-      expect(events.some((e) => e.name === "consent_granted" && (e.props as { scope: string }).scope === "profiling")).toBe(
-        true,
-      );
-    } finally {
-      restore();
-    }
+  it("при ошибке остаётся закрытым, позволяет повторить и блокирует повторный клик во время запроса", async () => {
+    const guest = vi.spyOn(apiClient, "registerGuest").mockRejectedValueOnce(new Error("offline"));
+    try {
+      renderOnboarding();
+      const confirm = screen.getByRole("button", { name: "Подтверждаю" });
+      fireEvent.click(confirm);
+      fireEvent.click(confirm);
+      expect(confirm).toBeDisabled();
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      expect(guest).toHaveBeenCalledTimes(1);
+      expect(storage.isOnboardingComplete()).toBe(false);
+      expect(confirm).toBeEnabled();
+      fireEvent.click(confirm);
+      expect(await screen.findByText("SCAN_SCREEN_PROBE")).toBeInTheDocument();
+    } finally { guest.mockRestore(); }
   });
 });

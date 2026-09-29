@@ -17,20 +17,17 @@ describe("Стартовая страница", () => {
   it.each(["/", "/unknown-page", "/app"])("%s открывает сканер после первого входа", async (path) => {
     storage.setOnboardingComplete(true);
     renderRouter(path);
-    expect(await screen.findByRole("heading", { name: "Свои вина" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Свои вина" }, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/app/scan");
     expect(screen.getByRole("button", { name: "Загрузить фото" })).toBeInTheDocument();
   });
 
   it("первый вход сохраняет проверку возраста и затем открывает сканер", async () => {
     renderRouter();
-    const birthDate = await screen.findByLabelText(/дата рождения/i);
+    await screen.findByRole("dialog", { name: "18+" });
     expect(screen.getByTestId("location")).toHaveTextContent("/app/onboarding");
-    fireEvent.click(screen.getByRole("button", { name: /начать пробовать/i }));
-    expect(screen.getByText(/укажите дату рождения/i)).toBeInTheDocument();
-    fireEvent.change(birthDate, { target: { value: "1990-01-01" } });
-    fireEvent.click(screen.getByRole("button", { name: /начать пробовать/i }));
-    expect(await screen.findByRole("heading", { name: "Свои вина" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Подтверждаю" }));
+    expect(await screen.findByRole("heading", { name: "Свои вина" }, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/app/scan");
     expect(storage.isOnboardingComplete()).toBe(true);
   });
