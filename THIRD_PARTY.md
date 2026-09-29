@@ -90,7 +90,7 @@
 | imagehash | BSD-2-Clause |
 | pyarrow (Apache Arrow), accelerate | Apache-2.0 |
 
-### 4.2 `apps/shelf-finder` — подробности в [`apps/shelf-finder/THIRD_PARTY.md`](apps/shelf-finder/THIRD_PARTY.md)
+### 4.2 `apps/shelf-finder`
 
 Тексты лицензий лежат рядом: `apps/shelf-finder/licenses/`.
 
