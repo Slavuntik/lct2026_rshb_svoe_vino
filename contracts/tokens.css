@@ -94,6 +94,11 @@
      светлой странице (живая находка 27.09, reports/frontend-screens-restyle.md) */
   color-scheme: light;
 
+  /* Макет 29.09: значения из apps/web/src/styles/tokens.css.
+     Потребители в reference.css: ширина приложения и нетекстовые рамки полей. */
+  --app-width: 440px;
+  --reference-line: #c9cacc;
+
   /* палитра: 15 литеральных цветов + 2 псевдонима */
   --bg: #FEFDFA;            /* фон экрана (Figma: «фон») */
   --card: #FDF9ED;          /* карточки/плитки/hero (Figma: «другой фон») */
