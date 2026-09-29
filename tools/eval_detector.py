@@ -116,6 +116,94 @@ def stats(rows: list[dict]) -> dict:
     }
 
 
+LABEL_HEADER = ["image_path", "sha256", "expected_slug", "status", "note"]
+LABEL_STATUSES = {"sure", "disputed"}
+SLUG = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
+
+
+def load_labels(path: Path) -> dict[str, dict]:
+    """Разметка: image_path, sha256 (можно пусто), expected_slug (варианты через |, пусто — вина нет в каталоге),
+    status sure|disputed, note."""
+    with path.open(encoding="utf-8-sig", newline="") as stream:
+        rows = list(csv.reader(stream))
+    if not rows or rows[0] != LABEL_HEADER:
+        raise ValueError("Разметка: ожидается заголовок " + ",".join(LABEL_HEADER))
+    labels = {}
+    for number, row in enumerate(rows[1:], 2):
+        if not any(cell.strip() for cell in row):
+            continue
+        if len(row) != len(LABEL_HEADER):
+            raise ValueError(f"Разметка, строка {number}: ожидается {len(LABEL_HEADER)} колонок")
+        image, digest, slugs, status, note = (cell.strip() for cell in row)
+        expected = [slug.strip() for slug in slugs.split("|")] if slugs else []
+        if not image or image in labels:
+            raise ValueError(f"Разметка, строка {number}: пустой или повторный image_path")
+        if digest and not re.fullmatch(r"[0-9a-fA-F]{64}", digest):
+            raise ValueError(f"Разметка, строка {number}: sha256 должен быть 64 hex-символа или пустым")
+        if any(not SLUG.fullmatch(slug) for slug in expected):
+            raise ValueError(f"Разметка, строка {number}: некорректный expected_slug {slugs!r}")
+        if status not in LABEL_STATUSES or (status == "disputed" and not expected):
+            raise ValueError(f"Разметка, строка {number}: status sure|disputed; disputed требует expected_slug")
+        labels[image] = {"sha256": digest.lower(), "expected": expected, "status": status, "note": note}
+    if not labels:
+        raise ValueError("Разметка пуста")
+    return labels
+
+
+def check_labels(labels: dict[str, dict], expected_rows: list[dict]) -> None:
+    """До отправки фото: каждая метка относится к файлу этого прогона, и файл тот же самый."""
+    digests = {row["image_path"]: row["image_sha256"] for row in expected_rows}
+    unknown = [image for image in labels if image not in digests]
+    if unknown:
+        raise ValueError(f"Разметка ссылается на файлы, которых нет в наборе: {', '.join(unknown[:5])}")
+    changed = [image for image, label in labels.items() if label["sha256"] and label["sha256"] != digests[image]]
+    if changed:
+        raise ValueError(f"SHA-256 в разметке не совпадает с файлом: {', '.join(changed[:5])}")
+
+
+def verdict(row: dict, label: dict | None) -> str:
+    if label is None:
+        return "нет разметки"
+    if not label["expected"]:
+        return "вне каталога"
+    return "верно" if row["predicted_slug"] in label["expected"] else "ошибка"
+
+
+def score(rows: list[dict], labels: dict[str, dict], labels_file: Path) -> dict:
+    def share(subset: list[dict]) -> dict:
+        correct = sum(verdict(row, labels[row["image_path"]]) == "верно" for row in subset)
+        return {"n": len(subset), "top1_correct": correct, "top1_accuracy": round(correct / len(subset), 4) if subset else None}
+
+    labeled = [row for row in rows if row["image_path"] in labels]
+    known = [row for row in labeled if labels[row["image_path"]]["expected"]]
+    absent = [row for row in labeled if not labels[row["image_path"]]["expected"]]
+    return {
+        "labels_file": str(labels_file), "labels_sha256": sha256(labels_file),
+        "in_catalog": share(known),
+        "in_catalog_sure": share([row for row in known if labels[row["image_path"]]["status"] == "sure"]),
+        "disputed": sum(labels[row["image_path"]]["status"] == "disputed" for row in known),
+        "not_in_catalog": {"n": len(absent), "answered_with_slug": sum(row["predicted_slug"] is not None for row in absent),
+                           "note": "/v1/eval/predict по контракту всегда отдаёт slug; точность для вин вне каталога здесь не определена"},
+        "unlabeled": len(rows) - len(labeled),
+        "errors": [{"query_id": row["query_id"], "image_path": row["image_path"], "expected": labels[row["image_path"]]["expected"],
+                    "predicted_slug": row["predicted_slug"], "status": labels[row["image_path"]]["status"],
+                    "note": labels[row["image_path"]]["note"]} for row in known if verdict(row, labels[row["image_path"]]) == "ошибка"],
+    }
+
+
+def write_answers(path: Path, rows: list[dict], labels: dict[str, dict] | None) -> None:
+    """Таблица ответов для передачи: открывается в Excel (UTF-8 с BOM)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8-sig", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["query_id", "image_path", "predicted_slug", "latency_ms", "expected_slug", "status", "result", "note"])
+        for row in rows:
+            label = labels.get(row["image_path"]) if labels is not None else None
+            writer.writerow([row["query_id"], row["image_path"], row["predicted_slug"] or "", row["latency_ms"],
+                             "|".join(label["expected"]) if label else "", label["status"] if label else "",
+                             verdict(row, label) if labels is not None else "", label["note"] if label else ""])
+
+
 def output_path(value: str) -> Path:
     path = Path(value).absolute()
     if path.exists() or path.is_symlink():
@@ -153,8 +241,11 @@ def run_prepared(args: argparse.Namespace, work: Path) -> int:
     output = output_path(args.output)
     report_name = args.report or (str(output.with_suffix(".report.json")) if args.images_dir else None)
     report = output_path(report_name) if report_name else None
-    if report and output.resolve() == report.resolve():
-        raise ValueError("--report и --output должны быть разными файлами")
+    answers_name = args.answers or (str(output.with_suffix(".answers.csv")) if args.images_dir else None)
+    answers = output_path(answers_name) if answers_name else None
+    destinations = [path.resolve() for path in (output, report, answers) if path]
+    if len(set(destinations)) != len(destinations):
+        raise ValueError("--output, --report и --answers должны быть разными файлами")
     script = Path(args.eval_script).resolve()
     if not script.is_file():
         raise ValueError("Не найден eval-script")
@@ -163,7 +254,10 @@ def run_prepared(args: argparse.Namespace, work: Path) -> int:
         manifest, images, expected = prepare_folder(dataset, work)
     else:
         manifest, images, expected = validate_dataset(dataset)
-    for destination in (output, report):
+    labels = load_labels(Path(args.labels)) if args.labels else None
+    if labels is not None:
+        check_labels(labels, expected)
+    for destination in (output, report, answers):
         if destination and destination.resolve().is_relative_to(dataset):
             raise ValueError("Результат сохраняйте вне исходного датасета")
     for command in ("bash", "curl", "jq", "awk", "mktemp"):
@@ -195,12 +289,18 @@ def run_prepared(args: argparse.Namespace, work: Path) -> int:
         with output.open("xb") as target, predictions.open("rb") as source:
             shutil.copyfileobj(source, target)
     summary = stats(rows)
+    if labels is not None:
+        summary["accuracy"] = score(rows, labels, Path(args.labels).resolve())
+        summary["accuracy_note"] = "Top-1 по разметке --labels; вина вне каталога считаются отдельно."
+    if answers:
+        write_answers(answers, rows, labels)
     if report:
         git = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
         record = {"team": "Digital Rover", "started_at": started, "elapsed_seconds": round(time.monotonic() - clock, 3),
                   "endpoint": args.endpoint, "client_git_commit": git.stdout.strip() if git.returncode == 0 else None,
                   "runner_sha256": sha256(Path(__file__)), "organizer_script_sha256": sha256(script), "manifest_sha256": sha256(manifest),
-                  "predictions_sha256": sha256(output), "health_before": health, "summary": summary,
+                  "predictions_sha256": sha256(output), "answers_sha256": sha256(answers) if answers else None,
+                  "health_before": health, "summary": summary,
                   "input_mode": "folder" if args.images_dir else "organizer_dataset", "predictions": rows}
         report.parent.mkdir(parents=True, exist_ok=True)
         with report.open("x", encoding="utf-8") as stream:
@@ -208,6 +308,8 @@ def run_prepared(args: argparse.Namespace, work: Path) -> int:
             stream.write("\n")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     print(f"Результат: {output}")
+    if answers:
+        print(f"Таблица ответов: {answers}")
     if report:
         print(f"Отчёт: {report}")
     if summary["null_predictions"]:
@@ -225,6 +327,8 @@ def main() -> int:
     parser.add_argument("--output", required=True, help="Новый файл JSONL (в Git автоматически не добавляется)")
     parser.add_argument("--eval-script", default=str(SCRIPT), help="Путь к доверенному скрипту организатора с тем же CLI; по умолчанию eval/participant_test.sh")
     parser.add_argument("--report", help="Необязательный отдельный JSON с параметрами и сводкой")
+    parser.add_argument("--labels", help="CSV разметки image_path,sha256,expected_slug,status,note: считает top-1 в отчёте")
+    parser.add_argument("--answers", help="CSV ответов для передачи (в режиме папки по умолчанию <имя-output>.answers.csv)")
     args = parser.parse_args()
     try:
         return run(args)

@@ -1,5 +1,7 @@
 """Contract and failure tests using the actual organizer shell script + a local HTTP server."""
 import argparse
+import csv
+import io
 import importlib.util
 import json
 import tempfile
@@ -52,7 +54,7 @@ class EvalDetectorTests(unittest.TestCase):
         thread.start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
-        self.args = argparse.Namespace(dataset=str(self.data), images_dir=None, output=str(self.root / "result.jsonl"), report=None, eval_script=str(eval_detector.SCRIPT),
+        self.args = argparse.Namespace(dataset=str(self.data), images_dir=None, output=str(self.root / "result.jsonl"), report=None, labels=None, answers=None, eval_script=str(eval_detector.SCRIPT),
                                        endpoint=f"http://127.0.0.1:{server.server_port}/v1/eval/predict")
 
     def test_folder_recursive_default_report_and_order(self):
@@ -168,6 +170,88 @@ class EvalDetectorTests(unittest.TestCase):
         self.args.output = str(self.data / "result.jsonl")
         with self.assertRaisesRegex(ValueError, "вне исходного датасета"):
             eval_detector.run(self.args)
+
+    def labeled_folder(self, rows):
+        folder = self.root / "photos"
+        folder.mkdir()
+        for name in ("a.jpg", "b.jpg", "c.jpg"):
+            (folder / name).write_bytes(name.encode())
+        labels = self.root / "labels.csv"
+        content = "image_path,sha256,expected_slug,status,note\n" + "".join(rows)
+        labels.write_text(content.replace("{sha_a}", eval_detector.sha256(folder / "a.jpg")), encoding="utf-8")
+        self.args.dataset, self.args.images_dir, self.args.labels = None, str(folder), str(labels)
+        return folder, labels
+
+    def test_labels_accuracy_errors_and_out_of_catalog(self):
+        folder, labels = self.labeled_folder([
+            "a.jpg,{sha_a},fixture-wine,sure,\n",
+            "b.jpg,,other-wine,sure,соседний сорт\n",
+            "c.jpg,,,sure,вина нет в каталоге\n",
+        ])
+        self.assertEqual(eval_detector.run(self.args), 0)
+        report = json.loads((self.root / "result.report.json").read_text())
+        accuracy = report["summary"]["accuracy"]
+        self.assertEqual(accuracy["in_catalog"], {"n": 2, "top1_correct": 1, "top1_accuracy": 0.5})
+        self.assertEqual(accuracy["in_catalog_sure"], {"n": 2, "top1_correct": 1, "top1_accuracy": 0.5})
+        self.assertEqual(accuracy["not_in_catalog"]["n"], 1)
+        self.assertEqual(accuracy["not_in_catalog"]["answered_with_slug"], 1)
+        self.assertEqual(accuracy["unlabeled"], 0)
+        self.assertEqual(accuracy["labels_sha256"], eval_detector.sha256(labels))
+        self.assertEqual([(e["image_path"], e["predicted_slug"]) for e in accuracy["errors"]], [("b.jpg", "fixture-wine")])
+        rows = [json.loads(line) for line in Path(self.args.output).read_text().splitlines()]
+        self.assertEqual(set(rows[0]), {"query_id", "image_path", "image_sha256", "predicted_slug", "latency_ms"})
+
+    def test_answers_csv_for_sharing(self):
+        self.labeled_folder(["a.jpg,{sha_a},fixture-wine,sure,\n", "b.jpg,,other-wine,sure,соседний сорт\n"])
+        self.assertEqual(eval_detector.run(self.args), 0)
+        text = (self.root / "result.answers.csv").read_text(encoding="utf-8-sig")
+        rows = list(csv.DictReader(io.StringIO(text)))
+        self.assertEqual([r["image_path"] for r in rows], ["a.jpg", "b.jpg", "c.jpg"])
+        self.assertEqual([r["result"] for r in rows], ["верно", "ошибка", "нет разметки"])
+        self.assertEqual(rows[1]["expected_slug"], "other-wine")
+        self.assertEqual(rows[1]["predicted_slug"], "fixture-wine")
+        report = json.loads((self.root / "result.report.json").read_text())
+        self.assertEqual(report["answers_sha256"], eval_detector.sha256(self.root / "result.answers.csv"))
+
+    def test_answers_explicit_in_dataset_mode_without_labels(self):
+        self.args.answers = str(self.root / "answers.csv")
+        self.assertEqual(eval_detector.run(self.args), 0)
+        rows = list(csv.DictReader(io.StringIO((self.root / "answers.csv").read_text(encoding="utf-8-sig"))))
+        self.assertEqual([(r["query_id"], r["predicted_slug"], r["result"]) for r in rows], [("q-1", "fixture-wine", "")])
+
+    def test_labels_disputed_alternatives_and_unlabeled(self):
+        self.labeled_folder(["a.jpg,,other|fixture-wine,disputed,два издания\n", "b.jpg,,fixture-wine,sure,\n"])
+        self.assertEqual(eval_detector.run(self.args), 0)
+        accuracy = json.loads((self.root / "result.report.json").read_text())["summary"]["accuracy"]
+        self.assertEqual(accuracy["in_catalog"], {"n": 2, "top1_correct": 2, "top1_accuracy": 1.0})
+        self.assertEqual(accuracy["in_catalog_sure"], {"n": 1, "top1_correct": 1, "top1_accuracy": 1.0})
+        self.assertEqual(accuracy["unlabeled"], 1)
+        self.assertEqual(accuracy["disputed"], 1)
+
+    def test_invalid_labels_fail_before_health_or_inference(self):
+        folder, labels = self.labeled_folder([])
+        cases = ["wrong,header\n",
+                 "image_path,sha256,expected_slug,status,note\nmissing.jpg,,x,sure,\n",
+                 "image_path,sha256,expected_slug,status,note\na.jpg," + "0" * 64 + ",x,sure,\n",
+                 "image_path,sha256,expected_slug,status,note\na.jpg,,x,maybe,\n",
+                 "image_path,sha256,expected_slug,status,note\na.jpg,,x,sure,\na.jpg,,y,sure,\n",
+                 "image_path,sha256,expected_slug,status,note\na.jpg,,bad slug!,sure,\n",
+                 "image_path,sha256,expected_slug,status,note\na.jpg,,,disputed,\n"]
+        for number, content in enumerate(cases):
+            with self.subTest(content=content), patch.object(eval_detector, "service_health") as health:
+                labels.write_text(content, encoding="utf-8")
+                self.args.output = str(self.root / f"bad-{number}.jsonl")
+                with self.assertRaises(ValueError):
+                    eval_detector.run(self.args)
+                health.assert_not_called()
+        self.assertEqual(self.posts, [])
+
+    def test_shipped_real_photo_labels_are_valid(self):
+        labels = eval_detector.ROOT / "qa" / "scan-eval-runs" / "real-photos-stand" / "labels-62.csv"
+        rows = eval_detector.load_labels(labels)
+        self.assertEqual(len(rows), 62)
+        self.assertTrue(all(row["expected"] for row in rows.values()))
+        self.assertTrue(all(len(row["sha256"]) == 64 for row in rows.values()))
 
 
 if __name__ == "__main__":

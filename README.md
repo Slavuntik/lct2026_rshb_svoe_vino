@@ -96,7 +96,7 @@ python3 tools/eval_detector.py --images-dir /path/to/photos \
   --endpoint http://127.0.0.1:8080/v1/eval/predict --output ./eval-results/predictions.jsonl
 ```
 
-В режиме папки создаются `predictions.jsonl` и `predictions.report.json`. Результаты не коммитятся; `eval-results/` исключена из Git. Код `2` означает сохранённый результат с `null`, а не потерю файла. Полная справка — `python3 tools/eval_detector.py --help`.
+В режиме папки создаются `predictions.jsonl`, `predictions.report.json` и таблица ответов `predictions.answers.csv`; с `--labels` отчёт считает top-1 по разметке. Результаты не коммитятся; `eval-results/` исключена из Git. Код `2` означает сохранённый результат с `null`, а не потерю файла. Полная справка — `python3 tools/eval_detector.py --help`.
 
 [Сценарий демонстрации: clone → setup → eval-script + dataset → файл результата](docs/EVAL_DEMO.md).
 Отдельная утилита проверяет весь датасет и готовность основного CV, запускает официальный скрипт и сохраняет JSONL без автоматического коммита:
