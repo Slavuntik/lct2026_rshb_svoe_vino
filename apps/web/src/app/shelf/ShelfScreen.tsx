@@ -21,6 +21,8 @@ export function ShelfScreen() {
   const [ranking, setRanking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const galleryInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
   const photoRef = useRef<Photo[]>([]);
   const mounted = useRef(true);
   const scanController = useRef<AbortController|null>(null);
@@ -105,8 +107,11 @@ export function ShelfScreen() {
     {acceptedWish && <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>}
     {!acceptedWish && <p className="text-small">{t('shelf.uploadHint')}</p>}
     <div className="shelf-actions">
-      <label className="btn btn--secondary">{t('shelf.addPhotos')}<input aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
-      <label className="btn btn--secondary">{t('shelf.takePhoto')}<input aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/></label>
+      <button type="button" className="btn btn--secondary shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>galleryInput.current?.click()}>{t('shelf.addPhotos')}</button>
+      <button type="button" className="btn btn--secondary shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>cameraInput.current?.click()}>{t('shelf.takePhoto')}</button>
+      {/* Keep activation synchronous with the tap and each picker independent on iOS. */}
+      <input ref={galleryInput} hidden aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/>
+      <input ref={cameraInput} hidden aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/>
       {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
     </div>
     <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>

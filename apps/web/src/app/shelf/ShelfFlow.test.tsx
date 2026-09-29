@@ -28,6 +28,24 @@ async function begin() {
 }
 
 describe('Sommelier shelf flow',()=>{
+  it('routes gallery and camera buttons to separate pickers without submitting the wish',async()=>{
+    const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
+    const gallery=screen.getByLabelText('Добавить фото полок');
+    const camera=screen.getByLabelText('Снять полку');
+    const galleryClick=vi.spyOn(gallery,'click');
+    const cameraClick=vi.spyOn(camera,'click');
+    await user.click(screen.getByRole('button',{name:'Добавить фото полок'}));
+    expect(galleryClick).toHaveBeenCalledTimes(1);
+    expect(cameraClick).not.toHaveBeenCalled();
+    expect(gallery).not.toHaveAttribute('capture');
+    expect(gallery).toHaveAttribute('multiple');
+    await user.click(screen.getByRole('button',{name:'Снять полку'}));
+    expect(cameraClick).toHaveBeenCalledTimes(1);
+    expect(galleryClick).toHaveBeenCalledTimes(1);
+    expect(camera).toHaveAttribute('capture','environment');
+    expect(apiClient.selectShelf).not.toHaveBeenCalled();
+    expect(scanShelf).not.toHaveBeenCalled();
+  });
   it('accepts photos before a wish and ranks them later without rescanning',async()=>{
     vi.mocked(scanShelf).mockResolvedValue(response('wine-a'));
     const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
