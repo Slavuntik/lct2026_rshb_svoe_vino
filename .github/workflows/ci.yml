@@ -21,6 +21,19 @@ permissions:
   contents: read
 
 jobs:
+  eval-tool-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install organizer script dependencies
+        run: sudo apt-get update && sudo apt-get install -y curl jq
+      - name: Console evaluation tool (local HTTP fixtures, no ML services)
+        run: python -m unittest discover -s tools -p test_eval_detector.py
+
   detect:
     runs-on: ubuntu-latest
     outputs:

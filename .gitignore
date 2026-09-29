@@ -22,3 +22,6 @@ standalone/winescan/*.pdf
 
 # Local Docker credentials
 .env.docker
+
+# Local console evaluation outputs (predictions and reports).
+/eval-results/

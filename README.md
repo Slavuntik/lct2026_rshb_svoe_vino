@@ -89,6 +89,21 @@ LLM-ключей для запуска не нужно: `LLM_PROVIDER=mock` ос
 
 ## Прогон скрипта кейсодержателя
 
+Прогнать обычную папку изображений (включая подпапки) и оставить JSONL + JSON-отчёт:
+
+```bash
+python3 tools/eval_detector.py --images-dir /path/to/photos \
+  --endpoint http://127.0.0.1:8080/v1/eval/predict --output ./eval-results/predictions.jsonl
+```
+
+[Сценарий демонстрации: clone → setup → eval-script + dataset → файл результата](docs/EVAL_DEMO.md).
+Отдельная утилита проверяет весь датасет и готовность основного CV, запускает официальный скрипт и сохраняет JSONL без автоматического коммита:
+
+```bash
+python3 tools/eval_detector.py --dataset /path/to/unpacked-eval \
+  --endpoint http://127.0.0.1:8080/v1/eval/predict --output /tmp/predictions.jsonl
+```
+
 `POST /v1/eval/predict` — фиксированный путь скрипта оценки: без авторизации, multipart-поле
 `image`, всегда HTTP 200 и `{"slug": "..."}` (лучшая доступная догадка даже при сбое пайплайна).
 Это алиас «несгораемого» плоского режима `/v1/scan/photo?flat=1` (`contracts/image-scan.md`).
