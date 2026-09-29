@@ -83,7 +83,6 @@ Copyright (c) 2026 Команда проекта «Свой Сомелье». В
 
 4.3. СТОРОННИЕ БИБЛИОТЕКИ, МОДЕЛИ И ВЕСА.
      Каждый сторонний компонент используется на условиях СВОЕЙ лицензии.
-     Полный разобранный список — в файле THIRD_PARTY.md в корне репозитория.
      Отдельно обращаем внимание на два пункта, которые ограничивают использование
      сильнее, чем остальные:
        - реранкер jinaai/jina-reranker-v2-base-multilingual (стадия RAG-поиска) —
@@ -143,7 +142,7 @@ cover: the wine catalogue data and wine photographs, which belong to the
 "Svoyo Vino" platform and RSHB; the case materials, reference and field
 photographs and the eval/ verification kit, which belong to the hackathon
 organisers; and any third-party libraries, models and weights, which remain
-under their own licences (see THIRD_PARTY.md). Note in particular that the
+under their own licences. Note in particular that the
 jina-reranker-v2-base-multilingual model is CC BY-NC 4.0 (non-commercial) and
 that Ultralytics YOLO11 weights are AGPL-3.0 or a commercial Ultralytics
 licence.
