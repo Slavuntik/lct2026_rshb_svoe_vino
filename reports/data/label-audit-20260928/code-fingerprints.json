@@ -1,0 +1,26 @@
+{
+  "app/cv/service.py": {
+    "sha256": "2d0e5072849772cfa2d6d4c08085885b41ac236394b9e7af26ab08a5704b7d98",
+    "matches_worktree": true
+  },
+  "app/cv/vision_llm.py": {
+    "sha256": "070968483da3571e0ca127de7c85938c9cf532ccff77464d8e9fc6d25809d8f8",
+    "matches_worktree": true
+  },
+  "app/config.py": {
+    "sha256": "e078f3d8568f0073f40f4ff112b0d6aac8f371822f961036e8ea934bce295dee",
+    "matches_worktree": true
+  },
+  "cv/encoder.py": {
+    "sha256": "c6d965df2eec3d9eb00ba3f984e63c95c0566140412f5ac6aa945a4799eff7d9",
+    "matches_worktree": true
+  },
+  "cv/index.py": {
+    "sha256": "f26051ed1c57b910c4a1907d2a2e7b856426b6946f36a1fc7720368e2202b3a1",
+    "matches_worktree": true
+  },
+  "cv/text_fusion.py": {
+    "sha256": "2c342024d6b7ea369fe08769096b342176ce19f3cb9429c484c567838c7cd3e4",
+    "matches_worktree": true
+  }
+}

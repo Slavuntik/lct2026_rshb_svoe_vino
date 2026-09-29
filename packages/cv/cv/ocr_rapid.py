@@ -269,6 +269,10 @@ class RapidOcrReader:
             engine = RapidOCR(
                 params={
                     "Global.use_cls": False,
+                    # Container packages are read-only; keep downloaded weights in a
+                    # writable, persistent cache when explicitly configured.
+                    **({"Global.model_root_dir": os.environ["CV_OCR_RAPID_MODELS_DIR"]}
+                       if os.environ.get("CV_OCR_RAPID_MODELS_DIR") else {}),
                     "Det.limit_side_len": size,
                     "Det.limit_type": "max",
                     "Det.box_thresh": self.det_box_thresh,

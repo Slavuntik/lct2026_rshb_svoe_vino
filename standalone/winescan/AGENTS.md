@@ -26,4 +26,4 @@ Use pytest files named `tests/test_*.py` and functions named `test_*`. Prefer sy
 Recent commits use descriptive Russian subjects explaining a change or finding; follow that style. PRs should describe the problem, behavior change, and validation commands/results. Link relevant issues and include screenshots for UI changes.
 
 ## Configuration & Integration
-Keep secrets in local `.env` files using `.env.example`; exclude raw datasets and generated artifacts from commits. Select an available GPU explicitly on shared servers. This repository is the source for the external service monorepo; keep its integration adapter there.
+Keep secrets in local `.env` files using `.env.example`; exclude raw datasets and generated artifacts from commits. Select an available GPU explicitly on shared servers. Since 2026-09-24 this folder (`standalone/winescan` in the service monorepo) is the source of truth for code; `tools/sync_winescan.py` copies the package into `packages/winescan`, where the integration adapter lives. A separate research working copy pulls code from here and carries its docs back.

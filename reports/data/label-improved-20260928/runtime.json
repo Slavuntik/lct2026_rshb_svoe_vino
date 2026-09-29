@@ -1,0 +1,20 @@
+{
+  "runtime_commit": "f933e524b548aea8ec119a775e9af55a232fc422",
+  "final_image": "sha256:136ba25d50977f55e284a700d13b7490f51a48c54b560699532cc5822dc4df30",
+  "sha256": {
+    "packages/cv/cv/encoder.py": "93181841c5b224f1abcc7f0bca08a3a9740b61ea6f04745cc094bc9d66b9edd2",
+    "apps/api/app/cv/service.py": "bb9fcbe3ea5da8ad7bd7d7aedaca2fb6b67318ebd5407e252a7a020609ed705c",
+    "apps/api/app/cv/vision_llm.py": "f30db3af08456107f528538419f998023dab51bdd89a9bcf5a1e424fc88ad2b1",
+    "apps/api/app/routers/scan.py": "8efecfd675e517ae8b1a708b776dc8cf82dfdcc6412ab6af7fcddc59faa7ab08",
+    "packages/cv/cv/identity.py": "12b6a4ce7dd1b22d925d740fffde500f849fff01353f4fe63a33579abcd1358a"
+  },
+  "verified_remote_files": [
+    "packages/cv/cv/encoder.py",
+    "apps/api/app/cv/service.py"
+  ],
+  "hosts": [
+    "89.110.72.101",
+    "84.201.163.74"
+  ],
+  "name_guard_default": false
+}

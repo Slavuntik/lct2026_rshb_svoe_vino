@@ -1,0 +1,52 @@
+name: vinchik
+services:
+  api:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    restart: unless-stopped
+    init: true
+    environment:
+      DATABASE_URL: sqlite:////state/somelye.db
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.docker}
+      ENVIRONMENT: dev
+      LLM_PROVIDER: mock
+      RAG_PROVIDER: mock
+      IMAGE_PROVIDER: mock
+      VERIFIER_PROVIDER: mock
+      CASE_DATA_DIR: /nonexistent
+      PAIRING_RULES_PATH: /opt/pipeline/ref/food_pairing_rules.yaml
+      SCAN_FOREIGN_REF_DIR: /opt/pipeline/ref
+      RAG_REF_DIR: /opt/pipeline/ref
+      VINCHIK_SHELF_URL: ""
+    volumes:
+      - app_state:/state
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/v1/healthz',timeout=5))['warm'] is True"]
+      interval: 15s
+      timeout: 10s
+      start_period: 180s
+      retries: 12
+    logging: &logging
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+  web:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_BIND:-127.0.0.1}:${DOCKER_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1/nginx-health]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    logging: *logging
+volumes:
+  app_state:

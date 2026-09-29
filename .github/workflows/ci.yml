@@ -21,6 +21,19 @@ permissions:
   contents: read
 
 jobs:
+  eval-tool-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install organizer script dependencies
+        run: sudo apt-get update && sudo apt-get install -y curl jq
+      - name: Console evaluation tool (local HTTP fixtures, no ML services)
+        run: python -m unittest discover -s tools -p test_eval_detector.py
+
   detect:
     runs-on: ubuntu-latest
     outputs:
@@ -52,6 +65,9 @@ jobs:
       - name: pytest (agents/B-api.md — без сети, mock LLM + mock RAG)
         working-directory: apps/api
         run: uv run pytest -q
+      - name: CPU recognition regression tests
+        working-directory: apps/api
+        run: uv run pytest ../../packages/cv/tests/test_ocr_rapid.py ../../packages/cv/tests/test_encoder.py ../../packages/cv/tests/test_identity.py ../../packages/cv/tests/test_text_fusion.py -q
       - name: Native deployment rollback tests
         working-directory: apps/api
         run: uv run pytest ../../infra/ams3/tests -q
@@ -69,7 +85,7 @@ jobs:
           python-version: "3.12"
       - name: Install CPU inference runtime and test dependencies
         run: |
-          python -m pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --no-deps torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -e 'apps/shelf-finder/server[ml,vlm,test]'
       - name: Shelf API tests (no GPU, external LLM or catalog downloads)
         run: python -m pytest apps/shelf-finder/server/tests -q

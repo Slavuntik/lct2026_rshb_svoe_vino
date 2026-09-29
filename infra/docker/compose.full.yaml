@@ -1,0 +1,86 @@
+# All host paths are relative to the root compose.yaml (or absolute).
+services:
+  api:
+    build:
+      args:
+        INTEGRATION: "true"
+    environment:
+      RAG_PROVIDER: real
+      RAG_MODE: embedded
+      RAG_VINES_ROOT: /opt/pipeline
+      RAG_DATA_DIR: /data/rag
+      RAG_FASTEMBED_CACHE: /data/fastembed
+      IMAGE_PROVIDER: real
+      VERIFIER_PROVIDER: real
+      CASE_DATA_DIR: /data/case
+      CV_DATA_DIR: /data/cv
+      CV_EMBED_CACHE_DIR: /cache/cv
+      CV_DEVICE: cpu
+      CV_MODEL: ${CV_MODEL:-google/siglip2-base-patch16-384}
+      CV_OCR_ENGINE: rapid
+      CV_OCR_RAPID_MODELS_DIR: /cache/rapidocr
+      CV_OCR_RAPID_SIZES: 640,960
+      CV_FUSION: "1"
+      CV_FUSION_TEXT_SOURCE: ${CV_FUSION_TEXT_SOURCE:-ocr}
+      CV_FUSION_CHOOSE: confident_else_cv
+      HF_HOME: /data/models/hf
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      OMP_NUM_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_BASE_URL: ${LITELLM_URL:-}
+      LLM_API_KEY: ${LITELLM_API_KEY:-}
+      LLM_MODEL: ${LITELLM_MODEL:-qwen3.8-27b-uncensored}
+      VISION_LLM_URL: ${LITELLM_URL:-}
+      VISION_LLM_MODEL: ${LITELLM_MODEL:-qwen3.8-27b-uncensored}
+      VISION_LLM_KEY: ${LITELLM_API_KEY:-}
+      VINCHIK_SHELF_URL: http://shelf:8086
+      VINCHIK_SHELF_ARCHIVE_DIR: /state/shelf-debug
+    volumes:
+      # Embedded Qdrant takes a write lock; use a separate copy, never live server data.
+      - type: bind
+        source: ${VINCHIK_DATA_DIR:?Set VINCHIK_DATA_DIR to a prepared data copy}
+        target: /data
+        bind:
+          create_host_path: false
+      - api_cache:/cache
+    depends_on:
+      shelf:
+        condition: service_healthy
+  shelf:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.shelf
+    restart: unless-stopped
+    init: true
+    environment:
+      SHELF_MODELS_DIR: /models
+      SHELF_DEVICE: cpu
+      SHELF_CPU_THREADS: "2"
+      SHELF_PROFILE: ${SHELF_PROFILE:-baseline}
+      SHELF_SCAN_TIMEOUT_SECONDS: "300"
+      SHELF_LITELLM_URL: ${LITELLM_URL:-}
+      SHELF_LITELLM_API_KEY: ${LITELLM_API_KEY:-}
+      SHELF_LITELLM_MODEL: ${LITELLM_MODEL:-qwen3.8-27b-uncensored}
+      SHELF_LITELLM_TIMEOUT: "60"
+      SHELF_LITELLM_LIMIT: "3"
+    volumes:
+      - type: bind
+        source: ${SHELF_MODELS_HOST_DIR:?Set SHELF_MODELS_HOST_DIR to server-models}
+        target: /models
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8086/v1/shelf/health',timeout=5)); assert d['ready'] and d['catalogSize'] > 0"]
+      interval: 15s
+      timeout: 10s
+      start_period: 180s
+      retries: 12
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+volumes:
+  api_cache:

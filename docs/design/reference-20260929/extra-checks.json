@@ -1,0 +1,47 @@
+[
+  {
+    "route": "/app/shelf",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/app/onboarding",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/",
+    "width": 320,
+    "overflow": false
+  },
+  {
+    "route": "/app/shelf",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "route": "/app/onboarding",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "route": "/",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "route": "/app/shelf",
+    "width": 1280,
+    "overflow": false
+  },
+  {
+    "route": "/app/onboarding",
+    "width": 1280,
+    "overflow": false
+  },
+  {
+    "route": "/",
+    "width": 1280,
+    "overflow": false
+  }
+]

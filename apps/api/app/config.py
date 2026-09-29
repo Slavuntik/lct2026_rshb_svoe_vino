@@ -328,6 +328,10 @@ class Settings:
     #                        чтения модели. Рекомендация ml-lead тимлиду для "в бой" —
     #                        дефолт здесь НЕ переключён (решение тимлида/pm).
     # Неизвестное значение — честно как "merge" (см. _choose_fusion_result).
+    # Opt-in until validated on the paired archive; no extra model calls.
+    cv_fusion_name_guard: bool = field(
+        default_factory=lambda: _bool_env("CV_FUSION_NAME_GUARD", False)
+    )
     cv_fusion_choose: str = field(
         default_factory=lambda: os.environ.get("CV_FUSION_CHOOSE", "merge").strip().lower()
     )

@@ -1,0 +1,191 @@
+[
+  {
+    "route": "scan",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Свои вина"
+    ],
+    "errors": []
+  },
+  {
+    "route": "catalog",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Каталог вин"
+    ],
+    "errors": []
+  },
+  {
+    "route": "chat",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Спросите сомелье"
+    ],
+    "errors": []
+  },
+  {
+    "route": "shelf",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Распознавание витрины"
+    ],
+    "errors": []
+  },
+  {
+    "route": "taste",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Паспорт вкуса"
+    ],
+    "errors": []
+  },
+  {
+    "route": "profile",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Мои данные"
+    ],
+    "errors": []
+  },
+  {
+    "route": "wine/tihaya-buhta-chardonnay-reserve-2023",
+    "width": 320,
+    "overflow": false,
+    "heading": [
+      "Шардоне Резерв"
+    ],
+    "errors": []
+  },
+  {
+    "route": "scan",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Свои вина"
+    ],
+    "errors": []
+  },
+  {
+    "route": "catalog",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Каталог вин"
+    ],
+    "errors": []
+  },
+  {
+    "route": "chat",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Спросите сомелье"
+    ],
+    "errors": []
+  },
+  {
+    "route": "shelf",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Распознавание витрины"
+    ],
+    "errors": []
+  },
+  {
+    "route": "taste",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Паспорт вкуса"
+    ],
+    "errors": []
+  },
+  {
+    "route": "profile",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Мои данные"
+    ],
+    "errors": []
+  },
+  {
+    "route": "wine/tihaya-buhta-chardonnay-reserve-2023",
+    "width": 390,
+    "overflow": false,
+    "heading": [
+      "Шардоне Резерв"
+    ],
+    "errors": []
+  },
+  {
+    "route": "scan",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Свои вина"
+    ],
+    "errors": []
+  },
+  {
+    "route": "catalog",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Каталог вин"
+    ],
+    "errors": []
+  },
+  {
+    "route": "chat",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Спросите сомелье"
+    ],
+    "errors": []
+  },
+  {
+    "route": "shelf",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Распознавание витрины"
+    ],
+    "errors": []
+  },
+  {
+    "route": "taste",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Паспорт вкуса"
+    ],
+    "errors": []
+  },
+  {
+    "route": "profile",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Мои данные"
+    ],
+    "errors": []
+  },
+  {
+    "route": "wine/tihaya-buhta-chardonnay-reserve-2023",
+    "width": 1280,
+    "overflow": false,
+    "heading": [
+      "Шардоне Резерв"
+    ],
+    "errors": []
+  }
+]

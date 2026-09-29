@@ -286,6 +286,7 @@ class TextIndexV2:
         extra: dict[str, dict[str, str]] | None = None,
     ):
         """extra: slug -> {поле: текст} для полей вне CatalogText (category, sugar)."""
+        self.catalog = catalog
         self.extra = extra or {}  # нужен `color_by_slug()` — цвет кандидата из поля category
         self.slugs = list(catalog)
         self.doc_tokens: list[set[str]] = []

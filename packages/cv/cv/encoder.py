@@ -12,15 +12,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
+import os
+import tempfile
 import time
 from pathlib import Path
 
 import numpy as np
 import torch
 from PIL import Image
-from transformers import AutoModel, AutoProcessor
+from transformers import AutoModel, AutoProcessor, __version__ as transformers_version
 
 from cv import config
+
+logger = logging.getLogger(__name__)
+CACHE_SCHEMA = "rgb-auto-processor-v2"
 
 
 def pick_device(requested: str | None = None) -> str:
@@ -41,7 +47,6 @@ class SiglipEncoder:
         self.model_name = model_name or config.CV_MODEL
         self.device = pick_device(device or config.CV_DEVICE)
         self.cache_dir = cache_dir or config.EMBED_CACHE_DIR
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._model = None
         self._processor = None
         self._dim: int | None = None
@@ -63,7 +68,8 @@ class SiglipEncoder:
         return self._dim
 
     def _cache_path(self, arr: np.ndarray) -> Path:
-        h = hashlib.sha256(arr.tobytes()).hexdigest()
+        header = json.dumps([CACHE_SCHEMA, transformers_version, arr.shape, arr.dtype.str]).encode()
+        h = hashlib.sha256(header + b"\0" + arr.tobytes()).hexdigest()
         safe_model = self.model_name.replace("/", "__")
         return self.cache_dir / f"{safe_model}__{h}.json"
 
@@ -73,8 +79,15 @@ class SiglipEncoder:
         RGB-массив (нормализованный запрос стандартного канонического размера или,
         для `ImageIndex.embed()`, произвольный кроп)."""
         cache_path = self._cache_path(image) if use_cache else None
-        if cache_path is not None and cache_path.exists():
-            return json.loads(cache_path.read_text())
+        if cache_path is not None:
+            try:
+                cached = json.loads(cache_path.read_text())
+                if (isinstance(cached, list) and cached
+                    and all(type(x) in (int, float) and np.isfinite(x) for x in cached)
+                    and (self._dim is None or len(cached) == self._dim)):
+                    return cached
+            except (OSError, ValueError, UnicodeError, TypeError, OverflowError):
+                pass  # A missing, unreadable or incomplete cache is a cache miss.
 
         self._load()
         pil = Image.fromarray(image, mode="RGB")
@@ -94,7 +107,21 @@ class SiglipEncoder:
             vec = vec / norm
         out = [float(x) for x in vec]
         if cache_path is not None:
-            cache_path.write_text(json.dumps(out))
+            temporary = None
+            try:
+                self.cache_dir.mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile(mode="w", dir=self.cache_dir, suffix=".tmp", delete=False) as handle:
+                    temporary = Path(handle.name)
+                    json.dump(out, handle)
+                os.replace(temporary, cache_path)
+            except OSError:
+                logger.warning("Embedding cache write failed; returning computed vector")
+            finally:
+                if temporary is not None:
+                    try:
+                        temporary.unlink(missing_ok=True)
+                    except OSError:
+                        pass
         return out
 
     def encode_batch(self, images: list[np.ndarray], use_cache: bool = True) -> list[list[float]]:

@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1.7
+FROM python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9 AS build
+# Pinned official Node binary; the final nginx image contains no build tools.
+# This build stage targets Linux x86_64, like the full CPU inference stack.
+ADD --checksum=sha256:2f2c0da162318f0de47665410c7c8c2ed3d36c8f3105de4bbc61176c70a7cbf2 https://nodejs.org/dist/v24.20.0/node-v24.20.0-linux-x64.tar.xz /tmp/node.tar.xz
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -c "import tarfile; tarfile.open('/tmp/node.tar.xz').extractall('/opt/node', filter='data')" \
+    && rm /tmp/node.tar.xz
+ENV PATH=/opt/node/node-v24.20.0-linux-x64/bin:$PATH
+WORKDIR /repo
+COPY apps/shell/plugins/ocr-plugin apps/shell/plugins/ocr-plugin
+COPY apps/web/package*.json apps/web/
+WORKDIR /repo/apps/web
+RUN npm ci
+COPY apps/web ./
+ENV VITE_API_MODE=real
+RUN npm run build
+FROM nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+COPY infra/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+EXPOSE 80

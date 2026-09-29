@@ -88,6 +88,8 @@ def archive_scan(
         # scan.md v0.4.10 ("<id>.json" перечисление) — см. "Предложения к контрактам" в
         # reports/backend-text-source.md, архитектор не спрошен.
         "text_source": result.text_source,
+        "model_label_fields": result.model_label_fields,
+        "identity_rejection": result.identity_rejection,
         "label_text": result.label_text,
         # Тимлид 22.09 (расширение брифа scan-budget, п.9, CV_FUSION_CHOOSE) —
         # сравнение локального (CV+OCR) и модельного (текущая склейка) ответов

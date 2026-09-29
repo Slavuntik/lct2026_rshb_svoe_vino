@@ -1,0 +1,15 @@
+{
+  "qid": "C32",
+  "expected_slug": "denisov_barynya_kurmyshi",
+  "reason": "name_conflict",
+  "model_label_fields": {
+    "winery": "DENISOV",
+    "name": "CAMAPA",
+    "grapes": "",
+    "color": "",
+    "sugar": "",
+    "vintage": ""
+  },
+  "decision": "disabled_by_default",
+  "note": "VLM interpreted geographic Samara text as product name; independent OCR confirmed that text but not its semantic role."
+}

@@ -1,8 +1,5 @@
 .shelf-actions{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
 .shelf-actions h2{margin-right:auto}
-.shelf-actions input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
-.shelf-actions label:has(input:disabled){opacity:1;background:var(--mono-bg);color:var(--ink);pointer-events:none}
-.shelf-actions label:focus-within{outline:2px solid currentColor}
 .shelf-image{position:relative;width:100%;max-width:850px;margin:auto;line-height:0}
 .shelf-image>img{width:100%;height:auto;display:block;border-radius:var(--radius)}
 .shelf-box{position:absolute;box-sizing:border-box;border:2px solid var(--photo-match);background:var(--photo-match-fill);line-height:1.2;color:var(--photo-label-ink);text-decoration:none}
@@ -42,7 +39,7 @@
 .shelf-secondary-links summary { cursor: pointer; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
 .shelf-screen .btn--sm { min-height: 44px; }
 @media (max-width: 480px) {
-  .shelf-actions > label { flex: 1 1 100%; }
+  .shelf-actions > .shelf-photo-picker { flex: 1 1 100%; }
   .shelf-request, .shelf-photo, .shelf-selection { padding: var(--space-3); }
 }
 

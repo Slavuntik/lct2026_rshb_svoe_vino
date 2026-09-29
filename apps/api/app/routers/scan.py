@@ -225,7 +225,6 @@ async def flat_scan_response(
     try:
         if upload is None or not data or len(data) > settings.max_upload_bytes:
             return ScanPhotoFlatResponse(slug="")
-        data = downscale_to_max_side(data)
         # v0.4.10: рамка пользователя. Во flat негодная рамка НЕ ломает ответ — она просто
         # игнорируется: у скрипта оценки поля box нет вовсе, и появиться оно может только
         # по ошибке, а несгораемость важнее аккуратности ввода.
@@ -235,6 +234,7 @@ async def flat_scan_response(
             user_box_applied = bool(raw_box and raw_box.strip())
         except ValueError:
             pass
+        data = downscale_to_max_side(data)
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,
             retriever=retriever, settings=settings,
@@ -283,10 +283,8 @@ async def scan_photo(
         raise ApiError(400, "validation_error", "Пустой файл изображения")
     if len(data) > settings.max_upload_bytes:
         raise ApiError(400, "validation_error", f"Файл больше {settings.max_upload_bytes} байт")
-    # Первый шаг обработки (как во flat и /v1/eval/predict): кадр больше 1024 px по любой
-    # стороне уменьшается до большей стороны 1024 px. Рамка задана в долях кадра, поэтому
-    # применять её после уменьшения корректно.
-    data = downscale_to_max_side(data)
+    # Crop the EXIF-oriented original before resizing: a small user-selected label
+    # must retain its pixels rather than inherit the full-frame 1024px budget.
     # v0.4.10: рамка пользователя применяется ДО движка — контракт ImageIndex не меняется,
     # и прицел работает у обоих провайдеров. В rich негодная рамка — честная 400, как и
     # любой другой негодный ввод.
@@ -294,6 +292,7 @@ async def scan_photo(
         data = apply_user_box(data, box)
     except ValueError as exc:
         raise ApiError(400, "validation_error", f"Негодная рамка: {exc}") from exc
+    data = downscale_to_max_side(data)
     try:
         result = run_photo_scan(
             image_bytes=data, image_index=image_index, verifier=verifier,

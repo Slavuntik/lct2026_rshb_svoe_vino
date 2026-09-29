@@ -828,3 +828,21 @@ def test_engine_params_detector_thresholds_from_env(monkeypatch):
     assert reader._engine_for(640) is not None
     assert seen["Det.box_thresh"] == pytest.approx(0.6)
     assert seen["Det.unclip_ratio"] == pytest.approx(1.5)
+
+
+def test_engine_uses_writable_model_cache_when_package_directory_is_read_only(monkeypatch, tmp_path):
+    cache = tmp_path / "ocr-cache"
+    monkeypatch.setenv("CV_OCR_RAPID_MODELS_DIR", str(cache))
+
+    def construct(params):
+        # Reproduce the unprivileged container's site-packages write failure.
+        if params.get("Global.model_root_dir") != str(cache):
+            raise PermissionError("site-packages/rapidocr/models is read-only")
+        cache.mkdir(exist_ok=True)
+        (cache / "download-probe").write_bytes(b"model")
+        return _StubRapidEngine(_StubRapidResult((), ()))
+
+    _install_fake_rapidocr_module(monkeypatch, construct=construct)
+    reader = RapidOcrReader(sizes=(640,), label_size=0)
+    assert reader._engine_for(640) is not None
+    assert (cache / "download-probe").read_bytes() == b"model"

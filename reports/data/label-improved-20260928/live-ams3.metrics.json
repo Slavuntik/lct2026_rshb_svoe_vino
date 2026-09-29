@@ -1,0 +1,25 @@
+{
+  "n": 3,
+  "known": 3,
+  "absent": 0,
+  "unscored": 0,
+  "http_or_protocol_errors": 0,
+  "candidate_top1_correct": 3,
+  "candidate_top5_correct": 3,
+  "correct_accepted": 3,
+  "accepted_total": 3,
+  "wrong_accepted_known": 0,
+  "false_accepts_absent": 0,
+  "correct_rejections": 0,
+  "precision_accepted": 1.0,
+  "recall_accepted_known": 1.0,
+  "end_to_end_accuracy": 1.0,
+  "latency_ms": {
+    "p50": 6270.26,
+    "p95": 8241.26,
+    "max": 8460.26,
+    "n": 3
+  },
+  "over_3s": 3,
+  "over_10s": 0
+}

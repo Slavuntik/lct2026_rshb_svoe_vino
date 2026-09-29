@@ -228,7 +228,7 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
 
   return (
     <>
-      <div className="card stack">
+      <div className="card stack wine-detail-card">
         {/* Заголовочный блок (задача тимлида 27.09, вторая правка после прямого просмотра
             макета и стенда тимлидом): в Figma «карточка вина» сверху название, под ним
             винодельня и плашка — и только НИЖЕ крупное фото бутылки; весь этот блок выровнен
@@ -254,7 +254,7 @@ export function WineCardContent({ wine, titleAs = "h1" }: WineCardContentProps) 
             («Категория и цвет», значение — цвет+сахарная категория одной фразой, как в
             макете "Белое сухое"). Год урожая (vintage) в макете отдельно не показан —
             выдумывать для него новую строку не стали (нет образца), обычно виден в названии.*/}
-        <dl className="stack stack--tight">
+        <dl className="stack stack--tight wine-detail-facts">
           {/* .wine-fact-row — на самом <dt>, не на обёртке: иначе getByText(...).closest("div")
               в WineCardContent.test.tsx находит новый div вместо исходного row--between и
               перестаёт видеть соседний <dd> (см. reports/frontend-design-transfer.md). */}

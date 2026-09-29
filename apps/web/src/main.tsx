@@ -5,6 +5,7 @@ import { getTheme } from "./lib/env";
 import { ensureMocksReady } from "./lib/mockBootstrap";
 import "./styles/global.css";
 import "./themes/portal.css";
+import "./styles/reference.css";
 
 // VITE_THEME=portal — тема каталога «Своё Вино» (кейс ЛЦТ) поверх дефолтной; ставим
 // атрибут до рендера, чтобы не было мигания дефолт->портал. portal.css всегда в бандле

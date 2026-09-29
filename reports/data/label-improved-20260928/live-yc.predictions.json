@@ -1,0 +1,32 @@
+[
+  {
+    "qid": "C01",
+    "sha256": "ea94c4b1e7768dbd752df3c8d38702cdde3052b54b4aae6d88b3ea7677dcc99b",
+    "truth_kind": "known",
+    "true_slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+    "http_status": 200,
+    "elapsed_ms": 5433.1,
+    "slug": "massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16",
+    "not_in_catalog": false
+  },
+  {
+    "qid": "C02",
+    "sha256": "0f91e5f63ceac2596d0dd6f10eb6fc5bd10efd79cc0b87595a4273ead5e6bb48",
+    "truth_kind": "known",
+    "true_slug": "denisov_rubin_klaret_krasnaya_strelka",
+    "http_status": 200,
+    "elapsed_ms": 5071.08,
+    "slug": "denisov_rubin_klaret_krasnaya_strelka",
+    "not_in_catalog": false
+  },
+  {
+    "qid": "C32",
+    "sha256": "927df854c39d88dbe494cd49017db9144b505da688e77b87f8c6cc821454f740",
+    "truth_kind": "known",
+    "true_slug": "denisov_barynya_kurmyshi",
+    "http_status": 200,
+    "elapsed_ms": 4312.75,
+    "slug": "denisov_barynya_kurmyshi",
+    "not_in_catalog": false
+  }
+]
