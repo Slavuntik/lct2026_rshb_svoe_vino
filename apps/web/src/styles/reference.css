@@ -71,10 +71,23 @@
 
 /* Additional product screens extend the same cream-card, wine-red design language. */
 .app-shell .shelf-screen > .screen__header { text-align: center; }
-.app-shell .shelf-request, .app-shell .shelf-selection, .app-shell .shelf-photo { padding: 24px 20px; border-radius: 20px; }
+.app-shell .shelf-selection, .app-shell .shelf-photo { padding: 24px 20px; border-radius: 20px; }
 .app-shell .shelf-photo { padding: 20px 12px; }
-.app-shell .shelf-photo-picker { flex: 1 1 100%; }
-.app-shell .shelf-photo-picker:first-child { background: var(--accent); color: var(--on-accent); }
+/* Shelf reference: user screenshot 29.09, 23.53.53. */
+.app-shell .shelf-screen { gap: 28px; padding-top: 36px; }
+.app-shell .shelf-screen > .screen__header { margin: 0 0 4px; }
+.app-shell .shelf-screen > .screen__header h1 { font-size: clamp(36px, 12.2vw, 48px); line-height: 1.15; margin: 0; white-space: nowrap; }
+.shelf-upload-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 20px; background: var(--card); border-radius: 24px; text-align: center; }
+.shelf-upload-card > p { margin: 0 0 4px; font-size: 16px; line-height: 1.2; }
+.app-shell .shelf-upload-card > .btn { width: 100%; max-width: 279px; flex: none; border-radius: 14px; font-size: 16px; }
+.app-shell .shelf-request { display: flex; flex-direction: column; gap: 16px; padding: 0; background: transparent; border-radius: 0; }
+.shelf-wish-intro { margin: 0; text-align: center; font-size: 16px; line-height: 1.2; }
+.app-shell .shelf-request .field__textarea { min-height: 100px; padding: 10px 16px; font-size: 16px; line-height: 1.4; }
+.shelf-request .field__textarea::placeholder { color: var(--muted); font-size: 11px; }
+.app-shell .shelf-request > .btn { width: 100%; border-radius: 14px; font-size: 16px; }
+.shelf-help { color: var(--muted); font-size: 12px; }
+.shelf-help > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; text-decoration: underline; }
+.shelf-help > p { margin-top: 8px; }
 .app-shell .shelf-ranking > li { background: var(--bg); border-radius: 14px; }
 .app-shell .shelf-legend { gap: 8px; }
 .app-shell .shelf-relevance { font-size: 11px; }

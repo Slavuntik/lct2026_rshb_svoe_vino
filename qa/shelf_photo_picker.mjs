@@ -23,8 +23,8 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     });
     const page=await context.newPage();
     await page.goto(base+'/app/shelf');
-    const gallery=page.getByRole('button',{name:'Добавить фото полок',exact:true});
-    const camera=page.getByRole('button',{name:'Снять полку',exact:true});
+    const gallery=page.getByRole('button',{name:'Загрузить фото',exact:true});
+    const camera=page.getByRole('button',{name:'Сфотографировать полку',exact:true});
     await gallery.waitFor();
     async function choose(button) {
       const pending=page.waitForEvent('filechooser');

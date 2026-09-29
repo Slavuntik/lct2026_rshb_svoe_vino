@@ -22,7 +22,7 @@ afterEach(()=>{vi.restoreAllMocks();vi.mocked(scanShelf).mockReset();URL.createO
 async function begin() {
   const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
   await user.type(screen.getByLabelText('Какое вино ищем?'),'белое сухое');
-  await user.click(screen.getByRole('button',{name:'Подобрать и найти на полках'}));
+  await user.click(screen.getByRole('button',{name:'Найти вино'}));
   await screen.findByText('Подбор готов');
   return user;
 }
@@ -30,16 +30,16 @@ async function begin() {
 describe('Sommelier shelf flow',()=>{
   it('routes gallery and camera buttons to separate pickers without submitting the wish',async()=>{
     const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
-    const gallery=screen.getByLabelText('Добавить фото полок');
-    const camera=screen.getByLabelText('Снять полку');
+    const gallery=screen.getByLabelText('Загрузить фото');
+    const camera=screen.getByLabelText('Сфотографировать полку');
     const galleryClick=vi.spyOn(gallery,'click');
     const cameraClick=vi.spyOn(camera,'click');
-    await user.click(screen.getByRole('button',{name:'Добавить фото полок'}));
+    await user.click(screen.getByRole('button',{name:'Загрузить фото'}));
     expect(galleryClick).toHaveBeenCalledTimes(1);
     expect(cameraClick).not.toHaveBeenCalled();
     expect(gallery).not.toHaveAttribute('capture');
     expect(gallery).toHaveAttribute('multiple');
-    await user.click(screen.getByRole('button',{name:'Снять полку'}));
+    await user.click(screen.getByRole('button',{name:'Сфотографировать полку'}));
     expect(cameraClick).toHaveBeenCalledTimes(1);
     expect(galleryClick).toHaveBeenCalledTimes(1);
     expect(camera).toHaveAttribute('capture','environment');
@@ -49,15 +49,15 @@ describe('Sommelier shelf flow',()=>{
   it('accepts photos before a wish and ranks them later without rescanning',async()=>{
     vi.mocked(scanShelf).mockResolvedValue(response('wine-a'));
     const user=userEvent.setup();renderApp(<ShelfScreen/>, '/app/shelf');
-    expect(screen.getByLabelText('Добавить фото полок')).toBeEnabled();
-    expect(screen.getByLabelText('Снять полку')).toBeEnabled();
-    await user.upload(screen.getByLabelText('Добавить фото полок'),new File(['a'],'a.jpg',{type:'image/jpeg'}));
+    expect(screen.getByLabelText('Загрузить фото')).toBeEnabled();
+    expect(screen.getByLabelText('Сфотографировать полку')).toBeEnabled();
+    await user.upload(screen.getByLabelText('Загрузить фото'),new File(['a'],'a.jpg',{type:'image/jpeg'}));
     await waitFor(()=>expect(scanShelf).toHaveBeenCalledTimes(1));
     await screen.findByRole('img',{name:'Полка 1'});
     expect(apiClient.selectShelf).not.toHaveBeenCalled();
     expect(screen.queryByText(/^#1 Первое вино/)).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Какое вино ищем?'),'белое сухое');
-    await user.click(screen.getByRole('button',{name:'Подобрать и найти на полках'}));
+    await user.click(screen.getByRole('button',{name:'Найти вино'}));
     await screen.findByText(/^#1 Первое вино/);
     expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',['wine-a'],expect.any(AbortSignal));
     expect(scanShelf).toHaveBeenCalledTimes(1);
@@ -69,7 +69,7 @@ describe('Sommelier shelf flow',()=>{
       return response(vi.mocked(scanShelf).mock.calls.length===1?'wine-a':'wine-b');
     });
     const user=await begin();
-    await user.upload(screen.getByLabelText('Добавить фото полок'),[new File(['a'],'a.jpg',{type:'image/jpeg'}),new File(['b'],'b.jpg',{type:'image/jpeg'})]);
+    await user.upload(screen.getByLabelText('Загрузить фото'),[new File(['a'],'a.jpg',{type:'image/jpeg'}),new File(['b'],'b.jpg',{type:'image/jpeg'})]);
     await waitFor(()=>expect(scanShelf).toHaveBeenCalledTimes(2));
     await screen.findByRole('heading',{name:'Подходят на ваших полках'});
     await waitFor(()=>expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',['wine-a','wine-b'],expect.any(AbortSignal)));
@@ -85,7 +85,7 @@ describe('Sommelier shelf flow',()=>{
   it('preserves a successful photo when another fails and allows an individual retry',async()=>{
     vi.mocked(scanShelf).mockResolvedValueOnce(response('wine-a')).mockRejectedValueOnce(new Error('Ошибка второй полки')).mockResolvedValueOnce(response('wine-b'));
     const user=await begin();
-    await user.upload(screen.getByLabelText('Добавить фото полок'),[new File(['a'],'a.jpg',{type:'image/jpeg'}),new File(['b'],'b.jpg',{type:'image/jpeg'})]);
+    await user.upload(screen.getByLabelText('Загрузить фото'),[new File(['a'],'a.jpg',{type:'image/jpeg'}),new File(['b'],'b.jpg',{type:'image/jpeg'})]);
     await screen.findByText('Ошибка второй полки');
     await screen.findByText(/^#1 Первое вино/);
     await user.click(screen.getByRole('button',{name:'Повторить эту полку'}));
@@ -95,7 +95,7 @@ describe('Sommelier shelf flow',()=>{
   it('does not show the preview catalog as found when recognition returns no matches',async()=>{
     vi.mocked(scanShelf).mockResolvedValue({image:{width:100,height:200},matches:[],warnings:[]});
     const user=await begin();
-    await user.upload(screen.getByLabelText('Добавить фото полок'),new File(['a'],'a.jpg',{type:'image/jpeg'}));
+    await user.upload(screen.getByLabelText('Загрузить фото'),new File(['a'],'a.jpg',{type:'image/jpeg'}));
     await screen.findByText('Уверенных совпадений нет. Снимите этикетки ближе.');
     await waitFor(()=>expect(apiClient.selectShelf).toHaveBeenLastCalledWith('белое сухое',[],expect.any(AbortSignal)));
     await waitFor(()=>expect(screen.queryByText('Первое вино')).not.toBeInTheDocument());

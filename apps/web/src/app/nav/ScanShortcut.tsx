@@ -35,7 +35,7 @@ export function ScanShortcut() {
   const [hidden, setHidden] = useState(false);
   const lastYRef = useRef(0);
 
-  const suppressed = location.pathname === "/app/scan" || location.pathname.startsWith("/app/wine/");
+  const suppressed = location.pathname === "/app/scan" || location.pathname === "/app/shelf" || location.pathname.startsWith("/app/wine/");
 
   useEffect(() => {
     // Новый экран — ярлык снова виден (иначе унаследованная "спрятанность" с прошлой длинной

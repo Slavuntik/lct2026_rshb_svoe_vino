@@ -99,22 +99,24 @@ export function ShelfScreen() {
   function submit(event:FormEvent) { event.preventDefault(); if(wish.trim().length>=2) {setAcceptedWish(wish.trim());setRevision(r=>r+1);} }
   const ranked = new Map(selection?.wines.map(w=>[w.wine_id,w]) ?? []);
   return <section className="screen stack shelf-screen">
-    <header className="screen__header"><h1>{t('shelf.findTitle')}</h1><p>{t('shelf.findDescription')}</p></header>
-    <form onSubmit={submit} className="stack--tight shelf-request">
-      <label className="field"><span className="field__label">{t('shelf.wishLabel')}</span><textarea className="field__textarea" value={wish} onChange={e=>setWish(e.target.value)} maxLength={1000} placeholder={t('shelf.placeholder')} required minLength={2}/></label>
-      <button className="btn btn--primary" disabled={ranking||wish.trim().length<2}>{acceptedWish?t('shelf.update'):t('shelf.select')}</button>
-    </form>
-    {acceptedWish && <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>}
-    {!acceptedWish && <p className="text-small">{t('shelf.uploadHint')}</p>}
-    <div className="shelf-actions">
-      <button type="button" className="btn btn--secondary shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>galleryInput.current?.click()}>{t('shelf.addPhotos')}</button>
-      <button type="button" className="btn btn--secondary shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>cameraInput.current?.click()}>{t('shelf.takePhoto')}</button>
+    <header className="screen__header"><h1>{t('shelf.findTitle')}</h1></header>
+    <div className="shelf-upload-card">
+      <p>{t('shelf.findDescription')}</p>
+      <button type="button" className="btn btn--primary shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>cameraInput.current?.click()}>{t('shelf.takePhoto')}</button>
+      <button type="button" className="btn btn--ghost shelf-photo-picker" disabled={busy||photos.length>=MAX_PHOTOS} onClick={()=>galleryInput.current?.click()}>{t('shelf.addPhotos')}</button>
       {/* Keep activation synchronous with the tap and each picker independent on iOS. */}
       <input ref={galleryInput} hidden aria-label={t('shelf.addPhotos')} type="file" accept="image/*" multiple disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/>
       <input ref={cameraInput} hidden aria-label={t('shelf.takePhoto')} type="file" accept="image/*" capture="environment" disabled={busy||photos.length>=MAX_PHOTOS} onChange={e=>{addFiles(e.target.files);e.target.value='';}}/>
       {busy && <button className="btn btn--ghost" onClick={()=>scanController.current?.abort()}>{t('shelf.stop')}</button>}
     </div>
-    <p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p>
+    <form onSubmit={submit} className="shelf-request">
+      <p id="shelf-wish-description" className="shelf-wish-intro">{t('shelf.wishIntro')}</p>
+      <label className="field"><span className="visually-hidden">{t('shelf.wishLabel')}</span><textarea className="field__textarea" aria-describedby="shelf-wish-description" value={wish} onChange={e=>setWish(e.target.value)} maxLength={1000} placeholder={t('shelf.placeholder')} required minLength={2}/></label>
+      <button className="btn btn--secondary" disabled={ranking||wish.trim().length<2}>{acceptedWish?t('shelf.update'):t('shelf.select')}</button>
+    </form>
+    {acceptedWish && <p className="text-small">{t('shelf.currentWish', {wish: acceptedWish})}</p>}
+    {!acceptedWish && photos.length>0 && <p className="text-small">{t('shelf.uploadHint')}</p>}
+    <details className="shelf-help"><summary>{t('shelf.detailsTitle')}</summary><p className="text-caption">{t('shelf.photoNotice', {count: MAX_PHOTOS})}</p></details>
     {error && <p role="alert" className="shelf-alert">{error}</p>}
     {ranking && <p role="status" className="shelf-progress">{t('shelf.ranking')}</p>}
     {selection && <div className="stack--tight shelf-selection">
@@ -148,7 +150,7 @@ export function ShelfScreen() {
       {photo.result?.warnings.map(w=><p className="text-caption" key={w}>{w}</p>)}
       {photo.state==='done'&&!photo.result?.matches.length&&<p>{t('shelf.noMatches')}</p>}
     </article>)}
-    <Link className="btn btn--secondary" to="/app/chat" state={{prefillMessage:acceptedWish||wish}}>{t('shelf.chat')}</Link>
+    {(photos.length>0||selection) && <Link className="btn btn--secondary" to="/app/chat" state={{prefillMessage:acceptedWish||wish}}>{t('shelf.chat')}</Link>}
 
   </section>;
 }

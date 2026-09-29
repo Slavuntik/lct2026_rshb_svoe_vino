@@ -20,8 +20,8 @@ function scrollTo(y: number) {
 }
 
 describe("ScanShortcut", () => {
-  it("не рендерится на /app/scan", () => {
-    renderApp(<ScanShortcut />, "/app/scan");
+  it.each(["/app/scan", "/app/shelf"])("не рендерится на %s", (path) => {
+    renderApp(<ScanShortcut />, path);
     expect(screen.queryByRole("link", { name: "Быстрый переход к скану" })).not.toBeInTheDocument();
   });
 

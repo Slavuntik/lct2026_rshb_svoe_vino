@@ -122,7 +122,7 @@ describe("LandingPage — SEO-минимум", () => {
 
 it('opens shelf from the landing page after age confirmation',async()=>{
   renderLanding();
-  fireEvent.click(screen.getByRole('button',{name:'Найти своё вино на полке'}));
+  fireEvent.click(screen.getByRole('button',{name:'Вино на полке'}));
   expect(screen.getByRole('dialog')).toBeInTheDocument();
   expect(screen.queryByText('SHELF_PROBE')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button',{name:/да, мне есть 18/i}));
